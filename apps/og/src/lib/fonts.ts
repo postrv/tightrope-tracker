@@ -27,62 +27,63 @@ interface FontSpec {
   style: SatoriFont["style"];
 }
 
-// Font files we expect in R2. Keys are chosen for legibility on the command
-// line — `upload-fonts.ts` writes to these same paths.
+// Font files we expect in R2. Fallback URLs pull from the Fontsource CDN
+// mirror on jsDelivr — stable paths, permissive licences (OFL/SIL), and
+// they serve .woff which Satori reads natively. `upload-fonts.ts` writes
+// to the same r2Keys.
 const FONT_SPECS: FontSpec[] = [
   {
-    r2Key: "fraunces/Fraunces-Regular.ttf",
-    // Static TTF mirrors of the Fraunces variable font at its common weights.
-    fallbackUrl: "https://raw.githubusercontent.com/undercasetype/Fraunces/main/fonts/static/TTF/Fraunces-Regular.ttf",
+    r2Key: "fraunces/Fraunces-Regular.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/fraunces/files/fraunces-latin-400-normal.woff",
     name: "Fraunces",
     weight: 400,
     style: "normal",
   },
   {
-    r2Key: "fraunces/Fraunces-Light.ttf",
-    fallbackUrl: "https://raw.githubusercontent.com/undercasetype/Fraunces/main/fonts/static/TTF/Fraunces-Light.ttf",
+    r2Key: "fraunces/Fraunces-Light.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/fraunces/files/fraunces-latin-300-normal.woff",
     name: "Fraunces",
     weight: 300,
     style: "normal",
   },
   {
-    r2Key: "fraunces/Fraunces-Italic.ttf",
-    fallbackUrl: "https://raw.githubusercontent.com/undercasetype/Fraunces/main/fonts/static/TTF/Fraunces-Italic.ttf",
+    r2Key: "fraunces/Fraunces-Italic.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/fraunces/files/fraunces-latin-400-italic.woff",
     name: "Fraunces",
     weight: 400,
     style: "italic",
   },
   {
-    r2Key: "inter/Inter-Regular.ttf",
-    fallbackUrl: "https://raw.githubusercontent.com/rsms/inter/master/docs/font-files/Inter-Regular.otf",
+    r2Key: "inter/Inter-Regular.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/inter/files/inter-latin-400-normal.woff",
     name: "Inter",
     weight: 400,
     style: "normal",
   },
   {
-    r2Key: "inter/Inter-Medium.ttf",
-    fallbackUrl: "https://raw.githubusercontent.com/rsms/inter/master/docs/font-files/Inter-Medium.otf",
+    r2Key: "inter/Inter-Medium.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/inter/files/inter-latin-500-normal.woff",
     name: "Inter",
     weight: 500,
     style: "normal",
   },
   {
-    r2Key: "inter/Inter-SemiBold.ttf",
-    fallbackUrl: "https://raw.githubusercontent.com/rsms/inter/master/docs/font-files/Inter-SemiBold.otf",
+    r2Key: "inter/Inter-SemiBold.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/inter/files/inter-latin-600-normal.woff",
     name: "Inter",
     weight: 600,
     style: "normal",
   },
   {
-    r2Key: "plex/IBMPlexMono-Regular.ttf",
-    fallbackUrl: "https://raw.githubusercontent.com/IBM/plex/master/IBM-Plex-Mono/fonts/complete/ttf/IBMPlexMono-Regular.ttf",
+    r2Key: "plex/IBMPlexMono-Regular.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff",
     name: "IBM Plex Mono",
     weight: 400,
     style: "normal",
   },
   {
-    r2Key: "plex/IBMPlexMono-Medium.ttf",
-    fallbackUrl: "https://raw.githubusercontent.com/IBM/plex/master/IBM-Plex-Mono/fonts/complete/ttf/IBMPlexMono-Medium.ttf",
+    r2Key: "plex/IBMPlexMono-Medium.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff",
     name: "IBM Plex Mono",
     weight: 500,
     style: "normal",

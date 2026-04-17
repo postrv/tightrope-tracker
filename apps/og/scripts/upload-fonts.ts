@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { FONT_R2_MANIFEST } from "../src/lib/fonts.js";
 
-const BUCKET = "tightrope-fonts";
+const BUCKET = "tightrope-og-fonts";
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -35,9 +35,10 @@ async function main(): Promise<void> {
       "wrangler", "r2", "object", "put",
       `${BUCKET}/${r2Key}`,
       "--file", filePath,
-      "--content-type", "font/ttf",
+      "--content-type", "font/woff",
     ];
-    if (local) wranglerArgs.push("--local");
+    // Modern wrangler defaults R2 object ops to `--local`; be explicit either way.
+    wranglerArgs.push(local ? "--local" : "--remote");
 
     console.log(`   ${wranglerArgs.slice(0, 5).join(" ")} ...`);
     execFileSync("pnpm", ["--filter", "@tightrope/og", "exec", ...wranglerArgs], {

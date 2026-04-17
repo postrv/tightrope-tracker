@@ -9,23 +9,24 @@ rules = [
   { type = "CompiledWasm", globs = ["**/*.wasm"], fallthrough = true },
 ]
 
-# Share-card image generation. Mounted at og.tightropetracker.uk.
+# Share-card image generation. Mounted at og.tightropetracker.uk via a
+# Workers Custom Domain (auto-provisions the DNS record in the zone).
 routes = [
-  { pattern = "og.tightropetracker.uk/*", zone_name = "tightropetracker.uk" }
+  { pattern = "og.tightropetracker.uk", custom_domain = true }
 ]
 
 [[d1_databases]]
 binding = "DB"
 database_name = "tightrope_db"
-database_id = "REPLACE_WITH_PROD_D1_ID"
+database_id = "849aed27-56e2-40c2-aa64-a74bf50e8a63"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_PROD_KV_ID"
+id = "ef945a9ece9843af8883df16be6676d7"
 
 [[r2_buckets]]
 binding = "FONTS"
-bucket_name = "tightrope-fonts"
+bucket_name = "tightrope-og-fonts"
 
 [vars]
 ENVIRONMENT = "production"

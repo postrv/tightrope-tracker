@@ -11,6 +11,30 @@ incident emerges.
 3. Seed rebuild
 4. DLQ drain procedure
 5. Rotating `ADMIN_TOKEN`
+6. Known issue: OG worker `CompileError` on Cloudflare
+
+---
+
+## Known issue: OG image render fails with "Wasm code generation disallowed"
+
+**Symptoms**
+
+- `GET og.tightropetracker.uk/og/*.png` returns 500 with body `render failed`
+- Worker tail log: `RuntimeError: Aborted(CompileError: WebAssembly.instantiate(): Wasm code generation disallowed by embedder)`
+
+**Cause**
+
+Satori and its Yoga-layout dependency trigger a runtime `WebAssembly.instantiate(bytes, ...)` call when laying out text. Cloudflare Workers forbid dynamic wasm compilation at runtime — only pre-compiled `WebAssembly.Module` imports are allowed. We tried swapping `@resvg/resvg-wasm` for `@cf-wasm/resvg` to move the resvg side of the pipeline off the dynamic-compile path; the error persists because it originates in Yoga, not resvg.
+
+**Fix path**
+
+Three viable options, none drop-in:
+
+1. Swap the pipeline for [`workers-og`](https://github.com/kvnang/workers-og) — bundles a pre-compiled satori/yoga/resvg for Workers.
+2. Move OG rendering to Cloudflare Browser Rendering (a separate service; different auth/pricing).
+3. Render OG images at build time into R2 and serve statically.
+
+Until one of these lands, social-card meta tags pointing at `og.tightropetracker.uk` will 500. Consider temporarily pointing `og:image` at a static image on the Pages site.
 
 ---
 

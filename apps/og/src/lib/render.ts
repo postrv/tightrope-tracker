@@ -6,18 +6,13 @@
  * into the worker via the `wasm` import (wrangler handles the module import).
  */
 import satori from "satori";
-import { initWasm, Resvg } from "@resvg/resvg-wasm";
-// @ts-expect-error - wrangler supports importing .wasm as a WebAssembly.Module.
-import resvgWasmModule from "@resvg/resvg-wasm/index_bg.wasm";
+// @cf-wasm/resvg is a drop-in replacement for @resvg/resvg-wasm specifically
+// built for Cloudflare Workers: the wasm module is pre-compiled and wired up
+// at import time, which avoids the runtime WebAssembly.compile() that Workers
+// forbids. No explicit initWasm() call is needed.
+import { Resvg } from "@cf-wasm/resvg";
 import type { SatoriFont } from "./fonts.js";
 import type { JsxNode } from "../jsx/jsx-runtime.js";
-
-let wasmReady: Promise<void> | null = null;
-
-function ensureWasm(): Promise<void> {
-  if (!wasmReady) wasmReady = initWasm(resvgWasmModule as WebAssembly.Module);
-  return wasmReady;
-}
 
 export interface RenderOptions {
   width: number;
@@ -52,7 +47,6 @@ async function runPipeline(tree: JsxNode, opts: RenderOptions): Promise<Uint8Arr
     throw new Error(`SVG too large (${svg.length} bytes; limit ${MAX_SVG_BYTES})`);
   }
 
-  await ensureWasm();
   const resvg = new Resvg(svg, {
     fitTo: { mode: "width", value: opts.width },
     // Satori already resolves font glyphs; we only need resvg to rasterise the

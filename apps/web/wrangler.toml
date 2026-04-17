@@ -6,11 +6,11 @@ pages_build_output_dir = "./dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "tightrope_db"
-database_id = "REPLACE_WITH_PROD_D1_ID"
+database_id = "849aed27-56e2-40c2-aa64-a74bf50e8a63"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_PROD_KV_ID"
+id = "ef945a9ece9843af8883df16be6676d7"
 
 [[r2_buckets]]
 binding = "ARCHIVE"
@@ -26,11 +26,11 @@ name = "tightrope-web-preview"
 [[env.preview.d1_databases]]
 binding = "DB"
 database_name = "tightrope_db"
-database_id = "REPLACE_WITH_PREVIEW_D1_ID"
+database_id = "fbb49bbf-f79b-4314-a976-2569559d239b"
 
 [[env.preview.kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_PREVIEW_KV_ID"
+id = "18ca493dd5c44220b41328d488c3b54f"
 
 [[env.preview.r2_buckets]]
 binding = "ARCHIVE"

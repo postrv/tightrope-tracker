@@ -65,7 +65,7 @@ jobs:
         with: { node-version: "20", cache: "pnpm" }
       - run: pnpm install --frozen-lockfile
       - name: Deploy API worker
-        run: pnpm --filter @tightrope/api deploy
+        run: pnpm --filter @tightrope/api run deploy
 
   deploy-og:
     runs-on: ubuntu-latest
@@ -78,7 +78,7 @@ jobs:
         with: { node-version: "20", cache: "pnpm" }
       - run: pnpm install --frozen-lockfile
       - name: Deploy OG worker
-        run: pnpm --filter @tightrope/og deploy
+        run: pnpm --filter @tightrope/og run deploy
 
   deploy-ingest:
     runs-on: ubuntu-latest
@@ -91,7 +91,7 @@ jobs:
         with: { node-version: "20", cache: "pnpm" }
       - run: pnpm install --frozen-lockfile
       - name: Deploy ingest worker
-        run: pnpm --filter @tightrope/ingest deploy
+        run: pnpm --filter @tightrope/ingest run deploy
 
   deploy-web:
     runs-on: ubuntu-latest
@@ -106,4 +106,4 @@ jobs:
       - name: Build web app
         run: pnpm --filter @tightrope/web build
       - name: Deploy web to Cloudflare Pages
-        run: pnpm --filter @tightrope/web deploy
+        run: pnpm --filter @tightrope/web run deploy

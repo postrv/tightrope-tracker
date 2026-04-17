@@ -4,10 +4,17 @@ import { PILLARS, BANDS } from "@tightrope/shared";
 
 interface Props {
   headline: HeadlineScore;
-  apiOrigin?: string;
+  /** Where the Astro site itself lives — used for iframe embeds that load /embed/* routes. */
+  siteOrigin?: string;
+  /** Where the JSON API lives — used for /api/v1/* requests. Separate because the API is on a subdomain. */
+  apiBase?: string;
 }
 
-const { headline, apiOrigin = "https://tightropetracker.uk" } = Astro.props;
+const {
+  headline,
+  siteOrigin = "https://tightropetracker.uk",
+  apiBase = "https://api.tightropetracker.uk",
+} = Astro.props;
 
 const scoreRounded = Math.round(headline.value);
 const band = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
@@ -29,7 +36,7 @@ Yours sincerely,
 [Your name]
 [Your address]`;
 
-const embedHtml = `<iframe src="${apiOrigin}/embed/headline"
+const embedHtml = `<iframe src="${siteOrigin}/embed/headline"
    width="100%" height="220" frameborder="0"></iframe>`;
 ---
 <section class="actions-sec" id="action" aria-labelledby="action-title">
@@ -74,7 +81,7 @@ const embedHtml = `<iframe src="${apiOrigin}/embed/headline"
         <div class="embed-code" id="embed-code">{embedHtml}</div>
         <div class="embed-actions">
           <button class="btn ghost" type="button" data-copy-embed>Copy embed</button>
-          <a href="/api/v1/score" class="btn ghost">View JSON API ↗</a>
+          <a href={`${apiBase}/api/v1/score`} class="btn ghost" target="_blank" rel="noopener">View JSON API ↗</a>
         </div>
         <div class="embed-variants">
           <span class="embed-variant-label">Other widgets:</span>
@@ -86,7 +93,7 @@ const embedHtml = `<iframe src="${apiOrigin}/embed/headline"
   </div>
 </section>
 
-<script is:inline define:vars={{ defaultLetter, apiOrigin }}>
+<script is:inline define:vars={{ defaultLetter, apiBase }}>
 (() => {
   const form = document.querySelector('form.mp-form');
   const result = document.querySelector('[data-mp-result]');
@@ -118,7 +125,7 @@ const embedHtml = `<iframe src="${apiOrigin}/embed/headline"
       const postcode = String(fd.get('postcode') ?? '').trim();
       if (!postcode) return;
       try {
-        const res = await fetch(apiOrigin + '/api/v1/mp?postcode=' + encodeURIComponent(postcode));
+        const res = await fetch(apiBase + '/api/v1/mp?postcode=' + encodeURIComponent(postcode));
         if (!res.ok) throw new Error('Lookup failed (' + res.status + ')');
         const mp = await res.json();
         const filled = String(defaultLetter).replace('[MP name]', mp.name || 'MP');

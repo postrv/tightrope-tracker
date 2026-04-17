@@ -1,0 +1,66 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import TightropeWalker from "~/components/TightropeWalker.astro";
+import { loadSnapshot } from "~/lib/page-data.js";
+import { BANDS } from "@tightrope/shared";
+import { signedDelta, trendArrow, trendClass } from "~/lib/format.js";
+
+const snapshot = await loadSnapshot(Astro.locals);
+const h = snapshot.headline;
+const band = BANDS.find((b) => b.id === h.band) ?? BANDS[0];
+const score = Math.round(h.value);
+---
+<BaseLayout title="Tightrope Tracker — headline" embed>
+  <div class="embed-root">
+    <div class="score-side">
+      <div class="chip" style={`color: var(${band.colourToken}); border-color: var(${band.colourToken});`}>{band.label}</div>
+      <div class="num" aria-label={`Tightrope Score ${score}`}>{score}<span class="unit">/100</span></div>
+      <div class="label">{band.editorialLabel}</div>
+      <div class="delta" aria-label="Delta row">
+        <span>24h <span class={trendClass(h.delta24h)}>{trendArrow(h.delta24h)} {signedDelta(Math.abs(h.delta24h), 1)}</span></span>
+        <span>30d <span class={trendClass(h.delta30d)}>{trendArrow(h.delta30d)} {signedDelta(Math.abs(h.delta30d), 1)}</span></span>
+      </div>
+      <a class="credit" href="https://tightropetracker.uk" target="_blank" rel="noopener">tightropetracker.uk</a>
+    </div>
+    <div class="rope-side">
+      <TightropeWalker score={score} animate={false} />
+    </div>
+  </div>
+</BaseLayout>
+
+<style is:global>
+html, body { background: transparent !important; }
+body { background-image: none !important; }
+</style>
+
+<style>
+.embed-root {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  padding: 20px 24px;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-height: 180px;
+  align-items: center;
+  font-family: var(--font-sans);
+  color: var(--ink-0);
+}
+.score-side { display: flex; flex-direction: column; gap: 4px; }
+.chip { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; border: 1px solid; border-radius: 999px; padding: 4px 10px; align-self: flex-start; }
+.num { font-family: var(--font-mono); font-size: 64px; font-weight: 500; line-height: 1; color: var(--ink-0); font-variant-numeric: tabular-nums; margin-top: 4px; }
+.num .unit { font-size: 18px; color: var(--ink-2); font-weight: 400; }
+.label { font-family: var(--font-serif); font-style: italic; color: var(--ink-1); font-size: 18px; }
+.delta { display: flex; gap: 14px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); margin-top: 8px; }
+.delta .up { color: var(--band-acute); }
+.delta .dn { color: var(--band-slack); }
+.delta .flat { color: var(--ink-2); }
+.credit { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); margin-top: 10px; letter-spacing: 0.1em; }
+.credit:hover { color: var(--accent); }
+.rope-side { justify-self: end; max-width: 180px; width: 100%; }
+@media (max-width: 480px) {
+  .embed-root { grid-template-columns: 1fr; }
+  .rope-side { max-width: 200px; margin: 0 auto; }
+}
+</style>

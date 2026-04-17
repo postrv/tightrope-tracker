@@ -1,0 +1,142 @@
+---
+import type { PillarScore, TodayMovement } from "@tightrope/shared";
+import LineChart from "./charts/LineChart.astro";
+import { signedDelta } from "~/lib/format.js";
+
+interface Props {
+  pillar: PillarScore;
+  movements: TodayMovement[];
+}
+
+const { pillar, movements } = Astro.props;
+
+function findMovement(id: string): TodayMovement | undefined {
+  return movements.find((m) => m.indicatorId === id);
+}
+
+const gilt10 = findMovement("gilt_10y");
+const gilt30 = findMovement("gilt_30y");
+const ftse = findMovement("ftse_250");
+const gbp = findMovement("gbp_usd");
+const sonia = findMovement("sonia_12m");
+const gas = findMovement("gas_m1");
+const sparkline = pillar.sparkline30d && pillar.sparkline30d.length
+  ? pillar.sparkline30d
+  : [50, 52, 54, 53, 55, 57, 58, 60, 62, 61, 63, 65, 64, 66, 68, 69, 70, 72, 73, 75, 76, 77, 78];
+---
+<section class="section" id="market" aria-labelledby="market-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Pillar 1 · 40%</span>
+        <h2 class="sec-title" id="market-title" style="margin-top: 14px;">Market pressure</h2>
+        <p class="section-sub">The daily market read on UK constraint: long gilts, sterling, the rate path, mid-cap equities, and the energy input.</p>
+      </div>
+      <div class="pillar-score" aria-label={`Market pillar score ${Math.round(pillar.value)}`}>
+        <span class="pillar-score-num">{Math.round(pillar.value)}</span>
+        <span class="pillar-score-sub">/100</span>
+        <span class={`pillar-score-delta ${pillar.trend7d === "up" ? "up" : pillar.trend7d === "down" ? "dn" : "flat"}`}>
+          {pillar.trend7d === "flat" ? "flat" : `${pillar.trend7d === "up" ? "▲" : "▼"} ${signedDelta(Math.abs(pillar.delta7d), 1)}`} / 7d
+        </span>
+      </div>
+    </div>
+
+    <div class="market-grid">
+      <div class="chart-card">
+        <h3>Gilt curve anchors</h3>
+        <p class="hint">10y and 30y benchmark yields — the long end is the squeeze.</p>
+        <div class="quad">
+          <div class="mini">
+            <span class="mini-label">10y gilt</span>
+            <span class="mini-val">{gilt10?.displayValue ?? "—"}</span>
+            <span class={`mini-chg ${gilt10?.worsening ? "up" : "dn"}`}>{gilt10?.changeDisplay ?? ""}</span>
+          </div>
+          <div class="mini">
+            <span class="mini-label">30y gilt</span>
+            <span class="mini-val">{gilt30?.displayValue ?? "—"}</span>
+            <span class={`mini-chg ${gilt30?.worsening ? "up" : "dn"}`}>{gilt30?.changeDisplay ?? ""}</span>
+          </div>
+          <div class="mini">
+            <span class="mini-label">SONIA 12m</span>
+            <span class="mini-val">{sonia?.displayValue ?? "—"}</span>
+            <span class={`mini-chg ${sonia?.worsening ? "up" : "dn"}`}>{sonia?.changeDisplay ?? ""}</span>
+          </div>
+          <div class="mini">
+            <span class="mini-label">GBP / USD</span>
+            <span class="mini-val">{gbp?.displayValue ?? "—"}</span>
+            <span class={`mini-chg ${gbp?.worsening ? "up" : "dn"}`}>{gbp?.changeDisplay ?? ""}</span>
+          </div>
+          <div class="mini">
+            <span class="mini-label">FTSE 250</span>
+            <span class="mini-val">{ftse?.displayValue ?? "—"}</span>
+            <span class={`mini-chg ${ftse?.worsening ? "up" : "dn"}`}>{ftse?.changeDisplay ?? ""}</span>
+          </div>
+          <div class="mini">
+            <span class="mini-label">UK gas M+1</span>
+            <span class="mini-val">{gas?.displayValue ?? "—"}</span>
+            <span class={`mini-chg ${gas?.worsening ? "up" : "dn"}`}>{gas?.changeDisplay ?? ""}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Market pressure trajectory</h3>
+        <p class="hint">30-day pillar score. Higher = more constraint from markets.</p>
+        <LineChart
+          series={sparkline}
+          width={540}
+          height={220}
+          stroke="var(--band-acute)"
+          fillGradientId="marketFill"
+          minLabel={`${Math.floor(Math.min(...sparkline))}`}
+          maxLabel={`${Math.ceil(Math.max(...sparkline))}`}
+          ariaLabel="Market pressure pillar score, last 30 days"
+        />
+      </div>
+    </div>
+
+    <div class="why">
+      <h4>Why this matters</h4>
+      <p>Long gilt yields are the price the government pays to borrow for thirty years. When they rise, debt service bills rise with them, the Chancellor's fiscal headroom shrinks, and sterling often weakens — compounding inflation via imports. The 30-year yield is the single most-quoted indicator of "markets are tightening the vice", and it is the one that moves first when policy credibility is in question.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+.section-head {
+  display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;
+  margin-bottom: 40px;
+}
+.pillar-score { display: flex; align-items: baseline; gap: 6px; font-family: var(--font-mono); }
+.pillar-score-num { font-size: 40px; font-weight: 500; color: var(--ink-0); font-variant-numeric: tabular-nums; }
+.pillar-score-sub { color: var(--ink-2); font-size: 14px; }
+.pillar-score-delta { margin-left: 12px; font-size: 12px; }
+.pillar-score-delta.up { color: var(--band-acute); }
+.pillar-score-delta.dn { color: var(--band-slack); }
+.pillar-score-delta.flat { color: var(--ink-2); }
+
+.market-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px; }
+
+.quad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 8px; overflow: hidden; margin-top: 8px; }
+.mini { background: var(--bg-0); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.mini-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
+.mini-val { font-family: var(--font-mono); font-size: 20px; color: var(--ink-0); font-variant-numeric: tabular-nums; }
+.mini-chg { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); }
+.mini-chg.up { color: var(--band-acute); }
+.mini-chg.dn { color: var(--band-slack); }
+
+.why {
+  margin-top: 32px;
+  border-left: 2px solid var(--accent-dim);
+  padding: 16px 20px;
+  background: rgba(212, 162, 76, 0.04);
+}
+.why h4 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 8px; font-weight: 500; }
+.why p { color: var(--ink-1); font-size: 14px; margin: 0; line-height: 1.6; max-width: 760px; }
+
+@media (max-width: 920px) {
+  .market-grid { grid-template-columns: 1fr; gap: 20px; }
+  .quad { grid-template-columns: repeat(2, 1fr); }
+  .section-head { grid-template-columns: 1fr; }
+}
+</style>

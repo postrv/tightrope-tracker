@@ -1,0 +1,228 @@
+---
+import type { HeadlineScore } from "@tightrope/shared";
+import { PILLARS, BANDS } from "@tightrope/shared";
+
+interface Props {
+  headline: HeadlineScore;
+  apiOrigin?: string;
+}
+
+const { headline, apiOrigin = "https://tightropetracker.uk" } = Astro.props;
+
+const scoreRounded = Math.round(headline.value);
+const band = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
+const dominant = PILLARS[headline.dominantPillar]?.title ?? "Market Pressure";
+
+const defaultLetter = `Dear [MP name],
+
+I am writing as your constituent to ask for your view on the UK's current fiscal and economic trajectory.
+
+As of today, the Tightrope Tracker headline score stands at ${scoreRounded} out of 100 — ${band.label.toLowerCase()}, "${band.editorialLabel.toLowerCase()}". The dominant source of pressure is ${dominant.toLowerCase()}.
+
+I would be grateful for your assessment of:
+  1. What policy levers you consider appropriate to ease constraint in this pillar.
+  2. Whether you will be pressing the Chancellor to publish a credible, sourced response.
+
+Every figure behind this score is published at https://tightropetracker.uk/methodology with full source links. I would welcome your reply.
+
+Yours sincerely,
+[Your name]
+[Your address]`;
+
+const embedHtml = `<iframe src="${apiOrigin}/embed/headline"
+   width="100%" height="220" frameborder="0"></iframe>`;
+---
+<section class="actions-sec" id="action" aria-labelledby="action-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Act</span>
+        <h2 class="sec-title" id="action-title" style="margin-top: 14px;">Two useful things you can do with this</h2>
+      </div>
+    </div>
+
+    <div class="actions-grid">
+      <div class="action-card" data-mp-card>
+        <h3>Write to your MP</h3>
+        <p>Enter your postcode. We'll find your MP and pre-fill a short, factual letter citing today's Tightrope Score, the worst-performing pillar, and the methodology page. One click copies the letter and opens the MP's Parliament contact form — no email needed.</p>
+        <form class="mp-form" aria-label="MP postcode lookup">
+          <label class="mp-label" for="mp-postcode">UK postcode</label>
+          <div class="input-row">
+            <input id="mp-postcode" name="postcode" type="text" placeholder="e.g. EX4 4QJ" autocomplete="postal-code" inputmode="text" required />
+            <button class="btn" type="submit">Find MP →</button>
+          </div>
+          <p class="mp-hint">The letter is editable before you send. We don't store your postcode.</p>
+        </form>
+
+        <div class="mp-result" data-mp-result hidden>
+          <div class="mp-meta" data-mp-meta></div>
+          <label for="mp-letter" class="mp-label">Your draft</label>
+          <textarea id="mp-letter" data-mp-letter rows="14">{defaultLetter}</textarea>
+          <div class="mp-actions">
+            <a class="btn" data-mp-send href="#" target="_blank" rel="noopener">Copy letter &amp; open contact page ↗</a>
+            <a class="btn ghost" data-mp-mailto href="#">Open in email</a>
+            <button class="btn ghost" type="button" data-mp-reset>Reset draft</button>
+          </div>
+          <p class="mp-hint" data-mp-copy-feedback hidden>Letter copied to clipboard — paste it into the form on Parliament's site.</p>
+        </div>
+        <div class="mp-error" data-mp-error hidden></div>
+      </div>
+
+      <div class="action-card">
+        <h3>Embed the live score</h3>
+        <p>Think tank, Substack, internal dashboard — paste one iframe. Numbers update in real time from the same API that powers this site. No key needed.</p>
+        <div class="embed-code" id="embed-code">{embedHtml}</div>
+        <div class="embed-actions">
+          <button class="btn ghost" type="button" data-copy-embed>Copy embed</button>
+          <a href="/api/v1/score" class="btn ghost">View JSON API ↗</a>
+        </div>
+        <div class="embed-variants">
+          <span class="embed-variant-label">Other widgets:</span>
+          <a href="/embed/market">Market strip</a>
+          <a href="/embed/delivery">Delivery scorecard</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline define:vars={{ defaultLetter, apiOrigin }}>
+(() => {
+  const form = document.querySelector('form.mp-form');
+  const result = document.querySelector('[data-mp-result]');
+  const meta = document.querySelector('[data-mp-meta]');
+  const letter = document.querySelector('[data-mp-letter]');
+  const sendBtn = document.querySelector('[data-mp-send]');
+  const mailto = document.querySelector('[data-mp-mailto]');
+  const resetBtn = document.querySelector('[data-mp-reset]');
+  const copyFeedback = document.querySelector('[data-mp-copy-feedback]');
+  const errorEl = document.querySelector('[data-mp-error]');
+  const embedBtn = document.querySelector('[data-copy-embed]');
+
+  // Fallback contact page for when the API response omits profileUrl.
+  const FALLBACK_PROFILE = 'https://members.parliament.uk/members/commons';
+  const SUBJECT = 'Tightrope Tracker — constituent query';
+
+  function updateMailto(email, body) {
+    if (!mailto) return;
+    mailto.href = 'mailto:' + email + '?subject=' + encodeURIComponent(SUBJECT) + '&body=' + encodeURIComponent(body);
+  }
+
+  if (form && result && meta && letter && sendBtn && mailto && errorEl) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      errorEl.textContent = '';
+      if (copyFeedback) copyFeedback.hidden = true;
+      const fd = new FormData(form);
+      const postcode = String(fd.get('postcode') ?? '').trim();
+      if (!postcode) return;
+      try {
+        const res = await fetch(apiOrigin + '/api/v1/mp?postcode=' + encodeURIComponent(postcode));
+        if (!res.ok) throw new Error('Lookup failed (' + res.status + ')');
+        const mp = await res.json();
+        const filled = String(defaultLetter).replace('[MP name]', mp.name || 'MP');
+        letter.value = filled;
+        meta.textContent = mp.name + ' — ' + mp.party + ' · ' + mp.constituency;
+        result.hidden = false;
+
+        // Primary CTA: copy letter + open the MP's Parliament contact page.
+        // This is more reliable than mailto: because email is rarely published
+        // and mailto: handlers are inconsistent across browsers/OSes.
+        const profileUrl = mp.profileUrl || FALLBACK_PROFILE;
+        sendBtn.href = profileUrl;
+        sendBtn.textContent = 'Copy letter & open ' + (mp.name || 'MP') + "'s contact page ↗";
+        sendBtn.onclick = async (ev) => {
+          ev.preventDefault();
+          try {
+            await navigator.clipboard.writeText(letter.value);
+            if (copyFeedback) copyFeedback.hidden = false;
+          } catch {
+            // Clipboard denied -- open the page anyway, user can re-type.
+          }
+          setTimeout(() => { window.open(profileUrl, '_blank', 'noopener'); }, 400);
+        };
+
+        // Secondary CTA: mailto: fallback for users who prefer their own client.
+        const email = mp.email || 'contact@parliament.uk';
+        updateMailto(email, letter.value);
+        letter.addEventListener('input', () => { updateMailto(email, letter.value); }, { once: false });
+      } catch (err) {
+        errorEl.hidden = false;
+        errorEl.textContent = 'Could not look up that postcode. Check the format (e.g. EX4 4QJ) and try again.';
+      }
+    });
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => { letter.value = defaultLetter; });
+    }
+  }
+
+  if (embedBtn) {
+    embedBtn.addEventListener('click', async () => {
+      const code = document.getElementById('embed-code');
+      const text = code ? code.textContent || '' : '';
+      try {
+        await navigator.clipboard.writeText(text);
+        const prev = embedBtn.textContent;
+        embedBtn.textContent = 'Copied ✓';
+        setTimeout(() => { embedBtn.textContent = prev; }, 1800);
+      } catch {
+        const range = document.createRange();
+        if (code) { range.selectNodeContents(code); }
+        window.getSelection()?.removeAllRanges();
+        if (code) window.getSelection()?.addRange(range);
+      }
+    });
+  }
+})();
+</script>
+
+<style>
+.actions-sec { padding: 80px 0; background: var(--bg-1); border-bottom: 1px solid var(--border-soft); }
+.actions-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; }
+.action-card { background: var(--bg-0); border: 1px solid var(--border); border-radius: 12px; padding: 32px; }
+.action-card h3 { font-family: var(--font-serif); font-weight: 400; font-size: 26px; margin: 0 0 8px; letter-spacing: -0.01em; }
+.action-card p { color: var(--ink-1); font-size: 14px; margin: 0 0 20px; }
+.mp-label { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 8px; }
+.input-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 10px; }
+.input-row input {
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px; color: var(--ink-0); font-family: var(--font-mono); font-size: 13px;
+  outline: none; transition: border-color 180ms;
+}
+.input-row input:focus { border-color: var(--accent-dim); }
+.mp-hint { margin-top: 4px; font-size: 12px; color: var(--ink-2); margin-bottom: 0; }
+
+.mp-result { margin-top: 20px; border-top: 1px solid var(--border-soft); padding-top: 20px; }
+.mp-meta { font-family: var(--font-mono); font-size: 12px; color: var(--accent); margin-bottom: 12px; letter-spacing: 0.05em; }
+.mp-result textarea {
+  width: 100%; min-height: 280px; resize: vertical;
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; color: var(--ink-0); font-family: var(--font-mono); font-size: 12.5px;
+  line-height: 1.55; margin-bottom: 14px;
+}
+.mp-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.mp-error { margin-top: 14px; color: var(--band-critical); font-size: 13px; font-family: var(--font-mono); }
+
+.embed-code {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; font-family: var(--font-mono); font-size: 12px;
+  color: var(--ink-1); white-space: pre; overflow-x: auto; margin-bottom: 12px;
+}
+.embed-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.embed-variants { margin-top: 20px; font-size: 12px; color: var(--ink-2); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.embed-variant-label { font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; font-size: 10px; }
+.embed-variants a { color: var(--ink-1); border-bottom: 1px dotted var(--ink-3); }
+.embed-variants a:hover { color: var(--accent); border-color: var(--accent-dim); }
+
+.section-head {
+  display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 920px) {
+  .actions-grid { grid-template-columns: 1fr; gap: 24px; }
+  .section-head { grid-template-columns: 1fr; }
+}
+</style>

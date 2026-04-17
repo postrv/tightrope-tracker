@@ -1,0 +1,9 @@
+{
+  "_comment": "Three monthly headline sentiment prints used as OBR growth-input proxies. (a) S&P Global UK Services PMI (licensed series; we mirror only the published press-release headline). (b) GfK/NIESR Consumer Confidence Barometer (headline index; sub-indices are subscription-gated). (c) RICS UK Residential Market Survey house-price balance (headline net percentage; full back-set is RICS-subscription). All three are lawful fair-use summaries of publicly released headline values. Refreshed monthly when each release drops.",
+  "publication_window": "2026-03",
+  "observed_at": "2026-03-31T00:00:00Z",
+  "services_pmi":        { "value": 50.4,  "unit": "index",        "source": "S&P Global / CIPS Flash UK Services PMI, March 2026" },
+  "consumer_confidence": { "value": -19,   "unit": "index",        "source": "GfK / NIESR Consumer Confidence Barometer, March 2026" },
+  "rics_price_balance":  { "value": 8,     "unit": "%",            "source": "RICS UK Residential Market Survey, March 2026" },
+  "source_url": "https://www.pmi.spglobal.com/Public/Home/PressRelease"
+}

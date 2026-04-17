@@ -1,0 +1,6 @@
+{
+  "_comment": "ONS RTI direct-debit failure rate, hand-curated from the ONS RTI dashboard. TODO(source): wire in the RTI XLSX parser once we have one.",
+  "observed_at": "2026-04-10T00:00:00Z",
+  "dd_failure_rate": { "value": 1.8 },
+  "source_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/datasets/realtimeindicatorsofuseconomicactivity"
+}

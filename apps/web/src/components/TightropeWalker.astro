@@ -1,0 +1,141 @@
+---
+interface Props {
+  score: number;
+  /** If set, the walker starts at 0 and animates to `score` on load. */
+  animate?: boolean;
+}
+
+const { score, animate = true } = Astro.props;
+const safeScore = Math.max(0, Math.min(100, score ?? 0));
+
+// Walker x-position on rope: 60 -> 340 as score goes 0 -> 100.
+const xMin = 60;
+const xMax = 340;
+const x = xMin + ((xMax - xMin) * safeScore) / 100;
+const label = Math.round(safeScore);
+---
+<div class="tightrope-viz" data-animate={animate ? "true" : "false"} data-target-score={safeScore}>
+  <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-label={`Tightrope walker at ${label} of 100 pressure`} role="img">
+    <defs>
+      <linearGradient id="ropeGrad" x1="0" x2="1">
+        <stop offset="0" stop-color="#5FB27C"/>
+        <stop offset="0.4" stop-color="#D4A24C"/>
+        <stop offset="0.7" stop-color="#D97838"/>
+        <stop offset="1" stop-color="#C84B3C"/>
+      </linearGradient>
+      <linearGradient id="platGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#262C36"/>
+        <stop offset="1" stop-color="#12151A"/>
+      </linearGradient>
+      <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="#D4A24C" stop-opacity="0.35"/>
+        <stop offset="1" stop-color="#D4A24C" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <circle cx="268" cy="200" r="130" fill="url(#glow)"/>
+
+    <g font-family="IBM Plex Mono" font-size="9" fill="#4A463F" letter-spacing="0.5">
+      <text x="40" y="260" text-anchor="middle">0</text>
+      <text x="130" y="260" text-anchor="middle">25</text>
+      <text x="220" y="260" text-anchor="middle">50</text>
+      <text x="310" y="260" text-anchor="middle">75</text>
+      <text x="360" y="260" text-anchor="middle">100</text>
+    </g>
+
+    <rect x="10" y="230" width="50" height="16" rx="2" fill="url(#platGrad)" stroke="#262C36"/>
+    <rect x="10" y="246" width="50" height="110" fill="url(#platGrad)" opacity="0.55"/>
+    <text x="35" y="224" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#7A7468" letter-spacing="1">SLACK</text>
+
+    <rect x="340" y="230" width="50" height="16" rx="2" fill="url(#platGrad)" stroke="#262C36"/>
+    <rect x="340" y="246" width="50" height="110" fill="url(#platGrad)" opacity="0.55"/>
+    <text x="365" y="224" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#C84B3C" letter-spacing="1">CRITICAL</text>
+
+    <path d="M 60 238 Q 200 260 340 238" stroke="url(#ropeGrad)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M 60 238 Q 200 260 340 238" stroke="#D4A24C" stroke-width="0.4" fill="none" opacity="0.6"/>
+
+    <g class="walker" transform={`translate(${x}, 244)`}>
+      <ellipse cx="0" cy="2" rx="6" ry="1.2" fill="#000" opacity="0.5"/>
+      <line x1="-28" y1="-18" x2="28" y2="-14" stroke="#D4A24C" stroke-width="1.2" stroke-linecap="round"/>
+      <circle cx="0" cy="-40" r="4.2" fill="#F4F1EA"/>
+      <line x1="0" y1="-36" x2="0" y2="-18" stroke="#F4F1EA" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="0" y1="-28" x2="-20" y2="-17" stroke="#F4F1EA" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="0" y1="-28" x2="20" y2="-15" stroke="#F4F1EA" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="0" y1="-18" x2="-4" y2="-2" stroke="#F4F1EA" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="0" y1="-18" x2="5" y2="-2" stroke="#F4F1EA" stroke-width="1.6" stroke-linecap="round"/>
+    </g>
+
+    <line class="marker-line" x1={x} y1="246" x2={x} y2="270" stroke="#D97838" stroke-width="0.8" stroke-dasharray="2 2" opacity="0.7"/>
+    <text class="marker-label" x={x} y="282" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#D97838" font-weight="500">{label}</text>
+
+    <g stroke="#7A7468" stroke-width="0.6" fill="none" opacity="0.45" stroke-linecap="round">
+      <path d="M 300 130 Q 335 135 360 130"/>
+      <path d="M 310 160 Q 340 164 358 160"/>
+      <path d="M 305 180 Q 340 185 362 180"/>
+    </g>
+  </svg>
+</div>
+
+<style>
+.tightrope-viz {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-width: 440px;
+  margin-left: auto;
+}
+.tightrope-viz svg { width: 100%; height: 100%; display: block; }
+
+.tightrope-viz[data-animate="true"] .walker,
+.tightrope-viz[data-animate="true"] .marker-line,
+.tightrope-viz[data-animate="true"] .marker-label {
+  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1),
+              x1 900ms cubic-bezier(0.16, 1, 0.3, 1),
+              x2 900ms cubic-bezier(0.16, 1, 0.3, 1),
+              x 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tightrope-viz[data-animate="true"] .walker,
+  .tightrope-viz[data-animate="true"] .marker-line,
+  .tightrope-viz[data-animate="true"] .marker-label {
+    transition: none;
+  }
+}
+</style>
+
+<script>
+(() => {
+  const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  const viz = document.querySelector<HTMLElement>('.tightrope-viz[data-animate="true"]');
+  if (!viz) return;
+  const target = Number(viz.dataset.targetScore ?? "0");
+  if (!Number.isFinite(target)) return;
+  const walker = viz.querySelector<SVGGElement>(".walker");
+  const line = viz.querySelector<SVGLineElement>(".marker-line");
+  const label = viz.querySelector<SVGTextElement>(".marker-label");
+
+  if (reduce) return;
+
+  // Start from the left platform, slide to target.
+  const xFrom = 60;
+  const xTo = 60 + (280 * target) / 100;
+  const t0 = performance.now();
+  const dur = 900;
+  function frame(t: number) {
+    const p = Math.min(1, (t - t0) / dur);
+    const eased = 1 - Math.pow(1 - p, 3);
+    const x = xFrom + (xTo - xFrom) * eased;
+    if (walker) walker.setAttribute("transform", `translate(${x.toFixed(2)}, 244)`);
+    if (line) {
+      line.setAttribute("x1", x.toFixed(2));
+      line.setAttribute("x2", x.toFixed(2));
+    }
+    if (label) {
+      label.setAttribute("x", x.toFixed(2));
+      label.textContent = String(Math.round((target * eased)));
+    }
+    if (p < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>

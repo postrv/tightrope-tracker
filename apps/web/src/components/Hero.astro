@@ -1,0 +1,149 @@
+---
+import type { HeadlineScore } from "@tightrope/shared";
+import { bandFor, BANDS, PILLARS } from "@tightrope/shared";
+import TightropeWalker from "./TightropeWalker.astro";
+import { eyebrowDate, signedDelta, trendArrow, trendClass } from "~/lib/format.js";
+
+interface Props {
+  headline: HeadlineScore;
+}
+
+const { headline } = Astro.props;
+const band = BANDS.find((b) => b.id === headline.band) ?? bandFor(headline.value);
+const bandColour = band.colourToken;
+const dominantLabel = PILLARS[headline.dominantPillar]?.title ?? "Market Pressure";
+const scoreRounded = Math.round(headline.value);
+const editorial = headline.editorial || `${dominantLabel} is the dominant pillar. See the sections below for the drivers.`;
+
+const delta24 = headline.delta24h;
+const delta30 = headline.delta30d;
+const deltaYtd = headline.deltaYtd;
+const isStale = headline.stale === true;
+---
+<section class="hero" id="headline">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Civic data · {eyebrowDate(headline.updatedAt)}</span>
+        <h1>The UK is walking a <em>fiscal tightrope</em>. This is how tight it is, right now.</h1>
+        <p class="lede">A live, transparent accountability dashboard tracking the real constraints on the UK government's growth agenda — markets, fiscal rules, the labour force, and delivery. One score. Four pillars. Every number sourced and open.</p>
+
+        <div class="score-card" style={`--band-colour: var(${bandColour});`}>
+          <div>
+            <div class="score-num" data-target={scoreRounded} aria-label={`Tightrope Score: ${scoreRounded} out of 100`}>
+              <span class="score-value">{scoreRounded}</span><span class="sub">/100</span>
+            </div>
+            <div class="delta-row" aria-label="Changes over time">
+              <span>24h <span class={trendClass(delta24)}>{trendArrow(delta24)} {signedDelta(Math.abs(delta24), 1)}</span></span>
+              <span>30d <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(Math.abs(delta30), 1)}</span></span>
+              <span>YTD <span class={trendClass(deltaYtd)}>{trendArrow(deltaYtd)} {signedDelta(Math.abs(deltaYtd), 1)}</span></span>
+            </div>
+          </div>
+          <div class="score-meta">
+            <span class="band-pill" style={`color: var(${bandColour}); border-color: var(${bandColour}); background: color-mix(in srgb, var(${bandColour}) 12%, transparent);`}>{band.label}</span>
+            {isStale ? <span class="stale-chip" role="status" title="One or more pillars have not received fresh indicator data within the staleness window.">Stale data</span> : null}
+            <span class="band-label">{band.editorialLabel}</span>
+          </div>
+        </div>
+
+        <div class="editorial" role="note">
+          <strong>What's driving today:</strong> {editorial}
+          <span class="ts">Auto-generated from live data · <a href="/methodology" style="color: var(--accent);">see methodology →</a></span>
+        </div>
+      </div>
+
+      <TightropeWalker score={scoreRounded} />
+    </div>
+  </div>
+</section>
+
+<style>
+.hero { padding: 72px 0 56px; border-bottom: 1px solid var(--border-soft); }
+.hero-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 56px; align-items: center; }
+.hero h1 {
+  font-family: var(--font-serif);
+  font-weight: 350;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 24px 0 22px;
+}
+.hero h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+.hero .lede { color: var(--ink-1); font-size: 17px; max-width: 560px; margin: 0 0 32px; line-height: 1.6; }
+
+.score-card {
+  background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 32px;
+  display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.score-card::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--band-colour, var(--band-acute));
+}
+.score-num { font-family: var(--font-mono); font-size: 88px; font-weight: 500; letter-spacing: -0.04em; line-height: 1; color: var(--ink-0); font-variant-numeric: tabular-nums; }
+.score-num .sub { font-size: 22px; color: var(--ink-2); font-weight: 400; }
+.score-meta { display: flex; flex-direction: column; gap: 6px; }
+.band-pill {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  align-self: flex-start;
+  padding: 5px 11px; border-radius: 999px;
+  border: 1px solid var(--accent-dim);
+}
+.stale-chip {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  align-self: flex-start;
+  padding: 4px 9px; border-radius: 999px;
+  border: 1px dashed var(--ink-2);
+  color: var(--ink-2);
+  margin-top: 4px;
+}
+.band-label { font-family: var(--font-serif); font-size: 26px; letter-spacing: -0.01em; color: var(--ink-0); font-weight: 400; font-style: italic; margin-top: 2px; }
+.delta-row { display: flex; gap: 20px; margin-top: 10px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+.delta-row span.up { color: var(--band-acute); }
+.delta-row span.dn { color: var(--band-slack); }
+.delta-row span.flat { color: var(--ink-2); }
+
+.editorial {
+  margin-top: 24px;
+  padding: 16px 20px;
+  border-left: 2px solid var(--accent-dim);
+  background: rgba(212, 162, 76, 0.04);
+  color: var(--ink-1);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.editorial strong { color: var(--ink-0); font-weight: 500; }
+.editorial .ts { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); margin-top: 6px; display: block; letter-spacing: 0.05em; }
+
+@media (max-width: 920px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+}
+</style>
+
+<script>
+(() => {
+  const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  const el = document.querySelector<HTMLElement>(".score-num");
+  if (!el) return;
+  const valueEl = el.querySelector<HTMLElement>(".score-value");
+  if (!valueEl) return;
+  const target = Number(el.dataset.target ?? valueEl.textContent ?? "0");
+  if (!Number.isFinite(target)) return;
+  if (reduce) { valueEl.textContent = String(target); return; }
+
+  const dur = 900;
+  const t0 = performance.now();
+  valueEl.textContent = "0";
+  function frame(t: number) {
+    const p = Math.min(1, (t - t0) / dur);
+    const eased = 1 - Math.pow(1 - p, 3);
+    valueEl!.textContent = String(Math.round(target * eased));
+    if (p < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>

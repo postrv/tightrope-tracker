@@ -1,0 +1,7 @@
+{
+  "_comment": "MHCLG net housing additions + planning consents. MHCLG publishes quarterly bulletins as XLSX/ODS attachments with no stable JSON endpoint. Curate quarterly after each release. TODO(source): https://www.gov.uk/government/statistics/housing-supply-net-additional-dwellings-england",
+  "observed_at": "2026-03-31T00:00:00Z",
+  "housing_trajectory": { "value": 72.4, "unit": "%" },
+  "planning_consents": { "value": 64.1, "unit": "%" },
+  "source_url": "https://www.gov.uk/government/collections/household-projections"
+}

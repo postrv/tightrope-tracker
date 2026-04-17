@@ -1,0 +1,128 @@
+---
+import type { PillarScore } from "@tightrope/shared";
+import { signedDelta } from "~/lib/format.js";
+
+interface Props {
+  pillar: PillarScore;
+}
+
+const { pillar } = Astro.props;
+
+interface Round { label: string; value: number; colour: string; x: number; highlight?: boolean }
+// Editorially-curated static headroom plot (OBR forecast rounds).
+// Inputs are £bn current-budget headroom across four forecast rounds.
+const rounds: Round[] = [
+  { label: "Oct '24 Bud",  value: 22.0, colour: "#4B9BB0", x: 110 },
+  { label: "Mar '25 SF",   value: 9.9,  colour: "#D97838", x: 230 },
+  { label: "Nov '25 Bud",  value: 22.0, colour: "#4B9BB0", x: 350 },
+  { label: "Mar '26 SF",   value: 23.6, colour: "#D4A24C", x: 470, highlight: true },
+];
+
+// map £bn to y in viewbox [0..240]; £10bn -> y=200; £40bn -> y=40.
+function yFor(bn: number): number {
+  const max = 40, min = 0;
+  const t = (bn - min) / (max - min);
+  return 220 - t * 180;
+}
+---
+<section class="section" id="fiscal" aria-labelledby="fiscal-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Pillar 2 · 30%</span>
+        <h2 class="sec-title" id="fiscal-title" style="margin-top: 14px;">Fiscal constraint</h2>
+        <p class="section-sub">How much room the Chancellor actually has against her own stability rule, and how that has moved between forecast rounds.</p>
+      </div>
+      <div class="pillar-score" aria-label={`Fiscal pillar score ${Math.round(pillar.value)}`}>
+        <span class="pillar-score-num">{Math.round(pillar.value)}</span>
+        <span class="pillar-score-sub">/100</span>
+        <span class={`pillar-score-delta ${pillar.trend7d === "up" ? "up" : pillar.trend7d === "down" ? "dn" : "flat"}`}>
+          {pillar.trend7d === "flat" ? "flat" : `${pillar.trend7d === "up" ? "▲" : "▼"} ${signedDelta(Math.abs(pillar.delta7d), 1)}`} / 7d
+        </span>
+      </div>
+    </div>
+
+    <div class="fiscal-grid">
+      <div class="chart-card">
+        <h3>Current-budget headroom, 2024 → 2029/30</h3>
+        <p class="hint">£ billion, surplus against the stability rule target year. Each dot is a separate OBR forecast round.</p>
+        <svg class="chart" viewBox="0 0 600 240" preserveAspectRatio="none" role="img" aria-label="Current budget headroom over OBR forecast rounds">
+          <defs>
+            <linearGradient id="headFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#D4A24C" stop-opacity="0.22"/>
+              <stop offset="1" stop-color="#D4A24C" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <g stroke="var(--border-soft)" stroke-width="1">
+            <line x1="40" y1="40" x2="580" y2="40"/>
+            <line x1="40" y1="100" x2="580" y2="100"/>
+            <line x1="40" y1="160" x2="580" y2="160"/>
+            <line x1="40" y1="220" x2="580" y2="220"/>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="10" fill="var(--ink-2)">
+            <text x="32" y="44" text-anchor="end">40</text>
+            <text x="32" y="104" text-anchor="end">30</text>
+            <text x="32" y="164" text-anchor="end">20</text>
+            <text x="32" y="224" text-anchor="end">10</text>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)">
+            {rounds.map((r) => <text x={r.x - 30} y={234}>{r.label}</text>)}
+          </g>
+
+          <path
+            d={`M ${rounds[0].x} ${yFor(rounds[0].value)} L ${rounds[1].x} ${yFor(rounds[1].value)} L ${rounds[2].x} ${yFor(rounds[2].value)} L ${rounds[3].x} ${yFor(rounds[3].value)} L ${rounds[3].x} 220 L ${rounds[0].x} 220 Z`}
+            fill="url(#headFill)"
+          />
+          <path
+            d={`M ${rounds[0].x} ${yFor(rounds[0].value)} L ${rounds[1].x} ${yFor(rounds[1].value)} L ${rounds[2].x} ${yFor(rounds[2].value)} L ${rounds[3].x} ${yFor(rounds[3].value)}`}
+            stroke="#D4A24C" stroke-width="1.5" fill="none" stroke-linecap="round"
+          />
+
+          {rounds.map((r) => (
+            <g>
+              <circle cx={r.x} cy={yFor(r.value)} r={r.highlight ? 4.5 : 4} fill={r.colour} />
+              <text x={r.x} y={yFor(r.value) - 12} text-anchor="middle" font-family="IBM Plex Mono" font-size={r.highlight ? 10.5 : 10} fill={r.colour} font-weight={r.highlight ? 500 : 400}>{r.value.toFixed(1)}</text>
+            </g>
+          ))}
+
+          <line x1="40" y1="200" x2="580" y2="200" stroke="#C84B3C" stroke-width="1" stroke-dasharray="3 4" opacity="0.6"/>
+          <text x="574" y="196" text-anchor="end" font-family="IBM Plex Mono" font-size="9.5" fill="#C84B3C" opacity="0.85">IFS prudent cushion · £10bn</text>
+        </svg>
+      </div>
+
+      <div class="chart-card">
+        <h3>The DMO gilt stack</h3>
+        <p class="hint">Planned 2026/27 issuance · £252.1bn total</p>
+        <div class="factrow"><span class="k">Total issuance</span><span class="v">£252.1bn</span></div>
+        <div class="factrow"><span class="k">Short conventional</span><span class="v">£72.1bn · 28.6%</span></div>
+        <div class="factrow"><span class="k">Medium conventional</span><span class="v">£81.8bn · 32.4%</span></div>
+        <div class="factrow"><span class="k">Long conventional</span><span class="v">£74.7bn · 29.6%</span></div>
+        <div class="factrow"><span class="k">Index-linked</span><span class="v">£23.4bn · 9.3%</span></div>
+        <div class="factrow"><span class="k">PSND / GDP</span><span class="v">93.1%</span></div>
+        <div class="factrow"><span class="k">Debt interest, FY</span><span class="v">£111.3bn</span></div>
+        <p class="hint" style="margin-top: 16px; margin-bottom: 0;">Long issuance cut back; index-linked stock still a sensitivity to inflation shocks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.section-head {
+  display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;
+  margin-bottom: 40px;
+}
+.pillar-score { display: flex; align-items: baseline; gap: 6px; font-family: var(--font-mono); }
+.pillar-score-num { font-size: 40px; font-weight: 500; color: var(--ink-0); font-variant-numeric: tabular-nums; }
+.pillar-score-sub { color: var(--ink-2); font-size: 14px; }
+.pillar-score-delta { margin-left: 12px; font-size: 12px; }
+.pillar-score-delta.up { color: var(--band-acute); }
+.pillar-score-delta.dn { color: var(--band-slack); }
+.pillar-score-delta.flat { color: var(--ink-2); }
+
+.fiscal-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; }
+
+@media (max-width: 920px) {
+  .fiscal-grid { grid-template-columns: 1fr; }
+  .section-head { grid-template-columns: 1fr; }
+}
+</style>

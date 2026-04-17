@@ -1,0 +1,109 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      skip_migrations:
+        description: "Skip D1 migrations"
+        required: false
+        default: "false"
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  migrate:
+    name: Apply D1 migrations
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.skip_migrations != 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - name: Apply migrations to production D1
+        run: pnpm db:migrate:remote
+
+  snapshot:
+    name: Publish nightly public snapshot
+    runs-on: ubuntu-latest
+    needs: [migrate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - name: Export current D1 snapshot to /data-snapshots
+        run: |
+          mkdir -p data-snapshots
+          cd apps/api
+          pnpm wrangler d1 export tightrope_db --remote --output=../../data-snapshots/$(date -u +%Y-%m-%d).sql
+      - uses: actions/upload-artifact@v4
+        with:
+          name: snapshot
+          path: data-snapshots/
+
+  deploy-api:
+    runs-on: ubuntu-latest
+    needs: [migrate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy API worker
+        run: pnpm --filter @tightrope/api deploy
+
+  deploy-og:
+    runs-on: ubuntu-latest
+    needs: [migrate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy OG worker
+        run: pnpm --filter @tightrope/og deploy
+
+  deploy-ingest:
+    runs-on: ubuntu-latest
+    needs: [migrate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy ingest worker
+        run: pnpm --filter @tightrope/ingest deploy
+
+  deploy-web:
+    runs-on: ubuntu-latest
+    needs: [deploy-api, deploy-og, deploy-ingest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - name: Build web app
+        run: pnpm --filter @tightrope/web build
+      - name: Deploy web to Cloudflare Pages
+        run: pnpm --filter @tightrope/web deploy

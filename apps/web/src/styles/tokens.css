@@ -1,0 +1,86 @@
+/* Tightrope Tracker design tokens -- matches the spec (6.3 Colour system) and mockups. */
+:root {
+  /* Background surfaces */
+  --bg-0: #0B0D10;
+  --bg-1: #12151A;
+  --bg-2: #1A1F27;
+  --bg-3: #232A34;
+
+  /* Borders */
+  --border: #262C36;
+  --border-soft: #1E242C;
+
+  /* Ink / text */
+  --ink-0: #F4F1EA;
+  --ink-1: #B8B2A7;
+  --ink-2: #7A7468;
+  --ink-3: #4A463F;
+
+  /* Brand accent */
+  --accent: #D4A24C;
+  --accent-dim: #8A6A30;
+
+  /* Score bands -- MUST mirror packages/shared bands.ts */
+  --band-slack: #5FB27C;
+  --band-steady: #4B9BB0;
+  --band-strain: #D4A24C;
+  --band-acute: #D97838;
+  --band-critical: #C84B3C;
+
+  /* Type */
+  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+
+  /* Radius + shadow */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.35);
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 80px;
+
+  /* Container */
+  --container-max: 1240px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 180ms;
+  --dur-med: 380ms;
+  --dur-slow: 900ms;
+}
+
+:root.light {
+  --bg-0: #F8F5EC;
+  --bg-1: #FFFEFB;
+  --bg-2: #F0ECDF;
+  --bg-3: #E5DFCD;
+  --border: #D8D1BD;
+  --border-soft: #E2DCCC;
+  --ink-0: #1A1812;
+  --ink-1: #4A443A;
+  --ink-2: #6E665A;
+  --ink-3: #9A9282;
+  --accent: #9A7624;
+  --accent-dim: #B68D37;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

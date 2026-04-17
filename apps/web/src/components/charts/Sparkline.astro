@@ -1,0 +1,37 @@
+---
+import { pathFromSeries } from "~/lib/format.js";
+
+interface Props {
+  series: readonly number[];
+  width?: number;
+  height?: number;
+  stroke?: string;
+  strokeWidth?: number;
+  ariaLabel?: string;
+  fill?: string;
+  className?: string;
+}
+
+const {
+  series,
+  width = 120,
+  height = 32,
+  stroke = "var(--accent)",
+  strokeWidth = 1.5,
+  ariaLabel,
+  fill = "none",
+  className,
+} = Astro.props;
+
+const safeSeries = series && series.length ? series : [0, 0];
+const d = pathFromSeries(safeSeries, width, height, 1);
+---
+<svg
+  viewBox={`0 0 ${width} ${height}`}
+  preserveAspectRatio="none"
+  aria-label={ariaLabel ?? "Sparkline of recent values"}
+  role="img"
+  class={className}
+>
+  <path d={d} stroke={stroke} stroke-width={strokeWidth} fill={fill} stroke-linecap="round" stroke-linejoin="round" />
+</svg>

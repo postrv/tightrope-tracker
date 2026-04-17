@@ -1,0 +1,71 @@
+---
+import type { TimelineEvent } from "@tightrope/shared/timeline";
+import { longDate } from "~/lib/format.js";
+
+interface Props {
+  events: TimelineEvent[];
+}
+
+const { events } = Astro.props;
+const todayIso = new Date().toISOString().slice(0, 10);
+---
+<section class="section" id="timeline" aria-labelledby="timeline-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Context</span>
+        <h2 class="sec-title" id="timeline-title" style="margin-top: 14px;">The events that moved the rope</h2>
+        <p class="section-sub">OBR forecast rounds, BoE decisions, Budget set-pieces, and the geopolitical shocks that landed in between. Pinned to primary sources.</p>
+      </div>
+    </div>
+
+    {events.length === 0 ? (
+      <p class="tl-empty">No events curated yet. The editorial review runs within 24 hours of each major fiscal, monetary or policy event.</p>
+    ) : (
+      <div class="timeline">
+        {events.map((e) => {
+          const isToday = e.date.slice(0, 10) === todayIso;
+          return (
+            <div class="tl-item">
+              <span class="date">{longDate(e.date)}{isToday ? " · Today" : ""}</span>
+              <h4>{e.title}</h4>
+              <p>{e.summary}</p>
+              {e.sourceUrl ? (
+                <a href={e.sourceUrl} class="src" rel="noopener" target="_blank">{e.sourceLabel} ↗</a>
+              ) : (
+                <span class="src">{e.sourceLabel}</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: ""; position: absolute; left: 6px; top: 0; bottom: 0;
+  width: 1px; background: linear-gradient(180deg, var(--accent-dim), transparent);
+}
+.tl-item { position: relative; padding: 0 0 30px 24px; }
+.tl-item::before {
+  content: ""; position: absolute; left: -28px; top: 6px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--bg-0); border: 2px solid var(--accent);
+}
+.tl-item .date { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.tl-item h4 { font-family: var(--font-serif); font-size: 19px; font-weight: 400; margin: 4px 0 6px; letter-spacing: -0.01em; }
+.tl-item p { margin: 0; color: var(--ink-1); font-size: 14px; line-height: 1.55; }
+.tl-item .src { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); margin-top: 8px; display: inline-block; }
+.tl-empty { color: var(--ink-2); font-family: var(--font-mono); font-size: 12px; padding: 40px 0; }
+
+.section-head {
+  display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;
+  margin-bottom: 40px;
+}
+@media (max-width: 920px) {
+  .section-head { grid-template-columns: 1fr; }
+}
+</style>

@@ -1,0 +1,54 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import TopNav from "~/components/TopNav.astro";
+import Hero from "~/components/Hero.astro";
+import PillarStrip from "~/components/PillarStrip.astro";
+import TodayStrip from "~/components/TodayStrip.astro";
+import MarketSection from "~/components/MarketSection.astro";
+import FiscalSection from "~/components/FiscalSection.astro";
+import LabourSection from "~/components/LabourSection.astro";
+import DeliverySection from "~/components/DeliverySection.astro";
+import Timeline from "~/components/Timeline.astro";
+import ShareGrid from "~/components/ShareGrid.astro";
+import ActionSection from "~/components/ActionSection.astro";
+import SiteFooter from "~/components/SiteFooter.astro";
+import { loadHomepageData } from "~/lib/page-data.js";
+
+const data = await loadHomepageData(Astro.locals);
+const { snapshot, movements, delivery, timeline, empty } = data;
+---
+<BaseLayout title="Tightrope Tracker — a live dashboard of UK economic constraint">
+  <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} />
+  <main id="main">
+    {empty ? (
+      <div class="stale-banner container" role="status">
+        Data loading — the first ingestion run hasn't completed. Some figures on this page are placeholders and will update automatically.
+      </div>
+    ) : null}
+
+    <Hero headline={snapshot.headline} />
+    <PillarStrip pillars={snapshot.pillars} />
+    <TodayStrip movements={movements} />
+    <MarketSection pillar={snapshot.pillars.market} movements={movements} />
+    <FiscalSection pillar={snapshot.pillars.fiscal} />
+    <LabourSection pillar={snapshot.pillars.labour} />
+    <DeliverySection commitments={delivery} pillar={snapshot.pillars.delivery} />
+    <Timeline events={timeline} />
+    <ShareGrid snapshot={snapshot} movements={movements} delivery={delivery} />
+    <ActionSection headline={snapshot.headline} />
+  </main>
+  <SiteFooter updatedAt={snapshot.headline.updatedAt} />
+</BaseLayout>
+
+<style>
+.stale-banner {
+  margin-top: 14px;
+  padding: 14px 22px;
+  border-left: 3px solid var(--accent-dim);
+  background: rgba(212, 162, 76, 0.06);
+  color: var(--ink-1);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border-radius: 0 8px 8px 0;
+}
+</style>

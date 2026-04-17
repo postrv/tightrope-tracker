@@ -1,0 +1,68 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Sparkline from "~/components/charts/Sparkline.astro";
+import { loadMovements } from "~/lib/page-data.js";
+
+const movements = await loadMovements(Astro.locals);
+const marketIds = ["gilt_10y", "gilt_30y", "gbp_usd", "ftse_250", "gas_m1", "sonia_12m"] as const;
+const cards = marketIds
+  .map((id) => movements.find((m) => m.indicatorId === id))
+  .filter((x): x is NonNullable<typeof x> => Boolean(x));
+---
+<BaseLayout title="Tightrope Tracker — market strip" embed>
+  <div class="embed-root">
+    <div class="head">
+      <span class="brand">Tightrope Tracker · Market</span>
+      <a class="credit" href="https://tightropetracker.uk" target="_blank" rel="noopener">tightropetracker.uk ↗</a>
+    </div>
+    <div class="grid">
+      {cards.map((m) => (
+        <div class="cell">
+          <span class="lab">{m.label}</span>
+          <span class="val">{m.displayValue}</span>
+          <span class={`chg ${m.worsening ? "up" : "dn"}`}>{m.changeDisplay}</span>
+          <Sparkline
+            series={m.sparkline && m.sparkline.length ? m.sparkline : [0, 0]}
+            stroke={m.worsening ? "var(--band-acute)" : "var(--band-slack)"}
+            width={100}
+            height={22}
+            ariaLabel={`${m.label} sparkline`}
+          />
+        </div>
+      ))}
+    </div>
+    {cards.length === 0 ? <p class="empty">Intraday feed is quiet — markets may be closed. Refresh at the top of the hour.</p> : null}
+  </div>
+</BaseLayout>
+
+<style is:global>
+html, body { background: transparent !important; }
+body { background-image: none !important; }
+</style>
+
+<style>
+.embed-root {
+  padding: 20px 24px;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: var(--font-sans);
+  color: var(--ink-0);
+}
+.head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+.brand { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-2); }
+.credit { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }
+.credit:hover { color: var(--accent); }
+.grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.cell { background: var(--bg-1); border: 1px solid var(--border-soft); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.lab { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
+.val { font-family: var(--font-mono); font-size: 16px; color: var(--ink-0); font-variant-numeric: tabular-nums; }
+.chg { font-family: var(--font-mono); font-size: 10.5px; }
+.chg.up { color: var(--band-acute); }
+.chg.dn { color: var(--band-slack); }
+.empty { color: var(--ink-2); font-family: var(--font-mono); font-size: 11px; padding-top: 10px; }
+
+@media (max-width: 640px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>

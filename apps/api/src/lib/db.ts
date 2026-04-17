@@ -1,0 +1,215 @@
+/**
+ * D1 query layer for the public API.
+ *
+ * Patterns are intentionally aligned with apps/web/src/lib/db.ts — but copied,
+ * not imported. The contract we care about is "same rows, same shapes". If the
+ * shared lifts ever diverge, it should be by design and with a contract note,
+ * not a silent import coupling.
+ */
+import type {
+  PillarId,
+  ScoreSnapshot,
+  PillarScore,
+  HeadlineScore,
+  ScoreHistory,
+  ScoreHistoryPoint,
+  DeliveryCommitment,
+  DeliveryStatus,
+  TimelineEvent,
+  TimelineCategory,
+  Trend,
+  Iso8601,
+} from "@tightrope/shared";
+import { PILLAR_ORDER, PILLARS, bandFor } from "@tightrope/shared";
+
+interface PillarLatestRow {
+  id: PillarId;
+  observed_at: string;
+  value: number;
+  band: string;
+}
+interface PillarSeriesRow {
+  id: PillarId;
+  observed_at: string;
+  value: number;
+}
+interface HeadlineRow {
+  observed_at: string;
+  value: number;
+  band: string;
+  dominant: string;
+  editorial: string;
+}
+
+export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
+  const db = env.DB;
+
+  const [headlineRow, headlineHistory, pillarsLatest, pillarHistory] = await Promise.all([
+    db.prepare(
+      "SELECT observed_at, value, band, dominant, editorial FROM headline_scores ORDER BY observed_at DESC LIMIT 1",
+    ).first<HeadlineRow>(),
+    db.prepare(
+      "SELECT observed_at, value FROM headline_scores ORDER BY observed_at DESC LIMIT 90",
+    ).all<{ observed_at: string; value: number }>(),
+    db.prepare(
+      `SELECT p.pillar_id AS id, p.observed_at, p.value, p.band
+       FROM pillar_scores p
+       JOIN (
+         SELECT pillar_id, MAX(observed_at) AS ts FROM pillar_scores GROUP BY pillar_id
+       ) m ON p.pillar_id = m.pillar_id AND p.observed_at = m.ts`,
+    ).all<PillarLatestRow>(),
+    db.prepare(
+      `SELECT pillar_id AS id, observed_at, value
+       FROM pillar_scores
+       WHERE observed_at >= datetime('now', '-30 days')
+       ORDER BY pillar_id, observed_at ASC`,
+    ).all<PillarSeriesRow>(),
+  ]);
+
+  const pillars = {} as Record<PillarId, PillarScore>;
+  for (const p of PILLAR_ORDER) {
+    const latest = pillarsLatest.results.find((r) => r.id === p);
+    const series = pillarHistory.results.filter((r) => r.id === p).map((r) => r.value);
+    const value = latest?.value ?? 0;
+    const sevenDaysAgo = series.at(-7) ?? value;
+    const delta = value - sevenDaysAgo;
+    const trend: Trend = Math.abs(delta) < 0.5 ? "flat" : delta > 0 ? "up" : "down";
+    pillars[p] = {
+      pillar: p,
+      value,
+      band: (latest?.band as PillarScore["band"]) ?? bandFor(value).id,
+      weight: PILLARS[p].weight,
+      contributions: [],
+      trend7d: trend,
+      delta7d: round1(delta),
+      sparkline30d: series,
+    };
+  }
+
+  const hValue = headlineRow?.value ?? 0;
+  const hSeries = headlineHistory.results.map((r) => r.value).reverse();
+  // If the headline row is missing we stamp updatedAt at the unix epoch so
+  // callers can distinguish an empty-seed placeholder from a real read. See
+  // looksUnseeded() in ../handlers/score.ts.
+  const EPOCH_ISO = "1970-01-01T00:00:00.000Z";
+  const headline: HeadlineScore = {
+    value: hValue,
+    band: (headlineRow?.band as HeadlineScore["band"]) ?? bandFor(hValue).id,
+    editorial: headlineRow?.editorial ?? "",
+    updatedAt: (headlineRow?.observed_at as Iso8601) ?? (EPOCH_ISO as Iso8601),
+    dominantPillar: (headlineRow?.dominant as PillarId) ?? "market",
+    sparkline90d: hSeries,
+    delta24h: deltaAgo(hSeries, 1),
+    delta30d: deltaAgo(hSeries, 30),
+    deltaYtd: deltaAgo(hSeries, Math.max(0, hSeries.length - 1)),
+  };
+
+  return { headline, pillars, schemaVersion: 1 };
+}
+
+export async function buildHistoryFromD1(env: Env, days: number): Promise<ScoreHistory> {
+  const clampedDays = Math.max(1, Math.min(365, Math.floor(days)));
+
+  const [headlineRows, pillarRows] = await Promise.all([
+    env.DB.prepare(
+      `SELECT observed_at, value FROM headline_scores
+       WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
+       ORDER BY observed_at ASC`,
+    ).bind(clampedDays).all<{ observed_at: string; value: number }>(),
+    env.DB.prepare(
+      `SELECT pillar_id AS id, observed_at, value FROM pillar_scores
+       WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
+       ORDER BY observed_at ASC`,
+    ).bind(clampedDays).all<PillarSeriesRow>(),
+  ]);
+
+  // Index pillar rows by timestamp.
+  const pillarsByTs = new Map<string, Partial<Record<PillarId, number>>>();
+  for (const r of pillarRows.results) {
+    const bucket = pillarsByTs.get(r.observed_at) ?? {};
+    bucket[r.id] = r.value;
+    pillarsByTs.set(r.observed_at, bucket);
+  }
+
+  const points: ScoreHistoryPoint[] = headlineRows.results.map((r) => {
+    const pbucket = pillarsByTs.get(r.observed_at) ?? {};
+    const pillars = {} as Record<PillarId, number>;
+    for (const p of PILLAR_ORDER) pillars[p] = pbucket[p] ?? 0;
+    return { timestamp: r.observed_at as Iso8601, headline: r.value, pillars };
+  });
+
+  return { points, rangeDays: clampedDays, schemaVersion: 1 };
+}
+
+export async function getDeliveryCommitments(env: Env): Promise<DeliveryCommitment[]> {
+  const res = await env.DB.prepare(
+    `SELECT id, name, department, latest, target, status, source_url, source_label, updated_at, notes
+     FROM delivery_commitments
+     ORDER BY sort_order ASC, name ASC`,
+  ).all<{
+    id: string; name: string; department: string; latest: string;
+    target: string; status: string; source_url: string; source_label: string;
+    updated_at: string; notes: string | null;
+  }>();
+  return res.results.map((r) => ({
+    id: r.id,
+    name: r.name,
+    department: r.department,
+    latest: r.latest,
+    target: r.target,
+    status: r.status as DeliveryStatus,
+    sourceUrl: r.source_url,
+    sourceLabel: r.source_label,
+    updatedAt: r.updated_at,
+    ...(r.notes ? { notes: r.notes } : {}),
+  }));
+}
+
+export async function getTimelineEvents(env: Env, limit: number): Promise<TimelineEvent[]> {
+  const clamped = Math.max(1, Math.min(200, Math.floor(limit)));
+  const res = await env.DB.prepare(
+    `SELECT id, event_date, title, summary, category, source_label, source_url, score_delta
+     FROM timeline_events ORDER BY event_date DESC LIMIT ?`,
+  ).bind(clamped).all<{
+    id: string; event_date: string; title: string; summary: string; category: string;
+    source_label: string; source_url: string | null; score_delta: number | null;
+  }>();
+  return res.results.map((r) => ({
+    id: r.id,
+    date: r.event_date,
+    title: r.title,
+    summary: r.summary,
+    category: r.category as TimelineCategory,
+    sourceLabel: r.source_label,
+    ...(r.source_url ? { sourceUrl: r.source_url } : {}),
+    ...(r.score_delta !== null ? { scoreDelta: r.score_delta } : {}),
+  }));
+}
+
+export async function getLastIngestionAudit(
+  env: Env,
+): Promise<Record<string, string>> {
+  const res = await env.DB.prepare(
+    `SELECT i.source_id, i.started_at, i.status FROM ingestion_audit i
+     JOIN (
+       SELECT source_id, MAX(started_at) AS ts FROM ingestion_audit
+       WHERE status = 'success' GROUP BY source_id
+     ) m ON i.source_id = m.source_id AND i.started_at = m.ts`,
+  ).all<{ source_id: string; started_at: string; status: string }>();
+  const map: Record<string, string> = {};
+  for (const r of res.results) map[r.source_id] = r.started_at;
+  return map;
+}
+
+// --- helpers ---------------------------------------------------------------
+
+function deltaAgo(series: readonly number[], n: number): number {
+  if (series.length < 2) return 0;
+  const now = series.at(-1) ?? 0;
+  const then = series.at(Math.max(0, series.length - 1 - n)) ?? now;
+  return round1(now - then);
+}
+
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}

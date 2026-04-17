@@ -1,0 +1,124 @@
+---
+import type { PillarScore, PillarId } from "@tightrope/shared";
+import { PILLAR_ORDER, PILLARS, BANDS } from "@tightrope/shared";
+import Sparkline from "./charts/Sparkline.astro";
+import { signedDelta, trendArrow } from "~/lib/format.js";
+
+interface Props {
+  pillars: Record<PillarId, PillarScore>;
+}
+
+const { pillars } = Astro.props;
+
+/** Per-pillar one-liner summary; real copy would come from editorial ops. */
+const DESCRIPTIONS: Record<PillarId, string> = {
+  market: "Gilt yields, sterling, gas and SONIA — the daily market read on constraint.",
+  fiscal: "Headroom against the stability rule and the trajectory of public borrowing.",
+  labour: "Inactivity, vacancies, real pay and mortgage rates — the household-level strain.",
+  delivery: "Housing, planning, industrial strategy and infrastructure milestones.",
+};
+
+function bandColour(band: string): string {
+  const b = BANDS.find((x) => x.id === band);
+  return b ? `var(${b.colourToken})` : "var(--accent)";
+}
+
+function pillarHref(id: PillarId): string {
+  return `#${id}`;
+}
+---
+<section class="pillars" aria-labelledby="pillars-title">
+  <div class="container">
+    <div class="pillars-head">
+      <h2 id="pillars-title">Four pillars, one score</h2>
+      <span class="note">Geometric mean · weights on each tile</span>
+    </div>
+
+    <div class="pillars-grid">
+      {PILLAR_ORDER.map((id) => {
+        const p = pillars[id];
+        const def = PILLARS[id];
+        const weightPct = Math.round(def.weight * 100);
+        const delta = p.delta7d;
+        const trendCls = p.trend7d === "up" ? "up" : p.trend7d === "down" ? "dn" : "flat";
+        const stroke = bandColour(p.band);
+        return (
+          <a href={pillarHref(id)} class="pillar" aria-label={`${def.title}: ${Math.round(p.value)} — see full section`}>
+            <span class="pillar-weight">{weightPct}%</span>
+            <span class="pillar-name">{def.title}</span>
+            <div class="pillar-value-row">
+              <span class="pillar-value">{Math.round(p.value)}</span>
+              <span class={`pillar-trend ${trendCls}`}>
+                {p.trend7d === "flat" ? "— flat" : `${trendArrow(delta)} ${signedDelta(Math.abs(delta), 1)}`} / 7d
+              </span>
+              {p.stale ? <span class="pillar-stale" title="Fewer than a quorum of indicators have a fresh reading; value is a last-known carry.">stale</span> : null}
+            </div>
+            <Sparkline
+              series={p.sparkline30d && p.sparkline30d.length ? p.sparkline30d : [50, 50]}
+              stroke={stroke}
+              strokeWidth={1.5}
+              width={120}
+              height={32}
+              className="pillar-spark"
+              ariaLabel={`30-day trend for ${def.title}`}
+            />
+            <span class="pillar-desc">{DESCRIPTIONS[id]}</span>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+</section>
+
+<style>
+.pillars { padding: 48px 0 64px; }
+.pillars-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; gap: 20px; flex-wrap: wrap; }
+.pillars-head h2 {
+  font-family: var(--font-serif); font-weight: 400; font-size: 13px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--ink-2); margin: 0;
+}
+.pillars-head .note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); }
+.pillars-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 10px; overflow: hidden; }
+.pillar {
+  background: var(--bg-1);
+  padding: 22px 22px 20px;
+  display: flex; flex-direction: column; gap: 14px;
+  transition: background 180ms;
+  cursor: pointer;
+  min-height: 170px;
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+}
+.pillar:hover { background: var(--bg-2); color: inherit; }
+.pillar::after {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--accent);
+  opacity: 0; transition: opacity 180ms;
+}
+.pillar:hover::after { opacity: 1; }
+.pillar:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.pillar-name {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-2);
+}
+.pillar-value-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.pillar-value { font-family: var(--font-mono); font-size: 40px; font-weight: 500; letter-spacing: -0.03em; line-height: 1; color: var(--ink-0); font-variant-numeric: tabular-nums; }
+.pillar-trend { font-family: var(--font-mono); font-size: 12px; }
+.pillar-trend.up { color: var(--band-acute); }
+.pillar-trend.dn { color: var(--band-slack); }
+.pillar-trend.flat { color: var(--ink-2); }
+.pillar-stale {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px;
+  border: 1px dashed var(--ink-2); color: var(--ink-2);
+}
+.pillar-spark { height: 32px; margin-top: 2px; }
+.pillar-desc { font-size: 12.5px; color: var(--ink-1); line-height: 1.5; }
+.pillar-weight { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: 0.08em; text-transform: uppercase; position: absolute; top: 18px; right: 20px; }
+
+@media (max-width: 920px) {
+  .pillars-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>

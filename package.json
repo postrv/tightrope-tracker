@@ -1,0 +1,41 @@
+{
+  "name": "tightrope",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Tightrope Tracker — a live, transparent accountability dashboard mapping the real constraints on the UK government's growth agenda.",
+  "license": "MIT",
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" build && pnpm -r --filter \"./apps/*\" build",
+    "dev": "pnpm --filter @tightrope/web dev",
+    "dev:api": "pnpm --filter @tightrope/api dev",
+    "dev:og": "pnpm --filter @tightrope/og dev",
+    "dev:ingest": "pnpm --filter @tightrope/ingest dev",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "db:migrate:local": "cd apps/api && wrangler d1 migrations apply tightrope_db --local --persist-to=../../.wrangler/state",
+    "db:migrate:remote": "cd apps/api && wrangler d1 migrations apply tightrope_db --remote",
+    "db:seed:local": "cd apps/api && wrangler d1 execute tightrope_db --local --file=../../db/seed/seed.sql --persist-to=../../.wrangler/state",
+    "db:seed:remote": "cd apps/api && wrangler d1 execute tightrope_db --remote --file=../../db/seed/seed.sql",
+    "db:query:local": "cd apps/api && wrangler d1 execute tightrope_db --local --persist-to=../../.wrangler/state --command",
+    "deploy": "pnpm build && pnpm --filter \"./apps/*\" deploy",
+    "clean": "pnpm -r exec -- rm -rf dist .astro .wrangler node_modules/.cache"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "wrangler": "^4.69.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "workerd"
+    ]
+  }
+}

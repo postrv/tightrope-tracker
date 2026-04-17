@@ -1,0 +1,9 @@
+{
+  "_comment": "Brent crude (Europe Brent Spot Price FOB) converted to GBP. The USD series is sourced from the EIA daily table at https://www.eia.gov/dnav/pet/hist/rbrted.htm -- EIA data is US federal public-domain. The GBP/USD spot used for the conversion is the BoE 4pm daily fix (XUDLUSS). Refreshed weekly by the editorial pipeline. TODO(source): replace with a live EIA Open Data API call once the ingest runtime supports XLS parsing, or subscribe to a commodity-price API.",
+  "as_of": "2026-04-17",
+  "observed_at": "2026-04-17T00:00:00Z",
+  "brent_usd_per_bbl": 83.12,
+  "gbp_usd": 1.266,
+  "brent_gbp": { "value": 65.65, "unit": "GBP/bbl" },
+  "source_url": "https://www.eia.gov/dnav/pet/hist/rbrted.htm"
+}

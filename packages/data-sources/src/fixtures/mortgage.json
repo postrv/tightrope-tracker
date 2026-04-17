@@ -1,0 +1,6 @@
+{
+  "_comment": "Moneyfacts UK monthly mortgage rate averages. Moneyfacts publishes these as press releases (no free API). Curate monthly. TODO(source): https://moneyfacts.co.uk -- investigate bulk download.",
+  "observed_at": "2026-04-01T00:00:00Z",
+  "mortgage_2y_fix": { "value": 5.14, "unit": "%" },
+  "source_url": "https://moneyfacts.co.uk/news/mortgages/"
+}

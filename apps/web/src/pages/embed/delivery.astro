@@ -1,0 +1,67 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import { loadDelivery } from "~/lib/page-data.js";
+import { DELIVERY_STATUS_LABEL } from "@tightrope/shared/delivery";
+
+const delivery = await loadDelivery(Astro.locals);
+
+function statusClass(status: string): string {
+  switch (status) {
+    case "on_track": return "ontrack";
+    case "slipping": return "slip";
+    case "missed": return "missed";
+    case "shipped": return "shipped";
+    default: return "slip";
+  }
+}
+---
+<BaseLayout title="Tightrope Tracker — delivery scorecard" embed>
+  <div class="embed-root">
+    <div class="head">
+      <span class="brand">Tightrope Tracker · Growth delivery</span>
+      <a class="credit" href="https://tightropetracker.uk" target="_blank" rel="noopener">tightropetracker.uk ↗</a>
+    </div>
+    {delivery.length === 0 ? (
+      <p class="empty">Delivery scorecard is populated on the first editorial review.</p>
+    ) : (
+      <div class="rows">
+        {delivery.map((c) => (
+          <div class="row">
+            <div class="name">{c.name}</div>
+            <span class={`dot ${statusClass(c.status)}`}>{DELIVERY_STATUS_LABEL[c.status]}</span>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<style is:global>
+html, body { background: transparent !important; }
+body { background-image: none !important; }
+</style>
+
+<style>
+.embed-root {
+  padding: 18px 22px;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: var(--font-sans);
+  color: var(--ink-0);
+}
+.head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+.brand { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-2); }
+.credit { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }
+.credit:hover { color: var(--accent); }
+.rows { display: flex; flex-direction: column; gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 8px; overflow: hidden; }
+.row { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 12px 16px; background: var(--bg-1); align-items: center; }
+.name { font-family: var(--font-serif); font-size: 14px; color: var(--ink-0); }
+.dot { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+.dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+.dot.ontrack  { color: var(--band-slack); }    .dot.ontrack::before  { background: var(--band-slack); }
+.dot.slip     { color: var(--band-strain); }   .dot.slip::before     { background: var(--band-strain); }
+.dot.missed   { color: var(--band-critical); } .dot.missed::before   { background: var(--band-critical); }
+.dot.shipped  { color: var(--band-steady); }   .dot.shipped::before  { background: var(--band-steady); }
+.empty { color: var(--ink-2); font-family: var(--font-mono); font-size: 11px; padding: 20px 0; }
+</style>

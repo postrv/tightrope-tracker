@@ -1,0 +1,83 @@
+---
+import "~/styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  canonicalPath?: string;
+  /** Kept for API compatibility; CSP now lives in _headers, per-route. */
+  embed?: boolean;
+}
+
+const {
+  title,
+  description = "A live, transparent accountability dashboard mapping the real constraints on the UK government's growth agenda.",
+  ogImage = "/og/headline-score.png",
+  canonicalPath,
+  embed = false,
+} = Astro.props;
+
+// Content Security Policy is served via HTTP response headers (see
+// apps/web/public/_headers). `frame-ancestors` in a <meta> tag is silently
+// ignored by browsers, so it must live on the response. Per-route rules
+// (embed vs. non-embed) are handled there too. `embed` is kept as a prop
+// for backwards compatibility with callers and to suppress Plausible below.
+
+const canonical = canonicalPath
+  ? new URL(canonicalPath, Astro.site ?? "https://tightropetracker.uk").toString()
+  : Astro.url.toString();
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(ogImage, Astro.site ?? "https://tightropetracker.uk").toString()} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@tightropetracker" />
+    <meta name="twitter:image" content={new URL(ogImage, Astro.site ?? "https://tightropetracker.uk").toString()} />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..800,0..100&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#0B0D10" />
+
+    {embed ? null : (
+      <script
+        defer
+        is:inline
+        data-domain="tightropetracker.uk"
+        src="https://plausible.io/js/script.js"
+      ></script>
+    )}
+  </head>
+  <body>
+    <a href="#main" class="visually-hidden">Skip to content</a>
+    <slot />
+  </body>
+</html>
+
+<script is:inline>
+  // Default to dark mode; allow user override via localStorage.
+  try {
+    const pref = localStorage.getItem("tightrope-theme");
+    if (pref === "light") document.documentElement.classList.add("light");
+  } catch (e) { /* ignore */ }
+</script>

@@ -1,0 +1,199 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import TopNav from "~/components/TopNav.astro";
+import SiteFooter from "~/components/SiteFooter.astro";
+import {
+  PILLAR_ORDER,
+  PILLARS,
+  indicatorsForPillar,
+  SOURCES,
+  BASELINE_START_ISO,
+  COVID_EXCLUDE_START_ISO,
+  COVID_EXCLUDE_END_ISO,
+} from "@tightrope/shared";
+import { loadIngestionAudit, loadSnapshot } from "~/lib/page-data.js";
+import { shortDate } from "~/lib/format.js";
+
+const audit = await loadIngestionAudit(Astro.locals);
+const snapshot = await loadSnapshot(Astro.locals);
+
+// Build an illustrative ECDF example: z-scores spread over a bell curve.
+const ecdfPoints = Array.from({ length: 40 }, (_, i) => {
+  const z = -3 + (i / 39) * 6; // -3 to +3
+  // standard normal CDF approximation
+  const cdf = 0.5 * (1 + Math.tanh(Math.sqrt(Math.PI / 2) * (z + 0.044715 * z ** 3) / Math.sqrt(2)));
+  return { z, cdf };
+});
+
+function ecdfPath(): string {
+  const w = 520, h = 180, padL = 40, padR = 20, padT = 20, padB = 30;
+  const plotW = w - padL - padR, plotH = h - padT - padB;
+  return ecdfPoints.map((p, i) => {
+    const x = padL + ((p.z + 3) / 6) * plotW;
+    const y = padT + (1 - p.cdf) * plotH;
+    return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
+  }).join(" ");
+}
+---
+<BaseLayout title="Methodology — Tightrope Tracker" canonicalPath="/methodology">
+  <TopNav compact band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} />
+  <main id="main" class="container methodology">
+    <header class="page-head">
+      <span class="eyebrow">Transparency</span>
+      <h1>Methodology</h1>
+      <p class="lede">Every weight, every input, every transformation. Copy this page to your own spreadsheet and reconcile the numbers — that is the whole point.</p>
+    </header>
+
+    <section class="block">
+      <h2>How the score is built</h2>
+      <ol class="ordered">
+        <li><strong>Collect.</strong> Each indicator is pulled from a named public source on a defined cadence (see the table per pillar).</li>
+        <li><strong>Normalise.</strong> We compute a z-score for each indicator against a rolling baseline starting <code>{BASELINE_START_ISO.slice(0, 10)}</code>, excluding the COVID shock window <code>{COVID_EXCLUDE_START_ISO.slice(0, 10)}</code>–<code>{COVID_EXCLUDE_END_ISO.slice(0, 10)}</code>.</li>
+        <li><strong>Direct.</strong> Where a rising raw value is <em>good</em> (e.g. real pay, FTSE 250), we flip the sign before normalisation.</li>
+        <li><strong>Bound to [0, 100].</strong> We pass the z-score through an empirical cumulative distribution function (ECDF) over the same baseline. The chart below illustrates the mapping: a z of +2 maps to roughly 98, a z of 0 maps to 50.</li>
+        <li><strong>Pillar score.</strong> Weighted arithmetic mean of the pillar's indicators. Arithmetic at the pillar level means individual inputs are additive and debuggable.</li>
+        <li><strong>Headline Tightrope Score.</strong> Weighted <em>geometric</em> mean of the four pillar scores. Geometric at the headline level means one pillar blowing out (e.g. a gilt shock) pulls the headline hard — the correct behaviour for a systemic-stress metric.</li>
+      </ol>
+
+      <div class="ecdf-demo">
+        <h3>ECDF — the z → [0, 100] mapping</h3>
+        <svg viewBox="0 0 520 180" preserveAspectRatio="none" role="img" aria-label="ECDF mapping z-score to percentile">
+          <g stroke="var(--border-soft)" stroke-width="1">
+            <line x1="40" y1="20" x2="500" y2="20"/>
+            <line x1="40" y1="80" x2="500" y2="80"/>
+            <line x1="40" y1="150" x2="500" y2="150"/>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="10" fill="var(--ink-2)">
+            <text x="32" y="24" text-anchor="end">100</text>
+            <text x="32" y="84" text-anchor="end">50</text>
+            <text x="32" y="154" text-anchor="end">0</text>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="10" fill="var(--ink-2)">
+            <text x="40" y="170">-3</text>
+            <text x="270" y="170" text-anchor="middle">0</text>
+            <text x="500" y="170" text-anchor="end">+3</text>
+          </g>
+          <path d={ecdfPath()} stroke="var(--accent)" stroke-width="1.6" fill="none"/>
+        </svg>
+        <p class="caption">Percentile of standard-normal CDF on the y-axis, z-score on the x-axis. We use the empirical (not normal) CDF in production — this figure is illustrative.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Inputs, weights and sources by pillar</h2>
+      {PILLAR_ORDER.map((p) => {
+        const def = PILLARS[p];
+        const inds = indicatorsForPillar(p);
+        const weightPct = Math.round(def.weight * 100);
+        return (
+          <div class="pillar-block">
+            <h3>{def.title} <span class="pillar-weight">{weightPct}% of headline</span></h3>
+            <p class="pillar-blurb">{def.blurb} — cadence <code>{def.cadence}</code>{def.inverted ? " · inverted (higher raw delivery = lower pressure)" : ""}.</p>
+            <table class="inputs">
+              <thead>
+                <tr>
+                  <th>Indicator</th>
+                  <th>Weight</th>
+                  <th>Unit</th>
+                  <th>Direction</th>
+                  <th>Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inds.map((i) => {
+                  const src = SOURCES[i.sourceId];
+                  return (
+                    <tr>
+                      <td>
+                        <div class="ind-name">{i.label}</div>
+                        <div class="ind-desc">{i.description}</div>
+                      </td>
+                      <td class="mono">{(i.weight * 100).toFixed(0)}%</td>
+                      <td class="mono">{i.unit}</td>
+                      <td>{i.risingIsBad ? "Rising = worse" : "Rising = better"}</td>
+                      <td>{src ? (<a href={src.homepage} rel="noopener" target="_blank">{src.name} ↗</a>) : i.sourceId}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        );
+      })}
+    </section>
+
+    <section class="block">
+      <h2>Last successful ingestion per source</h2>
+      {audit.length === 0 ? (
+        <p class="muted">No ingestion audit rows yet. On first boot this table will populate within minutes.</p>
+      ) : (
+        <table class="inputs">
+          <thead><tr><th>Source</th><th>Last run</th><th>Status</th></tr></thead>
+          <tbody>
+            {audit.map((row) => (
+              <tr>
+                <td>{SOURCES[row.sourceId]?.name ?? row.sourceId}</td>
+                <td class="mono">{shortDate(row.startedAt)}</td>
+                <td class={row.status === "success" ? "ok" : row.status === "failure" ? "bad" : "warn"}>{row.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+
+    <section class="block">
+      <h2>Open questions &amp; known limitations</h2>
+      <ul class="bullets">
+        <li>The baseline window excludes 2020 Q2 but retains the 2021–22 energy shock period. Changing the baseline requires a versioned methodology update — no silent rebaselining.</li>
+        <li>Intra-pillar weights sum to 1 per pillar; they are normalised at scoring time even if the raw <code>weight</code> values in <code>INDICATORS</code> don't sum to exactly 1 (they are target weights).</li>
+        <li>Delivery is <em>inverted</em>: we flip the raw progress reading before combining with the other pillars so that every pillar score reads "higher = more pressure".</li>
+        <li>The geometric mean at the headline level cannot handle a zero input. In practice no pillar score reaches 0 — if it did, we would floor it at 1 for aggregation and publish the floor.</li>
+      </ul>
+    </section>
+
+    <section class="block">
+      <h2>Corrections, source code, snapshots</h2>
+      <p>Every correction to a published number appears in the <a href="/corrections">corrections log</a>, dated, with the original and revised values and the reason. The source code for the scoring library is MIT-licensed on GitHub, and the nightly snapshot of the D1 database is committed publicly — if you believe a number on this site is wrong, you can verify it end-to-end.</p>
+    </section>
+  </main>
+  <SiteFooter updatedAt={snapshot.headline.updatedAt} />
+</BaseLayout>
+
+<style>
+.methodology { padding: 80px 0; max-width: 920px; }
+.page-head { margin-bottom: 56px; }
+.page-head h1 { font-family: var(--font-serif); font-weight: 350; font-size: clamp(36px, 5vw, 56px); letter-spacing: -0.02em; margin: 16px 0 16px; }
+.page-head .lede { font-size: 17px; color: var(--ink-1); max-width: 640px; line-height: 1.6; }
+
+.block { padding: 48px 0; border-top: 1px solid var(--border-soft); }
+.block h2 { font-family: var(--font-serif); font-size: 26px; font-weight: 400; letter-spacing: -0.01em; margin: 0 0 20px; }
+.block h3 { font-family: var(--font-serif); font-size: 20px; font-weight: 400; margin: 0 0 4px; }
+
+.ordered { padding-left: 22px; font-size: 15px; line-height: 1.7; color: var(--ink-1); }
+.ordered li { margin-bottom: 10px; }
+.ordered li strong { color: var(--ink-0); font-family: var(--font-serif); font-weight: 400; }
+.bullets { padding-left: 22px; font-size: 15px; line-height: 1.7; color: var(--ink-1); }
+
+code { font-family: var(--font-mono); font-size: 12.5px; color: var(--accent); background: rgba(212, 162, 76, 0.08); padding: 1px 6px; border-radius: 3px; }
+
+.ecdf-demo { margin-top: 32px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.ecdf-demo svg { width: 100%; height: 180px; display: block; }
+.ecdf-demo .caption { margin: 10px 0 0; color: var(--ink-2); font-size: 12.5px; }
+
+.pillar-block { margin: 32px 0 20px; }
+.pillar-weight { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); letter-spacing: 0.1em; margin-left: 10px; }
+.pillar-blurb { color: var(--ink-1); font-size: 14px; margin: 4px 0 16px; }
+
+table.inputs { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 8px; }
+table.inputs th { text-align: left; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); padding: 8px 12px; border-bottom: 1px solid var(--border); }
+table.inputs td { padding: 14px 12px; border-bottom: 1px solid var(--border-soft); vertical-align: top; color: var(--ink-1); }
+table.inputs td.mono, table.inputs td .mono { font-family: var(--font-mono); color: var(--ink-0); }
+.ind-name { font-family: var(--font-serif); color: var(--ink-0); font-size: 15px; }
+.ind-desc { color: var(--ink-2); font-size: 12.5px; margin-top: 3px; }
+table.inputs td.ok { color: var(--band-slack); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; }
+table.inputs td.bad { color: var(--band-critical); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; }
+table.inputs td.warn { color: var(--band-strain); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; }
+
+.muted { color: var(--ink-2); font-size: 13px; }
+</style>

@@ -1,0 +1,37 @@
+name = "tightrope-og"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Bundle the resvg wasm blob as a WebAssembly module. Satori has no native
+# dependency; resvg does, and we import its wasm from node_modules.
+rules = [
+  { type = "CompiledWasm", globs = ["**/*.wasm"], fallthrough = true },
+]
+
+# Share-card image generation. Mounted at og.tightropetracker.uk.
+routes = [
+  { pattern = "og.tightropetracker.uk/*", zone_name = "tightropetracker.uk" }
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tightrope_db"
+database_id = "REPLACE_WITH_PROD_D1_ID"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_PROD_KV_ID"
+
+[[r2_buckets]]
+binding = "FONTS"
+bucket_name = "tightrope-fonts"
+
+[vars]
+ENVIRONMENT = "production"
+
+[observability]
+enabled = true
+
+[placement]
+mode = "smart"

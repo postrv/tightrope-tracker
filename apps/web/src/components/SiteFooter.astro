@@ -1,0 +1,70 @@
+---
+import { bstTimestamp } from "~/lib/format.js";
+
+interface Props {
+  updatedAt?: string;
+}
+
+const { updatedAt } = Astro.props;
+const ts = updatedAt ? bstTimestamp(updatedAt) : bstTimestamp(new Date());
+---
+<footer class="site">
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-col">
+        <h4>About</h4>
+        <p class="foot-about"><strong>Tightrope Tracker</strong> is an independent civic data project. Not affiliated with any political party, think tank, or government body. All data is public and verifiable. Built by citizens who believe sunlight is the best disinfectant.</p>
+      </div>
+      <div class="foot-col">
+        <h4>The score</h4>
+        <ul>
+          <li><a href="/methodology">Methodology</a></li>
+          <li><a href="/#market">Market Pressure</a></li>
+          <li><a href="/#fiscal">Fiscal Constraint</a></li>
+          <li><a href="/#labour">Labour &amp; Living</a></li>
+          <li><a href="/#delivery">Growth Delivery</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Use the data</h4>
+        <ul>
+          <li><a href="/api/v1/score">Public API</a></li>
+          <li><a href="/#action">Embed widgets</a></li>
+          <li><a href="/corrections">Corrections log</a></li>
+          <li><a href="/sources">Sources</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Sources</h4>
+        <ul>
+          <li><a href="https://obr.uk" rel="noopener" target="_blank">OBR</a></li>
+          <li><a href="https://ons.gov.uk" rel="noopener" target="_blank">ONS</a></li>
+          <li><a href="https://bankofengland.co.uk" rel="noopener" target="_blank">Bank of England</a></li>
+          <li><a href="https://dmo.gov.uk" rel="noopener" target="_blank">Debt Management Office</a></li>
+          <li><a href="https://ifs.org.uk" rel="noopener" target="_blank">Institute for Fiscal Studies</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Tightrope Tracker · MIT-licensed · source on <a href="https://github.com/" rel="noopener" target="_blank">GitHub</a></span>
+      <span>Last data refresh: <span class="refresh-ts">{ts}</span></span>
+    </div>
+  </div>
+</footer>
+
+<style>
+footer.site { padding: 48px 0 64px; color: var(--ink-2); font-size: 12.5px; }
+footer.site a { color: var(--ink-1); }
+footer.site a:hover { color: var(--accent); }
+.foot-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 36px; }
+.foot-col h4 { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 14px; font-weight: 500; }
+.foot-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 9px; font-size: 13px; }
+.foot-about { font-size: 13px; line-height: 1.6; max-width: 380px; }
+.foot-about strong { color: var(--ink-0); font-family: var(--font-serif); font-weight: 400; }
+.foot-bottom { border-top: 1px solid var(--border-soft); padding-top: 20px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.refresh-ts { font-family: var(--font-mono); color: var(--ink-1); }
+
+@media (max-width: 920px) {
+  .foot-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+}
+</style>

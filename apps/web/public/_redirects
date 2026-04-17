@@ -1,0 +1,6 @@
+# Proxy OG share-card requests to the dedicated og.tightropetracker.uk Worker.
+# Social scrapers (Twitter, Facebook, Slack, etc.) resolve the og:image URL on
+# the page's origin. Without this rewrite, unfurls would 404 because the OG
+# Worker lives on a different subdomain. A 200 status (rewrite, not redirect)
+# keeps the URL stable for consumers while fetching bytes from the Worker.
+/og/*  https://og.tightropetracker.uk/:splat  200

@@ -1,0 +1,134 @@
+/**
+ * Zero-dependency URL router for the public API.
+ *
+ * Pattern syntax: plain string paths only (no param captures yet). We match on
+ * exact pathname + method. Query strings are stripped by the matcher and read
+ * by handlers off the Request URL. That is all the router has to do.
+ */
+
+export type Method = "GET" | "OPTIONS" | "HEAD";
+
+export type Handler = (
+  req: Request,
+  env: Env,
+  ctx: ExecutionContext,
+) => Response | Promise<Response>;
+
+interface Route {
+  method: Method;
+  path: string;
+  handler: Handler;
+}
+
+export class Router {
+  private readonly routes: Route[] = [];
+  private notFoundHandler: Handler = () => json({ error: "not_found", code: "NOT_FOUND" }, 404);
+  private fallbackOptionsPaths: Set<string> = new Set();
+
+  get(path: string, handler: Handler): this {
+    this.routes.push({ method: "GET", path, handler });
+    this.fallbackOptionsPaths.add(path);
+    return this;
+  }
+
+  options(path: string, handler: Handler): this {
+    this.routes.push({ method: "OPTIONS", path, handler });
+    return this;
+  }
+
+  notFound(handler: Handler): this {
+    this.notFoundHandler = handler;
+    return this;
+  }
+
+  /**
+   * Returns the handler for the given request, or null if no route matches.
+   * Exposed for testing.
+   */
+  match(method: string, pathname: string): Handler | null {
+    for (const route of this.routes) {
+      if (route.method === method && route.path === pathname) return route.handler;
+    }
+    return null;
+  }
+
+  /** Every GET path also responds to OPTIONS for CORS preflight. */
+  hasOptions(pathname: string): boolean {
+    return this.fallbackOptionsPaths.has(pathname);
+  }
+
+  async handle(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(req.url);
+    const method = req.method.toUpperCase();
+
+    const direct = this.match(method, url.pathname);
+    if (direct) return direct(req, env, ctx);
+
+    // CORS preflight for any registered GET path.
+    if (method === "OPTIONS" && this.hasOptions(url.pathname)) {
+      // Note: handlers can override by registering an OPTIONS route explicitly.
+      const optionsRoute = this.match("OPTIONS", url.pathname);
+      if (optionsRoute) return optionsRoute(req, env, ctx);
+      return preflight();
+    }
+
+    // Method not allowed on an existing path.
+    if (this.fallbackOptionsPaths.has(url.pathname)) {
+      return json({ error: "method_not_allowed", code: "METHOD_NOT_ALLOWED" }, 405, {
+        Allow: "GET, OPTIONS",
+      });
+    }
+
+    return this.notFoundHandler(req, env, ctx);
+  }
+}
+
+// --- Response helpers ------------------------------------------------------
+
+const JSON_HEADERS: Record<string, string> = {
+  "Content-Type": "application/json; charset=utf-8",
+  "Cache-Control": "public, max-age=60, s-maxage=300",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Max-Age": "86400",
+};
+
+export function json(
+  body: unknown,
+  status = 200,
+  extraHeaders: Record<string, string> = {},
+): Response {
+  const headers: Record<string, string> = { ...JSON_HEADERS, ...extraHeaders };
+  // Error responses must never be cached by intermediaries: otherwise a
+  // transient 500 can stick to an edge cache for the full s-maxage window.
+  if (status >= 400) headers["Cache-Control"] = "no-store";
+  return new Response(JSON.stringify(body), {
+    status,
+    headers,
+  });
+}
+
+/**
+ * 503 NOT_SEEDED -- returned by handlers when the snapshot looks like an
+ * empty-seed placeholder rather than real data. Distinct from DB_ERROR:
+ * this means ingestion has not yet run, not that the DB is broken.
+ */
+export function notSeeded(): Response {
+  return json(
+    { code: "NOT_SEEDED", message: "Data has not been ingested yet" },
+    503,
+  );
+}
+
+export function preflight(): Response {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
+}

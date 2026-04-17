@@ -1,0 +1,76 @@
+---
+interface Slice {
+  label: string;
+  value: number;
+  colour: string;
+}
+
+interface Props {
+  slices: Slice[];
+  size?: number;
+  stroke?: number;
+  ariaLabel?: string;
+  centreTop?: string;
+  centreBottom?: string;
+}
+
+const {
+  slices,
+  size = 200,
+  stroke = 28,
+  ariaLabel,
+  centreTop,
+  centreBottom,
+} = Astro.props;
+
+const total = slices.reduce((a, b) => a + b.value, 0) || 1;
+const r = (size - stroke) / 2;
+const cx = size / 2;
+const cy = size / 2;
+const circ = 2 * Math.PI * r;
+
+let offset = 0;
+const rendered = slices.map((s) => {
+  const frac = s.value / total;
+  const dash = frac * circ;
+  const seg = {
+    ...s,
+    dash,
+    gap: circ - dash,
+    dashOffset: -offset,
+  };
+  offset += dash;
+  return seg;
+});
+---
+<svg
+  viewBox={`0 0 ${size} ${size}`}
+  width={size}
+  height={size}
+  role="img"
+  aria-label={ariaLabel ?? "Donut chart"}
+  style="display: block; margin: 0 auto;"
+>
+  <g transform={`rotate(-90 ${cx} ${cy})`}>
+    <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--border-soft)" stroke-width={stroke} />
+    {rendered.map((s) => (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="none"
+        stroke={s.colour}
+        stroke-width={stroke}
+        stroke-dasharray={`${s.dash} ${s.gap}`}
+        stroke-dashoffset={s.dashOffset}
+        stroke-linecap="butt"
+      />
+    ))}
+  </g>
+  {centreTop ? (
+    <text x={cx} y={cy - 4} text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="22" fill="var(--ink-0)">{centreTop}</text>
+  ) : null}
+  {centreBottom ? (
+    <text x={cx} y={cy + 18} text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="var(--ink-2)" letter-spacing="0.1em">{centreBottom}</text>
+  ) : null}
+</svg>

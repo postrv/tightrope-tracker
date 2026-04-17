@@ -1,0 +1,131 @@
+---
+import type { DeliveryCommitment } from "@tightrope/shared/delivery";
+import type { PillarScore } from "@tightrope/shared";
+import { DELIVERY_STATUS_LABEL } from "@tightrope/shared/delivery";
+import { signedDelta } from "~/lib/format.js";
+
+interface Props {
+  commitments: DeliveryCommitment[];
+  pillar: PillarScore;
+}
+
+const { commitments, pillar } = Astro.props;
+
+function statusClass(status: string): string {
+  switch (status) {
+    case "on_track": return "status-ontrack";
+    case "slipping": return "status-slip";
+    case "missed": return "status-missed";
+    case "shipped": return "status-shipped";
+    default: return "status-slip";
+  }
+}
+---
+<section class="section" id="delivery" aria-labelledby="delivery-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Pillar 4 · 10% (inverted)</span>
+        <h2 class="sec-title" id="delivery-title" style="margin-top: 14px;">Is the growth agenda actually shipping?</h2>
+        <p class="section-sub">The government's own stated commitments, tracked against public milestones. Green for on track, amber for slipping, red for missed, blue for shipped. Every status is sourced.</p>
+      </div>
+      <div class="pillar-score" aria-label={`Delivery pillar score ${Math.round(pillar.value)}`}>
+        <span class="pillar-score-num">{Math.round(pillar.value)}</span>
+        <span class="pillar-score-sub">/100</span>
+        <span class={`pillar-score-delta ${pillar.trend7d === "up" ? "up" : pillar.trend7d === "down" ? "dn" : "flat"}`}>
+          {pillar.trend7d === "flat" ? "flat" : `${pillar.trend7d === "up" ? "▲" : "▼"} ${signedDelta(Math.abs(pillar.delta7d), 1)}`} / 7d
+        </span>
+      </div>
+    </div>
+
+    {commitments.length === 0 ? (
+      <div class="delivery-empty">Delivery scorecard populates on the first editorial review.</div>
+    ) : (
+      <div class="delivery-table" role="table" aria-label="Delivery scorecard">
+        <div class="delivery-header" role="row">
+          <div class="h-col">Commitment</div>
+          <div class="h-col">Target</div>
+          <div class="h-col">Status</div>
+          <div class="h-col">Source</div>
+        </div>
+        {commitments.map((c) => (
+          <div class="delivery-row" role="row">
+            <div role="cell">
+              <div class="delivery-name">{c.name}</div>
+              <div class="delivery-meta">{c.latest}</div>
+            </div>
+            <div class="delivery-meta" role="cell">{c.target}</div>
+            <span class={`status-dot ${statusClass(c.status)}`} role="cell">{DELIVERY_STATUS_LABEL[c.status]}</span>
+            <a href={c.sourceUrl} class="delivery-src" role="cell" rel="noopener" target="_blank">{c.sourceLabel} ↗</a>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+.section-head {
+  display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;
+  margin-bottom: 40px;
+}
+.pillar-score { display: flex; align-items: baseline; gap: 6px; font-family: var(--font-mono); }
+.pillar-score-num { font-size: 40px; font-weight: 500; color: var(--ink-0); font-variant-numeric: tabular-nums; }
+.pillar-score-sub { color: var(--ink-2); font-size: 14px; }
+.pillar-score-delta { margin-left: 12px; font-size: 12px; }
+.pillar-score-delta.up { color: var(--band-acute); }
+.pillar-score-delta.dn { color: var(--band-slack); }
+.pillar-score-delta.flat { color: var(--ink-2); }
+
+.delivery-empty {
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-2);
+  padding: 60px 0; text-align: center;
+}
+
+.delivery-table {
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden;
+}
+.delivery-header {
+  display: grid; grid-template-columns: 1.6fr 1fr auto auto;
+  gap: 20px; padding: 14px 24px;
+  background: var(--bg-2);
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2);
+  border-bottom: 1px solid var(--border);
+}
+.delivery-row {
+  display: grid; grid-template-columns: 1.6fr 1fr auto auto;
+  gap: 20px; padding: 18px 24px; border-bottom: 1px solid var(--border-soft);
+  align-items: center;
+}
+.delivery-row:last-child { border-bottom: 0; }
+.delivery-row:hover { background: var(--bg-2); }
+.delivery-name { font-family: var(--font-serif); font-size: 16px; font-weight: 400; }
+.delivery-meta { font-size: 12.5px; color: var(--ink-1); font-family: var(--font-mono); }
+.status-dot {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.status-dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+.status-ontrack::before  { background: var(--band-slack); }
+.status-slip::before     { background: var(--band-strain); }
+.status-missed::before   { background: var(--band-critical); }
+.status-shipped::before  { background: var(--band-steady); }
+.status-ontrack  { color: var(--band-slack); }
+.status-slip     { color: var(--band-strain); }
+.status-missed   { color: var(--band-critical); }
+.status-shipped  { color: var(--band-steady); }
+.delivery-src {
+  font-family: var(--font-mono); font-size: 11px; color: var(--ink-2);
+  padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px;
+  transition: all 180ms;
+  white-space: nowrap;
+}
+.delivery-src:hover { color: var(--accent); border-color: var(--accent-dim); }
+
+@media (max-width: 920px) {
+  .section-head { grid-template-columns: 1fr; }
+  .delivery-header { display: none; }
+  .delivery-row { grid-template-columns: 1fr; gap: 8px; }
+}
+</style>

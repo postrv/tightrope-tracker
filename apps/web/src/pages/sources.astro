@@ -1,0 +1,93 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import TopNav from "~/components/TopNav.astro";
+import SiteFooter from "~/components/SiteFooter.astro";
+import { SOURCES, INDICATORS } from "@tightrope/shared";
+import { loadSnapshot } from "~/lib/page-data.js";
+
+const snapshot = await loadSnapshot(Astro.locals);
+
+// For each source, collect the indicators that use it.
+const indicatorsBySource = new Map<string, string[]>();
+for (const ind of Object.values(INDICATORS)) {
+  const arr = indicatorsBySource.get(ind.sourceId) ?? [];
+  arr.push(ind.label);
+  indicatorsBySource.set(ind.sourceId, arr);
+}
+
+const sources = Object.values(SOURCES);
+---
+<BaseLayout title="Sources — Tightrope Tracker" canonicalPath="/sources">
+  <TopNav compact band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} />
+  <main id="main" class="container sources">
+    <header class="page-head">
+      <span class="eyebrow">Provenance</span>
+      <h1>Sources</h1>
+      <p class="lede">Every figure on this site traces to a public, free-to-access primary source. We do not use paywalled publications as primary evidence. Where a feed is scraped rather than pulled from a stable API, we publish the endpoint and the parse script for review.</p>
+    </header>
+
+    <div class="source-list">
+      {sources.map((s) => {
+        const inds = indicatorsBySource.get(s.id) ?? [];
+        return (
+          <article class="source">
+            <div class="src-head">
+              <h2>{s.name}</h2>
+              <a class="homepage" href={s.homepage} rel="noopener" target="_blank">Homepage ↗</a>
+            </div>
+            {s.endpoint ? (
+              <div class="factrow"><span class="k">Endpoint</span><span class="v">{s.endpoint}</span></div>
+            ) : null}
+            {s.notes ? <p class="notes">{s.notes}</p> : null}
+            {inds.length ? (
+              <div class="indicators">
+                <span class="ind-label">Used for:</span>
+                {inds.map((label) => <span class="ind-pill">{label}</span>)}
+              </div>
+            ) : (
+              <p class="notes">Contextual reference only.</p>
+            )}
+          </article>
+        );
+      })}
+    </div>
+
+    <section class="cluster">
+      <h2>Secondary references &amp; further reading</h2>
+      <p class="intro">These organisations publish analyses that inform the methodology, the editorial notes, and the timeline, but their outputs are not used as primary data inputs.</p>
+      <ul class="refs">
+        <li><a href="https://ifs.org.uk" rel="noopener" target="_blank">Institute for Fiscal Studies</a> — Green Budget, headroom analysis, tax-and-spend commentary.</li>
+        <li><a href="https://www.resolutionfoundation.org" rel="noopener" target="_blank">Resolution Foundation</a> — living standards, labour market, household data.</li>
+        <li><a href="https://www.instituteforgovernment.org.uk" rel="noopener" target="_blank">Institute for Government</a> — delivery analysis, machinery-of-government context.</li>
+      </ul>
+    </section>
+  </main>
+  <SiteFooter updatedAt={snapshot.headline.updatedAt} />
+</BaseLayout>
+
+<style>
+.sources { padding: 80px 0; max-width: 960px; }
+.page-head { margin-bottom: 48px; }
+.page-head h1 { font-family: var(--font-serif); font-weight: 350; font-size: clamp(36px, 5vw, 56px); letter-spacing: -0.02em; margin: 16px 0; }
+.page-head .lede { font-size: 17px; color: var(--ink-1); max-width: 640px; line-height: 1.6; }
+
+.source-list { display: flex; flex-direction: column; gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 10px; overflow: hidden; }
+.source { background: var(--bg-1); padding: 24px 28px; display: flex; flex-direction: column; gap: 10px; }
+.src-head { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; flex-wrap: wrap; }
+.source h2 { font-family: var(--font-serif); font-weight: 400; font-size: 19px; margin: 0; letter-spacing: -0.01em; color: var(--ink-0); }
+.homepage { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); letter-spacing: 0.08em; }
+.homepage:hover { color: var(--accent); }
+.factrow { font-size: 12.5px; }
+.factrow .k { color: var(--ink-2); margin-right: 10px; font-family: var(--font-mono); text-transform: uppercase; font-size: 10px; letter-spacing: 0.1em; }
+.factrow .v { color: var(--ink-1); font-family: var(--font-mono); word-break: break-all; }
+.notes { font-size: 13px; color: var(--ink-1); margin: 0; }
+.indicators { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.ind-label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-2); margin-right: 4px; }
+.ind-pill { font-family: var(--font-mono); font-size: 11px; color: var(--ink-1); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; }
+
+.cluster { margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--border-soft); }
+.cluster h2 { font-family: var(--font-serif); font-weight: 400; font-size: 22px; margin: 0 0 12px; }
+.cluster .intro { color: var(--ink-1); font-size: 14px; max-width: 640px; }
+.refs { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--ink-1); }
+.refs a { color: var(--accent); }
+</style>

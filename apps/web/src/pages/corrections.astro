@@ -1,0 +1,79 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import TopNav from "~/components/TopNav.astro";
+import SiteFooter from "~/components/SiteFooter.astro";
+import { loadCorrections, loadSnapshot } from "~/lib/page-data.js";
+import { shortDate } from "~/lib/format.js";
+
+const corrections = await loadCorrections(Astro.locals);
+const snapshot = await loadSnapshot(Astro.locals);
+---
+<BaseLayout title="Corrections — Tightrope Tracker" canonicalPath="/corrections">
+  <TopNav compact band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} />
+  <main id="main" class="container corrections">
+    <header class="page-head">
+      <span class="eyebrow">Accountability</span>
+      <h1>Corrections log</h1>
+      <p class="lede">Every correction to a published figure, dated, with the original value, the corrected value, and the reason. This is the separator between a data product and a commentary site.</p>
+    </header>
+
+    {corrections.length === 0 ? (
+      <div class="empty">
+        <p>No corrections published yet — if you believe a figure is wrong, open an issue on <a href="https://github.com/" rel="noopener" target="_blank">GitHub</a>.</p>
+      </div>
+    ) : (
+      <div class="list">
+        {corrections.map((c) => (
+          <article class="correction">
+            <div class="head">
+              <span class="date">{shortDate(c.publishedAt)}</span>
+              <span class="indicator">{c.affectedIndicator}</span>
+            </div>
+            <div class="body">
+              <div class="vals">
+                <div class="val">
+                  <span class="val-label">Was</span>
+                  <span class="val-num old">{c.originalValue}</span>
+                </div>
+                <div class="val">
+                  <span class="val-label">Now</span>
+                  <span class="val-num new">{c.correctedValue}</span>
+                </div>
+              </div>
+              <p class="reason">{c.reason}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+    )}
+  </main>
+  <SiteFooter updatedAt={snapshot.headline.updatedAt} />
+</BaseLayout>
+
+<style>
+.corrections { padding: 80px 0; max-width: 860px; }
+.page-head { margin-bottom: 48px; }
+.page-head h1 { font-family: var(--font-serif); font-weight: 350; font-size: clamp(36px, 5vw, 56px); letter-spacing: -0.02em; margin: 16px 0; }
+.page-head .lede { font-size: 17px; color: var(--ink-1); max-width: 640px; line-height: 1.6; }
+
+.empty { background: var(--bg-1); border: 1px dashed var(--border); border-radius: 12px; padding: 36px; text-align: center; color: var(--ink-1); font-size: 14px; }
+.empty a { color: var(--accent); }
+
+.list { display: flex; flex-direction: column; gap: 16px; }
+.correction { background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; }
+.head { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; margin-bottom: 12px; }
+.date { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-2); }
+.indicator { font-family: var(--font-serif); font-size: 17px; color: var(--ink-0); }
+.body { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+.vals { display: flex; gap: 20px; }
+.val { display: flex; flex-direction: column; gap: 4px; }
+.val-label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-2); }
+.val-num { font-family: var(--font-mono); font-size: 16px; }
+.val-num.old { color: var(--ink-2); text-decoration: line-through; }
+.val-num.new { color: var(--ink-0); }
+.reason { color: var(--ink-1); font-size: 13.5px; margin: 0; line-height: 1.55; }
+
+@media (max-width: 720px) {
+  .body { grid-template-columns: 1fr; }
+}
+</style>

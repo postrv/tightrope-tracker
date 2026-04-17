@@ -1,0 +1,101 @@
+---
+import { pathFromSeries } from "~/lib/format.js";
+
+interface Axis {
+  label: string;
+  x: number;
+  y: number;
+}
+
+interface Props {
+  series: readonly number[];
+  width?: number;
+  height?: number;
+  stroke?: string;
+  fillGradientId?: string;
+  ariaLabel?: string;
+  gridLines?: number;
+  minLabel?: string;
+  maxLabel?: string;
+  xTicks?: Axis[];
+}
+
+const {
+  series,
+  width = 600,
+  height = 240,
+  stroke = "var(--accent)",
+  fillGradientId,
+  ariaLabel,
+  gridLines = 4,
+  minLabel,
+  maxLabel,
+  xTicks = [],
+} = Astro.props;
+
+const safeSeries = series && series.length ? series : [0, 0];
+const padL = 40;
+const padR = 20;
+const padT = 20;
+const padB = 30;
+const plotW = width - padL - padR;
+const plotH = height - padT - padB;
+
+const d = pathFromSeries(
+  safeSeries,
+  plotW,
+  plotH,
+  1,
+).replace(/([ML])([\d.]+),([\d.]+)/g, (_m, op, x, y) => `${op}${(Number(x) + padL).toFixed(2)},${(Number(y) + padT).toFixed(2)}`);
+
+// Build fill path closing to baseline
+let fillD = "";
+if (fillGradientId && safeSeries.length > 1) {
+  const first = `${padL},${padT + plotH}`;
+  const last = `${padL + plotW},${padT + plotH}`;
+  fillD = `M${first} ${d.replace(/^M/, "L")} L${last} Z`;
+}
+
+// Y axis gridlines
+const gridYs = Array.from({ length: gridLines }, (_, i) => padT + (i / (gridLines - 1)) * plotH);
+
+const minY = padT + plotH;
+const maxY = padT;
+---
+<svg
+  class="chart"
+  viewBox={`0 0 ${width} ${height}`}
+  preserveAspectRatio="none"
+  role="img"
+  aria-label={ariaLabel ?? "Line chart of time-series data"}
+>
+  {fillGradientId ? (
+    <defs>
+      <linearGradient id={fillGradientId} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--accent)" stop-opacity="0.22" />
+        <stop offset="1" stop-color="var(--accent)" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+  ) : null}
+
+  <g stroke="var(--border-soft)" stroke-width="1">
+    {gridYs.map((y) => (
+      <line x1={padL} y1={y} x2={padL + plotW} y2={y} />
+    ))}
+  </g>
+
+  {maxLabel ? (
+    <text x={padL - 8} y={maxY + 4} text-anchor="end" font-family="var(--font-mono)" font-size="10" fill="var(--ink-2)">{maxLabel}</text>
+  ) : null}
+  {minLabel ? (
+    <text x={padL - 8} y={minY + 4} text-anchor="end" font-family="var(--font-mono)" font-size="10" fill="var(--ink-2)">{minLabel}</text>
+  ) : null}
+
+  {fillD ? <path d={fillD} fill={`url(#${fillGradientId})`} /> : null}
+
+  <path d={d} stroke={stroke} stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+
+  {xTicks.map((t) => (
+    <text x={t.x} y={t.y} font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)">{t.label}</text>
+  ))}
+</svg>

@@ -1,0 +1,56 @@
+name = "tightrope-ingest"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Scheduled data ingestion + score recompute. Not routed for HTTP -- cron only.
+# Admin trigger via `wrangler dev --test-scheduled` locally.
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tightrope_db"
+database_id = "REPLACE_WITH_PROD_D1_ID"
+migrations_dir = "../../db/migrations"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_PROD_KV_ID"
+
+[[r2_buckets]]
+binding = "ARCHIVE"
+bucket_name = "tightrope-archive"
+
+[[queues.producers]]
+binding = "DLQ"
+queue = "tightrope-ingest-dlq"
+
+[[queues.consumers]]
+queue = "tightrope-ingest-dlq"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+
+[triggers]
+# Market ingest: every 5 minutes -- Worker checks time-of-day and throttles itself out of market hours.
+# Fiscal, Labour, Delivery: daily cascade starting 02:00 UTC.
+# Recompute: every 5 minutes.
+crons = [
+  "*/5 * * * *",       # ingest-market + recompute-scores
+  "0 2 * * *",         # ingest-fiscal
+  "15 2 * * *",        # ingest-labour
+  "30 2 * * *"         # ingest-delivery
+]
+
+[vars]
+ENVIRONMENT = "production"
+# secret required: ADMIN_TOKEN -- shared token for POST /admin/run?source=...
+# set via `wrangler secret put ADMIN_TOKEN` (do NOT commit to this file).
+
+[observability]
+enabled = true
+
+[placement]
+mode = "smart"
+
+[limits]
+cpu_ms = 30000

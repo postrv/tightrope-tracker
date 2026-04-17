@@ -1,0 +1,25 @@
+{
+  "name": "@tightrope/ingest",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled --port 8789 --persist-to=../../.wrangler/state",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@tightrope/data-sources": "workspace:*",
+    "@tightrope/methodology": "workspace:*",
+    "@tightrope/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250601.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "wrangler": "^4.69.0"
+  }
+}

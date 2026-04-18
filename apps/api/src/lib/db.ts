@@ -15,13 +15,14 @@ import type {
   ScoreHistoryPoint,
   DeliveryCommitment,
   DeliveryStatus,
+  IndicatorContribution,
   SourceHealthEntry,
   TimelineEvent,
   TimelineCategory,
   Trend,
   Iso8601,
 } from "@tightrope/shared";
-import { PILLAR_ORDER, PILLARS, bandFor, computeSourceHealth, isScoreRowStale } from "@tightrope/shared";
+import { INDICATORS, PILLAR_ORDER, PILLARS, bandFor, computeSourceHealth, isScoreRowStale } from "@tightrope/shared";
 
 interface PillarLatestRow {
   id: PillarId;
@@ -45,7 +46,7 @@ interface HeadlineRow {
 export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
   const db = env.DB;
 
-  const [headlineRow, headlineHistory, pillarsLatest, pillarHistory, latestAttempts, lastSuccesses] = await Promise.all([
+  const [headlineRow, headlineHistory, pillarsLatest, pillarHistory, latestAttempts, lastSuccesses, latestObservations] = await Promise.all([
     db.prepare(
       "SELECT observed_at, value, band, dominant, editorial FROM headline_scores ORDER BY observed_at DESC LIMIT 1",
     ).first<HeadlineRow>(),
@@ -98,9 +99,26 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       `SELECT source_id, MAX(started_at) AS last_success
        FROM ingestion_audit WHERE status = 'success' GROUP BY source_id`,
     ).all<{ source_id: string; last_success: string }>(),
+    // Latest observation per indicator, for lightweight per-pillar
+    // contributions in the D1-fallback path. The recompute+KV snapshot
+    // includes full z-score contributions; here we surface just enough
+    // (raw value, observedAt, sourceId) so a stale-banner consumer can
+    // name the specific indicator that froze.
+    db.prepare(
+      `SELECT o.indicator_id, o.value, o.observed_at, o.source_id
+       FROM indicator_observations o
+       JOIN (
+         SELECT indicator_id, MAX(observed_at) AS ts
+         FROM indicator_observations GROUP BY indicator_id
+       ) m ON o.indicator_id = m.indicator_id AND o.observed_at = m.ts`,
+    ).all<{ indicator_id: string; value: number; observed_at: string; source_id: string }>(),
   ]);
 
   const now = new Date();
+  const obsByIndicator = new Map<string, { value: number; observedAt: string; sourceId: string }>();
+  for (const r of latestObservations.results) {
+    obsByIndicator.set(r.indicator_id, { value: r.value, observedAt: r.observed_at, sourceId: r.source_id });
+  }
   const pillars = {} as Record<PillarId, PillarScore>;
   let anyPillarStale = false;
   for (const p of PILLAR_ORDER) {
@@ -122,7 +140,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       value,
       band: (latest?.band as PillarScore["band"]) ?? bandFor(value).id,
       weight: PILLARS[p].weight,
-      contributions: [],
+      contributions: buildContributionsForPillar(p, obsByIndicator),
       trend7d: trend,
       delta7d: round1(delta),
       sparkline30d: series,
@@ -259,6 +277,41 @@ export async function getLastIngestionAudit(
   const map: Record<string, string> = {};
   for (const r of res.results) map[r.source_id] = r.started_at;
   return map;
+}
+
+/**
+ * Lightweight contributions used in the D1-fallback snapshot path.
+ *
+ * The recompute loop writes a full snapshot (including z-score and
+ * normalised contributions) into KV. When we miss the KV cache and
+ * rebuild from D1 we don't have cheap access to the baseline series, so
+ * we return `zScore: 0` / `normalised: 0` placeholders -- the raw
+ * value, observedAt, sourceId and weight are enough for a stale banner
+ * to name the specific indicator that froze, and for an API consumer
+ * to inspect the inputs. Full contribution detail lives in KV.
+ */
+function buildContributionsForPillar(
+  pillar: PillarId,
+  obs: Map<string, { value: number; observedAt: string; sourceId: string }>,
+): IndicatorContribution[] {
+  const defs = Object.values(INDICATORS).filter((d) => d.pillar === pillar);
+  const pillarWeightSum = defs.reduce((acc, d) => acc + d.weight, 0);
+  const out: IndicatorContribution[] = [];
+  for (const def of defs) {
+    const o = obs.get(def.id);
+    if (!o) continue;
+    out.push({
+      indicatorId: def.id,
+      rawValue: o.value,
+      rawValueUnit: def.unit,
+      zScore: 0,
+      normalised: 0,
+      weight: pillarWeightSum > 0 ? def.weight / pillarWeightSum : 0,
+      sourceId: o.sourceId,
+      observedAt: o.observedAt,
+    });
+  }
+  return out;
 }
 
 // --- helpers ---------------------------------------------------------------

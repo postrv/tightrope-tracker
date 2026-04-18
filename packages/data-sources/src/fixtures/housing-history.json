@@ -1,0 +1,277 @@
+{
+  "_comment": "Curated quarterly history for MHCLG delivery indicators. Every point cites its MHCLG statistical release (URL + publication date) and the raw upstream figure used. Values are derived, not fabricated — the derivations are defined in the 'methodology' block below.",
+  "methodology": {
+    "housing_trajectory": {
+      "formula": "completions_sa_quarterly * 4 / 300000 * 100",
+      "unit": "% of target",
+      "rationale": "Quarterly new-build dwelling completions (seasonally adjusted) annualised by x4, expressed as a percentage of the 300,000 homes-per-year government target that OBR uses as its housing trajectory working assumption. Deliberately uses completions (not annual 'net additional dwellings') so every quarter has a primary-source number; NAD is published once a year and is not a quarterly series.",
+      "primary_source": "MHCLG Housing supply: indicators of new supply quarterly releases (headline 'Completions (seasonally adjusted)' figure)",
+      "trajectory_source": "UK government 300,000/year housing target; https://www.gov.uk/government/publications/long-term-plan-for-housing"
+    },
+    "planning_consents": {
+      "formula": "total_residential_decisions_granted_quarterly / 11500 * 100",
+      "unit": "% of 2019 quarterly baseline",
+      "rationale": "Total residential decisions granted in the quarter, expressed as a percentage of an estimated 2019 pre-COVID quarterly baseline of 11,500. The 11,500 figure reflects the approximate 2019 quarterly mean for total residential decisions granted as documented in contemporary MHCLG planning-applications releases for that year. Later releases report only YoY percentage changes rather than primary Q-level figures for pre-2022 data, so we use an estimate derived from MHCLG narrative back-projections; the denominator can be tightened in a later revision once archived PDFs are manually extracted.",
+      "primary_source": "MHCLG Planning applications in England quarterly statistical releases (headline 'residential decisions granted' figure)"
+    }
+  },
+  "baseline_note": "Observations span 2022-Q2 through 2025-Q4 — the era in which MHCLG publishes the headline figures on HTML landing pages. Earlier releases are PDF-only and were not extracted in this iteration. ECDF normalisation against ~15 quarterly points gives a coarse but meaningful percentile ranking; more depth can be added by manually extracting older PDFs.",
+  "points": [
+    {
+      "observed_at": "2022-06-30T00:00:00Z",
+      "period": "2022 Q2",
+      "housing_trajectory": {
+        "value": 59.9,
+        "raw_completions_sa": 44940,
+        "release": "Housing supply: indicators of new supply, England: April to June 2022",
+        "published": "2022-09-15",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2022"
+      }
+    },
+    {
+      "observed_at": "2022-09-30T00:00:00Z",
+      "period": "2022 Q3",
+      "housing_trajectory": {
+        "value": 57.3,
+        "raw_completions_sa": 42950,
+        "release": "Housing supply: indicators of new supply, England: July to September 2022",
+        "published": "2022-12-14",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-july-to-september-2022"
+      }
+    },
+    {
+      "observed_at": "2022-12-31T00:00:00Z",
+      "period": "2022 Q4",
+      "housing_trajectory": {
+        "value": 61.4,
+        "raw_completions_sa": 46080,
+        "release": "Housing supply: indicators of new supply, England: October to December 2022",
+        "published": "2023-03-23",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-october-to-december-2022"
+      },
+      "planning_consents": {
+        "value": 76.5,
+        "raw_decisions_granted": 8800,
+        "release": "Planning applications in England: October to December 2022",
+        "published": "2023-03-30",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-october-to-december-2022"
+      }
+    },
+    {
+      "observed_at": "2023-03-31T00:00:00Z",
+      "period": "2023 Q1",
+      "housing_trajectory": {
+        "value": 53.3,
+        "raw_completions_sa": 39970,
+        "release": "Housing supply: indicators of new supply, England: January to March 2023",
+        "published": "2023-06-29",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-january-to-march-2023"
+      },
+      "planning_consents": {
+        "value": 73.0,
+        "raw_decisions_granted": 8400,
+        "release": "Planning applications in England: January to March 2023",
+        "published": "2023-06-08",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-january-to-march-2023"
+      }
+    },
+    {
+      "observed_at": "2023-06-30T00:00:00Z",
+      "period": "2023 Q2",
+      "housing_trajectory": {
+        "value": 52.8,
+        "raw_completions_sa": 39620,
+        "release": "Housing supply: indicators of new supply, England: April to June 2023",
+        "published": "2023-09-28",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2023"
+      },
+      "planning_consents": {
+        "value": 69.6,
+        "raw_decisions_granted": 8000,
+        "release": "Planning applications in England: April to June 2023",
+        "published": "2023-09-07",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-april-to-june-2023"
+      }
+    },
+    {
+      "observed_at": "2023-09-30T00:00:00Z",
+      "period": "2023 Q3",
+      "housing_trajectory": {
+        "value": 53.3,
+        "raw_completions_sa": 39990,
+        "release": "Housing supply: indicators of new supply, England: July to September 2023",
+        "published": "2024-01-24",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-july-to-september-2023"
+      },
+      "planning_consents": {
+        "value": 68.7,
+        "raw_decisions_granted": 7900,
+        "release": "Planning applications in England: July to September 2023",
+        "published": "2023-12-07",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-july-to-september-2023"
+      }
+    },
+    {
+      "observed_at": "2023-12-31T00:00:00Z",
+      "period": "2023 Q4",
+      "housing_trajectory": {
+        "value": 52.9,
+        "raw_completions_sa": 39650,
+        "release": "Housing supply: indicators of new supply, England: October to December 2023",
+        "published": "2024-03-28",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-october-to-december-2023"
+      },
+      "planning_consents": {
+        "value": 70.4,
+        "raw_decisions_granted": 8100,
+        "release": "Planning applications in England: October to December 2023",
+        "published": "2024-03-15",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-october-to-december-2023"
+      }
+    },
+    {
+      "observed_at": "2024-03-31T00:00:00Z",
+      "period": "2024 Q1",
+      "housing_trajectory": {
+        "value": 46.2,
+        "raw_completions_sa": 34630,
+        "release": "Housing supply: indicators of new supply, England: January to March 2024",
+        "published": "2024-06-27",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-january-to-march-2024"
+      },
+      "planning_consents": {
+        "value": 67.8,
+        "raw_decisions_granted": 7800,
+        "release": "Planning applications in England: January to March 2024",
+        "published": "2024-06-13",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-january-to-march-2024"
+      }
+    },
+    {
+      "observed_at": "2024-06-30T00:00:00Z",
+      "period": "2024 Q2",
+      "housing_trajectory": {
+        "value": 57.4,
+        "raw_completions_sa": 43030,
+        "release": "Housing supply: indicators of new supply, England: April to June 2024",
+        "published": "2024-09-27",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2024"
+      },
+      "planning_consents": {
+        "value": 66.1,
+        "raw_decisions_granted": 7600,
+        "release": "Planning applications in England: April to June 2024",
+        "published": "2024-09-24",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-april-to-june-2024"
+      }
+    },
+    {
+      "observed_at": "2024-09-30T00:00:00Z",
+      "period": "2024 Q3",
+      "housing_trajectory": {
+        "value": 48.8,
+        "raw_completions_sa": 36580,
+        "release": "Housing supply: indicators of new supply, England: July to September 2024",
+        "published": "2025-01-23",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-july-to-september-2024"
+      },
+      "planning_consents": {
+        "value": 63.5,
+        "raw_decisions_granted": 7300,
+        "release": "Planning applications in England: July to September 2024",
+        "published": "2025-01-16",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-july-to-september-2024"
+      }
+    },
+    {
+      "observed_at": "2024-12-31T00:00:00Z",
+      "period": "2024 Q4",
+      "housing_trajectory": {
+        "value": 49.1,
+        "raw_completions_sa": 36830,
+        "release": "Housing supply: indicators of new supply, England: October to December 2024",
+        "published": "2025-03-27",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-october-to-december-2024"
+      },
+      "planning_consents": {
+        "value": 64.3,
+        "raw_decisions_granted": 7400,
+        "release": "Planning applications in England: October to December 2024",
+        "published": "2025-03-20",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-october-to-december-2024"
+      }
+    },
+    {
+      "observed_at": "2025-03-31T00:00:00Z",
+      "period": "2025 Q1",
+      "housing_trajectory": {
+        "value": 48.2,
+        "raw_completions_sa": 36180,
+        "release": "Housing supply: indicators of new supply, England: January to March 2025",
+        "published": "2025-06-20",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-january-to-march-2025"
+      },
+      "planning_consents": {
+        "value": null,
+        "_note": "Q1 2025 planning statistical-release HTML was not extractable via automated fetch at curation time. Leave null so the backfill skips this quarter for planning_consents; the Q4 2024 carry-forward continues to cover dates in Q1 2025.",
+        "release": "Planning applications in England: January to March 2025",
+        "published": "2025-06-19",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-january-to-march-2025"
+      }
+    },
+    {
+      "observed_at": "2025-06-30T00:00:00Z",
+      "period": "2025 Q2",
+      "housing_trajectory": {
+        "value": 46.7,
+        "raw_completions_sa": 34990,
+        "release": "Housing supply: indicators of new supply, England: April to June 2025",
+        "published": "2025-09-19",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2025"
+      },
+      "planning_consents": {
+        "value": 60.9,
+        "raw_decisions_granted": 7000,
+        "release": "Planning applications in England: April to June 2025",
+        "published": "2025-09-18",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-april-to-june-2025"
+      }
+    },
+    {
+      "observed_at": "2025-09-30T00:00:00Z",
+      "period": "2025 Q3",
+      "housing_trajectory": {
+        "value": 44.0,
+        "raw_completions_sa": 33020,
+        "release": "Housing supply: indicators of new supply, England: July to September 2025",
+        "published": "2026-01-15",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-july-to-september-2025"
+      },
+      "planning_consents": {
+        "value": 61.7,
+        "raw_decisions_granted": 7100,
+        "release": "Planning applications in England: July to September 2025",
+        "published": "2025-12-18",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-july-to-september-2025"
+      }
+    },
+    {
+      "observed_at": "2025-12-31T00:00:00Z",
+      "period": "2025 Q4",
+      "housing_trajectory": {
+        "value": 49.0,
+        "raw_completions_sa": 36720,
+        "release": "Housing supply: indicators of new supply, England: October to December 2025",
+        "published": "2026-03-19",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-october-to-december-2025"
+      },
+      "planning_consents": {
+        "value": 63.5,
+        "raw_decisions_granted": 7300,
+        "release": "Planning applications in England: October to December 2025",
+        "published": "2026-03-19",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-october-to-december-2025"
+      }
+    }
+  ]
+}

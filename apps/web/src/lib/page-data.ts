@@ -114,6 +114,7 @@ function emptySnapshot(): ScoreSnapshot {
   for (const id of PILLAR_ORDER) {
     pillars[id] = {
       pillar: id,
+      label: PILLARS[id].shortTitle,
       value: 0,
       band: bandFor(0).id,
       weight: PILLARS[id].weight,

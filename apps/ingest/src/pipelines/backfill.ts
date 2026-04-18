@@ -169,9 +169,18 @@ export async function backfillHistoricalScores(
     let indicatorsWithData = 0;
 
     for (const pillarId of PILLAR_ORDER) {
-      const pillarIndicators = Object.values(INDICATORS).filter((i) => i.pillar === pillarId);
+      // Historical backfill counts quorum against the subset of indicators
+      // that carry a defensible historical series. Editorial-only indicators
+      // (e.g. delivery milestones curated from political announcements) are
+      // tagged `hasHistoricalSeries: false` and deliberately excluded from
+      // both the readings loop and the quorum denominator. This keeps the
+      // historical dataset honest without preventing the pillar from ever
+      // passing quorum — live recompute still uses every indicator.
+      const historicalIndicators = Object.values(INDICATORS).filter(
+        (i) => i.pillar === pillarId && i.hasHistoricalSeries !== false,
+      );
       const readings: IndicatorReading[] = [];
-      for (const def of pillarIndicators) {
+      for (const def of historicalIndicators) {
         const latest = latestAsOf.get(def.id);
         if (!latest) continue;
         indicatorsWithData++;
@@ -182,7 +191,7 @@ export async function backfillHistoricalScores(
           baseline: baselineAsOf.get(def.id) ?? [],
         });
       }
-      const quorum = Math.max(1, Math.ceil(pillarIndicators.length * QUORUM_FRACTION));
+      const quorum = Math.max(1, Math.ceil(historicalIndicators.length * QUORUM_FRACTION));
       if (readings.length < quorum) {
         stalePillars.push(pillarId);
         continue;

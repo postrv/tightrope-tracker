@@ -194,6 +194,52 @@ describe("backfillHistoricalScores", () => {
     expect(gap.stalePillars).not.toContain("market");
   });
 
+  it("passes delivery quorum from housing_trajectory + planning_consents alone (editorial indicators are excluded)", async () => {
+    // Real-world scenario: the only delivery indicators with defensible
+    // historical data are housing_trajectory and planning_consents (both from
+    // MHCLG). The other four — new_towns_milestones, bics_rollout,
+    // industrial_strategy, smr_programme — are editorial interpretations of
+    // political announcements and deliberately carry no historical series.
+    // Backfill quorum must therefore count only `hasHistoricalSeries !== false`
+    // indicators, so a day with the two MHCLG prints alone satisfies delivery.
+    const rows: ObservationRow[] = [];
+    const today = Date.UTC(2026, 3, 18);
+
+    const EDITORIAL_DELIVERY = new Set(["new_towns_milestones", "bics_rollout", "industrial_strategy", "smr_programme"]);
+
+    // Baseline + recent observations for every indicator EXCEPT the 4
+    // editorial delivery ones — those have no history at all.
+    for (const id of Object.keys(INDICATORS)) {
+      if (EDITORIAL_DELIVERY.has(id)) continue;
+      const base = hash(id) % 50 + 20;
+      for (let wk = 26; wk >= 1; wk--) {
+        const ts = new Date(today - wk * 7 * 86_400_000).toISOString();
+        rows.push({ indicator_id: id, observed_at: ts, value: base + (wk % 5) });
+      }
+    }
+
+    const day1 = new Date(today - 86_400_000 + 12 * 3600_000).toISOString();
+    for (const id of Object.keys(INDICATORS)) {
+      if (EDITORIAL_DELIVERY.has(id)) continue;
+      rows.push({ indicator_id: id, observed_at: day1, value: 50 });
+    }
+
+    const { env, batches } = makeEnv(rows);
+    const result = await backfillHistoricalScores(env, { days: 1, overwrite: true });
+
+    // Headline written: every pillar (incl. delivery) passed quorum.
+    expect(result.daysWritten).toBe(1);
+    expect(result.daysPartial).toBe(0);
+    expect(result.daysSkipped).toBe(0);
+    expect(result.gaps).toEqual([]);
+
+    // Exactly one batch: 1 headline + 4 pillar rows (delivery included).
+    expect(batches).toHaveLength(1);
+    expect(batches[0]).toHaveLength(1 + PILLAR_ORDER.length);
+    const pillarInserts = batches[0]!.filter((s) => s.sql.includes("INSERT OR REPLACE INTO pillar_scores"));
+    expect(pillarInserts.map((s) => String(s.bindings[0])).sort()).toEqual(["delivery", "fiscal", "labour", "market"]);
+  });
+
   it("respects overwrite: false → INSERT OR IGNORE", async () => {
     const { env, batches } = makeEnv(seedObservations([1, 2]));
     await backfillHistoricalScores(env, { days: 1, overwrite: false });

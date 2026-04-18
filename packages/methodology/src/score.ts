@@ -107,6 +107,7 @@ export function computePillarScore(
 
   return {
     pillar,
+    label: pillarDef.shortTitle,
     value: roundTo(value, 1),
     band: band.id,
     weight: pillarDef.weight,

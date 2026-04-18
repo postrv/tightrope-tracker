@@ -15,6 +15,7 @@ function mkPillar(pillar: PillarId, value: number, sparkEnd: number = value): Pi
   const spark = [value - 2, value - 1, value, value + 1, sparkEnd];
   return {
     pillar,
+    label: PILLARS[pillar].shortTitle,
     value,
     band: "acute",
     weight: PILLARS[pillar].weight,
@@ -47,6 +48,19 @@ describe("computePillarScore", () => {
     expect(pillar.weight).toBe(0.40);
     expect(pillar.contributions.length).toBeGreaterThan(0);
     expect(pillar.trend7d).toBe("up");
+  });
+
+  it("populates a human-readable label from the pillar catalogue for every pillar", () => {
+    const expected: Record<PillarId, string> = {
+      market: "Market",
+      fiscal: "Fiscal",
+      labour: "Labour",
+      delivery: "Delivery",
+    };
+    for (const p of PILLAR_ORDER) {
+      const pillar = computePillarScore(p, { readings: [], sparkline30d: [] });
+      expect(pillar.label).toBe(expected[p]);
+    }
   });
 
   it("inverts the delivery pillar so that good delivery ⇒ low pressure", () => {

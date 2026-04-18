@@ -1,7 +1,22 @@
 {
-  "_comment": "MHCLG net housing additions + planning consents. MHCLG publishes quarterly bulletins as XLSX/ODS attachments with no stable JSON endpoint. Curate quarterly after each release. TODO(source): https://www.gov.uk/government/statistics/housing-supply-net-additional-dwellings-england",
-  "observed_at": "2026-03-31T00:00:00Z",
-  "housing_trajectory": { "value": 72.4, "unit": "%" },
-  "planning_consents": { "value": 64.1, "unit": "%" },
-  "source_url": "https://www.gov.uk/government/collections/household-projections"
+  "_comment": "MHCLG housing statistics -- latest quarterly print. Methodology: see packages/data-sources/src/fixtures/housing-history.json for the formulas and primary-source citations (housing_trajectory = completions_sa_q * 4 / 300,000 * 100; planning_consents = decisions_granted_q / 11,500 * 100). Update after each MHCLG release; the editorial convention is to stamp observed_at as the END of the reporting quarter.",
+  "period": "2025 Q4",
+  "observed_at": "2025-12-31T00:00:00Z",
+  "housing_trajectory": {
+    "value": 49.0,
+    "unit": "%",
+    "raw_completions_sa": 36720,
+    "release": "Housing supply: indicators of new supply, England: October to December 2025",
+    "published": "2026-03-19",
+    "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-october-to-december-2025"
+  },
+  "planning_consents": {
+    "value": 63.5,
+    "unit": "%",
+    "raw_decisions_granted": 7300,
+    "release": "Planning applications in England: October to December 2025",
+    "published": "2026-03-19",
+    "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-october-to-december-2025"
+  },
+  "source_url": "https://www.gov.uk/government/collections/housebuilding-statistics"
 }

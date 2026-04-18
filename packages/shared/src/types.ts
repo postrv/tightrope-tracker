@@ -7,6 +7,8 @@ export type Iso8601 = string;
 /** A pillar's score at a point in time. 0 = no pressure / on track, 100 = maximum stress / badly off track. */
 export interface PillarScore {
   pillar: PillarId;
+  /** Human-readable label, sourced from `PILLARS[pillar].shortTitle`. */
+  label: string;
   value: number;
   band: ScoreBand;
   weight: number;

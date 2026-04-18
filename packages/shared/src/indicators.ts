@@ -84,6 +84,16 @@ export interface IndicatorDefinition {
   sourceId: string;
   description: string;
   formatDisplay: (value: number) => string;
+  /**
+   * Whether a defensible historical time-series exists for this indicator.
+   * Defaults to `true` when omitted. Set `false` for indicators whose values
+   * are editorial interpretations of political announcements (e.g. delivery
+   * milestones, industrial-strategy progress) — these cannot be responsibly
+   * backfilled from primary sources, so the historical backfill pipeline
+   * excludes them from its quorum math. Live recompute still uses every
+   * indicator regardless.
+   */
+  hasHistoricalSeries?: boolean;
 }
 
 const fmtPct = (digits = 2) => (v: number) => `${v.toFixed(digits)}%`;
@@ -276,21 +286,25 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     id: "new_towns_milestones", pillar: "delivery", label: "New towns milestones hit", shortLabel: "New towns",
     unit: "%", weight: 0.15, risingIsBad: false, sourceId: "gov_uk",
     description: "Milestones hit as % of committed milestones YTD.", formatDisplay: fmtPct(1),
+    hasHistoricalSeries: false,
   },
   bics_rollout: {
     id: "bics_rollout", pillar: "delivery", label: "BICS firms onboarded", shortLabel: "BICS",
     unit: "firms", weight: 0.15, risingIsBad: false, sourceId: "desnz",
     description: "Cumulative firms onboarded to the British Industrial Competitiveness Scheme.", formatDisplay: fmtCount,
+    hasHistoricalSeries: false,
   },
   industrial_strategy: {
     id: "industrial_strategy", pillar: "delivery", label: "Industrial Strategy milestones", shortLabel: "Industrial",
     unit: "%", weight: 0.15, risingIsBad: false, sourceId: "dbt",
     description: "Industrial Strategy milestones on/ahead of schedule vs. slipped/missed.", formatDisplay: fmtPct(1),
+    hasHistoricalSeries: false,
   },
   smr_programme: {
     id: "smr_programme", pillar: "delivery", label: "SMR fleet progress", shortLabel: "SMR",
     unit: "%", weight: 0.10, risingIsBad: false, sourceId: "gov_uk",
     description: "Small Modular Reactor programme progress against published milestones.", formatDisplay: fmtPct(1),
+    hasHistoricalSeries: false,
   },
 };
 

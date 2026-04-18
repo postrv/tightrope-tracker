@@ -82,11 +82,17 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
          SELECT pillar_id, MAX(observed_at) AS ts FROM pillar_scores GROUP BY pillar_id
        ) m ON p.pillar_id = m.pillar_id AND p.observed_at = m.ts`,
     ).all<{ id: PillarId; observed_at: string; value: number; band: string }>(),
+    // Downsample to one row per UTC day per pillar. Mirrors the headline
+    // query above — see the comment there for the reasoning.
     db.prepare(
-      `SELECT pillar_id AS id, observed_at, value
-       FROM pillar_scores
-       WHERE observed_at >= datetime('now', '-30 days')
-       ORDER BY pillar_id, observed_at ASC`,
+      `SELECT p.pillar_id AS id, p.observed_at, p.value FROM pillar_scores p
+       JOIN (
+         SELECT pillar_id, substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
+         FROM pillar_scores
+         WHERE observed_at >= datetime('now', '-30 days')
+         GROUP BY pillar_id, substr(observed_at, 1, 10)
+       ) m ON p.pillar_id = m.pillar_id AND p.observed_at = m.ts
+       ORDER BY p.pillar_id, p.observed_at ASC`,
     ).all<{ id: PillarId; observed_at: string; value: number }>(),
     // Latest ingestion attempt per source (any status) -- powers the
     // source-health signal that surfaces upstream failures earlier than the
@@ -125,6 +131,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     if (stale) anyPillarStale = true;
     pillars[p] = {
       pillar: p,
+      label: PILLARS[p].shortTitle,
       value,
       band: (latest?.band as PillarScore["band"]) ?? bandFor(value).id,
       weight: PILLARS[p].weight,

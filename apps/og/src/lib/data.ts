@@ -32,6 +32,7 @@ async function buildFromD1(env: Env): Promise<ScoreSnapshot> {
     const value = row?.value ?? 0;
     pillars[p] = {
       pillar: p,
+      label: PILLARS[p].shortTitle,
       value,
       band: (row?.band as PillarScore["band"]) ?? bandFor(value).id,
       weight: PILLARS[p].weight,

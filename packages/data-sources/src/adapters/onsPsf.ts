@@ -6,13 +6,23 @@
  * fetch the timeseries JSON from www.ons.gov.uk/{uri}/data. The envelope
  * shape (months[]/years[]/quarters[]) is unchanged.
  *
- * Mappings (Public Sector Finances bulletin):
- *   JW2O (ppubsec net borrowing, YTD, GBPm)   -> indicator `borrowing_outturn`
- *   JW2P (central government debt interest,   -> indicator `debt_interest`
- *          rolling 12m, GBPm)
+ * Mappings (Public Sector Finances bulletin, verified 2026-04 release):
+ *   J5II  "PS: Net Borrowing (excluding public sector banks): £m: CPNSA"
+ *         -> indicator `borrowing_outturn`. ONS signs this with negative =
+ *         deficit / positive = surplus; we flip sign so the stored value is
+ *         "net borrowing in £bn" (positive when government is borrowing),
+ *         which lines up with the indicator's risingIsBad=true semantics.
  *
- * TODO(source): confirm CDIDs against the next PSF bulletin -- JW2O/JW2P are
- * the provisional codes pulled from the PSF time-series listing.
+ *   NMFX  "CG: Current expenditure: Net Interest payable: £m CPNSA"
+ *         -> indicator `debt_interest`. Central-government debt interest
+ *         paid net of receipts, monthly, £m. Unit conversion /1000 -> £bn.
+ *
+ * Prior incorrect mappings (pre-2026-04-18):
+ *   JW2O -> "Total current receipts" (receipts, not borrowing)
+ *   JW2P -> "Interest & divs paid to private sector and RoW" (mixes
+ *           dividends in, not the canonical debt-interest figure)
+ * Both produced the wrong signal for the fiscal pillar. Historical
+ * observations written under those codes should be purged and backfilled.
  */
 import type {
   AdapterResult,
@@ -28,9 +38,30 @@ import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "ons_psf";
 
-const SERIES: ReadonlyArray<{ indicatorId: string; cdid: string; dataset: string }> = [
-  { indicatorId: "borrowing_outturn", cdid: "JW2O", dataset: "PUSF" },
-  { indicatorId: "debt_interest",     cdid: "JW2P", dataset: "PUSF" },
+interface PsfSeriesSpec {
+  indicatorId: string;
+  cdid: string;
+  dataset: string;
+  /** Transform applied to raw ONS £m before storage. Default: /1000 -> £bn. */
+  transform: (valueMillions: number) => number;
+}
+
+const SERIES: readonly PsfSeriesSpec[] = [
+  {
+    indicatorId: "borrowing_outturn",
+    cdid: "J5II",
+    dataset: "PUSF",
+    // ONS sign: negative = borrowing, positive = surplus. Flip so the stored
+    // £bn is "how much government borrowed this month" (positive = borrowing).
+    transform: (v) => -v / 1000,
+  },
+  {
+    indicatorId: "debt_interest",
+    cdid: "NMFX",
+    dataset: "PUSF",
+    // Sign already aligned: positive = interest paid.
+    transform: (v) => v / 1000,
+  },
 ];
 
 export const onsPsfAdapter: DataSourceAdapter = {
@@ -40,7 +71,7 @@ export const onsPsfAdapter: DataSourceAdapter = {
     const observations: RawObservation[] = [];
     let representativeUrl = "";
 
-    for (const { indicatorId, cdid, dataset } of SERIES) {
+    for (const { indicatorId, cdid, dataset, transform } of SERIES) {
       const url = await resolveOnsDataUrl(fetchImpl, SOURCE_ID, cdid, dataset);
       representativeUrl = url;
       const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
@@ -49,11 +80,9 @@ export const onsPsfAdapter: DataSourceAdapter = {
       const body = await res.text();
       const parsed = parseOnsMonthly(body, SOURCE_ID, url);
       const payloadHash = await sha256Hex(body);
-      // ONS returns borrowing in GBP millions; our indicators are in GBP bn.
-      const value = parsed.value / 1000;
       observations.push({
         indicatorId,
-        value,
+        value: transform(parsed.value),
         observedAt: parsed.observedAt,
         sourceId: SOURCE_ID,
         payloadHash,
@@ -73,7 +102,7 @@ export const onsPsfAdapter: DataSourceAdapter = {
     let skippedOutOfRange = 0;
     let skippedNonNumeric = 0;
 
-    for (const { indicatorId, cdid, dataset } of SERIES) {
+    for (const { indicatorId, cdid, dataset, transform } of SERIES) {
       const url = await resolveOnsDataUrl(fetchImpl, SOURCE_ID, cdid, dataset);
       representativeUrl = url;
       const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
@@ -85,8 +114,7 @@ export const onsPsfAdapter: DataSourceAdapter = {
         const ms = Date.parse(point.observedAt);
         if (!Number.isFinite(ms)) { skippedNonNumeric++; continue; }
         if (ms < fromMs || ms > toMs) { skippedOutOfRange++; continue; }
-        // ONS returns GBPm; indicator unit is GBPbn.
-        const value = point.value / 1000;
+        const value = transform(point.value);
         observations.push({
           indicatorId,
           value,

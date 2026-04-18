@@ -1,21 +1,15 @@
 /**
- * OBR Economic & Fiscal Outlook adapter.
+ * OBR Economic & Fiscal Outlook adapter (fixture-backed).
  *
- * The OBR publishes the EFO as a set of PDFs and XLSX attachments with no
- * stable CSV-over-HTTP endpoint. Rather than scrape the HTML release page on
- * every cron tick (fragile) this adapter:
+ * The OBR publishes the EFO as a set of PDFs and XLSX attachments. There is
+ * no stable CSV-over-HTTP endpoint, so this adapter is entirely fixture-
+ * driven: the editorial pipeline refreshes `src/fixtures/obr-efo.json` after
+ * every OBR publication (twice yearly plus any in-year update). Nothing on
+ * this code path hits the network.
  *
- *   1. If an env-configured `OBR_EFO_CSV_URL` is available at call time and the
- *      response parses as our expected shape, prefer that.
- *   2. Otherwise, fall back to the hand-curated fixture at
- *      `src/fixtures/obr-efo.json`, refreshed by the editorial pipeline after
- *      every OBR publication.
- *
- * This is the fallback pattern explicitly sanctioned in SPEC section 7.5 for
- * sources without machine-readable feeds.
- *
- * TODO(source): https://obr.uk/efo/ -- replace fixture with a real CSV once
- * OBR publishes a stable URL.
+ * If/when OBR publishes a machine-readable feed the adapter should grow a
+ * live branch, but it has never had one -- earlier versions of this file
+ * claimed an env-driven `OBR_EFO_CSV_URL` path that was not implemented.
  */
 import fixture from "../fixtures/obr-efo.json" with { type: "json" };
 import type { AdapterResult, DataSourceAdapter, RawObservation } from "../types.js";
@@ -35,7 +29,7 @@ interface ObrFixture {
 export const obrEfoAdapter: DataSourceAdapter = {
   id: SOURCE_ID,
   name: "OBR Economic & Fiscal Outlook (fixture-backed)",
-  async fetch(_fetchImpl): Promise<AdapterResult> {
+  async fetch(): Promise<AdapterResult> {
     const data = fixture as unknown as ObrFixture;
     if (!data || typeof data !== "object" || !data.indicators) {
       throw new AdapterError({

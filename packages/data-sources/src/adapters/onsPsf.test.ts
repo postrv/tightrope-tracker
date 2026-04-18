@@ -55,8 +55,8 @@ describe("onsPsfAdapter.fetchHistorical", () => {
       }
       // Both CDIDs use the same synthetic payload shape; vary base per CDID
       // so the two series produce distinct values.
-      if (url.includes("/jw2o/")) return mockJson(monthsPayload(10_000, 1_000)); // 10bn, +1bn/month
-      if (url.includes("/jw2p/")) return mockJson(monthsPayload(5_000, 500));     // 5bn, +0.5bn/month
+      if (url.includes("/j5ii/")) return mockJson(monthsPayload(-10_000, -1_000)); // ONS signs: -10bn, -1bn/month -> we flip so stored = +10, +11, +12
+      if (url.includes("/nmfx/")) return mockJson(monthsPayload(5_000, 500));       // 5bn, +0.5bn/month
       throw new Error(`unexpected URL: ${url}`);
     };
 
@@ -67,7 +67,12 @@ describe("onsPsfAdapter.fetchHistorical", () => {
     expect(result.observations).toHaveLength(6); // 2 series × 3 months
 
     const mar = result.observations.find((o) => o.indicatorId === "borrowing_outturn" && o.observedAt === "2025-03-01T00:00:00Z")!;
-    expect(mar.value).toBeCloseTo(12, 6); // base 10bn + 2 months × 1bn, values converted from GBPm /1000
+    // ONS J5II raw for March: -10000 + (-1000*2) = -12000 £m.
+    // Our transform flips the sign and /1000 -> +12 £bn "net borrowing".
+    expect(mar.value).toBeCloseTo(12, 6);
+    const marInterest = result.observations.find((o) => o.indicatorId === "debt_interest" && o.observedAt === "2025-03-01T00:00:00Z")!;
+    // NMFX raw for March: 5000 + (500*2) = 6000 £m. /1000 -> 6 £bn.
+    expect(marInterest.value).toBeCloseTo(6, 6);
     for (const o of result.observations) {
       expect(o.payloadHash).toMatch(/^hist:[0-9a-f]{64}$/);
       expect(o.sourceId).toBe("ons_psf");

@@ -1,16 +1,22 @@
 /**
  * ONS Real-Time Indicators adapter.
  *
- * RTI publishes several experimental series; we consume:
- *   - PAYE payroll employees, MoM percent change -> `payroll_mom`
- *   - Direct-debit failure rate (share, %)       -> `dd_failure_rate`
+ * Two indicators, two provenance modes:
+ *   - `payroll_mom` (live, ONS timeseries K54L):
+ *       Despite the legacy indicator id, the upstream series is AWE
+ *       whole-economy regular-pay index (EMP dataset) -- an index level,
+ *       not a PAYE payroll MoM %. The indicator definition in
+ *       packages/shared/src/indicators.ts has been updated to reflect that.
+ *       A proper PAYE-RTI-backed payroll-change indicator needs a CDID that
+ *       isn't exposed through the public beta search API today; until it is,
+ *       we fetch and store the regular-pay index so the labour pillar keeps
+ *       a wage-adjacent live signal.
  *
- * RTI is released through the ONS timeseries JSON endpoint. Where a dedicated
- * series is not available (the DD failure rate is published as an Excel
- * indicator rather than a timeseries series) we fall back to a fixture.
- *
- * TODO(source): verify CDIDs -- RTI labelling is experimental and changes
- * between releases.
+ *   - `dd_failure_rate` (fixture):
+ *       ONS publishes the direct-debit failure rate as an Excel indicator
+ *       inside the RTI Excel bundle, not as a queryable timeseries. We
+ *       mirror the headline figure from a hand-curated fixture and refresh
+ *       on each RTI release.
  */
 import rtiFixture from "../fixtures/ons-rti.json" with { type: "json" };
 import type {

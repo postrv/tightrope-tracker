@@ -251,9 +251,15 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Tightness of the labour market; falling = slack.", formatDisplay: (v) => v.toFixed(2),
   },
   payroll_mom: {
-    id: "payroll_mom", pillar: "labour", label: "PAYE payroll employees (MoM)", shortLabel: "Payroll MoM",
-    unit: "pp", weight: 0.10, risingIsBad: false, sourceId: "ons_rti",
-    description: "Month-on-month change in PAYE payroll count.", formatDisplay: fmtPct(2),
+    // Indicator ID preserved for DB continuity. The upstream CDID (K54L) is
+    // the AWE whole-economy regular-pay index (seasonally adjusted, excl.
+    // arrears), not a PAYE payroll-count series -- the earlier label was
+    // incorrect. Scoring still works (baseline is the same series) but the
+    // displayed unit/format now match what the number actually is.
+    id: "payroll_mom", pillar: "labour", label: "AWE regular pay index", shortLabel: "Regular pay",
+    unit: "index", weight: 0.10, risingIsBad: false, sourceId: "ons_rti",
+    description: "Average Weekly Earnings -- whole economy regular-pay index (2015=100, SA, excl. arrears). Rising means earnings are growing.",
+    formatDisplay: fmtIndex(1),
   },
   real_regular_pay: {
     id: "real_regular_pay", pillar: "labour", label: "Real regular pay growth, YoY", shortLabel: "Real pay",

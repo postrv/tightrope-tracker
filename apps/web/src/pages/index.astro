@@ -22,6 +22,14 @@ const isStale = Boolean(snapshot.headline.stale);
 const stalePillarLabels = Object.values(snapshot.pillars)
   .filter((p) => p.stale)
   .map((p) => p.pillar);
+
+// Source-health: upstream feeds whose latest ingestion attempt did not
+// succeed. Surfaces the "BoE is broken" case before the 2d/7d staleness
+// thresholds -- data is still within its freshness window but we want the
+// reader to know a feed is silently running on carry-forward values.
+const failingSources = snapshot.sourceHealth ?? [];
+const failingSourceNames = failingSources.map((s) => s.name);
+const showSourceWarning = !isStale && !empty && failingSources.length > 0;
 ---
 <BaseLayout title="Tightrope Tracker — a live dashboard of UK economic constraint">
   <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} stale={isStale} />
@@ -33,6 +41,13 @@ const stalePillarLabels = Object.values(snapshot.pillars)
     ) : isStale ? (
       <div class="stale-banner stale container" role="status">
         <strong>Showing last-known values.</strong> One or more inputs haven't refreshed in their usual window ({stalePillarLabels.join(", ")}). The figures below are carry-forward readings, not live prints — we'll clear this banner automatically as fresh data arrives.
+        {failingSources.length > 0 ? (
+          <span class="source-note"> Upstream feeds affected: {failingSourceNames.join(", ")}.</span>
+        ) : null}
+      </div>
+    ) : showSourceWarning ? (
+      <div class="stale-banner warn container" role="status">
+        <strong>Upstream feed{failingSources.length === 1 ? "" : "s"} failing.</strong> {failingSourceNames.join(", ")} {failingSources.length === 1 ? "hasn't" : "haven't"} ingested successfully on {failingSources.length === 1 ? "its" : "their"} last run. The figures below are still within their freshness window — we're showing the last good readings and will clear this banner as soon as ingestion recovers.
       </div>
     ) : null}
 
@@ -67,4 +82,11 @@ const stalePillarLabels = Object.values(snapshot.pillars)
   color: var(--ink-0);
 }
 .stale-banner.stale strong { color: var(--band-critical); font-family: inherit; font-weight: 600; }
+.stale-banner.warn {
+  border-left-color: var(--band-strain, var(--accent));
+  background: color-mix(in srgb, var(--band-strain, var(--accent)) 8%, transparent);
+  color: var(--ink-0);
+}
+.stale-banner.warn strong { color: var(--band-strain, var(--accent)); font-family: inherit; font-weight: 600; }
+.stale-banner .source-note { color: var(--ink-1); margin-left: 4px; }
 </style>

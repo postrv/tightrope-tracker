@@ -15,12 +15,13 @@ import type {
   ScoreHistoryPoint,
   DeliveryCommitment,
   DeliveryStatus,
+  SourceHealthEntry,
   TimelineEvent,
   TimelineCategory,
   Trend,
   Iso8601,
 } from "@tightrope/shared";
-import { PILLAR_ORDER, PILLARS, bandFor, isScoreRowStale } from "@tightrope/shared";
+import { PILLAR_ORDER, PILLARS, bandFor, computeSourceHealth, isScoreRowStale } from "@tightrope/shared";
 
 interface PillarLatestRow {
   id: PillarId;
@@ -44,7 +45,7 @@ interface HeadlineRow {
 export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
   const db = env.DB;
 
-  const [headlineRow, headlineHistory, pillarsLatest, pillarHistory] = await Promise.all([
+  const [headlineRow, headlineHistory, pillarsLatest, pillarHistory, latestAttempts, lastSuccesses] = await Promise.all([
     db.prepare(
       "SELECT observed_at, value, band, dominant, editorial FROM headline_scores ORDER BY observed_at DESC LIMIT 1",
     ).first<HeadlineRow>(),
@@ -64,6 +65,19 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
        WHERE observed_at >= datetime('now', '-30 days')
        ORDER BY pillar_id, observed_at ASC`,
     ).all<PillarSeriesRow>(),
+    // Latest ingestion attempt per source (any status). Used to surface "source
+    // is failing upstream" ahead of the staleness-threshold thresholds.
+    db.prepare(
+      `SELECT i.source_id, i.started_at, i.status FROM ingestion_audit i
+       JOIN (
+         SELECT source_id, MAX(started_at) AS ts FROM ingestion_audit GROUP BY source_id
+       ) m ON i.source_id = m.source_id AND i.started_at = m.ts`,
+    ).all<{ source_id: string; started_at: string; status: string }>(),
+    // Last successful attempt per source -- lets the UI say "failing since X hours ago".
+    db.prepare(
+      `SELECT source_id, MAX(started_at) AS last_success
+       FROM ingestion_audit WHERE status = 'success' GROUP BY source_id`,
+    ).all<{ source_id: string; last_success: string }>(),
   ]);
 
   const now = new Date();
@@ -119,7 +133,16 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     ...(headlineStale ? { stale: true } : {}),
   };
 
-  return { headline, pillars, schemaVersion: 1 };
+  const lastSuccessBySource: Record<string, string> = {};
+  for (const r of lastSuccesses.results) lastSuccessBySource[r.source_id] = r.last_success;
+  const sourceHealth: readonly SourceHealthEntry[] = computeSourceHealth(
+    latestAttempts.results.map((r) => ({ sourceId: r.source_id, startedAt: r.started_at, status: r.status })),
+    lastSuccessBySource,
+  );
+
+  const snapshot: ScoreSnapshot = { headline, pillars, schemaVersion: 1 };
+  if (sourceHealth.length > 0) snapshot.sourceHealth = sourceHealth;
+  return snapshot;
 }
 
 export async function buildHistoryFromD1(env: Env, days: number): Promise<ScoreHistory> {

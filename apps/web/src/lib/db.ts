@@ -3,11 +3,12 @@ import type {
   ScoreSnapshot,
   PillarScore,
   HeadlineScore,
+  SourceHealthEntry,
   TodayMovement,
   Trend,
   Iso8601,
 } from "@tightrope/shared";
-import { PILLAR_ORDER, PILLARS, bandFor, isScoreRowStale } from "@tightrope/shared";
+import { PILLAR_ORDER, PILLARS, bandFor, computeSourceHealth, isScoreRowStale } from "@tightrope/shared";
 import type { DeliveryCommitment, DeliveryStatus } from "@tightrope/shared/delivery";
 import type { TimelineEvent, TimelineCategory } from "@tightrope/shared/timeline";
 
@@ -54,33 +55,43 @@ function isFresh(snapshot: ScoreSnapshot): boolean {
 export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
   const db = env.DB;
 
-  // Latest headline + 90d history
-  const headlineRow = await db
-    .prepare("SELECT observed_at, value, band, dominant, editorial FROM headline_scores ORDER BY observed_at DESC LIMIT 1")
-    .first<ScoreRow>();
-
-  const headlineHistory = await db
-    .prepare("SELECT observed_at, value FROM headline_scores ORDER BY observed_at DESC LIMIT 90")
-    .all<ScoreRow>();
-
-  const pillarsLatest = await db
-    .prepare(
+  // Run the four score queries and the two ingestion_audit queries in parallel
+  // -- they're all independent reads against D1 and blocking sequentially here
+  // would add 4-6x round-trip latency to every cache miss.
+  const [headlineRow, headlineHistory, pillarsLatest, pillarHistory, latestAttempts, lastSuccesses] = await Promise.all([
+    db.prepare(
+      "SELECT observed_at, value, band, dominant, editorial FROM headline_scores ORDER BY observed_at DESC LIMIT 1",
+    ).first<ScoreRow>(),
+    db.prepare(
+      "SELECT observed_at, value FROM headline_scores ORDER BY observed_at DESC LIMIT 90",
+    ).all<ScoreRow>(),
+    db.prepare(
       `SELECT p.pillar_id AS id, p.observed_at, p.value, p.band
        FROM pillar_scores p
        JOIN (
          SELECT pillar_id, MAX(observed_at) AS ts FROM pillar_scores GROUP BY pillar_id
        ) m ON p.pillar_id = m.pillar_id AND p.observed_at = m.ts`,
-    )
-    .all<{ id: PillarId; observed_at: string; value: number; band: string }>();
-
-  const pillarHistory = await db
-    .prepare(
+    ).all<{ id: PillarId; observed_at: string; value: number; band: string }>(),
+    db.prepare(
       `SELECT pillar_id AS id, observed_at, value
        FROM pillar_scores
        WHERE observed_at >= datetime('now', '-30 days')
        ORDER BY pillar_id, observed_at ASC`,
-    )
-    .all<{ id: PillarId; observed_at: string; value: number }>();
+    ).all<{ id: PillarId; observed_at: string; value: number }>(),
+    // Latest ingestion attempt per source (any status) -- powers the
+    // source-health signal that surfaces upstream failures earlier than the
+    // observation-age staleness thresholds.
+    db.prepare(
+      `SELECT i.source_id, i.started_at, i.status FROM ingestion_audit i
+       JOIN (
+         SELECT source_id, MAX(started_at) AS ts FROM ingestion_audit GROUP BY source_id
+       ) m ON i.source_id = m.source_id AND i.started_at = m.ts`,
+    ).all<{ source_id: string; started_at: string; status: string }>(),
+    db.prepare(
+      `SELECT source_id, MAX(started_at) AS last_success
+       FROM ingestion_audit WHERE status = 'success' GROUP BY source_id`,
+    ).all<{ source_id: string; last_success: string }>(),
+  ]);
 
   // Shape into snapshot.
   const now = new Date();
@@ -131,7 +142,22 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     ...(headlineStale ? { stale: true } : {}),
   };
 
-  return { headline, pillars, schemaVersion: 1 };
+  type AttemptRow = { source_id: string; started_at: string; status: string };
+  type SuccessRow = { source_id: string; last_success: string };
+  const lastSuccessBySource: Record<string, string> = {};
+  for (const r of (lastSuccesses.results as SuccessRow[])) lastSuccessBySource[r.source_id] = r.last_success;
+  const sourceHealth: readonly SourceHealthEntry[] = computeSourceHealth(
+    (latestAttempts.results as AttemptRow[]).map((r: AttemptRow) => ({
+      sourceId: r.source_id,
+      startedAt: r.started_at,
+      status: r.status,
+    })),
+    lastSuccessBySource,
+  );
+
+  const snapshot: ScoreSnapshot = { headline, pillars, schemaVersion: 1 };
+  if (sourceHealth.length > 0) snapshot.sourceHealth = sourceHealth;
+  return snapshot;
 }
 
 function deltaAgo(series: readonly number[], n: number): number {

@@ -49,9 +49,32 @@ export interface HeadlineScore {
   stale?: boolean;
 }
 
+/**
+ * A source whose most recent ingestion attempt did not succeed.
+ *
+ * Surfaces the "upstream feed has gone quiet" case earlier than the staleness
+ * thresholds on PillarScore/HeadlineScore, which only fire once the existing
+ * observations age out of their freshness window (2 days for fast-cadence, 7
+ * days for slow-cadence pillars). A source can be failing for hours while
+ * carry-forward values still score as fresh -- we want to say so.
+ */
+export interface SourceHealthEntry {
+  sourceId: string;
+  /** Human-readable name from the SOURCES catalog; "Unknown source" if not found. */
+  name: string;
+  /** "failure" or "partial" -- derived from the latest ingestion_audit row's status. */
+  status: "failure" | "partial";
+  /** When the most recent attempt (that failed) was started. */
+  lastAttemptAt: Iso8601;
+  /** When the source last ingested successfully; undefined if it has never succeeded. */
+  lastSuccessAt?: Iso8601;
+}
+
 export interface ScoreSnapshot {
   headline: HeadlineScore;
   pillars: Record<PillarId, PillarScore>;
+  /** Sources whose latest ingestion attempt did not succeed. Absent or empty when every source is healthy. */
+  sourceHealth?: readonly SourceHealthEntry[];
   schemaVersion: 1;
 }
 

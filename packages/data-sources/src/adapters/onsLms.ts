@@ -38,8 +38,10 @@ interface SeriesSpec {
 const SERIES: readonly SeriesSpec[] = [
   { indicatorId: "unemployment",       cdid: "MGSX", dataset: "LMS" },
   { indicatorId: "inactivity_rate",    cdid: "LF2S", dataset: "LMS" },
-  // LMS returns health-related inactivity in thousands; our indicator is in millions.
-  { indicatorId: "inactivity_health",  cdid: "LFK2", dataset: "LMS", transform: (v) => v / 1000 },
+  // Long-term sick economic inactivity, 16-64, thousands (SA). ONS retired the
+  // old LFK2 code during an LMS restatement; LF69 is the live successor.
+  // Our indicator expects millions, so the /1000 transform stays.
+  { indicatorId: "inactivity_health",  cdid: "LF69", dataset: "LMS", transform: (v) => v / 1000 },
   { indicatorId: "real_regular_pay",   cdid: "A3WW", dataset: "EMP" },
 ];
 

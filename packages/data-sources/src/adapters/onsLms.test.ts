@@ -35,13 +35,13 @@ describe("onsLmsAdapter", () => {
     const table: Record<string, number> = {
       MGSX: 4.3,   // unemployment
       LF2S: 21.8,  // inactivity
-      LFK2: 2800,  // health inactivity in '000s -> adapter divides by 1000 => 2.8m
+      LF69: 2800,  // health inactivity in '000s -> adapter divides by 1000 => 2.8m
       A3WW: 2.1,   // real regular pay yoy
       AP2Y: 820,   // vacancies (000s)
       MGSC: 1400,  // unemployed level (000s)
     };
     const datasetFor: Record<string, string> = {
-      MGSX: "LMS", LF2S: "LMS", LFK2: "LMS", MGSC: "LMS",
+      MGSX: "LMS", LF2S: "LMS", LF69: "LMS", MGSC: "LMS",
       AP2Y: "UNEM", A3WW: "EMP",
     };
     const fetchImpl = async (input: RequestInfo | URL): Promise<Response> => {

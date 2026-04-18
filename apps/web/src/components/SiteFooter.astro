@@ -18,6 +18,7 @@ const refreshLabel = stale ? "Last fresh refresh" : "Last data refresh";
       <div class="foot-col">
         <h4>About</h4>
         <p class="foot-about"><strong>Tightrope Tracker</strong> is an independent civic data project. Not affiliated with any political party, think tank, or government body. All data is public and verifiable. Built by citizens who believe sunlight is the best disinfectant.</p>
+        <p class="foot-credits">Made by Laurence Avent for <a href="https://lookingforgrowth.uk/" rel="noopener" target="_blank">Looking for Growth UK</a>.</p>
       </div>
       <div class="foot-col">
         <h4>The score</h4>
@@ -65,6 +66,7 @@ footer.site a:hover { color: var(--accent); }
 .foot-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 9px; font-size: 13px; }
 .foot-about { font-size: 13px; line-height: 1.6; max-width: 380px; }
 .foot-about strong { color: var(--ink-0); font-family: var(--font-serif); font-weight: 400; }
+.foot-credits { font-size: 12.5px; line-height: 1.6; max-width: 380px; margin-top: 12px; color: var(--ink-2); }
 .foot-bottom { border-top: 1px solid var(--border-soft); padding-top: 20px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
 .refresh-ts { font-family: var(--font-mono); color: var(--ink-1); }
 .refresh-ts.stale { color: var(--band-critical); }

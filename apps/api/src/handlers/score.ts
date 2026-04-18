@@ -53,6 +53,7 @@ export async function handleScore(
     if (looksUnseeded(snapshot)) return notSeeded();
     return json(snapshot);
   } catch (err) {
+    console.error("score snapshot failed", err);
     return json({ error: "failed to load score snapshot", code: "DB_ERROR" }, 500);
   }
 }
@@ -96,6 +97,7 @@ export async function handleScoreHistory(
     }
     return json(history);
   } catch (err) {
+    console.error("score history failed", err);
     return json({ error: "failed to load score history", code: "DB_ERROR" }, 500);
   }
 }

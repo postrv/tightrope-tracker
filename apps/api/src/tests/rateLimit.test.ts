@@ -62,15 +62,17 @@ describe("enforceRateLimit", () => {
 });
 
 describe("clientIp", () => {
-  it("prefers cf-connecting-ip", () => {
+  it("uses cf-connecting-ip", () => {
     const req = new Request("https://x", {
-      headers: { "cf-connecting-ip": "1.2.3.4", "x-forwarded-for": "9.9.9.9" },
+      headers: { "cf-connecting-ip": "1.2.3.4" },
     });
     expect(clientIp(req)).toBe("1.2.3.4");
   });
-  it("falls back to first x-forwarded-for entry", () => {
-    const req = new Request("https://x", { headers: { "x-forwarded-for": "2.2.2.2, 3.3.3.3" } });
-    expect(clientIp(req)).toBe("2.2.2.2");
+  it("ignores attacker-controlled x-forwarded-for / x-real-ip", () => {
+    const req = new Request("https://x", {
+      headers: { "x-forwarded-for": "2.2.2.2, 3.3.3.3", "x-real-ip": "4.4.4.4" },
+    });
+    expect(clientIp(req)).toBe("unknown");
   });
   it("defaults to 'unknown'", () => {
     const req = new Request("https://x");

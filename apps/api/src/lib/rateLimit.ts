@@ -62,10 +62,9 @@ export function decide(
 }
 
 export function clientIp(req: Request): string {
-  return (
-    req.headers.get("cf-connecting-ip") ??
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    req.headers.get("x-real-ip") ??
-    "unknown"
-  );
+  // Only trust CF-Connecting-IP — set by Cloudflare at the edge and not
+  // spoofable by a client. Attacker-controlled x-forwarded-for / x-real-ip
+  // would let any caller rotate through fake IPs to bypass the 120 req/min cap.
+  // Local dev (wrangler dev) always receives CF-Connecting-IP = 127.0.0.1.
+  return req.headers.get("cf-connecting-ip") ?? "unknown";
 }

@@ -24,6 +24,7 @@ export async function handleDelivery(
     if (commitments.length === 0) return notSeeded();
     return json(commitments);
   } catch (err) {
+    console.error("delivery load failed", err);
     return json({ error: "failed to load delivery commitments", code: "DB_ERROR" }, 500);
   }
 }

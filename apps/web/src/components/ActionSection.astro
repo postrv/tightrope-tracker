@@ -108,11 +108,22 @@ const embedHtml = `<iframe src="${siteOrigin}/embed/headline"
 
   // Fallback contact page for when the API response omits profileUrl.
   const FALLBACK_PROFILE = 'https://members.parliament.uk/members/commons';
+  const FALLBACK_EMAIL = 'contact@parliament.uk';
   const SUBJECT = 'Tightrope Tracker — constituent query';
+
+  // Defence-in-depth: the API response is trusted today but cached for 7 days.
+  // A bad upstream response with a javascript: URL or newline-injected email
+  // address would otherwise turn into a clickable XSS or mailto header injection.
+  function safeProfileUrl(url) {
+    return typeof url === 'string' && /^https:\/\/members\.parliament\.uk\//.test(url) ? url : FALLBACK_PROFILE;
+  }
+  function safeEmail(email) {
+    return typeof email === 'string' && /^[^\s<>@",;:\\]+@[^\s<>@",;:\\]+\.[^\s<>@",;:\\]+$/.test(email) ? email : FALLBACK_EMAIL;
+  }
 
   function updateMailto(email, body) {
     if (!mailto) return;
-    mailto.href = 'mailto:' + email + '?subject=' + encodeURIComponent(SUBJECT) + '&body=' + encodeURIComponent(body);
+    mailto.href = 'mailto:' + safeEmail(email) + '?subject=' + encodeURIComponent(SUBJECT) + '&body=' + encodeURIComponent(body);
   }
 
   if (form && result && meta && letter && sendBtn && mailto && errorEl) {
@@ -136,7 +147,7 @@ const embedHtml = `<iframe src="${siteOrigin}/embed/headline"
         // Primary CTA: copy letter + open the MP's Parliament contact page.
         // This is more reliable than mailto: because email is rarely published
         // and mailto: handlers are inconsistent across browsers/OSes.
-        const profileUrl = mp.profileUrl || FALLBACK_PROFILE;
+        const profileUrl = safeProfileUrl(mp.profileUrl);
         sendBtn.href = profileUrl;
         sendBtn.textContent = 'Copy letter & open ' + (mp.name || 'MP') + "'s contact page ↗";
         sendBtn.onclick = async (ev) => {
@@ -151,7 +162,7 @@ const embedHtml = `<iframe src="${siteOrigin}/embed/headline"
         };
 
         // Secondary CTA: mailto: fallback for users who prefer their own client.
-        const email = mp.email || 'contact@parliament.uk';
+        const email = mp.email || FALLBACK_EMAIL;
         updateMailto(email, letter.value);
         letter.addEventListener('input', () => { updateMailto(email, letter.value); }, { once: false });
       } catch (err) {

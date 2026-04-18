@@ -36,6 +36,7 @@ export async function handleTimeline(
     if (events.length === 0) return notSeeded();
     return json(events);
   } catch (err) {
+    console.error("timeline load failed", err);
     return json({ error: "failed to load timeline", code: "DB_ERROR" }, 500);
   }
 }

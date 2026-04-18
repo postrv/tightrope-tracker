@@ -26,6 +26,9 @@ export function timingSafeEqual(a: string, b: string): boolean {
  * fiscal, labour, delivery, recompute, today.
  */
 export async function handleAdminRun(req: Request, env: Env, url: URL): Promise<Response> {
+  if (req.method !== "POST") {
+    return new Response("method not allowed", { status: 405, headers: { Allow: "POST" } });
+  }
   const expected = env.ADMIN_TOKEN;
   if (!expected) {
     return json({ error: "ADMIN_TOKEN not configured" }, 503);
@@ -67,7 +70,8 @@ export async function handleAdminRun(req: Request, env: Env, url: URL): Promise<
         return json({ error: `unknown source '${source}'` }, 400);
     }
   } catch (err) {
-    return json({ error: (err as Error)?.message ?? String(err) }, 500);
+    console.error(`admin run failed: source=${source}`, err);
+    return json({ error: "internal error" }, 500);
   }
 }
 

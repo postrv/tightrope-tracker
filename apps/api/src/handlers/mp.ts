@@ -97,6 +97,7 @@ export async function handleMp(req: Request, env: Env): Promise<Response> {
 
     return json(lookup);
   } catch (err) {
+    console.error("mp lookup failed", err);
     return json({ error: "upstream lookup failed", code: "UPSTREAM_ERROR" }, 502);
   }
 }
@@ -111,6 +112,12 @@ async function fetchMpFromParliament(env: Env, postcode: string): Promise<MpLook
   // The Members API exposes a postcode → constituency → current member flow.
   // Step 1: resolve postcode to constituency via the /Location/Constituency/Search endpoint.
   const base = env.PARLIAMENT_API_BASE.replace(/\/$/, "");
+  // Belt-and-braces SSRF guard: PARLIAMENT_API_BASE is a [vars] value, not a
+  // secret, so a bad wrangler.toml edit could repoint this to anywhere. Pin it
+  // to the members-api host.
+  if (!/^https:\/\/members-api\.parliament\.uk(\/|$)/.test(base)) {
+    throw new Error("invalid PARLIAMENT_API_BASE");
+  }
   const searchUrl = `${base}/Location/Constituency/Search?searchText=${encodeURIComponent(postcode)}&skip=0&take=1`;
   const searchRes = await fetch(searchUrl, { headers: { accept: "application/json" } });
   if (!searchRes.ok) throw new Error(`constituency search ${searchRes.status}`);
@@ -143,11 +150,16 @@ interface ParliamentMember {
 }
 
 function shapeMember(member: ParliamentMember, constituency: string): MpLookupResponse {
+  // Upstream fields are trusted today but cached for 7 days — scrub control
+  // chars and length-cap so a malformed response can't poison downstream
+  // renderers (mailto header injection, oversized DB rows).
+  const safe = (s: string | undefined, max: number): string =>
+    (s ?? "").replace(/[\r\n\t\x00-\x1f\x7f]/g, "").slice(0, max);
   return {
-    name: member.nameDisplayAs ?? member.nameFullTitle ?? "",
-    party: member.latestParty?.name ?? "",
+    name: safe(member.nameDisplayAs ?? member.nameFullTitle, 200),
+    party: safe(member.latestParty?.name, 120),
     email: null,
-    constituency: member.latestHouseMembership?.membershipFrom ?? constituency,
+    constituency: safe(member.latestHouseMembership?.membershipFrom ?? constituency, 120),
     memberId: member.id,
     profileUrl: buildProfileUrl(member.id),
   };

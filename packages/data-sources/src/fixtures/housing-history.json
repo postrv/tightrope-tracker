@@ -266,8 +266,9 @@
         "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-october-to-december-2025"
       },
       "planning_consents": {
-        "value": 63.5,
-        "raw_decisions_granted": 7300,
+        "value": 62.6,
+        "raw_decisions_granted": 7200,
+        "_note": "Components: 900 major + 6,300 minor = 7,200. The release landing page's rounded summary reported 7,300; the major+minor breakdown from the statistical release body sums to 7,200, which is authoritative.",
         "release": "Planning applications in England: October to December 2025",
         "published": "2026-03-19",
         "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-october-to-december-2025"

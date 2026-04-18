@@ -16,13 +16,23 @@ import { loadHomepageData } from "~/lib/page-data.js";
 
 const data = await loadHomepageData(Astro.locals);
 const { snapshot, movements, delivery, timeline, empty } = data;
+const isStale = Boolean(snapshot.headline.stale);
+// Figure out which pillars specifically are stale so the banner can name them
+// instead of making the reader hunt across the page.
+const stalePillarLabels = Object.values(snapshot.pillars)
+  .filter((p) => p.stale)
+  .map((p) => p.pillar);
 ---
 <BaseLayout title="Tightrope Tracker — a live dashboard of UK economic constraint">
-  <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} />
+  <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} stale={isStale} />
   <main id="main">
     {empty ? (
       <div class="stale-banner container" role="status">
         Data loading — the first ingestion run hasn't completed. Some figures on this page are placeholders and will update automatically.
+      </div>
+    ) : isStale ? (
+      <div class="stale-banner stale container" role="status">
+        <strong>Showing last-known values.</strong> One or more inputs haven't refreshed in their usual window ({stalePillarLabels.join(", ")}). The figures below are carry-forward readings, not live prints — we'll clear this banner automatically as fresh data arrives.
       </div>
     ) : null}
 
@@ -37,7 +47,7 @@ const { snapshot, movements, delivery, timeline, empty } = data;
     <ShareGrid snapshot={snapshot} movements={movements} delivery={delivery} />
     <ActionSection headline={snapshot.headline} />
   </main>
-  <SiteFooter updatedAt={snapshot.headline.updatedAt} />
+  <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={isStale} />
 </BaseLayout>
 
 <style>
@@ -51,4 +61,10 @@ const { snapshot, movements, delivery, timeline, empty } = data;
   font-size: 12px;
   border-radius: 0 8px 8px 0;
 }
+.stale-banner.stale {
+  border-left-color: var(--band-critical);
+  background: color-mix(in srgb, var(--band-critical) 8%, transparent);
+  color: var(--ink-0);
+}
+.stale-banner.stale strong { color: var(--band-critical); font-family: inherit; font-weight: 600; }
 </style>

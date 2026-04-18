@@ -2,7 +2,7 @@ import type { D1PreparedStatement } from "@cloudflare/workers-types";
 import {
   INDICATORS,
   PILLAR_ORDER,
-  PILLARS,
+  maxStaleMsForPillar,
   type PillarId,
   type PillarScore,
   type ScoreHistory,
@@ -27,23 +27,8 @@ import {
 const KV_TTL_6H = 60 * 60 * 6;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/**
- * Per-pillar max-staleness windows. Fast-cadence pillars (intraday / daily) get
- * a 2-day ceiling; slow-cadence pillars (monthly / event) tolerate 7 days
- * before we flag the reading as stale. If fewer than a quorum of indicators
- * in a pillar have a reading inside its window the pillar is flagged `stale`,
- * and any stale pillar poisons the headline.
- */
-const MAX_STALE_MS_FAST = 2 * DAY_MS;
-const MAX_STALE_MS_SLOW = 7 * DAY_MS;
 /** Fraction of pillar indicators that must be fresh to count as a quorum. */
 const QUORUM_FRACTION = 0.5;
-
-function maxStaleMsForPillar(pillarId: PillarId): number {
-  const cadence = PILLARS[pillarId].cadence;
-  // "intraday" and "daily" get the tight window; "monthly" and "event" get the loose one.
-  return cadence === "intraday" || cadence === "daily" ? MAX_STALE_MS_FAST : MAX_STALE_MS_SLOW;
-}
 
 export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   const [baseline, recent, headlineHist, pillarHist] = await Promise.all([
@@ -129,6 +114,9 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   }
 
   const pillarRecord = pillars as Record<PillarId, PillarScore>;
+  const stalePillarIds = (Object.entries(pillarRecord) as [PillarId, PillarScore][])
+    .filter(([, ps]) => ps.stale)
+    .map(([id]) => id);
 
   // 90d headline sparkline.
   const sparkline90d = headlineHist.slice(-90).map((h) => h.value);
@@ -153,8 +141,12 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
 
   const snapshot = assembleSnapshot(pillarRecord, headline);
 
-  // Persist: D1 (pillars always; headline only if fully fresh), KV (snapshot + history).
-  await persistScores(env, snapshot, updatedAt, { skipHeadline: anyStale });
+  // Persist: D1 (headline + non-stale pillars only), KV (snapshot + history).
+  // We intentionally skip writing stale rows so the historical series in D1
+  // only ever contains points that were fresh when written. The API's latest
+  // read still returns the last-fresh row; the pillar.stale/headline.stale
+  // flags are inferred at serve time from the observed_at age.
+  await persistScores(env, snapshot, updatedAt, { skipHeadline: anyStale, skipPillars: stalePillarIds });
   await env.KV.put("score:latest", JSON.stringify(snapshot), { expirationTtl: KV_TTL_6H });
 
   const history = buildHistory(headlineHist, pillarHistByPillar);
@@ -167,7 +159,7 @@ async function persistScores(
   env: Env,
   snapshot: ScoreSnapshot,
   observedAt: string,
-  opts: { skipHeadline?: boolean } = {},
+  opts: { skipHeadline?: boolean; skipPillars?: readonly PillarId[] } = {},
 ): Promise<void> {
   const stmts: D1PreparedStatement[] = [];
   if (!opts.skipHeadline) {
@@ -186,7 +178,9 @@ async function persistScores(
         ),
     );
   }
+  const skipPillars = new Set(opts.skipPillars ?? []);
   for (const p of PILLAR_ORDER) {
+    if (skipPillars.has(p)) continue;
     const ps = snapshot.pillars[p];
     stmts.push(
       env.DB
@@ -197,7 +191,7 @@ async function persistScores(
         .bind(p, observedAt, ps.value, ps.band),
     );
   }
-  await env.DB.batch(stmts);
+  if (stmts.length > 0) await env.DB.batch(stmts);
 }
 
 function buildHistory(

@@ -4,6 +4,9 @@ import type { ScoreBand } from "@tightrope/shared";
 interface Props {
   band?: ScoreBand;
   updatedAt?: string;
+  /** When true, the latest reading is past its staleness window -- render a
+   *  "Stale" chip instead of the live "Updated HH:MM" chip. */
+  stale?: boolean;
   /**
    * If true, render a minimal version without section links — used on
    * non-homepage pages where in-page anchors don't resolve.
@@ -11,14 +14,29 @@ interface Props {
   compact?: boolean;
 }
 
-const { band, updatedAt, compact = false } = Astro.props;
-const dotColour = band
-  ? `var(--band-${band === "slack" ? "slack" : band === "steady" ? "steady" : band === "strained" ? "strain" : band === "acute" ? "acute" : "critical"})`
-  : "var(--band-acute)";
+const { band, updatedAt, stale = false, compact = false } = Astro.props;
+const dotColour = stale
+  ? "var(--band-critical)"
+  : band
+    ? `var(--band-${band === "slack" ? "slack" : band === "steady" ? "steady" : band === "strained" ? "strain" : band === "acute" ? "acute" : "critical"})`
+    : "var(--band-acute)";
 
 const hh = updatedAt
   ? new Date(updatedAt).toISOString().substring(11, 16) + " UTC"
   : "";
+
+// Short "2h", "3d" style age string so the stale chip conveys how old the
+// last-known reading is without eating the whole nav bar.
+function ageShort(iso: string | undefined): string {
+  if (!iso) return "";
+  const ms = Date.now() - Date.parse(iso);
+  if (!Number.isFinite(ms) || ms < 0) return "";
+  const hours = Math.floor(ms / 3_600_000);
+  if (hours < 1) return `${Math.max(1, Math.floor(ms / 60_000))}m`;
+  if (hours < 48) return `${hours}h`;
+  return `${Math.floor(hours / 24)}d`;
+}
+const age = ageShort(updatedAt);
 ---
 <nav class="top">
   <div class="container">
@@ -46,9 +64,13 @@ const hh = updatedAt
         <li><a href="/methodology">Method</a></li>
       </ul>
     )}
-    <span class="live-chip" aria-live="polite">
+    <span class={`live-chip${stale ? " stale" : ""}`} aria-live="polite" title={stale ? `Last fresh reading ${hh}` : undefined}>
       <span class="dot" style={`background: ${dotColour}; --pulse: ${dotColour};`}></span>
-      {hh ? `Live · Updated ${hh}` : "Live · Awaiting first ingestion"}
+      {stale
+        ? `Stale · last fresh ${age || hh}`
+        : hh
+          ? `Live · Updated ${hh}`
+          : "Live · Awaiting first ingestion"}
     </span>
   </div>
 </nav>
@@ -85,6 +107,12 @@ nav.top ul a { transition: color 180ms; }
   border-radius: 999px;
   white-space: nowrap;
 }
+.live-chip.stale {
+  color: var(--band-critical);
+  border-color: var(--band-critical);
+  background: color-mix(in srgb, var(--band-critical) 10%, transparent);
+}
+.live-chip.stale .dot { animation: none; }
 .live-chip .dot {
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--band-acute);

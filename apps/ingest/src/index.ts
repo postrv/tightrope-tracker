@@ -102,22 +102,25 @@ export async function dispatchCron(cron: string, env: Env): Promise<void> {
   switch (cron) {
     case "*/5 * * * *": {
       // Market ingest (throttled out of hours) + recompute + today strip.
-      await ingestMarket(env);
-      await recomputeScores(env);
-      await updateTodayMovements(env);
+      // Recompute MUST run even if ingest throws -- it's what carries forward
+      // last-known values with a staleness flag so the site doesn't freeze on
+      // a single upstream outage.
+      await runStage("ingestMarket", () => ingestMarket(env));
+      await runStage("recomputeScores", () => recomputeScores(env));
+      await runStage("updateTodayMovements", () => updateTodayMovements(env));
       return;
     }
     case "0 2 * * *":
-      await ingestFiscal(env);
-      await recomputeScores(env);
+      await runStage("ingestFiscal", () => ingestFiscal(env));
+      await runStage("recomputeScores", () => recomputeScores(env));
       return;
     case "15 2 * * *":
-      await ingestLabour(env);
-      await recomputeScores(env);
+      await runStage("ingestLabour", () => ingestLabour(env));
+      await runStage("recomputeScores", () => recomputeScores(env));
       return;
     case "30 2 * * *":
-      await ingestDelivery(env);
-      await recomputeScores(env);
+      await runStage("ingestDelivery", () => ingestDelivery(env));
+      await runStage("recomputeScores", () => recomputeScores(env));
       return;
     default:
       // Unknown cron -- log loudly and record an audit row so the miss is
@@ -128,6 +131,23 @@ export async function dispatchCron(cron: string, env: Env): Promise<void> {
       } catch (err) {
         console.error(`ingest: cron_miss audit write failed: ${(err as Error)?.message ?? String(err)}`);
       }
+  }
+}
+
+/**
+ * Run a stage of the cron dispatch (ingest, recompute, etc.) and swallow any
+ * exception. The individual stages already surface failures via the audit log
+ * and DLQ; swallowing here is what guarantees the downstream stages still run.
+ * If e.g. ingestMarket throws because a single upstream adapter slipped through,
+ * recomputeScores must still run so last-known values are carried forward with
+ * the stale flag set rather than the whole dashboard freezing.
+ */
+async function runStage<T>(name: string, fn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await fn();
+  } catch (err) {
+    console.warn(`cron stage '${name}' threw: ${(err as Error)?.message ?? String(err)}`);
+    return null;
   }
 }
 

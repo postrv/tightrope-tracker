@@ -9,7 +9,7 @@ const corrections = await loadCorrections(Astro.locals);
 const snapshot = await loadSnapshot(Astro.locals);
 ---
 <BaseLayout title="Corrections — Tightrope Tracker" canonicalPath="/corrections">
-  <TopNav compact band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} />
+  <TopNav compact band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} stale={Boolean(snapshot.headline.stale)} />
   <main id="main" class="container corrections">
     <header class="page-head">
       <span class="eyebrow">Accountability</span>
@@ -47,7 +47,7 @@ const snapshot = await loadSnapshot(Astro.locals);
       </div>
     )}
   </main>
-  <SiteFooter updatedAt={snapshot.headline.updatedAt} />
+  <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={Boolean(snapshot.headline.stale)} />
 </BaseLayout>
 
 <style>

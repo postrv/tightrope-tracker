@@ -33,6 +33,22 @@ export async function runAdapter(env: Env, adapter: DataSourceAdapter): Promise<
   }
 }
 
+/**
+ * Like runAdapter, but catches and logs any failure instead of propagating.
+ * Used by pipeline orchestrators (market/fiscal/labour/delivery) so a single
+ * upstream outage doesn't halt sibling adapters or the downstream recompute.
+ * The audit row and DLQ message are still written by runAdapter; callers rely
+ * on those for observability, not on the thrown exception.
+ */
+export async function runAdapterSafe(env: Env, adapter: DataSourceAdapter): Promise<AdapterResult | null> {
+  try {
+    return await runAdapter(env, adapter);
+  } catch (err) {
+    console.warn(`runAdapterSafe: ${adapter.id} failed -- ${(err as Error)?.message ?? String(err)}`);
+    return null;
+  }
+}
+
 function placeholderUrl(adapter: DataSourceAdapter): string {
   return `adapter:${adapter.id}`;
 }

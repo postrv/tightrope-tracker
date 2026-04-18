@@ -3,10 +3,14 @@ import { bstTimestamp } from "~/lib/format.js";
 
 interface Props {
   updatedAt?: string;
+  /** When true, label the refresh timestamp as the last FRESH ingest rather
+   *  than implying the data is live. */
+  stale?: boolean;
 }
 
-const { updatedAt } = Astro.props;
+const { updatedAt, stale = false } = Astro.props;
 const ts = updatedAt ? bstTimestamp(updatedAt) : bstTimestamp(new Date());
+const refreshLabel = stale ? "Last fresh refresh" : "Last data refresh";
 ---
 <footer class="site">
   <div class="container">
@@ -47,7 +51,7 @@ const ts = updatedAt ? bstTimestamp(updatedAt) : bstTimestamp(new Date());
     </div>
     <div class="foot-bottom">
       <span>© 2026 Tightrope Tracker · MIT-licensed · source on <a href="https://github.com/" rel="noopener" target="_blank">GitHub</a></span>
-      <span>Last data refresh: <span class="refresh-ts">{ts}</span></span>
+      <span>{refreshLabel}: <span class={`refresh-ts${stale ? " stale" : ""}`}>{ts}</span></span>
     </div>
   </div>
 </footer>
@@ -63,6 +67,7 @@ footer.site a:hover { color: var(--accent); }
 .foot-about strong { color: var(--ink-0); font-family: var(--font-serif); font-weight: 400; }
 .foot-bottom { border-top: 1px solid var(--border-soft); padding-top: 20px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
 .refresh-ts { font-family: var(--font-mono); color: var(--ink-1); }
+.refresh-ts.stale { color: var(--band-critical); }
 
 @media (max-width: 920px) {
   .foot-grid { grid-template-columns: 1fr 1fr; gap: 24px; }

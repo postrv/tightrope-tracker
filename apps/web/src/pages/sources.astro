@@ -18,7 +18,7 @@ for (const ind of Object.values(INDICATORS)) {
 const sources = Object.values(SOURCES);
 ---
 <BaseLayout title="Sources — Tightrope Tracker" canonicalPath="/sources">
-  <TopNav compact band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} />
+  <TopNav compact band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} stale={Boolean(snapshot.headline.stale)} />
   <main id="main" class="container sources">
     <header class="page-head">
       <span class="eyebrow">Provenance</span>
@@ -62,7 +62,7 @@ const sources = Object.values(SOURCES);
       </ul>
     </section>
   </main>
-  <SiteFooter updatedAt={snapshot.headline.updatedAt} />
+  <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={Boolean(snapshot.headline.stale)} />
 </BaseLayout>
 
 <style>

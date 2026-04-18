@@ -9,7 +9,7 @@ import {
 } from "@tightrope/data-sources";
 import type { Env } from "../env.js";
 import { isUkMarketHours } from "../lib/time.js";
-import { runAdapter } from "./runAdapter.js";
+import { runAdapterSafe } from "./runAdapter.js";
 
 /**
  * Market pipeline. Runs on the every-5-minute cron, but throttles to UK market
@@ -34,13 +34,16 @@ export async function ingestMarket(
   }
   // Fire each BoE adapter serially -- they hit the same origin and a serial
   // flow is both kinder on the origin and easier to reason about in logs.
-  await runAdapter(env, boeYieldsAdapter);
-  await runAdapter(env, boeFxAdapter);
-  await runAdapter(env, boeSoniaAdapter);
-  await runAdapter(env, boeBreakevensAdapter);
-  // OBR-proxy fixture reads. Cheap and local; order is alphabetic for log sanity.
-  await runAdapter(env, eiaBrentAdapter);
-  await runAdapter(env, growthSentimentAdapter);
-  await runAdapter(env, lseHousebuildersAdapter);
+  // Each runs under runAdapterSafe so one upstream failure doesn't block the
+  // rest of the pipeline or the downstream recompute. runAdapter already
+  // records the failure to ingestion_audit and the DLQ; we swallow here so
+  // the caller can proceed to the next adapter and ultimately to recompute.
+  await runAdapterSafe(env, boeYieldsAdapter);
+  await runAdapterSafe(env, boeFxAdapter);
+  await runAdapterSafe(env, boeSoniaAdapter);
+  await runAdapterSafe(env, boeBreakevensAdapter);
+  await runAdapterSafe(env, eiaBrentAdapter);
+  await runAdapterSafe(env, growthSentimentAdapter);
+  await runAdapterSafe(env, lseHousebuildersAdapter);
   return { ran: true };
 }

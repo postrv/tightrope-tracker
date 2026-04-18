@@ -20,7 +20,7 @@ import type {
   Trend,
   Iso8601,
 } from "@tightrope/shared";
-import { PILLAR_ORDER, PILLARS, bandFor } from "@tightrope/shared";
+import { PILLAR_ORDER, PILLARS, bandFor, isPillarStale } from "@tightrope/shared";
 
 interface PillarLatestRow {
   id: PillarId;
@@ -66,7 +66,9 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     ).all<PillarSeriesRow>(),
   ]);
 
+  const now = new Date();
   const pillars = {} as Record<PillarId, PillarScore>;
+  let anyPillarStale = false;
   for (const p of PILLAR_ORDER) {
     const latest = pillarsLatest.results.find((r) => r.id === p);
     const series = pillarHistory.results.filter((r) => r.id === p).map((r) => r.value);
@@ -74,6 +76,11 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     const sevenDaysAgo = series.at(-7) ?? value;
     const delta = value - sevenDaysAgo;
     const trend: Trend = Math.abs(delta) < 0.5 ? "flat" : delta > 0 ? "up" : "down";
+    // Infer staleness at serve time: if the latest pillar_scores row is older
+    // than the per-cadence staleness window, flag it so the frontend can show
+    // a "stale" chip rather than treating a carry-forward value as live.
+    const stale = latest ? isPillarStale(p, latest.observed_at, now) : false;
+    if (stale) anyPillarStale = true;
     pillars[p] = {
       pillar: p,
       value,
@@ -83,6 +90,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       trend7d: trend,
       delta7d: round1(delta),
       sparkline30d: series,
+      ...(stale ? { stale: true } : {}),
     };
   }
 
@@ -92,6 +100,10 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
   // callers can distinguish an empty-seed placeholder from a real read. See
   // looksUnseeded() in ../handlers/score.ts.
   const EPOCH_ISO = "1970-01-01T00:00:00.000Z";
+  // Headline inherits pillar staleness. We deliberately do NOT re-check the
+  // headline row's own age against a fixed threshold -- its freshness is
+  // definitionally a function of its inputs, and a pillar going quiet is
+  // the exact signal we want to surface.
   const headline: HeadlineScore = {
     value: hValue,
     band: (headlineRow?.band as HeadlineScore["band"]) ?? bandFor(hValue).id,
@@ -102,6 +114,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     delta24h: deltaAgo(hSeries, 1),
     delta30d: deltaAgo(hSeries, 30),
     deltaYtd: deltaAgo(hSeries, Math.max(0, hSeries.length - 1)),
+    ...(anyPillarStale ? { stale: true } : {}),
   };
 
   return { headline, pillars, schemaVersion: 1 };

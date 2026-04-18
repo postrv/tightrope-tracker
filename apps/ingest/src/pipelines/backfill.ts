@@ -1,0 +1,270 @@
+import type { D1PreparedStatement } from "@cloudflare/workers-types";
+import {
+  INDICATORS,
+  PILLAR_ORDER,
+  type PillarId,
+  type PillarScore,
+} from "@tightrope/shared";
+import {
+  computeHeadlineScore,
+  computePillarScore,
+  type IndicatorReading,
+} from "@tightrope/methodology";
+import type { Env } from "../env.js";
+import {
+  readBaselineObservations,
+  readRecentObservations,
+  valueAtLeastAgo,
+  type ObservationRow,
+} from "../lib/history.js";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Fraction of a pillar's indicators that must have any observation at or
+ * before the target day for the day to be scored. Matches the live
+ * recompute quorum. Days failing this are reported as gaps, not silently
+ * filled with carry-forward values.
+ */
+const QUORUM_FRACTION = 0.5;
+
+export interface BackfillOptions {
+  /** How many UTC days (ending yesterday) to backfill. Clamped to [1, 365]. */
+  days: number;
+  /**
+   * `true` (default): INSERT OR REPLACE — the backfill owns the row for the
+   *   day. Re-runs are deterministic given the same observations.
+   * `false`: INSERT OR IGNORE — preserves any row already present.
+   */
+  overwrite: boolean;
+}
+
+export interface BackfillGap {
+  day: string;
+  stalePillars: PillarId[];
+  indicatorsWithData: number;
+  totalIndicators: number;
+}
+
+export interface BackfillResult {
+  startedAt: string;
+  completedAt: string;
+  daysRequested: number;
+  daysWritten: number;
+  daysSkipped: number;
+  earliestDayWritten: string | null;
+  latestDayWritten: string | null;
+  gaps: BackfillGap[];
+}
+
+/**
+ * Rebuild historical headline and pillar scores from raw indicator
+ * observations, one row per UTC day.
+ *
+ * Accuracy guarantees — the backfilled score for day D equals what the live
+ * pipeline would have produced if we had run it on day D, given only the
+ * observations then in the database:
+ *
+ *   1. Baseline-as-of-day — the ECDF baseline is filtered to observations
+ *      with observed_at ≤ end-of-day(D). Prevents lookahead bias in the
+ *      normalisation step.
+ *   2. Readings-as-of-day — each indicator contributes its latest observation
+ *      ≤ end-of-day(D), matching `latestByIndicator` in live recompute.
+ *   3. Rolling priors — the loop walks oldest→newest so value7dAgo (pillar
+ *      delta/trend) and value24h/30d/ytd ago (headline deltas / editorial
+ *      text) reference actually-backfilled prior days rather than future
+ *      data.
+ *   4. Quorum enforcement — days with fewer than 50% of a pillar's
+ *      indicators observed ≤ that day are skipped and reported in `gaps`.
+ *      We do not carry-forward unknown values into historical rows.
+ *
+ * Today is excluded: live 5-minute recompute owns today's rows.
+ *
+ * The backfilled row is anchored at `YYYY-MM-DDT23:59:00.000Z` — late
+ * enough to win the "latest observation that day" downsample, distinct
+ * enough from live 5-minute rows that an operator can tell apart in the
+ * raw history.
+ */
+export async function backfillHistoricalScores(
+  env: Env,
+  opts: BackfillOptions,
+): Promise<BackfillResult> {
+  const days = clampDays(opts.days);
+  const overwrite = opts.overwrite;
+  const startedAt = new Date().toISOString();
+
+  // A backfill window of N days plus 30 days of lookback for the rolling
+  // 30d pillar sparkline (used by trend7d in computePillarScore). 365 is
+  // already enough for any 1-year window; for longer we read the larger
+  // of (days + 30, 365).
+  const [baseline, recent] = await Promise.all([
+    readBaselineObservations(env.DB),
+    readRecentObservations(env.DB, Math.max(days + 30, 365)),
+  ]);
+
+  const baselineByIndicator = groupByIndicator(baseline);
+  const recentByIndicator = groupByIndicator(recent);
+
+  const now = new Date();
+  const todayStartMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+
+  const gaps: BackfillGap[] = [];
+  const written: string[] = [];
+
+  // Rolling records of this-run's output so each day's delta/editorial
+  // references actually-backfilled predecessors, not live data. This is the
+  // same pattern live recompute uses via readHeadlineHistory / readPillarHistory.
+  const priorPillars: Record<PillarId, { observed_at: string; value: number }[]> = {
+    market: [], fiscal: [], labour: [], delivery: [],
+  };
+  const priorHeadline: { observed_at: string; value: number }[] = [];
+
+  const totalIndicators = Object.keys(INDICATORS).length;
+
+  for (let offset = days; offset >= 1; offset--) {
+    const dayStartMs = todayStartMs - offset * DAY_MS;
+    const day = new Date(dayStartMs);
+    const dayIso = day.toISOString().slice(0, 10);
+    const observedAt = `${dayIso}T23:59:00.000Z`;
+    const cutoffMs = dayStartMs + DAY_MS - 1;
+
+    // Baseline filtered to observations ≤ cutoff — no lookahead bias.
+    const baselineAsOf = new Map<string, number[]>();
+    for (const [id, arr] of baselineByIndicator) {
+      const vals: number[] = [];
+      for (const r of arr) {
+        const ts = new Date(r.observed_at).getTime();
+        if (ts <= cutoffMs) vals.push(r.value);
+        else break; // arr is ASC by observed_at, remainder is all future
+      }
+      baselineAsOf.set(id, vals);
+    }
+
+    // Latest observation per indicator ≤ cutoff.
+    const latestAsOf = new Map<string, { value: number; observedAt: string }>();
+    for (const [id, arr] of recentByIndicator) {
+      for (let i = arr.length - 1; i >= 0; i--) {
+        const r = arr[i]!;
+        if (new Date(r.observed_at).getTime() <= cutoffMs) {
+          latestAsOf.set(id, { value: r.value, observedAt: r.observed_at });
+          break;
+        }
+      }
+    }
+
+    const pillars: Partial<Record<PillarId, PillarScore>> = {};
+    const stalePillars: PillarId[] = [];
+    let indicatorsWithData = 0;
+
+    for (const pillarId of PILLAR_ORDER) {
+      const pillarIndicators = Object.values(INDICATORS).filter((i) => i.pillar === pillarId);
+      const readings: IndicatorReading[] = [];
+      for (const def of pillarIndicators) {
+        const latest = latestAsOf.get(def.id);
+        if (!latest) continue;
+        indicatorsWithData++;
+        readings.push({
+          indicatorId: def.id,
+          value: latest.value,
+          observedAt: latest.observedAt,
+          baseline: baselineAsOf.get(def.id) ?? [],
+        });
+      }
+      const quorum = Math.max(1, Math.ceil(pillarIndicators.length * QUORUM_FRACTION));
+      if (readings.length < quorum) {
+        stalePillars.push(pillarId);
+        continue;
+      }
+      const value7dAgo = valueAtLeastAgo(priorPillars[pillarId], 7 * DAY_MS, day);
+      const sparkline30d = priorPillars[pillarId].slice(-30).map((p) => p.value);
+      pillars[pillarId] = computePillarScore(pillarId, {
+        readings,
+        sparkline30d,
+        ...(value7dAgo !== undefined ? { value7dAgo } : {}),
+      });
+    }
+
+    if (stalePillars.length > 0) {
+      gaps.push({ day: dayIso, stalePillars, indicatorsWithData, totalIndicators });
+      continue;
+    }
+
+    const pillarRecord = pillars as Record<PillarId, PillarScore>;
+    const sparkline90d = priorHeadline.slice(-90).map((h) => h.value);
+    const value24hAgo = valueAtLeastAgo(priorHeadline, DAY_MS, day);
+    const value30dAgo = valueAtLeastAgo(priorHeadline, 30 * DAY_MS, day);
+    const startOfYearMs = Date.UTC(day.getUTCFullYear(), 0, 1);
+    const ytdMs = day.getTime() - startOfYearMs;
+    const valueYtdAgo = ytdMs > 0 ? valueAtLeastAgo(priorHeadline, ytdMs, day) : undefined;
+
+    const headline = computeHeadlineScore({
+      pillars: pillarRecord,
+      sparkline90d,
+      updatedAt: observedAt,
+      ...(value24hAgo !== undefined ? { value24hAgo } : {}),
+      ...(value30dAgo !== undefined ? { value30dAgo } : {}),
+      ...(valueYtdAgo !== undefined ? { valueYtdAgo } : {}),
+    });
+
+    const verb = overwrite ? "INSERT OR REPLACE" : "INSERT OR IGNORE";
+    const stmts: D1PreparedStatement[] = [
+      env.DB
+        .prepare(
+          `${verb} INTO headline_scores (observed_at, value, band, dominant, editorial)
+           VALUES (?, ?, ?, ?, ?)`,
+        )
+        .bind(observedAt, headline.value, headline.band, headline.dominantPillar, headline.editorial),
+    ];
+    for (const p of PILLAR_ORDER) {
+      const ps = pillarRecord[p];
+      stmts.push(
+        env.DB
+          .prepare(
+            `${verb} INTO pillar_scores (pillar_id, observed_at, value, band)
+             VALUES (?, ?, ?, ?)`,
+          )
+          .bind(p, observedAt, ps.value, ps.band),
+      );
+    }
+    await env.DB.batch(stmts);
+    written.push(dayIso);
+
+    for (const p of PILLAR_ORDER) {
+      priorPillars[p].push({ observed_at: observedAt, value: pillarRecord[p].value });
+    }
+    priorHeadline.push({ observed_at: observedAt, value: headline.value });
+  }
+
+  // KV caches were built against pre-backfill data — invalidate so the next
+  // read goes to D1 and reflects the newly-written history.
+  await Promise.all([
+    env.KV.delete("score:latest").catch(() => undefined),
+    env.KV.delete("score:history:90d").catch(() => undefined),
+  ]);
+
+  return {
+    startedAt,
+    completedAt: new Date().toISOString(),
+    daysRequested: days,
+    daysWritten: written.length,
+    daysSkipped: gaps.length,
+    earliestDayWritten: written[0] ?? null,
+    latestDayWritten: written[written.length - 1] ?? null,
+    gaps,
+  };
+}
+
+function clampDays(n: number): number {
+  if (!Number.isFinite(n)) return 90;
+  return Math.max(1, Math.min(365, Math.floor(n)));
+}
+
+function groupByIndicator(rows: readonly ObservationRow[]): Map<string, ObservationRow[]> {
+  const out = new Map<string, ObservationRow[]>();
+  for (const r of rows) {
+    const arr = out.get(r.indicator_id);
+    if (arr) arr.push(r);
+    else out.set(r.indicator_id, [r]);
+  }
+  return out;
+}

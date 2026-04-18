@@ -14,11 +14,11 @@ import type { AdapterResult, DataSourceAdapter, RawObservation } from "../types.
 import { registerAdapter } from "../registry.js";
 import { AdapterError, fetchOrThrow } from "../lib/errors.js";
 import { sha256Hex } from "../lib/hash.js";
-import { boeDateToIso, parseCsv } from "../lib/csv.js";
+import { assertLooksLikeCsv, boeDateToIso, parseCsv } from "../lib/csv.js";
+import { buildBoEIadbUrl, BOE_FETCH_HEADERS } from "../lib/boe.js";
 
 const SOURCE_ID = "boe_sonia";
-const URL =
-  "https://www.bankofengland.co.uk/boeapps/iadb/fromshowcolumns.asp?csv.x=yes&CodeVer=new&SeriesCodes=IUDSOIA";
+const SERIES_CODES = "IUDSOIA";
 
 const WINDOW_DAYS = 252; // ~1 year of business days
 
@@ -26,13 +26,16 @@ export const boeSoniaAdapter: DataSourceAdapter = {
   id: SOURCE_ID,
   name: "Bank of England -- SONIA (12m proxy)",
   async fetch(fetchImpl): Promise<AdapterResult> {
-    const res = await fetchOrThrow(fetchImpl, SOURCE_ID, URL, {
-      headers: { accept: "text/csv,*/*;q=0.5" },
+    // 252-day rolling average needs ~1y of history; buildBoEIadbUrl defaults to 2y.
+    const url = buildBoEIadbUrl(SERIES_CODES);
+    const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
+      headers: BOE_FETCH_HEADERS,
     });
     const body = await res.text();
+    assertLooksLikeCsv(SOURCE_ID, url, body);
     const rows = parseCsv(body);
     if (rows.length === 0) {
-      throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: URL, message: "SONIA: no rows in CSV payload" });
+      throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: url, message: "SONIA: no rows in CSV payload" });
     }
     const first = rows[0]!;
     const dateKey = "DATE" in first ? "DATE" : "Date" in first ? "Date" : null;
@@ -40,7 +43,7 @@ export const boeSoniaAdapter: DataSourceAdapter = {
     if (!dateKey || !rateKey) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
-        sourceUrl: URL,
+        sourceUrl: url,
         message: `SONIA: unexpected columns ${Object.keys(first).join("|")}`,
       });
     }
@@ -54,7 +57,7 @@ export const boeSoniaAdapter: DataSourceAdapter = {
       series.push({ iso: boeDateToIso(date), rate });
     }
     if (series.length === 0) {
-      throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: URL, message: "SONIA: no parseable rows" });
+      throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: url, message: "SONIA: no parseable rows" });
     }
 
     const tail = series.slice(-WINDOW_DAYS);
@@ -69,7 +72,7 @@ export const boeSoniaAdapter: DataSourceAdapter = {
       sourceId: SOURCE_ID,
       payloadHash,
     };
-    return { observations: [observation], sourceUrl: URL, fetchedAt: new Date().toISOString() };
+    return { observations: [observation], sourceUrl: url, fetchedAt: new Date().toISOString() };
   },
 };
 

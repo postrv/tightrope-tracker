@@ -63,4 +63,15 @@ describe("boeYieldsAdapter", () => {
       boeYieldsAdapter.fetch(fetchImpl as unknown as typeof globalThis.fetch),
     ).rejects.toBeInstanceOf(AdapterError);
   });
+
+  it("throws AdapterError when the endpoint 302s to an HTML error page", async () => {
+    // BoE follows the redirect transparently and returns the error HTML with a
+    // 200 status; parseCsv would silently produce zero rows. assertLooksLikeCsv
+    // catches this so the audit row names the real cause.
+    const html = '<head><title>Object moved</title></head><body><h1>Object Moved</h1></body>';
+    const fetchImpl = async () => new Response(html, { status: 200, headers: { "content-type": "text/html" } });
+    await expect(
+      boeYieldsAdapter.fetch(fetchImpl as unknown as typeof globalThis.fetch),
+    ).rejects.toBeInstanceOf(AdapterError);
+  });
 });

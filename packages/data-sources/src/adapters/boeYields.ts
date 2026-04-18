@@ -12,25 +12,27 @@ import type { AdapterResult, DataSourceAdapter, RawObservation } from "../types.
 import { registerAdapter } from "../registry.js";
 import { AdapterError, fetchOrThrow } from "../lib/errors.js";
 import { sha256Hex } from "../lib/hash.js";
-import { boeDateToIso, parseCsv } from "../lib/csv.js";
+import { assertLooksLikeCsv, boeDateToIso, parseCsv } from "../lib/csv.js";
+import { buildBoEIadbUrl, BOE_FETCH_HEADERS } from "../lib/boe.js";
 
 const SOURCE_ID = "boe_yields";
-const URL =
-  "https://www.bankofengland.co.uk/boeapps/iadb/fromshowcolumns.asp?csv.x=yes&CodeVer=new&SeriesCodes=IUDMNPY,IUDMNZC";
+const SERIES_CODES = "IUDMNPY,IUDMNZC";
 
 export const boeYieldsAdapter: DataSourceAdapter = {
   id: SOURCE_ID,
   name: "Bank of England -- gilt yields (IUDMNPY, IUDMNZC)",
   async fetch(fetchImpl): Promise<AdapterResult> {
-    const res = await fetchOrThrow(fetchImpl, SOURCE_ID, URL, {
-      headers: { accept: "text/csv,*/*;q=0.5" },
+    const url = buildBoEIadbUrl(SERIES_CODES);
+    const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
+      headers: BOE_FETCH_HEADERS,
     });
     const body = await res.text();
+    assertLooksLikeCsv(SOURCE_ID, url, body);
     const rows = parseCsv(body);
     if (rows.length === 0) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
-        sourceUrl: URL,
+        sourceUrl: url,
         message: "BoE yields: no rows in CSV payload",
       });
     }
@@ -40,7 +42,7 @@ export const boeYieldsAdapter: DataSourceAdapter = {
     if (!dateKey || !tenKey || !thirtyKey) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
-        sourceUrl: URL,
+        sourceUrl: url,
         message: `BoE yields: unexpected columns ${Object.keys(rows[0]!).join("|")}`,
       });
     }
@@ -58,7 +60,7 @@ export const boeYieldsAdapter: DataSourceAdapter = {
     if (!latest) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
-        sourceUrl: URL,
+        sourceUrl: url,
         message: "BoE yields: no parseable numeric rows",
       });
     }
@@ -72,7 +74,7 @@ export const boeYieldsAdapter: DataSourceAdapter = {
     if (latest.thirty !== null) {
       observations.push({ indicatorId: "gilt_30y", value: latest.thirty, observedAt, sourceId: SOURCE_ID, payloadHash });
     }
-    return { observations, sourceUrl: URL, fetchedAt: new Date().toISOString() };
+    return { observations, sourceUrl: url, fetchedAt: new Date().toISOString() };
   },
 };
 

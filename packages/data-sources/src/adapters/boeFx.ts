@@ -11,23 +11,25 @@ import type { AdapterResult, DataSourceAdapter, RawObservation } from "../types.
 import { registerAdapter } from "../registry.js";
 import { AdapterError, fetchOrThrow } from "../lib/errors.js";
 import { sha256Hex } from "../lib/hash.js";
-import { boeDateToIso, parseCsv } from "../lib/csv.js";
+import { assertLooksLikeCsv, boeDateToIso, parseCsv } from "../lib/csv.js";
+import { buildBoEIadbUrl, BOE_FETCH_HEADERS } from "../lib/boe.js";
 
 const SOURCE_ID = "boe_fx";
-const URL =
-  "https://www.bankofengland.co.uk/boeapps/iadb/fromshowcolumns.asp?csv.x=yes&CodeVer=new&SeriesCodes=XUDLUSS,XUDLBK67";
+const SERIES_CODES = "XUDLUSS,XUDLBK67";
 
 export const boeFxAdapter: DataSourceAdapter = {
   id: SOURCE_ID,
   name: "Bank of England -- GBP/USD & GBP effective index",
   async fetch(fetchImpl): Promise<AdapterResult> {
-    const res = await fetchOrThrow(fetchImpl, SOURCE_ID, URL, {
-      headers: { accept: "text/csv,*/*;q=0.5" },
+    const url = buildBoEIadbUrl(SERIES_CODES);
+    const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
+      headers: BOE_FETCH_HEADERS,
     });
     const body = await res.text();
+    assertLooksLikeCsv(SOURCE_ID, url, body);
     const rows = parseCsv(body);
     if (rows.length === 0) {
-      throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: URL, message: "BoE fx: no rows in CSV payload" });
+      throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: url, message: "BoE fx: no rows in CSV payload" });
     }
     const first = rows[0]!;
     const dateKey = "DATE" in first ? "DATE" : "Date" in first ? "Date" : null;
@@ -36,7 +38,7 @@ export const boeFxAdapter: DataSourceAdapter = {
     if (!dateKey || !usdKey || !twiKey) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
-        sourceUrl: URL,
+        sourceUrl: url,
         message: `BoE fx: unexpected columns ${Object.keys(first).join("|")}`,
       });
     }
@@ -51,7 +53,7 @@ export const boeFxAdapter: DataSourceAdapter = {
       break;
     }
     if (!latest) {
-      throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: URL, message: "BoE fx: no parseable numeric rows" });
+      throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: url, message: "BoE fx: no parseable numeric rows" });
     }
 
     const observedAt = boeDateToIso(latest.date);
@@ -63,7 +65,7 @@ export const boeFxAdapter: DataSourceAdapter = {
     if (latest.twi !== null) {
       observations.push({ indicatorId: "gbp_twi", value: latest.twi, observedAt, sourceId: SOURCE_ID, payloadHash });
     }
-    return { observations, sourceUrl: URL, fetchedAt: new Date().toISOString() };
+    return { observations, sourceUrl: url, fetchedAt: new Date().toISOString() };
   },
 };
 

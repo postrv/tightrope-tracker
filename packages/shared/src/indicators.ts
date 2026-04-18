@@ -311,7 +311,7 @@ export const SOURCES: Record<string, DataSource> = {
   boe_yields: {
     id: "boe_yields", name: "Bank of England -- Statistical Database (gilt yields)",
     homepage: "https://www.bankofengland.co.uk/boeapps/database/",
-    endpoint: "https://www.bankofengland.co.uk/boeapps/iadb/fromshowcolumns.asp",
+    endpoint: "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp",
   },
   boe_fx: {
     id: "boe_fx", name: "Bank of England -- Exchange rates",

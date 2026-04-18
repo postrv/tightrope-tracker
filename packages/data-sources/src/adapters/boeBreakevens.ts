@@ -22,11 +22,11 @@ import type { AdapterResult, DataSourceAdapter, RawObservation } from "../types.
 import { registerAdapter } from "../registry.js";
 import { AdapterError, fetchOrThrow } from "../lib/errors.js";
 import { sha256Hex } from "../lib/hash.js";
-import { boeDateToIso, parseCsv } from "../lib/csv.js";
+import { assertLooksLikeCsv, boeDateToIso, parseCsv } from "../lib/csv.js";
+import { buildBoEIadbUrl, BOE_FETCH_HEADERS } from "../lib/boe.js";
 
 const SOURCE_ID = "boe_yields";
-const URL =
-  "https://www.bankofengland.co.uk/boeapps/iadb/fromshowcolumns.asp?csv.x=yes&CodeVer=new&SeriesCodes=IUDSNZC,IUDMNZC,IUDSIZC,IUDMIZC";
+const SERIES_CODES = "IUDSNZC,IUDMNZC,IUDSIZC,IUDMIZC";
 
 interface LatestRow {
   date: string;
@@ -40,15 +40,17 @@ export const boeBreakevensAdapter: DataSourceAdapter = {
   id: "boe_breakevens",
   name: "Bank of England -- breakevens & real yields (IUDSNZC/IUDMNZC/IUDSIZC/IUDMIZC)",
   async fetch(fetchImpl): Promise<AdapterResult> {
-    const res = await fetchOrThrow(fetchImpl, SOURCE_ID, URL, {
-      headers: { accept: "text/csv,*/*;q=0.5" },
+    const url = buildBoEIadbUrl(SERIES_CODES);
+    const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
+      headers: BOE_FETCH_HEADERS,
     });
     const body = await res.text();
+    assertLooksLikeCsv(SOURCE_ID, url, body);
     const rows = parseCsv(body);
     if (rows.length === 0) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
-        sourceUrl: URL,
+        sourceUrl: url,
         message: "BoE breakevens: no rows in CSV payload",
       });
     }
@@ -63,7 +65,7 @@ export const boeBreakevensAdapter: DataSourceAdapter = {
     if (!dateKey || !keys.nom5 || !keys.nom10 || !keys.real5 || !keys.real10) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
-        sourceUrl: URL,
+        sourceUrl: url,
         message: `BoE breakevens: unexpected columns ${Object.keys(first).join("|")}`,
       });
     }
@@ -83,7 +85,7 @@ export const boeBreakevensAdapter: DataSourceAdapter = {
     if (!latest) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
-        sourceUrl: URL,
+        sourceUrl: url,
         message: "BoE breakevens: no row with all four yields populated",
       });
     }
@@ -97,7 +99,7 @@ export const boeBreakevensAdapter: DataSourceAdapter = {
       { indicatorId: "breakeven_10y",     value: be10,          observedAt, sourceId: SOURCE_ID, payloadHash },
       { indicatorId: "gilt_il_10y_real",  value: latest.real10, observedAt, sourceId: SOURCE_ID, payloadHash },
     ];
-    return { observations, sourceUrl: URL, fetchedAt: new Date().toISOString() };
+    return { observations, sourceUrl: url, fetchedAt: new Date().toISOString() };
   },
 };
 

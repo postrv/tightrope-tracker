@@ -7,6 +7,26 @@
  *
  * Returns an array of objects keyed by the header row.
  */
+import { AdapterError } from "./errors.js";
+
+/**
+ * Throws if `body` looks like an HTML document rather than CSV. The BoE IADB
+ * endpoint 302-redirects malformed requests to an HTML error page, which
+ * `parseCsv` would otherwise silently turn into zero rows -- we'd rather fail
+ * loud so the audit row records the real cause.
+ */
+export function assertLooksLikeCsv(sourceId: string, sourceUrl: string, body: string): void {
+  const head = body.trimStart().slice(0, 200).toLowerCase();
+  if (head.startsWith("<!doctype") || head.startsWith("<html") || head.startsWith("<head") || head.startsWith("<body")) {
+    const snippet = body.trim().slice(0, 120).replace(/\s+/g, " ");
+    throw new AdapterError({
+      sourceId,
+      sourceUrl,
+      message: `${sourceId} returned HTML, expected CSV (body starts: "${snippet}")`,
+    });
+  }
+}
+
 export function parseCsv(input: string): Array<Record<string, string>> {
   const lines = input
     .replace(/\r\n?/g, "\n")
@@ -42,4 +62,18 @@ export function boeDateToIso(input: string): string {
   const mm = months[monAbbr];
   if (!mm) throw new Error(`boeDateToIso: unknown month '${match[2]}'`);
   return `${match[3]}-${mm}-${day}T00:00:00Z`;
+}
+
+const BOE_MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"] as const;
+
+/**
+ * Format a JS Date as the BoE IADB query-param expects: `DD/MMM/YYYY` with the
+ * English three-letter month abbreviation. The Datefrom / Dateto fields reject
+ * any other format -- numeric months produce a 302 to ErrorPage.asp.
+ */
+export function toBoEDateParam(d: Date): string {
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const mmm = BOE_MONTHS[d.getUTCMonth()]!;
+  const yyyy = d.getUTCFullYear();
+  return `${dd}/${mmm}/${yyyy}`;
 }

@@ -17,13 +17,19 @@ import { AdapterError, fetchOrThrow } from "../lib/errors.js";
 import { sha256Hex } from "../lib/hash.js";
 
 const SOURCE_ID = "gov_uk";
-const URL = "https://www.gov.uk/government/announcements.atom";
+// gov.uk retired `/government/announcements.atom` — the live replacement that
+// surfaces the same stream of ministerial announcements/news/speeches is the
+// site-wide search feed. Entries no longer carry `<category>` tags, so the
+// department filter below only fires for entries that *do* carry one; the
+// parser's "no category -> pass through" branch handles the new shape.
+const URL = "https://www.gov.uk/search/news-and-communications.atom";
 
 /** Departments we care about for delivery pillar timeline candidates. */
 export const DELIVERY_DEPARTMENTS: readonly string[] = [
   "department-for-energy-security-and-net-zero",
   "department-for-business-and-trade",
-  "ministry-of-housing-communities-and-local-government",
+  // MHCLG slug lost the "and" when the department was restated in 2024.
+  "ministry-of-housing-communities-local-government",
   "hm-treasury",
   "cabinet-office",
 ];

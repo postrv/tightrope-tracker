@@ -387,11 +387,11 @@ export const SOURCES: Record<string, DataSource> = {
   },
   mhclg: {
     id: "mhclg", name: "MHCLG / DLUHC -- Housing Statistics",
-    homepage: "https://www.gov.uk/government/organisations/ministry-of-housing-communities-and-local-government",
+    homepage: "https://www.gov.uk/government/organisations/ministry-of-housing-communities-local-government",
   },
   gov_uk: {
     id: "gov_uk", name: "gov.uk -- Announcements RSS",
-    homepage: "https://www.gov.uk/government/announcements.atom",
+    homepage: "https://www.gov.uk/search/news-and-communications.atom",
   },
   desnz: {
     id: "desnz", name: "Department for Energy Security and Net Zero",

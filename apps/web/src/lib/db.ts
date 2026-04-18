@@ -7,7 +7,7 @@ import type {
   Trend,
   Iso8601,
 } from "@tightrope/shared";
-import { PILLAR_ORDER, PILLARS, bandFor, isPillarStale } from "@tightrope/shared";
+import { PILLAR_ORDER, PILLARS, bandFor, isScoreRowStale } from "@tightrope/shared";
 import type { DeliveryCommitment, DeliveryStatus } from "@tightrope/shared/delivery";
 import type { TimelineEvent, TimelineCategory } from "@tightrope/shared/timeline";
 
@@ -97,10 +97,10 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     const sevenDaysAgo = series.at(-7) ?? value;
     const delta = value - sevenDaysAgo;
     const trend: Trend = Math.abs(delta) < 0.5 ? "flat" : delta > 0 ? "up" : "down";
-    // Serve-time staleness inference: if the latest row for this pillar is
-    // older than the per-cadence window, flag it. The UI renders a stale chip
-    // instead of treating the carry-forward value as live.
-    const stale = latest ? isPillarStale(p, latest.observed_at, now) : false;
+    // Serve-time staleness inference: recompute writes every non-stale pillar
+    // every 5 min, so a row older than MAX_SCORE_AGE_MS (30 min) signals
+    // either a broken loop or a pillar that has been failing its quorum.
+    const stale = isScoreRowStale(latest?.observed_at, now);
     if (stale) anyPillarStale = true;
     pillars[p] = {
       pillar: p,
@@ -117,6 +117,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
 
   const hValue = headlineRow?.value ?? 0;
   const hSeries = (headlineHistory.results as ScoreRow[]).map((r: ScoreRow) => r.value).reverse();
+  const headlineStale = anyPillarStale || isScoreRowStale(headlineRow?.observed_at, now);
   const headline: HeadlineScore = {
     value: hValue,
     band: (headlineRow?.band as HeadlineScore["band"]) ?? bandFor(hValue).id,
@@ -127,7 +128,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     delta24h: deltaAgo(hSeries, 1),
     delta30d: deltaAgo(hSeries, 30),
     deltaYtd: deltaAgo(hSeries, hSeries.length - 1),
-    ...(anyPillarStale ? { stale: true } : {}),
+    ...(headlineStale ? { stale: true } : {}),
   };
 
   return { headline, pillars, schemaVersion: 1 };

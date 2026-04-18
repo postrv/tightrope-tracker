@@ -20,7 +20,7 @@ import type {
   Trend,
   Iso8601,
 } from "@tightrope/shared";
-import { PILLAR_ORDER, PILLARS, bandFor, isPillarStale } from "@tightrope/shared";
+import { PILLAR_ORDER, PILLARS, bandFor, isScoreRowStale } from "@tightrope/shared";
 
 interface PillarLatestRow {
   id: PillarId;
@@ -76,10 +76,11 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     const sevenDaysAgo = series.at(-7) ?? value;
     const delta = value - sevenDaysAgo;
     const trend: Trend = Math.abs(delta) < 0.5 ? "flat" : delta > 0 ? "up" : "down";
-    // Infer staleness at serve time: if the latest pillar_scores row is older
-    // than the per-cadence staleness window, flag it so the frontend can show
-    // a "stale" chip rather than treating a carry-forward value as live.
-    const stale = latest ? isPillarStale(p, latest.observed_at, now) : false;
+    // Infer staleness at serve time. Recompute writes every non-stale pillar
+    // every 5 minutes; if the latest row is past MAX_SCORE_AGE_MS (30 min),
+    // either the loop is broken or this pillar has been failing its quorum.
+    // Either way, the chip should say "stale", not "live".
+    const stale = isScoreRowStale(latest?.observed_at, now);
     if (stale) anyPillarStale = true;
     pillars[p] = {
       pillar: p,
@@ -100,10 +101,11 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
   // callers can distinguish an empty-seed placeholder from a real read. See
   // looksUnseeded() in ../handlers/score.ts.
   const EPOCH_ISO = "1970-01-01T00:00:00.000Z";
-  // Headline inherits pillar staleness. We deliberately do NOT re-check the
-  // headline row's own age against a fixed threshold -- its freshness is
-  // definitionally a function of its inputs, and a pillar going quiet is
-  // the exact signal we want to surface.
+  // Headline is stale if any pillar is stale OR the headline row itself is
+  // past MAX_SCORE_AGE_MS. Recompute refuses to write a new headline row when
+  // any pillar fails quorum, so an aging headline row is the canonical signal
+  // that the dashboard is no longer live.
+  const headlineStale = anyPillarStale || isScoreRowStale(headlineRow?.observed_at, now);
   const headline: HeadlineScore = {
     value: hValue,
     band: (headlineRow?.band as HeadlineScore["band"]) ?? bandFor(hValue).id,
@@ -114,7 +116,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     delta24h: deltaAgo(hSeries, 1),
     delta30d: deltaAgo(hSeries, 30),
     deltaYtd: deltaAgo(hSeries, Math.max(0, hSeries.length - 1)),
-    ...(anyPillarStale ? { stale: true } : {}),
+    ...(headlineStale ? { stale: true } : {}),
   };
 
   return { headline, pillars, schemaVersion: 1 };

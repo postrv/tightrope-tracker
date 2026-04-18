@@ -19,10 +19,28 @@ export function maxStaleMsForPillar(pillarId: PillarId): number {
 
 /**
  * Is the reading at `observedAt` outside the staleness window for `pillarId`?
- * `now` is injectable for deterministic tests.
+ * Used at recompute time to decide whether a pillar's indicator observations
+ * are old enough to poison the pillar score. `now` is injectable for tests.
  */
 export function isPillarStale(pillarId: PillarId, observedAt: string, now: Date = new Date()): boolean {
   const ts = Date.parse(observedAt);
   if (!Number.isFinite(ts)) return true;
   return now.getTime() - ts > maxStaleMsForPillar(pillarId);
+}
+
+/**
+ * Hard ceiling for the age of a persisted score row (pillar_scores or
+ * headline_scores) served to users. Recompute fires every 5 minutes and
+ * writes every non-stale pillar, so under healthy conditions no row should
+ * be older than a few minutes. If a score row is past this ceiling, either
+ * recompute has stopped running or every pillar has been failing its own
+ * staleness quorum -- either way, the serve layer should flag it.
+ */
+export const MAX_SCORE_AGE_MS = 30 * 60 * 1000;
+
+export function isScoreRowStale(observedAt: string | undefined, now: Date = new Date()): boolean {
+  if (!observedAt) return true;
+  const ts = Date.parse(observedAt);
+  if (!Number.isFinite(ts)) return true;
+  return now.getTime() - ts > MAX_SCORE_AGE_MS;
 }

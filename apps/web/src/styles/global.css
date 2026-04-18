@@ -11,6 +11,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
 body {
@@ -165,4 +166,11 @@ button {
 /* Hover rule */
 @media (hover: none) {
   a:hover, .btn:hover { color: inherit; filter: none; transform: none; }
+}
+
+@media (max-width: 600px) {
+  .container { padding: 0 18px; }
+  .chart-card { padding: 18px; }
+  .section { padding: var(--space-7) 0; }
+  .section-sub { font-size: 13px; }
 }

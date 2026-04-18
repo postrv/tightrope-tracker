@@ -86,7 +86,7 @@ function pillarHref(id: PillarId): string {
   display: flex; flex-direction: column; gap: 14px;
   transition: background 180ms;
   cursor: pointer;
-  min-height: 170px;
+  min-height: 200px;
   position: relative;
   color: inherit;
   text-decoration: none;
@@ -102,6 +102,9 @@ function pillarHref(id: PillarId): string {
 .pillar-name {
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--ink-2);
+  min-height: 2.6em;
+  line-height: 1.3;
+  display: block;
 }
 .pillar-value-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .pillar-value { font-family: var(--font-mono); font-size: 40px; font-weight: 500; letter-spacing: -0.03em; line-height: 1; color: var(--ink-0); font-variant-numeric: tabular-nums; }

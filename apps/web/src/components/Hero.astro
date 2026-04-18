@@ -122,6 +122,18 @@ const isStale = headline.stale === true;
 @media (max-width: 920px) {
   .hero-grid { grid-template-columns: 1fr; gap: 40px; }
 }
+
+@media (max-width: 600px) {
+  .hero { padding: 36px 0 40px; }
+  .hero h1 { font-size: clamp(30px, 8vw, 38px); margin: 18px 0 16px; }
+  .hero .lede { font-size: 15px; margin-bottom: 22px; }
+  .score-card { padding: 20px 18px; gap: 18px; grid-template-columns: 1fr; }
+  .score-num { font-size: 64px; }
+  .score-num .sub { font-size: 18px; }
+  .band-label { font-size: 22px; }
+  .delta-row { gap: 14px; font-size: 11px; }
+  .editorial { padding: 14px 16px; font-size: 13.5px; margin-top: 18px; }
+}
 </style>
 
 <script>

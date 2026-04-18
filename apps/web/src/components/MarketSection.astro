@@ -20,9 +20,8 @@ const ftse = findMovement("ftse_250");
 const gbp = findMovement("gbp_usd");
 const sonia = findMovement("sonia_12m");
 const gas = findMovement("gas_m1");
-const sparkline = pillar.sparkline30d && pillar.sparkline30d.length
-  ? pillar.sparkline30d
-  : [50, 52, 54, 53, 55, 57, 58, 60, 62, 61, 63, 65, 64, 66, 68, 69, 70, 72, 73, 75, 76, 77, 78];
+const sparkline = (pillar.sparkline30d ?? []).filter((n) => Number.isFinite(n));
+const hasSparkline = sparkline.length >= 2;
 ---
 <section class="section" id="market" aria-labelledby="market-title">
   <div class="container">
@@ -82,16 +81,20 @@ const sparkline = pillar.sparkline30d && pillar.sparkline30d.length
       <div class="chart-card">
         <h3>Market pressure trajectory</h3>
         <p class="hint">30-day pillar score. Higher = more constraint from markets.</p>
-        <LineChart
-          series={sparkline}
-          width={540}
-          height={220}
-          stroke="var(--band-acute)"
-          fillGradientId="marketFill"
-          minLabel={`${Math.floor(Math.min(...sparkline))}`}
-          maxLabel={`${Math.ceil(Math.max(...sparkline))}`}
-          ariaLabel="Market pressure pillar score, last 30 days"
-        />
+        {hasSparkline ? (
+          <LineChart
+            series={sparkline}
+            width={540}
+            height={220}
+            stroke="var(--band-acute)"
+            fillGradientId="marketFill"
+            minLabel={`${Math.floor(Math.min(...sparkline))}`}
+            maxLabel={`${Math.ceil(Math.max(...sparkline))}`}
+            ariaLabel="Market pressure pillar score, last 30 days"
+          />
+        ) : (
+          <p class="chart-empty">Trajectory will populate after the first 24h of recompute history.</p>
+        )}
       </div>
     </div>
 
@@ -116,6 +119,7 @@ const sparkline = pillar.sparkline30d && pillar.sparkline30d.length
 .pillar-score-delta.flat { color: var(--ink-2); }
 
 .market-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px; }
+.chart-empty { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); padding: 80px 0; text-align: center; }
 
 .quad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 8px; overflow: hidden; margin-top: 8px; }
 .mini { background: var(--bg-0); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }

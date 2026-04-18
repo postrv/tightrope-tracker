@@ -4,6 +4,7 @@ import {
   PILLAR_ORDER,
   computeSourceHealth,
   maxStaleMsForPillar,
+  type IndicatorDefinition,
   type PillarId,
   type PillarScore,
   type ScoreHistory,
@@ -24,6 +25,7 @@ import {
   readPillarHistory,
   readRecentObservations,
   valueAtLeastAgo,
+  type ObservationRow,
 } from "../lib/history.js";
 
 const KV_TTL_6H = 60 * 60 * 6;
@@ -54,25 +56,39 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
     baselineByIndicator.set(row.indicator_id, arr);
   }
 
-  // Per-pillar 30d sparkline from pillar_scores history.
-  const pillarSparks: Record<PillarId, number[]> = {
-    market: [], fiscal: [], labour: [], delivery: [],
-  };
+  // Per-pillar 30d sparkline derived day-by-day from indicator_observations:
+  // for each of the last 30 days take the latest observation as of that day
+  // for every indicator in the pillar, then re-run computePillarScore. This
+  // gives a real movement curve even for pillars whose pillar_scores rows
+  // happen to be flat (e.g. when all indicators read the same value at every
+  // recompute, but the pillar score itself was different a week ago because a
+  // single indicator updated mid-week).
   const pillarHistByPillar: Record<PillarId, { observed_at: string; value: number }[]> = {
     market: [], fiscal: [], labour: [], delivery: [],
   };
   for (const row of pillarHist) {
     pillarHistByPillar[row.pillar_id].push({ observed_at: row.observed_at, value: row.value });
   }
-  for (const p of PILLAR_ORDER) {
-    // Most recent 30 entries
-    pillarSparks[p] = pillarHistByPillar[p].slice(-30).map((e) => e.value);
-  }
-
-  // Build per-pillar readings and compute.
   const now = new Date();
   const nowMs = now.getTime();
   const updatedAt = now.toISOString();
+
+  const pillarSparks: Record<PillarId, number[]> = {
+    market: [], fiscal: [], labour: [], delivery: [],
+  };
+  for (const p of PILLAR_ORDER) {
+    const indicatorsForPillar = Object.values(INDICATORS).filter((i) => i.pillar === p);
+    pillarSparks[p] = buildDailyPillarSparkline(
+      p,
+      indicatorsForPillar,
+      recent,
+      baselineByIndicator,
+      30,
+      now,
+    );
+  }
+
+  // Build per-pillar readings and compute.
   const pillars: Partial<Record<PillarId, PillarScore>> = {};
   let anyStale = false;
   for (const pillarId of PILLAR_ORDER) {
@@ -224,6 +240,63 @@ async function readSourceHealth(env: Env): Promise<readonly SourceHealthEntry[]>
     latestAttempts.results.map((r) => ({ sourceId: r.source_id, startedAt: r.started_at, status: r.status })),
     lastSuccessBySource,
   );
+}
+
+/**
+ * Build a 30-day daily sparkline for a pillar by re-running the pillar
+ * scoring against the latest indicator observations as of each day in the
+ * window. Days where no indicator has any observation yet carry forward the
+ * previous day's value (or 0 at the start). Empty days at the *front* are
+ * dropped so the chart doesn't render a leading flat shelf.
+ */
+function buildDailyPillarSparkline(
+  pillarId: PillarId,
+  pillarIndicators: readonly IndicatorDefinition[],
+  recent: readonly ObservationRow[],
+  baselineByIndicator: Map<string, number[]>,
+  days: number,
+  now: Date,
+): number[] {
+  const indicatorIds = new Set(pillarIndicators.map((d) => d.id));
+  const byIndicator = new Map<string, ObservationRow[]>();
+  for (const r of recent) {
+    if (!indicatorIds.has(r.indicator_id)) continue;
+    const arr = byIndicator.get(r.indicator_id);
+    if (arr) arr.push(r);
+    else byIndicator.set(r.indicator_id, [r]);
+  }
+
+  const series: number[] = [];
+  const nowMs = now.getTime();
+  for (let i = days - 1; i >= 0; i--) {
+    const cutoffMs = nowMs - i * DAY_MS;
+    const readings: IndicatorReading[] = [];
+    for (const def of pillarIndicators) {
+      const arr = byIndicator.get(def.id);
+      if (!arr || arr.length === 0) continue;
+      // Linear scan from latest backwards; arr is ascending by observed_at.
+      let pick: ObservationRow | undefined;
+      for (let j = arr.length - 1; j >= 0; j--) {
+        const ts = new Date(arr[j]!.observed_at).getTime();
+        if (ts <= cutoffMs) { pick = arr[j]!; break; }
+      }
+      if (!pick) continue;
+      readings.push({
+        indicatorId: def.id,
+        value: pick.value,
+        observedAt: pick.observed_at,
+        baseline: baselineByIndicator.get(def.id) ?? [],
+      });
+    }
+    if (readings.length === 0) {
+      const prev = series.length > 0 ? series[series.length - 1]! : null;
+      if (prev !== null) series.push(prev);
+      continue;
+    }
+    const score = computePillarScore(pillarId, { readings, sparkline30d: [] });
+    series.push(score.value);
+  }
+  return series;
 }
 
 function buildHistory(

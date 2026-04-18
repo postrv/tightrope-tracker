@@ -38,42 +38,79 @@ function ageShort(iso: string | undefined): string {
 }
 const age = ageShort(updatedAt);
 ---
-<nav class="top">
-  <div class="container">
-    <a href="/" class="brand" aria-label="Tightrope Tracker home">
-      <span class="logo" aria-hidden="true"></span>
-      <span>Tightrope Tracker</span>
-    </a>
-    {compact ? (
-      <ul>
-        <li><a href="/#market">Market</a></li>
-        <li><a href="/#fiscal">Fiscal</a></li>
-        <li><a href="/#labour">Labour</a></li>
-        <li><a href="/#delivery">Delivery</a></li>
-        <li><a href="/methodology">Method</a></li>
-        <li><a href="/sources">Sources</a></li>
-      </ul>
-    ) : (
-      <ul>
-        <li><a href="#market">Market</a></li>
-        <li><a href="#fiscal">Fiscal</a></li>
-        <li><a href="#labour">Labour</a></li>
-        <li><a href="#delivery">Delivery</a></li>
-        <li><a href="#timeline">Timeline</a></li>
-        <li><a href="#action">Act</a></li>
-        <li><a href="/methodology">Method</a></li>
-      </ul>
-    )}
-    <span class={`live-chip${stale ? " stale" : ""}`} aria-live="polite" title={stale ? `Last fresh reading ${hh}` : undefined}>
-      <span class="dot" style={`background: ${dotColour}; --pulse: ${dotColour};`}></span>
-      {stale
-        ? `Stale · last fresh ${age || hh}`
-        : hh
-          ? `Live · Updated ${hh}`
-          : "Live · Awaiting first ingestion"}
-    </span>
-  </div>
-</nav>
+{(() => {
+  const links = compact
+    ? [
+        { href: "/#market", label: "Market" },
+        { href: "/#fiscal", label: "Fiscal" },
+        { href: "/#labour", label: "Labour" },
+        { href: "/#delivery", label: "Delivery" },
+        { href: "/methodology", label: "Method" },
+        { href: "/sources", label: "Sources" },
+      ]
+    : [
+        { href: "#market", label: "Market" },
+        { href: "#fiscal", label: "Fiscal" },
+        { href: "#labour", label: "Labour" },
+        { href: "#delivery", label: "Delivery" },
+        { href: "#timeline", label: "Timeline" },
+        { href: "#action", label: "Act" },
+        { href: "/methodology", label: "Method" },
+        { href: "/sources", label: "Sources" },
+      ];
+  return (
+    <nav class="top">
+      <div class="container">
+        <a href="/" class="brand" aria-label="Tightrope Tracker home">
+          <span class="logo" aria-hidden="true"></span>
+          <span>Tightrope Tracker</span>
+        </a>
+        <ul class="primary">
+          {links.map((l) => (<li><a href={l.href}>{l.label}</a></li>))}
+        </ul>
+        <span class={`live-chip${stale ? " stale" : ""}`} aria-live="polite" title={stale ? `Last fresh reading ${hh}` : undefined}>
+          <span class="dot" style={`background: ${dotColour}; --pulse: ${dotColour};`}></span>
+          {stale
+            ? `Stale · last fresh ${age || hh}`
+            : hh
+              ? `Live · Updated ${hh}`
+              : "Live · Awaiting first ingestion"}
+        </span>
+        <button class="hamburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav-panel" data-nav-toggle>
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+      <div class="mobile-panel" id="mobile-nav-panel" hidden>
+        <ul>
+          {links.map((l) => (<li><a href={l.href} data-nav-link>{l.label}</a></li>))}
+        </ul>
+      </div>
+    </nav>
+  );
+})()}
+
+<script>
+(() => {
+  const btn = document.querySelector<HTMLButtonElement>("[data-nav-toggle]");
+  const panel = document.getElementById("mobile-nav-panel");
+  if (!btn || !panel) return;
+  function setOpen(open: boolean) {
+    btn!.setAttribute("aria-expanded", String(open));
+    if (open) panel!.removeAttribute("hidden");
+    else panel!.setAttribute("hidden", "");
+    btn!.classList.toggle("open", open);
+  }
+  btn.addEventListener("click", () => {
+    setOpen(btn.getAttribute("aria-expanded") !== "true");
+  });
+  panel.querySelectorAll<HTMLAnchorElement>("[data-nav-link]").forEach((a) => {
+    a.addEventListener("click", () => setOpen(false));
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setOpen(false);
+  });
+})();
+</script>
 
 <style>
 nav.top {
@@ -96,8 +133,44 @@ nav.top .container { display: flex; align-items: center; justify-content: space-
   content: ""; position: absolute; inset: 0;
   background: linear-gradient(135deg, transparent 49%, var(--bg-0) 49.5%, var(--bg-0) 50.5%, transparent 51%);
 }
-nav.top ul { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--ink-1); }
+nav.top ul.primary { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--ink-1); }
 nav.top ul a { transition: color 180ms; }
+.hamburger {
+  display: none;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 38px; height: 38px;
+  padding: 0;
+  cursor: pointer;
+  flex-direction: column; justify-content: center; align-items: center; gap: 4px;
+}
+.hamburger span {
+  display: block; width: 18px; height: 1.5px;
+  background: var(--ink-0);
+  border-radius: 1px;
+  transition: transform 180ms, opacity 180ms;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
+.mobile-panel {
+  display: none;
+  background: var(--bg-0);
+  border-bottom: 1px solid var(--border-soft);
+}
+.mobile-panel ul {
+  list-style: none; margin: 0;
+  padding: 8px 20px 16px;
+  display: flex; flex-direction: column; gap: 0;
+}
+.mobile-panel ul li { border-bottom: 1px solid var(--border-soft); }
+.mobile-panel ul li:last-child { border-bottom: 0; }
+.mobile-panel ul a {
+  display: block; padding: 14px 4px;
+  font-family: var(--font-mono); font-size: 13px;
+  letter-spacing: 0.05em; color: var(--ink-1);
+}
+.mobile-panel ul a:hover { color: var(--accent); }
 .live-chip {
   display: inline-flex; align-items: center; gap: 8px;
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
@@ -125,6 +198,13 @@ nav.top ul a { transition: color 180ms; }
   100% { box-shadow: 0 0 0 0 rgba(217, 120, 56, 0); }
 }
 @media (max-width: 920px) {
-  nav.top ul { display: none; }
+  nav.top .container { gap: 12px; }
+  nav.top ul.primary { display: none; }
+  .hamburger { display: inline-flex; }
+  .mobile-panel:not([hidden]) { display: block; }
+  .live-chip { font-size: 10px; padding: 3px 8px 3px 7px; letter-spacing: 0.06em; }
+}
+@media (max-width: 480px) {
+  .live-chip { display: none; }
 }
 </style>

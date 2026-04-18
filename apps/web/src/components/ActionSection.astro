@@ -232,4 +232,16 @@ const embedHtml = `<iframe src="${siteOrigin}/embed/headline"
   .actions-grid { grid-template-columns: 1fr; gap: 24px; }
   .section-head { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 600px) {
+  .action-card { padding: 22px 18px; }
+  .action-card h3 { font-size: 22px; }
+  .input-row { grid-template-columns: 1fr; gap: 8px; }
+  .input-row input { width: 100%; min-width: 0; }
+  .input-row .btn { width: 100%; }
+  .mp-result textarea { font-size: 12px; min-height: 240px; }
+  .mp-actions .btn { width: 100%; text-align: center; }
+  .embed-code { font-size: 11px; padding: 12px 14px; word-break: break-all; white-space: pre-wrap; }
+  .embed-actions .btn { width: 100%; text-align: center; }
+}
 </style>

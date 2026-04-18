@@ -28,6 +28,7 @@ import {
   valueAtLeastAgo,
   type ObservationRow,
 } from "../lib/history.js";
+import { maybeAlertSourceHealth } from "./alerts.js";
 
 const KV_TTL_6H = 60 * 60 * 6;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -163,6 +164,10 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   const snapshot = assembleSnapshot(pillarRecord, headline);
   const sourceHealth = await readSourceHealth(env);
   if (sourceHealth.length > 0) snapshot.sourceHealth = sourceHealth;
+
+  // Fire source-health alerts (no-op if ALERT_WEBHOOK_URL is unset, and
+  // swallows webhook errors so recompute never blocks on a Slack outage).
+  await maybeAlertSourceHealth(env, sourceHealth);
 
   // Persist: D1 (headline + non-stale pillars only), KV (snapshot + history).
   // We intentionally skip writing stale rows so the historical series in D1

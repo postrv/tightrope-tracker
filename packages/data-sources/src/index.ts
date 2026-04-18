@@ -19,6 +19,7 @@ export { onsLmsAdapter } from "./adapters/onsLms.js";
 export { onsRtiAdapter } from "./adapters/onsRti.js";
 export { moneyfactsMortgageAdapter } from "./adapters/moneyfactsMortgage.js";
 export { mhclgHousingAdapter } from "./adapters/mhclgHousing.js";
+export { dmoGiltPortfolioAdapter } from "./adapters/dmoGiltPortfolio.js";
 export {
   govUkRssAdapter,
   fetchGovUkCandidates,

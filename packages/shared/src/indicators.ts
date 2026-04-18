@@ -265,16 +265,24 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   ilg_share: {
     id: "ilg_share", pillar: "fiscal", label: "Index-linked gilt share of stock", shortLabel: "ILG share",
     unit: "%", weight: 0.10, risingIsBad: true, sourceId: "dmo",
-    description: "Share of outstanding gilt stock that is index-linked -- inflation-sensitivity proxy.", formatDisplay: fmtPct(1),
-    // No DMO adapter wired yet; would need to parse the quarterly DMO issuance CSV.
-    provenance: "editorial",
+    description: "Share of outstanding gilt stock (inflation-uplifted nominal) that is index-linked -- inflation-sensitivity proxy. Source: DMO D1A gilts-in-issue feed.",
+    formatDisplay: fmtPct(1),
+    provenance: "live",
   },
   issuance_long_share: {
-    id: "issuance_long_share", pillar: "fiscal", label: "Long-conventional issuance share", shortLabel: "Long issuance",
+    // Indicator ID preserved for DB continuity. The measure is now a
+    // stock-based share of conventional debt in the Long / Ultra-Long
+    // maturity brackets, sourced from the DMO D1A gilts-in-issue feed.
+    // The original flow-based "planned annual issuance" formulation is
+    // only published through a ShieldSquare-gated report, which we cannot
+    // reach from a Worker. The stock share captures the same structural
+    // signal (long-dated exposure as a share of refinancing-relevant debt)
+    // without the flow measure's intra-year seasonality.
+    id: "issuance_long_share", pillar: "fiscal", label: "Long-dated share of conventional gilt stock", shortLabel: "Long share",
     unit: "%", weight: 0.10, risingIsBad: true, sourceId: "dmo",
-    description: "Share of planned annual issuance classed as long conventional.", formatDisplay: fmtPct(1),
-    // Same story as ilg_share — DMO adapter not built.
-    provenance: "editorial",
+    description: "Long / Ultra-Long conventional gilts as % of all conventional gilt stock (DMO D1A). Higher = more exposure to long-dated rate moves.",
+    formatDisplay: fmtPct(1),
+    provenance: "live",
   },
 
   // Labour & Living (20%)
@@ -454,8 +462,10 @@ export const SOURCES: Record<string, DataSource> = {
     homepage: "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance",
   },
   dmo: {
-    id: "dmo", name: "UK Debt Management Office",
-    homepage: "https://www.dmo.gov.uk",
+    id: "dmo", name: "UK Debt Management Office -- gilts in issue",
+    homepage: "https://www.dmo.gov.uk/data/gilt-market/gilts-in-issue/",
+    endpoint: "https://www.dmo.gov.uk/data/XmlDataReport?reportCode=D1A",
+    notes: "Flat XML list of every outstanding gilt at the most recent close-of-business date (instrument type, maturity bracket, nominal + inflation-uplifted amount). Refreshes once per working day.",
   },
   ons_lms: {
     id: "ons_lms", name: "ONS -- Labour Market Statistics",

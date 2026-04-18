@@ -2,12 +2,14 @@ import type { D1PreparedStatement } from "@cloudflare/workers-types";
 import {
   INDICATORS,
   PILLAR_ORDER,
+  computeSourceHealth,
   maxStaleMsForPillar,
   type PillarId,
   type PillarScore,
   type ScoreHistory,
   type ScoreHistoryPoint,
   type ScoreSnapshot,
+  type SourceHealthEntry,
 } from "@tightrope/shared";
 import {
   assembleSnapshot,
@@ -140,6 +142,8 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   }
 
   const snapshot = assembleSnapshot(pillarRecord, headline);
+  const sourceHealth = await readSourceHealth(env);
+  if (sourceHealth.length > 0) snapshot.sourceHealth = sourceHealth;
 
   // Persist: D1 (headline + non-stale pillars only), KV (snapshot + history).
   // We intentionally skip writing stale rows so the historical series in D1
@@ -192,6 +196,34 @@ async function persistScores(
     );
   }
   if (stmts.length > 0) await env.DB.batch(stmts);
+}
+
+/**
+ * Load the per-source latest-attempt + last-success rollups and derive the
+ * sourceHealth list the homepage banner renders. Done here so the snapshot
+ * cached under `score:latest` already carries the flag -- the API handler's
+ * cache-hit path returns the cached snapshot verbatim, so deriving this only
+ * on the cache-miss path leaves the homepage blind while the cache is warm.
+ */
+async function readSourceHealth(env: Env): Promise<readonly SourceHealthEntry[]> {
+  const [latestAttempts, lastSuccesses] = await Promise.all([
+    env.DB.prepare(
+      `SELECT i.source_id, i.started_at, i.status FROM ingestion_audit i
+       JOIN (
+         SELECT source_id, MAX(started_at) AS ts FROM ingestion_audit GROUP BY source_id
+       ) m ON i.source_id = m.source_id AND i.started_at = m.ts`,
+    ).all<{ source_id: string; started_at: string; status: string }>(),
+    env.DB.prepare(
+      `SELECT source_id, MAX(started_at) AS last_success
+       FROM ingestion_audit WHERE status = 'success' GROUP BY source_id`,
+    ).all<{ source_id: string; last_success: string }>(),
+  ]);
+  const lastSuccessBySource: Record<string, string> = {};
+  for (const r of lastSuccesses.results) lastSuccessBySource[r.source_id] = r.last_success;
+  return computeSourceHealth(
+    latestAttempts.results.map((r) => ({ sourceId: r.source_id, startedAt: r.started_at, status: r.status })),
+    lastSuccessBySource,
+  );
 }
 
 function buildHistory(

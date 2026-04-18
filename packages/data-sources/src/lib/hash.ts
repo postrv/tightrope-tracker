@@ -13,3 +13,21 @@ export async function sha256Hex(input: string): Promise<string> {
   }
   return out;
 }
+
+/**
+ * Deterministic payload_hash for a historical observation. Bound to the row's
+ * logical identity (indicator + day + value), not the upstream payload.
+ *
+ *   - Idempotent reruns produce identical hashes iff the value is unchanged,
+ *     so `ingestion_audit.payload_hash` only changes on genuine value deltas.
+ *   - The `hist:` prefix distinguishes historical rows from live rows (raw
+ *     sha256 hex) and seed rows (`seed*`), and crucially does NOT match the
+ *     `payload_hash LIKE 'seed%'` filter used by purge-synthetic-history.
+ */
+export async function historicalPayloadHash(
+  indicatorId: string,
+  observedAt: string,
+  value: number,
+): Promise<string> {
+  return `hist:${await sha256Hex(`${indicatorId}|${observedAt}|${value}`)}`;
+}

@@ -75,3 +75,50 @@ describe("boeYieldsAdapter", () => {
     ).rejects.toBeInstanceOf(AdapterError);
   });
 });
+
+describe("boeYieldsAdapter.fetchHistorical", () => {
+  const fetchCsv = (csv: string) => async () => mockResponse(csv);
+
+  it("emits one observation per indicator per populated row in range", async () => {
+    const csv = [
+      "DATE,IUDMNPY,IUDMNZC",
+      "14 Apr 2026,4.40,4.85",
+      "15 Apr 2026,4.42,4.88",
+      "16 Apr 2026,4.47,4.91",
+      "17 Apr 2026,4.51,4.96",
+    ].join("\n");
+    const result = await boeYieldsAdapter.fetchHistorical!(
+      fetchCsv(csv) as unknown as typeof globalThis.fetch,
+      { from: new Date("2026-04-15T00:00:00Z"), to: new Date("2026-04-17T00:00:00Z") },
+    );
+    expect(result.observations).toHaveLength(6);
+    expect(result.earliestObservedAt).toBe("2026-04-15T00:00:00Z");
+    expect(result.latestObservedAt).toBe("2026-04-17T00:00:00Z");
+    for (const o of result.observations) {
+      expect(o.payloadHash).toMatch(/^hist:[0-9a-f]{64}$/);
+    }
+  });
+
+  it("skips blank rows and reports them in notes", async () => {
+    const csv = [
+      "DATE,IUDMNPY,IUDMNZC",
+      "15 Apr 2026,4.42,4.88",
+      "16 Apr 2026,,",
+      "17 Apr 2026,4.51,4.96",
+    ].join("\n");
+    const result = await boeYieldsAdapter.fetchHistorical!(
+      fetchCsv(csv) as unknown as typeof globalThis.fetch,
+      { from: new Date("2026-04-15T00:00:00Z"), to: new Date("2026-04-17T00:00:00Z") },
+    );
+    expect(result.observations).toHaveLength(4);
+    expect(result.notes).toEqual(["1 blank rows skipped (BoE quiet days)"]);
+  });
+
+  it("is deterministic: same value produces identical payloadHash across runs", async () => {
+    const csv = "DATE,IUDMNPY,IUDMNZC\n15 Apr 2026,4.42,4.88";
+    const opts = { from: new Date("2026-04-15T00:00:00Z"), to: new Date("2026-04-15T00:00:00Z") };
+    const r1 = await boeYieldsAdapter.fetchHistorical!(fetchCsv(csv) as unknown as typeof globalThis.fetch, opts);
+    const r2 = await boeYieldsAdapter.fetchHistorical!(fetchCsv(csv) as unknown as typeof globalThis.fetch, opts);
+    expect(r1.observations.map((o) => o.payloadHash)).toEqual(r2.observations.map((o) => o.payloadHash));
+  });
+});

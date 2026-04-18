@@ -31,15 +31,30 @@ export const BOE_FETCH_HEADERS: Record<string, string> = {
   "user-agent": "Mozilla/5.0 (compatible; tightrope-ingest/1.0; +https://tightropetracker.uk/methodology)",
 };
 
-export function buildBoEIadbUrl(seriesCodes: string, opts: { lookbackDays?: number; now?: Date } = {}): string {
+/**
+ * Build the IADB CSV URL. Callers choose one of two modes:
+ *
+ *   - default (no opts, or `lookbackDays`/`now`): rolling window ending "now".
+ *   - historical: pass both `from` and `to` to anchor an explicit range.
+ *
+ * When `from`/`to` are both supplied they take precedence over `lookbackDays`.
+ * The endpoint is inclusive on both sides and tolerates `to` in the future
+ * (it silently clips to the last available business day).
+ */
+export function buildBoEIadbUrl(
+  seriesCodes: string,
+  opts: { lookbackDays?: number; now?: Date; from?: Date; to?: Date } = {},
+): string {
   const now = opts.now ?? new Date();
-  const lookback = opts.lookbackDays ?? DEFAULT_LOOKBACK_DAYS;
-  const from = new Date(now.getTime() - lookback * 24 * 60 * 60 * 1000);
+  const to = opts.to ?? now;
+  const from =
+    opts.from ??
+    new Date(to.getTime() - (opts.lookbackDays ?? DEFAULT_LOOKBACK_DAYS) * 24 * 60 * 60 * 1000);
   const params = new URLSearchParams();
   params.set("csv.x", "yes");
   params.set("SeriesCodes", seriesCodes);
   params.set("Datefrom", toBoEDateParam(from));
-  params.set("Dateto", toBoEDateParam(now));
+  params.set("Dateto", toBoEDateParam(to));
   params.set("UsingCodes", "Y");
   return `${BASE_URL}?${params.toString()}`;
 }

@@ -14,11 +14,17 @@
  * TODO(source): confirm CDIDs against the next PSF bulletin -- JW2O/JW2P are
  * the provisional codes pulled from the PSF time-series listing.
  */
-import type { AdapterResult, DataSourceAdapter, RawObservation } from "../types.js";
+import type {
+  AdapterResult,
+  DataSourceAdapter,
+  HistoricalFetchResult,
+  RawObservation,
+} from "../types.js";
 import { registerAdapter } from "../registry.js";
 import { AdapterError, fetchOrThrow } from "../lib/errors.js";
-import { sha256Hex } from "../lib/hash.js";
+import { historicalPayloadHash, sha256Hex } from "../lib/hash.js";
 import { resolveOnsDataUrl } from "./onsCommon.js";
+import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "ons_psf";
 
@@ -60,9 +66,88 @@ export const onsPsfAdapter: DataSourceAdapter = {
       fetchedAt: new Date().toISOString(),
     };
   },
+  async fetchHistorical(fetchImpl, opts): Promise<HistoricalFetchResult> {
+    const observations: RawObservation[] = [];
+    const { fromMs, toMs } = rangeUtcBounds(opts);
+    let representativeUrl = "";
+    let skippedOutOfRange = 0;
+    let skippedNonNumeric = 0;
+
+    for (const { indicatorId, cdid, dataset } of SERIES) {
+      const url = await resolveOnsDataUrl(fetchImpl, SOURCE_ID, cdid, dataset);
+      representativeUrl = url;
+      const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
+        headers: { accept: "application/json" },
+      });
+      const body = await res.text();
+      const series = parseOnsMonthlySeries(body, SOURCE_ID, url);
+      for (const point of series) {
+        const ms = Date.parse(point.observedAt);
+        if (!Number.isFinite(ms)) { skippedNonNumeric++; continue; }
+        if (ms < fromMs || ms > toMs) { skippedOutOfRange++; continue; }
+        // ONS returns GBPm; indicator unit is GBPbn.
+        const value = point.value / 1000;
+        observations.push({
+          indicatorId,
+          value,
+          observedAt: point.observedAt,
+          sourceId: SOURCE_ID,
+          payloadHash: await historicalPayloadHash(indicatorId, point.observedAt, value),
+        });
+      }
+    }
+
+    const notes: string[] = [];
+    if (skippedOutOfRange > 0) notes.push(`${skippedOutOfRange} months outside requested range`);
+    if (skippedNonNumeric > 0) notes.push(`${skippedNonNumeric} months skipped (unparseable date)`);
+    return buildHistoricalResult(
+      observations,
+      representativeUrl || "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance",
+      notes,
+    );
+  },
 };
 
 interface OnsMonthPoint { date: string; year: string; month: string; value: string; }
+
+/** One parsed month from an ONS `months[]` envelope. */
+export interface OnsMonthlyPoint { value: number; observedAt: string; }
+
+/**
+ * Parse every `months[]` entry from an ONS timeseries JSON envelope into an
+ * ordered list (oldest first). Skips months whose value is non-numeric or
+ * whose date fails to parse, rather than throwing — a historical fetch over
+ * five years of data should not be aborted by a single unparseable row.
+ *
+ * The live `parseOnsMonthly` (single-month) is kept for adapters that only
+ * want the latest figure; it is the strict cousin of this helper.
+ */
+export function parseOnsMonthlySeries(body: string, sourceId: string, url: string): OnsMonthlyPoint[] {
+  let parsed: { months?: OnsMonthPoint[] };
+  try {
+    parsed = JSON.parse(body) as { months?: OnsMonthPoint[] };
+  } catch (cause) {
+    throw new AdapterError({ sourceId, sourceUrl: url, message: "ONS response was not valid JSON", cause });
+  }
+  const months = parsed.months;
+  if (!Array.isArray(months) || months.length === 0) {
+    throw new AdapterError({ sourceId, sourceUrl: url, message: "ONS response missing months[]" });
+  }
+  const out: OnsMonthlyPoint[] = [];
+  for (const point of months) {
+    const value = Number(point.value);
+    if (!Number.isFinite(value)) continue;
+    let observedAt: string;
+    try {
+      observedAt = onsMonthToIso(point);
+    } catch {
+      continue;
+    }
+    out.push({ value, observedAt });
+  }
+  out.sort((a, b) => a.observedAt < b.observedAt ? -1 : a.observedAt > b.observedAt ? 1 : 0);
+  return out;
+}
 
 /**
  * Pull the most recent `months` item from an ONS timeseries JSON envelope.

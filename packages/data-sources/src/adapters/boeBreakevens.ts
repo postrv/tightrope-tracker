@@ -18,12 +18,19 @@
  * forecast and the 10y real yield tracks the real-rate assumption behind
  * OBR's trend-growth path. See docs/OBR_PROXIES.md.
  */
-import type { AdapterResult, DataSourceAdapter, RawObservation } from "../types.js";
+import type {
+  AdapterResult,
+  DataSourceAdapter,
+  HistoricalFetchOptions,
+  HistoricalFetchResult,
+  RawObservation,
+} from "../types.js";
 import { registerAdapter } from "../registry.js";
 import { AdapterError, fetchOrThrow } from "../lib/errors.js";
-import { sha256Hex } from "../lib/hash.js";
+import { historicalPayloadHash, sha256Hex } from "../lib/hash.js";
 import { assertLooksLikeCsv, boeDateToIso, parseCsv } from "../lib/csv.js";
 import { buildBoEIadbUrl, BOE_FETCH_HEADERS } from "../lib/boe.js";
+import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "boe_yields";
 const SERIES_CODES = "IUDSNZC,IUDMNZC,IUDSIZC,IUDMIZC";
@@ -101,7 +108,87 @@ export const boeBreakevensAdapter: DataSourceAdapter = {
     ];
     return { observations, sourceUrl: url, fetchedAt: new Date().toISOString() };
   },
+  async fetchHistorical(fetchImpl, opts): Promise<HistoricalFetchResult> {
+    return fetchBoeBreakevensHistorical(fetchImpl, opts);
+  },
 };
+
+async function fetchBoeBreakevensHistorical(
+  fetchImpl: typeof globalThis.fetch,
+  opts: HistoricalFetchOptions,
+): Promise<HistoricalFetchResult> {
+  const url = buildBoEIadbUrl(SERIES_CODES, { from: opts.from, to: opts.to });
+  const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, { headers: BOE_FETCH_HEADERS });
+  const body = await res.text();
+  assertLooksLikeCsv(SOURCE_ID, url, body);
+  const rows = parseCsv(body);
+  if (rows.length === 0) {
+    throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: url, message: "BoE breakevens: no rows in CSV payload" });
+  }
+  const first = rows[0]!;
+  const dateKey = "DATE" in first ? "DATE" : "Date" in first ? "Date" : null;
+  const keys = {
+    nom5: "IUDSNZC" in first ? "IUDSNZC" : null,
+    nom10: "IUDMNZC" in first ? "IUDMNZC" : null,
+    real5: "IUDSIZC" in first ? "IUDSIZC" : null,
+    real10: "IUDMIZC" in first ? "IUDMIZC" : null,
+  };
+  if (!dateKey || !keys.nom5 || !keys.nom10 || !keys.real5 || !keys.real10) {
+    throw new AdapterError({
+      sourceId: SOURCE_ID,
+      sourceUrl: url,
+      message: `BoE breakevens: unexpected columns ${Object.keys(first).join("|")}`,
+    });
+  }
+
+  const { fromMs, toMs } = rangeUtcBounds(opts);
+  const observations: RawObservation[] = [];
+  let skippedIncomplete = 0;
+
+  for (const row of rows) {
+    const dateRaw = row[dateKey];
+    if (!dateRaw) continue;
+    const observedAt = boeDateToIso(dateRaw);
+    const rowMs = Date.parse(observedAt);
+    if (!Number.isFinite(rowMs) || rowMs < fromMs || rowMs > toMs) continue;
+
+    const nom5 = parseNum(row[keys.nom5]);
+    const nom10 = parseNum(row[keys.nom10]);
+    const real5 = parseNum(row[keys.real5]);
+    const real10 = parseNum(row[keys.real10]);
+    if (nom5 === null || nom10 === null || real5 === null || real10 === null) {
+      skippedIncomplete++;
+      continue;
+    }
+    const be5 = nom5 - real5;
+    const be10 = nom10 - real10;
+    observations.push({
+      indicatorId: "breakeven_5y",
+      value: be5,
+      observedAt,
+      sourceId: SOURCE_ID,
+      payloadHash: await historicalPayloadHash("breakeven_5y", observedAt, be5),
+    });
+    observations.push({
+      indicatorId: "breakeven_10y",
+      value: be10,
+      observedAt,
+      sourceId: SOURCE_ID,
+      payloadHash: await historicalPayloadHash("breakeven_10y", observedAt, be10),
+    });
+    observations.push({
+      indicatorId: "gilt_il_10y_real",
+      value: real10,
+      observedAt,
+      sourceId: SOURCE_ID,
+      payloadHash: await historicalPayloadHash("gilt_il_10y_real", observedAt, real10),
+    });
+  }
+
+  const notes: string[] = [];
+  if (skippedIncomplete > 0) notes.push(`${skippedIncomplete} rows skipped (partial yield curve)`);
+  return buildHistoricalResult(observations, url, notes);
+}
 
 function parseNum(raw: string | undefined): number | null {
   if (raw === undefined) return null;

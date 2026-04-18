@@ -73,3 +73,27 @@ describe("boeBreakevensAdapter", () => {
     ).rejects.toBeInstanceOf(AdapterError);
   });
 });
+
+describe("boeBreakevensAdapter.fetchHistorical", () => {
+  const fetchCsv = (csv: string) => async () => mockResponse(csv);
+
+  it("emits 3 observations per fully-populated row and skips partial rows", async () => {
+    const csv = [
+      "DATE,IUDSNZC,IUDMNZC,IUDSIZC,IUDMIZC",
+      "15 Apr 2026,4.20,4.40,0.80,1.05",
+      "16 Apr 2026,4.25,4.45,,1.10",
+      "17 Apr 2026,4.30,4.50,0.90,1.15",
+    ].join("\n");
+    const result = await boeBreakevensAdapter.fetchHistorical!(
+      fetchCsv(csv) as unknown as typeof globalThis.fetch,
+      { from: new Date("2026-04-15T00:00:00Z"), to: new Date("2026-04-17T00:00:00Z") },
+    );
+    expect(result.observations).toHaveLength(6);
+    expect(result.notes).toEqual(["1 rows skipped (partial yield curve)"]);
+    const dates = Array.from(new Set(result.observations.map((o) => o.observedAt))).sort();
+    expect(dates).toEqual(["2026-04-15T00:00:00Z", "2026-04-17T00:00:00Z"]);
+    for (const o of result.observations) {
+      expect(o.payloadHash).toMatch(/^hist:[0-9a-f]{64}$/);
+    }
+  });
+});

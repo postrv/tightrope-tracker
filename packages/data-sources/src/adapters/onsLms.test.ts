@@ -104,3 +104,64 @@ describe("onsLmsAdapter", () => {
     ).rejects.toBeInstanceOf(AdapterError);
   });
 });
+
+describe("onsLmsAdapter.fetchHistorical", () => {
+  /** Synthetic months[] spanning Jan–Dec 2025 with monotonically rising values. */
+  function monthsPayload(base: number, slope: number): string {
+    const MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"] as const;
+    const months = MONTHS.map((m, i) => ({
+      date: `2025 ${m}`,
+      year: "2025",
+      month: m,
+      value: String(base + i * slope),
+    }));
+    return JSON.stringify({ months });
+  }
+
+  it("emits one observation per series per month in range plus V/U ratio", async () => {
+    const datasetFor: Record<string, string> = {
+      MGSX: "LMS", LF2S: "LMS", LF69: "LMS", MGSC: "LMS",
+      AP2Y: "UNEM", A3WW: "EMP",
+    };
+    const seriesValues: Record<string, { base: number; slope: number }> = {
+      MGSX: { base: 4.0, slope: 0.05 },
+      LF2S: { base: 21.0, slope: 0.01 },
+      LF69: { base: 2700, slope: 10 },
+      A3WW: { base: 2.0, slope: 0.01 },
+      AP2Y: { base: 800, slope: 2 },
+      MGSC: { base: 1400, slope: 3 },
+    };
+    const fetchImpl = async (input: RequestInfo | URL): Promise<Response> => {
+      const url = typeof input === "string" ? input : (input as URL | Request).toString();
+      const search = url.match(/cdids=([A-Z0-9]+)/);
+      if (search) {
+        const cdid = search[1]!;
+        return mockJson(JSON.stringify({ items: [{ uri: `/mock/${cdid.toLowerCase()}/${(datasetFor[cdid] ?? "LMS").toLowerCase()}`, cdid }] }));
+      }
+      const data = url.match(/\/mock\/([a-z0-9]+)\/[a-z]+\/data$/);
+      if (data) {
+        const cdid = data[1]!.toUpperCase();
+        const spec = seriesValues[cdid];
+        if (!spec) throw new Error(`no mock for ${cdid}`);
+        return mockJson(monthsPayload(spec.base, spec.slope));
+      }
+      throw new Error(`unexpected URL: ${url}`);
+    };
+
+    const result = await onsLmsAdapter.fetchHistorical!(
+      fetchImpl as unknown as typeof globalThis.fetch,
+      { from: new Date("2025-06-01T00:00:00Z"), to: new Date("2025-08-01T00:00:00Z") },
+    );
+    // 4 primary series × 3 months + V/U ratio × 3 months = 15 observations.
+    expect(result.observations).toHaveLength(15);
+    for (const o of result.observations) {
+      expect(o.payloadHash).toMatch(/^hist:[0-9a-f]{64}$/);
+      expect(["2025-06-01T00:00:00Z","2025-07-01T00:00:00Z","2025-08-01T00:00:00Z"]).toContain(o.observedAt);
+    }
+    const vu = result.observations.filter((o) => o.indicatorId === "vacancies_per_unemployed");
+    expect(vu).toHaveLength(3);
+    // July's V/U: AP2Y=800+2*6=812, MGSC=1400+3*6=1418 → 812/1418
+    const july = vu.find((o) => o.observedAt === "2025-07-01T00:00:00Z")!;
+    expect(july.value).toBeCloseTo(812 / 1418, 8);
+  });
+});

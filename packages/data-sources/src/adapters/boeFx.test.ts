@@ -39,3 +39,43 @@ describe("boeFxAdapter", () => {
     ).rejects.toBeInstanceOf(AdapterError);
   });
 });
+
+describe("boeFxAdapter.fetchHistorical", () => {
+  const fetchCsv = (csv: string) => async () => mockResponse(csv);
+
+  it("emits gbp_usd and gbp_twi per day in range with hist: payloadHash", async () => {
+    const csv = [
+      "DATE,XUDLUSS,XUDLBK67",
+      "15 Apr 2026,1.2700,78.2",
+      "16 Apr 2026,1.2705,78.3",
+      "17 Apr 2026,1.2710,78.5",
+    ].join("\n");
+    const result = await boeFxAdapter.fetchHistorical!(
+      fetchCsv(csv) as unknown as typeof globalThis.fetch,
+      { from: new Date("2026-04-15T00:00:00Z"), to: new Date("2026-04-17T00:00:00Z") },
+    );
+    expect(result.observations).toHaveLength(6);
+    for (const o of result.observations) {
+      expect(o.payloadHash).toMatch(/^hist:[0-9a-f]{64}$/);
+    }
+    expect(result.earliestObservedAt).toBe("2026-04-15T00:00:00Z");
+    expect(result.latestObservedAt).toBe("2026-04-17T00:00:00Z");
+  });
+
+  it("clips to requested range", async () => {
+    const csv = [
+      "DATE,XUDLUSS,XUDLBK67",
+      "10 Apr 2026,1.27,78.0",
+      "15 Apr 2026,1.27,78.2",
+      "20 Apr 2026,1.27,78.4",
+    ].join("\n");
+    const result = await boeFxAdapter.fetchHistorical!(
+      fetchCsv(csv) as unknown as typeof globalThis.fetch,
+      { from: new Date("2026-04-15T00:00:00Z"), to: new Date("2026-04-15T00:00:00Z") },
+    );
+    expect(result.observations.map((o) => o.observedAt)).toEqual([
+      "2026-04-15T00:00:00Z",
+      "2026-04-15T00:00:00Z",
+    ]);
+  });
+});

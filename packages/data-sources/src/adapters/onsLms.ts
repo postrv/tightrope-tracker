@@ -18,12 +18,18 @@
  * adapter is resilient to missing values (it emits observations only for
  * series that returned a numeric latest point).
  */
-import type { AdapterResult, DataSourceAdapter, RawObservation } from "../types.js";
+import type {
+  AdapterResult,
+  DataSourceAdapter,
+  HistoricalFetchResult,
+  RawObservation,
+} from "../types.js";
 import { registerAdapter } from "../registry.js";
 import { AdapterError, fetchOrThrow } from "../lib/errors.js";
-import { sha256Hex } from "../lib/hash.js";
-import { parseOnsMonthly } from "./onsPsf.js";
+import { historicalPayloadHash, sha256Hex } from "../lib/hash.js";
+import { parseOnsMonthly, parseOnsMonthlySeries } from "./onsPsf.js";
 import { resolveOnsDataUrl } from "./onsCommon.js";
+import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "ons_lms";
 
@@ -109,6 +115,69 @@ export const onsLmsAdapter: DataSourceAdapter = {
       throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: lastUrl, message: "ONS LMS: no observations parsed" });
     }
     return { observations, sourceUrl: lastUrl, fetchedAt: new Date().toISOString() };
+  },
+  async fetchHistorical(fetchImpl, opts): Promise<HistoricalFetchResult> {
+    const observations: RawObservation[] = [];
+    const { fromMs, toMs } = rangeUtcBounds(opts);
+    let lastUrl = "https://www.ons.gov.uk/employmentandlabourmarket";
+    let skippedOutOfRange = 0;
+
+    // Primary series: one observation per indicator per month in range.
+    for (const spec of SERIES) {
+      const url = await resolveOnsDataUrl(fetchImpl, SOURCE_ID, spec.cdid, spec.dataset);
+      lastUrl = url;
+      const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, { headers: { accept: "application/json" } });
+      const body = await res.text();
+      const series = parseOnsMonthlySeries(body, SOURCE_ID, url);
+      for (const point of series) {
+        const ms = Date.parse(point.observedAt);
+        if (!Number.isFinite(ms)) continue;
+        if (ms < fromMs || ms > toMs) { skippedOutOfRange++; continue; }
+        const value = spec.transform ? spec.transform(point.value) : point.value;
+        observations.push({
+          indicatorId: spec.indicatorId,
+          value,
+          observedAt: point.observedAt,
+          sourceId: SOURCE_ID,
+          payloadHash: await historicalPayloadHash(spec.indicatorId, point.observedAt, value),
+        });
+      }
+    }
+
+    // Derived V/U ratio: join vacancies and unemployed-level series by month.
+    try {
+      const vUrl = await resolveOnsDataUrl(fetchImpl, SOURCE_ID, VACANCIES.cdid, VACANCIES.dataset);
+      const uUrl = await resolveOnsDataUrl(fetchImpl, SOURCE_ID, UNEMPLOYED_LEVEL.cdid, UNEMPLOYED_LEVEL.dataset);
+      lastUrl = vUrl;
+      const [vRes, uRes] = await Promise.all([
+        fetchOrThrow(fetchImpl, SOURCE_ID, vUrl, { headers: { accept: "application/json" } }),
+        fetchOrThrow(fetchImpl, SOURCE_ID, uUrl, { headers: { accept: "application/json" } }),
+      ]);
+      const [vBody, uBody] = await Promise.all([vRes.text(), uRes.text()]);
+      const vSeries = parseOnsMonthlySeries(vBody, SOURCE_ID, vUrl);
+      const uSeries = parseOnsMonthlySeries(uBody, SOURCE_ID, uUrl);
+      const uByMonth = new Map(uSeries.map((p) => [p.observedAt, p.value]));
+      for (const v of vSeries) {
+        const uVal = uByMonth.get(v.observedAt);
+        if (uVal === undefined || uVal <= 0) continue;
+        const ms = Date.parse(v.observedAt);
+        if (!Number.isFinite(ms) || ms < fromMs || ms > toMs) continue;
+        const ratio = v.value / uVal;
+        observations.push({
+          indicatorId: "vacancies_per_unemployed",
+          value: ratio,
+          observedAt: v.observedAt,
+          sourceId: SOURCE_ID,
+          payloadHash: await historicalPayloadHash("vacancies_per_unemployed", v.observedAt, ratio),
+        });
+      }
+    } catch (err) {
+      if (observations.length === 0) throw err;
+    }
+
+    const notes: string[] = [];
+    if (skippedOutOfRange > 0) notes.push(`${skippedOutOfRange} months outside requested range`);
+    return buildHistoricalResult(observations, lastUrl, notes);
   },
 };
 

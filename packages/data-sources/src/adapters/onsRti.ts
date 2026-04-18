@@ -13,12 +13,18 @@
  * between releases.
  */
 import rtiFixture from "../fixtures/ons-rti.json" with { type: "json" };
-import type { AdapterResult, DataSourceAdapter, RawObservation } from "../types.js";
+import type {
+  AdapterResult,
+  DataSourceAdapter,
+  HistoricalFetchResult,
+  RawObservation,
+} from "../types.js";
 import { registerAdapter } from "../registry.js";
 import { AdapterError, fetchOrThrow } from "../lib/errors.js";
-import { sha256Hex } from "../lib/hash.js";
-import { parseOnsMonthly } from "./onsPsf.js";
+import { historicalPayloadHash, sha256Hex } from "../lib/hash.js";
+import { parseOnsMonthly, parseOnsMonthlySeries } from "./onsPsf.js";
 import { resolveOnsDataUrl } from "./onsCommon.js";
+import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "ons_rti";
 
@@ -65,6 +71,32 @@ export const onsRtiAdapter: DataSourceAdapter = {
       throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: payrollUrl, message: "ONS RTI: no observations parsed" });
     }
     return { observations, sourceUrl: payrollUrl, fetchedAt: new Date().toISOString() };
+  },
+  async fetchHistorical(fetchImpl, opts): Promise<HistoricalFetchResult> {
+    // Only PAYE payroll has a public ONS historical series; dd_failure_rate
+    // remains fixture-driven in the live path.
+    const observations: RawObservation[] = [];
+    const { fromMs, toMs } = rangeUtcBounds(opts);
+    const payrollUrl = await resolveOnsDataUrl(fetchImpl, SOURCE_ID, PAYROLL.cdid, PAYROLL.dataset);
+    const res = await fetchOrThrow(fetchImpl, SOURCE_ID, payrollUrl, { headers: { accept: "application/json" } });
+    const body = await res.text();
+    const series = parseOnsMonthlySeries(body, SOURCE_ID, payrollUrl);
+    let skippedOutOfRange = 0;
+    for (const point of series) {
+      const ms = Date.parse(point.observedAt);
+      if (!Number.isFinite(ms)) continue;
+      if (ms < fromMs || ms > toMs) { skippedOutOfRange++; continue; }
+      observations.push({
+        indicatorId: "payroll_mom",
+        value: point.value,
+        observedAt: point.observedAt,
+        sourceId: SOURCE_ID,
+        payloadHash: await historicalPayloadHash("payroll_mom", point.observedAt, point.value),
+      });
+    }
+    const notes: string[] = ["dd_failure_rate is fixture-only; not emitted in historical mode"];
+    if (skippedOutOfRange > 0) notes.push(`${skippedOutOfRange} months outside requested range`);
+    return buildHistoricalResult(observations, payrollUrl, notes);
   },
 };
 

@@ -1,5 +1,7 @@
+import { getAdapter, listAdapters } from "@tightrope/data-sources";
 import type { Env } from "./env.js";
 import { backfillHistoricalScores } from "./pipelines/backfill.js";
+import { backfillObservations, type BackfillObservationsResult } from "./pipelines/backfillObservations.js";
 import { ingestDelivery } from "./pipelines/delivery.js";
 import { ingestFiscal } from "./pipelines/fiscal.js";
 import { ingestLabour } from "./pipelines/labour.js";
@@ -35,6 +37,13 @@ export function timingSafeEqual(a: string, b: string): boolean {
  *                                          pillar scores from indicator
  *                                          observations; query params:
  *                                            days      (default 90, max 365)
+ *                                            overwrite (default true)
+ *   backfill-observations               — fetch historical indicator_observations
+ *                                          from an upstream source; query params:
+ *                                            adapter   (required, or 'all')
+ *                                            from      (ISO date, default today-365d)
+ *                                            to        (ISO date, default yesterday)
+ *                                            dryRun    (default false)
  *                                            overwrite (default true)
  *   purge-synthetic-history             — delete seed synthetic history;
  *                                          dry-run unless &confirm=yes
@@ -90,6 +99,58 @@ export async function handleAdminRun(req: Request, env: Env, url: URL): Promise<
         const result = await backfillHistoricalScores(env, { days, overwrite });
         return json({ ok: true, source, ...result });
       }
+      case "backfill-observations": {
+        const adapterId = url.searchParams.get("adapter");
+        const fromStr = url.searchParams.get("from");
+        const toStr = url.searchParams.get("to");
+        const dryRun = url.searchParams.get("dryRun") === "true";
+        const overwrite = url.searchParams.get("overwrite") !== "false";
+
+        if (!adapterId) return json({ error: "missing ?adapter= (use 'all' for every adapter with a historical mode)" }, 400);
+
+        const today = new Date();
+        const utcTodayStart = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+        const defaultFrom = new Date(utcTodayStart - 365 * 24 * 60 * 60 * 1000);
+        const defaultTo = new Date(utcTodayStart - 24 * 60 * 60 * 1000);
+        const from = parseDateParam(fromStr) ?? defaultFrom;
+        const to = parseDateParam(toStr) ?? defaultTo;
+        if (!from || !to) return json({ error: "invalid ?from / ?to (expected ISO date)" }, 400);
+        if (from.getTime() > to.getTime()) return json({ error: "?from must be <= ?to" }, 400);
+
+        if (adapterId === "all") {
+          const targets = listAdapters().filter((a) => typeof a.fetchHistorical === "function");
+          const results: Array<BackfillObservationsResult | { adapter: string; ok: false; error: string }> = [];
+          let succeeded = 0;
+          for (const a of targets) {
+            try {
+              const r = await backfillObservations(env, a, { from, to, dryRun, overwrite });
+              results.push(r);
+              succeeded++;
+            } catch (err) {
+              console.error(`backfill-observations ${a.id} failed`, err);
+              results.push({ adapter: a.id, ok: false, error: sanitizeErrMsg(err) });
+            }
+          }
+          return json({
+            ok: succeeded > 0,
+            source,
+            adapter: "all",
+            from: from.toISOString(),
+            to: to.toISOString(),
+            attempted: targets.length,
+            succeeded,
+            results,
+          }, succeeded === 0 && targets.length > 0 ? 502 : 200);
+        }
+
+        const adapter = getAdapter(adapterId);
+        if (!adapter) return json({ error: `unknown adapter '${adapterId}'` }, 400);
+        if (typeof adapter.fetchHistorical !== "function") {
+          return json({ error: `adapter '${adapterId}' has no historical mode` }, 400);
+        }
+        const result = await backfillObservations(env, adapter, { from, to, dryRun, overwrite });
+        return json({ ok: true, source, ...result });
+      }
       case "purge-synthetic-history": {
         const dryRun = url.searchParams.get("confirm") !== "yes";
         const result = await purgeSyntheticHistory(env, { dryRun });
@@ -114,4 +175,22 @@ function json(body: unknown, status = 200): Response {
     status,
     headers: { "content-type": "application/json; charset=utf-8" },
   });
+}
+
+/**
+ * Parse an ISO-8601 date string (YYYY-MM-DD or a full timestamp) into a Date,
+ * normalised to UTC midnight. Returns null for missing / malformed input.
+ */
+function parseDateParam(raw: string | null): Date | null {
+  if (raw === null || raw === "") return null;
+  const ms = Date.parse(raw);
+  if (!Number.isFinite(ms)) return null;
+  const d = new Date(ms);
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
+
+function sanitizeErrMsg(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  // Strip newlines and cap length so admin JSON stays tidy.
+  return raw.replace(/\s+/g, " ").slice(0, 500);
 }

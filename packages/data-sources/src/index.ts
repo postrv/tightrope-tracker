@@ -2,7 +2,7 @@
 export * from "./types.js";
 export * from "./registry.js";
 export { AdapterError, fetchOrThrow } from "./lib/errors.js";
-export { sha256Hex } from "./lib/hash.js";
+export { sha256Hex, historicalPayloadHash } from "./lib/hash.js";
 
 // Import adapters for their `registerAdapter(...)` side-effect so consumers can
 // call `listAdapters()` / `getAdapter(id)` after `import "@tightrope/data-sources"`.

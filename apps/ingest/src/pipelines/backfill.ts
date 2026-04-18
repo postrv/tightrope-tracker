@@ -50,10 +50,20 @@ export interface BackfillResult {
   startedAt: string;
   completedAt: string;
   daysRequested: number;
+  /** Days where a headline row was written (all 4 pillars met quorum). */
   daysWritten: number;
+  /**
+   * Days where at least one pillar met quorum but at least one did not, so
+   * per-pillar rows were written but the headline was suppressed. Gives the
+   * pillar sparklines a backbone even when delivery (or any other pillar) is
+   * historically thin. Counted separately from `daysSkipped`.
+   */
+  daysPartial: number;
+  /** Days where no pillar met quorum -- nothing written for the day. */
   daysSkipped: number;
   earliestDayWritten: string | null;
   latestDayWritten: string | null;
+  pillarRowsWritten: number;
   gaps: BackfillGap[];
 }
 
@@ -110,6 +120,8 @@ export async function backfillHistoricalScores(
 
   const gaps: BackfillGap[] = [];
   const written: string[] = [];
+  let daysPartial = 0;
+  let pillarRowsWritten = 0;
 
   // Rolling records of this-run's output so each day's delta/editorial
   // references actually-backfilled predecessors, not live data. This is the
@@ -184,39 +196,17 @@ export async function backfillHistoricalScores(
       });
     }
 
-    if (stalePillars.length > 0) {
-      gaps.push({ day: dayIso, stalePillars, indicatorsWithData, totalIndicators });
-      continue;
-    }
-
-    const pillarRecord = pillars as Record<PillarId, PillarScore>;
-    const sparkline90d = priorHeadline.slice(-90).map((h) => h.value);
-    const value24hAgo = valueAtLeastAgo(priorHeadline, DAY_MS, day);
-    const value30dAgo = valueAtLeastAgo(priorHeadline, 30 * DAY_MS, day);
-    const startOfYearMs = Date.UTC(day.getUTCFullYear(), 0, 1);
-    const ytdMs = day.getTime() - startOfYearMs;
-    const valueYtdAgo = ytdMs > 0 ? valueAtLeastAgo(priorHeadline, ytdMs, day) : undefined;
-
-    const headline = computeHeadlineScore({
-      pillars: pillarRecord,
-      sparkline90d,
-      updatedAt: observedAt,
-      ...(value24hAgo !== undefined ? { value24hAgo } : {}),
-      ...(value30dAgo !== undefined ? { value30dAgo } : {}),
-      ...(valueYtdAgo !== undefined ? { valueYtdAgo } : {}),
-    });
-
     const verb = overwrite ? "INSERT OR REPLACE" : "INSERT OR IGNORE";
-    const stmts: D1PreparedStatement[] = [
-      env.DB
-        .prepare(
-          `${verb} INTO headline_scores (observed_at, value, band, dominant, editorial)
-           VALUES (?, ?, ?, ?, ?)`,
-        )
-        .bind(observedAt, headline.value, headline.band, headline.dominantPillar, headline.editorial),
-    ];
+    const stmts: D1PreparedStatement[] = [];
+    const passedPillars: PillarId[] = [];
+
+    // Write pillar_scores for every pillar that met quorum, even if other
+    // pillars didn't. This gives per-pillar sparklines a historical backbone
+    // (market + fiscal + labour have real BoE/ONS history) when delivery is
+    // historically thin because its indicators are fixture-only today.
     for (const p of PILLAR_ORDER) {
-      const ps = pillarRecord[p];
+      const ps = pillars[p];
+      if (!ps) continue;
       stmts.push(
         env.DB
           .prepare(
@@ -225,14 +215,59 @@ export async function backfillHistoricalScores(
           )
           .bind(p, observedAt, ps.value, ps.band),
       );
+      passedPillars.push(p);
     }
-    await env.DB.batch(stmts);
-    written.push(dayIso);
 
-    for (const p of PILLAR_ORDER) {
-      priorPillars[p].push({ observed_at: observedAt, value: pillarRecord[p].value });
+    // Headline is strict: written only when every pillar met quorum, so the
+    // 90-day sparkline never synthesises a weighted average over missing
+    // pillars. Callers can still show pillar history independently.
+    let headline: ReturnType<typeof computeHeadlineScore> | null = null;
+    if (stalePillars.length === 0) {
+      const pillarRecord = pillars as Record<PillarId, PillarScore>;
+      const sparkline90d = priorHeadline.slice(-90).map((h) => h.value);
+      const value24hAgo = valueAtLeastAgo(priorHeadline, DAY_MS, day);
+      const value30dAgo = valueAtLeastAgo(priorHeadline, 30 * DAY_MS, day);
+      const startOfYearMs = Date.UTC(day.getUTCFullYear(), 0, 1);
+      const ytdMs = day.getTime() - startOfYearMs;
+      const valueYtdAgo = ytdMs > 0 ? valueAtLeastAgo(priorHeadline, ytdMs, day) : undefined;
+
+      headline = computeHeadlineScore({
+        pillars: pillarRecord,
+        sparkline90d,
+        updatedAt: observedAt,
+        ...(value24hAgo !== undefined ? { value24hAgo } : {}),
+        ...(value30dAgo !== undefined ? { value30dAgo } : {}),
+        ...(valueYtdAgo !== undefined ? { valueYtdAgo } : {}),
+      });
+      stmts.unshift(
+        env.DB
+          .prepare(
+            `${verb} INTO headline_scores (observed_at, value, band, dominant, editorial)
+             VALUES (?, ?, ?, ?, ?)`,
+          )
+          .bind(observedAt, headline.value, headline.band, headline.dominantPillar, headline.editorial),
+      );
     }
-    priorHeadline.push({ observed_at: observedAt, value: headline.value });
+
+    // Bookkeep before issuing SQL so we never record "written" if batch fails.
+    if (stmts.length === 0) {
+      gaps.push({ day: dayIso, stalePillars, indicatorsWithData, totalIndicators });
+      continue;
+    }
+
+    await env.DB.batch(stmts);
+    pillarRowsWritten += passedPillars.length;
+
+    if (headline !== null) {
+      written.push(dayIso);
+      priorHeadline.push({ observed_at: observedAt, value: headline.value });
+    } else {
+      daysPartial++;
+      gaps.push({ day: dayIso, stalePillars, indicatorsWithData, totalIndicators });
+    }
+    for (const p of passedPillars) {
+      priorPillars[p].push({ observed_at: observedAt, value: pillars[p]!.value });
+    }
   }
 
   // KV caches were built against pre-backfill data — invalidate so the next
@@ -247,9 +282,11 @@ export async function backfillHistoricalScores(
     completedAt: new Date().toISOString(),
     daysRequested: days,
     daysWritten: written.length,
-    daysSkipped: gaps.length,
+    daysPartial,
+    daysSkipped: gaps.length - daysPartial,
     earliestDayWritten: written[0] ?? null,
     latestDayWritten: written[written.length - 1] ?? null,
+    pillarRowsWritten,
     gaps,
   };
 }

@@ -145,17 +145,17 @@ describe("backfillHistoricalScores", () => {
     }
   });
 
-  it("reports a gap when a pillar lacks a quorum of observations for a day", async () => {
+  it("writes passing pillars and reports a gap when quorum fails elsewhere", async () => {
     // Non-market indicators get observations only from 2+ years ago (outside
     // the readRecentObservations window used by backfill), so their readings
     // for Day-1 are empty. Market indicators have fresh observations. The
-    // fiscal/labour/delivery pillars should fail quorum → gap.
+    // fiscal/labour/delivery pillars fail quorum → headline is skipped AND
+    // those pillars aren't written, but the market pillar score for that day
+    // IS written so the sparkline has a backbone.
     const rows: ObservationRow[] = [];
     const today = Date.UTC(2026, 3, 18);
     const farPastMs = today - 800 * 86_400_000; // well beyond 365d lookback
     for (const id of Object.keys(INDICATORS)) {
-      // ECDF baseline — we place the samples outside the readRecent window
-      // for non-market indicators so they don't leak into the "recent" read.
       for (let wk = 26; wk >= 1; wk--) {
         rows.push({
           indicator_id: id,
@@ -174,13 +174,24 @@ describe("backfillHistoricalScores", () => {
     const { env, batches } = makeEnv(rows);
     const result = await backfillHistoricalScores(env, { days: 1, overwrite: true });
 
+    // Headline was not written — fiscal/labour/delivery failed quorum.
     expect(result.daysWritten).toBe(0);
-    expect(result.daysSkipped).toBe(1);
-    expect(batches).toHaveLength(0);
+    // Partial day: market pillar wrote, headline did not.
+    expect(result.daysPartial).toBe(1);
+    expect(result.daysSkipped).toBe(0);
+    expect(result.pillarRowsWritten).toBe(1);
+
+    // One batch with exactly one pillar_scores statement for market.
+    expect(batches).toHaveLength(1);
+    expect(batches[0]).toHaveLength(1);
+    expect(batches[0]![0]!.sql).toContain("INSERT OR REPLACE INTO pillar_scores");
+    expect(batches[0]![0]!.bindings[0]).toBe("market");
+
     const gap = result.gaps[0]!;
     expect(gap.stalePillars).toContain("fiscal");
     expect(gap.stalePillars).toContain("labour");
     expect(gap.stalePillars).toContain("delivery");
+    expect(gap.stalePillars).not.toContain("market");
   });
 
   it("respects overwrite: false → INSERT OR IGNORE", async () => {

@@ -1,6 +1,7 @@
 ---
 import type { PillarScore, TodayMovement } from "@tightrope/shared";
 import LineChart from "./charts/LineChart.astro";
+import ProvenanceBadge from "./ProvenanceBadge.astro";
 import { signedDelta } from "~/lib/format.js";
 
 interface Props {
@@ -46,32 +47,32 @@ const hasSparkline = sparkline.length >= 2;
         <p class="hint">10y and 30y benchmark yields — the long end is the squeeze.</p>
         <div class="quad">
           <div class="mini">
-            <span class="mini-label">10y gilt</span>
+            <div class="mini-head"><span class="mini-label">10y gilt</span><ProvenanceBadge indicatorId="gilt_10y" compact /></div>
             <span class="mini-val">{gilt10?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${gilt10?.worsening ? "up" : "dn"}`}>{gilt10?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <span class="mini-label">30y gilt</span>
+            <div class="mini-head"><span class="mini-label">30y gilt</span><ProvenanceBadge indicatorId="gilt_30y" compact /></div>
             <span class="mini-val">{gilt30?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${gilt30?.worsening ? "up" : "dn"}`}>{gilt30?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <span class="mini-label">SONIA 12m</span>
+            <div class="mini-head"><span class="mini-label">SONIA 12m</span><ProvenanceBadge indicatorId="sonia_12m" compact /></div>
             <span class="mini-val">{sonia?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${sonia?.worsening ? "up" : "dn"}`}>{sonia?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <span class="mini-label">GBP / USD</span>
+            <div class="mini-head"><span class="mini-label">GBP / USD</span><ProvenanceBadge indicatorId="gbp_usd" compact /></div>
             <span class="mini-val">{gbp?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${gbp?.worsening ? "up" : "dn"}`}>{gbp?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <span class="mini-label">FTSE 250</span>
+            <div class="mini-head"><span class="mini-label">FTSE 250</span><ProvenanceBadge indicatorId="ftse_250" compact /></div>
             <span class="mini-val">{ftse?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${ftse?.worsening ? "up" : "dn"}`}>{ftse?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <span class="mini-label">UK gas M+1</span>
+            <div class="mini-head"><span class="mini-label">UK gas M+1</span><ProvenanceBadge indicatorId="gas_m1" compact /></div>
             <span class="mini-val">{gas?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${gas?.worsening ? "up" : "dn"}`}>{gas?.changeDisplay ?? ""}</span>
           </div>
@@ -123,6 +124,7 @@ const hasSparkline = sparkline.length >= 2;
 
 .quad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 8px; overflow: hidden; margin-top: 8px; }
 .mini { background: var(--bg-0); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.mini-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .mini-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
 .mini-val { font-family: var(--font-mono); font-size: 20px; color: var(--ink-0); font-variant-numeric: tabular-nums; }
 .mini-chg { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); }

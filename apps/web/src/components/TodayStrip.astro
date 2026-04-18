@@ -1,6 +1,7 @@
 ---
 import type { TodayMovement } from "@tightrope/shared";
 import Sparkline from "./charts/Sparkline.astro";
+import ProvenanceBadge from "./ProvenanceBadge.astro";
 
 interface Props {
   movements: TodayMovement[];
@@ -21,7 +22,10 @@ const { movements } = Astro.props;
           const colour = m.worsening ? "var(--band-acute)" : "var(--band-slack)";
           return (
             <div class="today-card" title={`Observed ${m.observedAt}`}>
-              <span class="label">{m.label}</span>
+              <div class="label-row">
+                <span class="label">{m.label}</span>
+                <ProvenanceBadge indicatorId={m.indicatorId} compact />
+              </div>
               <span class="val">{m.displayValue}</span>
               <span class={`chg ${m.worsening ? "up" : "dn"}`}>{m.changeDisplay}</span>
               <Sparkline
@@ -63,6 +67,7 @@ const { movements } = Astro.props;
   min-height: 130px;
 }
 .today-card:hover { border-color: var(--accent-dim); transform: translateY(-2px); }
+.today-card .label-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .today-card .label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
 .today-card .val { font-family: var(--font-mono); font-size: 20px; font-weight: 500; color: var(--ink-0); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 .today-card .chg { font-family: var(--font-mono); font-size: 11.5px; }

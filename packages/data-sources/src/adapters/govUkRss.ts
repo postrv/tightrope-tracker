@@ -74,6 +74,7 @@ export async function fetchGovUkCandidates(fetchImpl: typeof globalThis.fetch): 
   void _;
   return {
     observations: [],
+    emitsNoObservations: true,
     sourceUrl: URL,
     fetchedAt: new Date().toISOString(),
     candidates,

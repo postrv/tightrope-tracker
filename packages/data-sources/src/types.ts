@@ -14,6 +14,17 @@ export interface AdapterResult {
   observations: RawObservation[];
   sourceUrl: string;
   fetchedAt: Iso8601;
+  /**
+   * Marks adapters that legitimately return zero observations. gov.uk RSS
+   * is the canonical example: it harvests timeline-event candidates (side-
+   * channel) and never emits observations. Without this flag, the
+   * pipeline would mark every gov.uk run as "partial" for the audit log
+   * because rows_written === 0.
+   *
+   * Omit (or set false) for normal observation-emitting adapters. Set
+   * true if zero-observations-returned is a success signal.
+   */
+  emitsNoObservations?: boolean;
 }
 
 /** Inclusive UTC date range for historical fetches. */

@@ -20,7 +20,11 @@ export async function runAdapter(env: Env, adapter: DataSourceAdapter): Promise<
     const result = await adapter.fetch(globalThis.fetch);
     const rowsWritten = await writeObservations(env.DB, result.observations);
     const payloadHash = combineHashes(result.observations.map((o) => o.payloadHash));
-    await closeAuditSuccess(env.DB, handle, { rowsWritten, payloadHash });
+    await closeAuditSuccess(env.DB, handle, {
+      rowsWritten,
+      payloadHash,
+      emitsNoObservations: result.emitsNoObservations === true,
+    });
     return result;
   } catch (err) {
     await closeAuditFailure(env.DB, handle, err);

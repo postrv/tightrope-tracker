@@ -1,0 +1,74 @@
+---
+import { INDICATORS } from "@tightrope/shared";
+
+/**
+ * A small "LIVE / FIXTURE / EDITORIAL" chip rendered next to any
+ * indicator-level card. Reads provenance straight from the static
+ * catalog -- no snapshot round-trip needed.
+ *
+ * Readers (and BBC fact-checkers) should never have to cross-reference
+ * the /sources page to understand whether a number is machine-fetched
+ * or hand-typed.
+ */
+interface Props {
+  indicatorId: string;
+  /** Render compact -- single letter glyph only, for tight grids. */
+  compact?: boolean;
+}
+
+const { indicatorId, compact = false } = Astro.props;
+const def = INDICATORS[indicatorId];
+const prov = def?.provenance;
+
+const LABEL: Record<string, { full: string; short: string; title: string }> = {
+  live: {
+    full: "Live",
+    short: "L",
+    title: "Fetched from the primary source by an automated adapter on every ingest cycle.",
+  },
+  fixture: {
+    full: "Fixture",
+    short: "F",
+    title: "Publisher does not expose a machine-readable feed. Value transcribed from the latest release into a versioned JSON fixture.",
+  },
+  editorial: {
+    full: "Editorial",
+    short: "E",
+    title: "No live primary data series. Value reflects editorial judgement applied to public announcements, or no adapter is wired yet.",
+  },
+};
+const meta = prov ? LABEL[prov]! : null;
+---
+{meta && (
+  <span class={`prov prov--${prov}`} title={meta.title} aria-label={`Provenance: ${meta.full}. ${meta.title}`}>
+    {compact ? meta.short : meta.full}
+  </span>
+)}
+
+<style>
+.prov {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.prov--live {
+  color: var(--band-slack, #3d7a4d);
+  background: rgba(61, 122, 77, 0.08);
+}
+.prov--fixture {
+  color: var(--ink-2, #6b6b6b);
+  background: rgba(107, 107, 107, 0.08);
+}
+.prov--editorial {
+  color: var(--accent-dim, #c89657);
+  background: rgba(200, 150, 87, 0.08);
+}
+</style>

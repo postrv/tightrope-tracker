@@ -71,6 +71,23 @@ export const PILLARS: Record<PillarId, PillarDefinition> = {
 
 export const PILLAR_ORDER: readonly PillarId[] = ["market", "fiscal", "labour", "delivery"];
 
+/**
+ * How this indicator's values reach the database. Surfaced next to every
+ * card in the UI so a reader (or BBC journalist fact-checking the chart)
+ * can tell at a glance whether a number is machine-fetched from a primary
+ * source, hand-curated from a periodic release, or editorial judgement.
+ *
+ *   "live"       — an adapter fetches the latest value from the primary
+ *                  publisher on a cron (BoE, ONS, Moneyfacts...).
+ *   "fixture"    — the primary publisher does not expose a machine-readable
+ *                  feed; the value is transcribed into a versioned JSON
+ *                  fixture after each release and mirrored by the adapter.
+ *   "editorial"  — no primary data series exists; the value reflects
+ *                  editorial judgement applied to public announcements
+ *                  (delivery milestones) or has no data source wired yet.
+ */
+export type IndicatorProvenance = "live" | "fixture" | "editorial";
+
 export interface IndicatorDefinition {
   id: string;
   pillar: PillarId;
@@ -84,6 +101,12 @@ export interface IndicatorDefinition {
   sourceId: string;
   description: string;
   formatDisplay: (value: number) => string;
+  /**
+   * Where this indicator's values come from. Required for public rollout —
+   * the UI renders a "LIVE / FIXTURE / EDITORIAL" chip next to every card
+   * so readers don't have to cross-reference the /sources page.
+   */
+  provenance: IndicatorProvenance;
   /**
    * Whether a defensible historical time-series exists for this indicator.
    * Defaults to `true` when omitted. Set `false` for indicators whose values
@@ -114,36 +137,45 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     id: "gilt_10y", pillar: "market", label: "10-year gilt yield", shortLabel: "10y gilt",
     unit: "%", weight: 0.15, risingIsBad: true, sourceId: "boe_yields",
     description: "UK 10-year benchmark gilt yield (daily close).", formatDisplay: fmtBp,
+    provenance: "live",
   },
   gilt_30y: {
     id: "gilt_30y", pillar: "market", label: "30-year gilt yield", shortLabel: "30y gilt",
     unit: "%", weight: 0.13, risingIsBad: true, sourceId: "boe_yields",
     description: "UK 30-year gilt yield. Sensitivity proxy for long-duration borrowing.", formatDisplay: fmtBp,
+    provenance: "live",
   },
   gbp_usd: {
     id: "gbp_usd", pillar: "market", label: "GBP / USD", shortLabel: "GBP/USD",
     unit: "ccy", weight: 0.06, risingIsBad: false, sourceId: "boe_fx",
     description: "Sterling vs. US dollar.", formatDisplay: fmtRatio,
+    provenance: "live",
   },
   gbp_twi: {
     id: "gbp_twi", pillar: "market", label: "GBP trade-weighted index", shortLabel: "GBP TWI",
     unit: "index", weight: 0.06, risingIsBad: false, sourceId: "boe_fx",
     description: "Broad effective exchange rate index for sterling.", formatDisplay: fmtIndex(2),
+    provenance: "live",
   },
   sonia_12m: {
     id: "sonia_12m", pillar: "market", label: "SONIA 12-month forward", shortLabel: "SONIA 12m",
     unit: "%", weight: 0.08, risingIsBad: true, sourceId: "boe_sonia",
     description: "12-month SONIA forward -- market-implied short-rate path.", formatDisplay: fmtBp,
+    provenance: "live",
   },
   gas_m1: {
     id: "gas_m1", pillar: "market", label: "UK natural gas front-month", shortLabel: "Gas M+1",
     unit: "p/th", weight: 0.08, risingIsBad: true, sourceId: "ice_gas",
     description: "Front-month NBP natural gas settlement price.", formatDisplay: fmtPence,
+    // No adapter wired yet; ICE exposes futures only under a commercial feed.
+    provenance: "editorial",
   },
   ftse_250: {
     id: "ftse_250", pillar: "market", label: "FTSE 250", shortLabel: "FTSE 250",
     unit: "index", weight: 0.08, risingIsBad: false, sourceId: "lseg",
     description: "Mid-cap index -- cleaner domestic UK read than FTSE 100.", formatDisplay: fmtIndex(0),
+    // No adapter wired yet; LSEG's free feeds don't include an index level stream.
+    provenance: "editorial",
   },
   // OBR-proxy extension -- see docs/OBR_PROXIES.md for the mechanism per indicator.
   // Inflation-input proxies: breakevens from BoE zero-coupon curves, Brent in GBP.
@@ -152,24 +184,28 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "%", weight: 0.08, risingIsBad: true, sourceId: "boe_yields",
     description: "5y nominal minus 5y real gilt yield -- market-implied CPI/RPI 5y ahead, a direct proxy for OBR's CPI inflation path over the forecast horizon.",
     formatDisplay: fmtBp,
+    provenance: "live",
   },
   breakeven_10y: {
     id: "breakeven_10y", pillar: "market", label: "10y breakeven inflation", shortLabel: "10y BE",
     unit: "%", weight: 0.06, risingIsBad: true, sourceId: "boe_yields",
     description: "10y nominal minus 10y real gilt yield -- proxy for longer-horizon inflation expectations feeding OBR's medium-term CPI and debt-interest forecast.",
     formatDisplay: fmtBp,
+    provenance: "live",
   },
   gilt_il_10y_real: {
     id: "gilt_il_10y_real", pillar: "market", label: "10y real (IL) gilt yield", shortLabel: "10y real",
     unit: "%", weight: 0.04, risingIsBad: true, sourceId: "boe_yields",
     description: "10y index-linked gilt real yield -- proxy for the real rate regime that OBR uses when deriving potential-output and trend-growth assumptions.",
     formatDisplay: fmtBp,
+    provenance: "live",
   },
   brent_gbp: {
     id: "brent_gbp", pillar: "market", label: "Brent crude in GBP", shortLabel: "Brent GBP",
     unit: "GBP/bbl", weight: 0.05, risingIsBad: true, sourceId: "eia_brent",
     description: "Brent dated spot price converted to GBP -- the single largest swing input to OBR's CPI energy subcomponent and fuel-duty receipts.",
     formatDisplay: (v) => `GBP ${v.toFixed(2)}/bbl`,
+    provenance: "fixture",
   },
   // Growth-input proxies: housebuilder composite, Services PMI, consumer confidence, RICS balance.
   housebuilder_idx: {
@@ -177,24 +213,28 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "index", weight: 0.05, risingIsBad: false, sourceId: "lseg_housebuilders",
     description: "Equal-weighted price index of the five largest listed UK housebuilders (rebased 100 = 2019 avg) -- leads OBR's residential investment and construction GVA lines by 3-6 months.",
     formatDisplay: fmtIndex(1),
+    provenance: "fixture",
   },
   services_pmi: {
     id: "services_pmi", pillar: "market", label: "S&P Global UK Services PMI", shortLabel: "Services PMI",
     unit: "index", weight: 0.04, risingIsBad: false, sourceId: "sp_global_pmi",
     description: "Headline Services PMI -- 50 = no change. Services is ~80% of UK GVA, so this leads OBR's real-GDP growth forecast by roughly one quarter.",
     formatDisplay: fmtIndex(1),
+    provenance: "fixture",
   },
   consumer_confidence: {
     id: "consumer_confidence", pillar: "market", label: "GfK consumer confidence", shortLabel: "Cons. conf.",
     unit: "index", weight: 0.02, risingIsBad: false, sourceId: "gfk_confidence",
     description: "GfK/NIESR consumer confidence headline index -- leading signal for household-consumption growth, the largest single expenditure line in OBR's GDP decomposition.",
     formatDisplay: fmtIndex(0),
+    provenance: "fixture",
   },
   rics_price_balance: {
     id: "rics_price_balance", pillar: "market", label: "RICS house-price balance", shortLabel: "RICS price",
     unit: "%", weight: 0.02, risingIsBad: false, sourceId: "rics_rms",
     description: "Net balance of RICS surveyors reporting price rises vs. falls -- leads residential investment in OBR's expenditure GDP by 1-2 quarters.",
     formatDisplay: fmtPct(0),
+    provenance: "fixture",
   },
 
   // Fiscal (30%)
@@ -202,31 +242,39 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     id: "cb_headroom", pillar: "fiscal", label: "Current-budget headroom", shortLabel: "CB headroom",
     unit: "GBPbn", weight: 0.35, risingIsBad: false, sourceId: "obr_efo",
     description: "Surplus against the stability rule at the target year.", formatDisplay: fmtGbpBn,
+    provenance: "fixture",
   },
   psnfl_trajectory: {
     id: "psnfl_trajectory", pillar: "fiscal", label: "PSNFL trajectory deviation", shortLabel: "PSNFL dev",
     unit: "pp", weight: 0.15, risingIsBad: true, sourceId: "obr_efo",
     description: "Deviation of PSNFL path from OBR baseline, percentage points of GDP.", formatDisplay: fmtPct(2),
+    provenance: "fixture",
   },
   borrowing_outturn: {
-    id: "borrowing_outturn", pillar: "fiscal", label: "Borrowing outturn vs. OBR path", shortLabel: "Borrowing vs. OBR",
+    id: "borrowing_outturn", pillar: "fiscal", label: "Public-sector net borrowing", shortLabel: "PSNB",
     unit: "GBPbn", weight: 0.15, risingIsBad: true, sourceId: "ons_psf",
-    description: "Year-to-date public-sector net borrowing, gap vs. OBR profile.", formatDisplay: fmtGbpBn,
+    description: "Monthly public-sector net borrowing excluding public-sector banks (ONS J5II). Higher values = more borrowing.", formatDisplay: fmtGbpBn,
+    provenance: "live",
   },
   debt_interest: {
-    id: "debt_interest", pillar: "fiscal", label: "Debt interest vs. forecast", shortLabel: "Debt interest dev",
+    id: "debt_interest", pillar: "fiscal", label: "Central-government net interest payable", shortLabel: "Debt interest",
     unit: "GBPbn", weight: 0.15, risingIsBad: true, sourceId: "ons_psf",
-    description: "Rolling 12m debt-interest bill vs. OBR forecast.", formatDisplay: fmtGbpBn,
+    description: "Central-government net interest payable, monthly (ONS NMFX).", formatDisplay: fmtGbpBn,
+    provenance: "live",
   },
   ilg_share: {
     id: "ilg_share", pillar: "fiscal", label: "Index-linked gilt share of stock", shortLabel: "ILG share",
     unit: "%", weight: 0.10, risingIsBad: true, sourceId: "dmo",
     description: "Share of outstanding gilt stock that is index-linked -- inflation-sensitivity proxy.", formatDisplay: fmtPct(1),
+    // No DMO adapter wired yet; would need to parse the quarterly DMO issuance CSV.
+    provenance: "editorial",
   },
   issuance_long_share: {
     id: "issuance_long_share", pillar: "fiscal", label: "Long-conventional issuance share", shortLabel: "Long issuance",
     unit: "%", weight: 0.10, risingIsBad: true, sourceId: "dmo",
     description: "Share of planned annual issuance classed as long conventional.", formatDisplay: fmtPct(1),
+    // Same story as ilg_share — DMO adapter not built.
+    provenance: "editorial",
   },
 
   // Labour & Living (20%)
@@ -234,21 +282,25 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     id: "inactivity_rate", pillar: "labour", label: "Economic inactivity rate, 16-64", shortLabel: "Inactivity",
     unit: "%", weight: 0.22, risingIsBad: true, sourceId: "ons_lms",
     description: "Share of 16-64 population neither in work nor looking for work.", formatDisplay: fmtPct(1),
+    provenance: "live",
   },
   inactivity_health: {
     id: "inactivity_health", pillar: "labour", label: "Health-related inactivity (m)", shortLabel: "Health inactive",
     unit: "m", weight: 0.18, risingIsBad: true, sourceId: "ons_lms",
     description: "Millions reporting long-term sickness as main reason for inactivity.", formatDisplay: fmtMillions,
+    provenance: "live",
   },
   unemployment: {
     id: "unemployment", pillar: "labour", label: "Unemployment rate, 16+", shortLabel: "Unemployment",
     unit: "%", weight: 0.10, risingIsBad: true, sourceId: "ons_lms",
     description: "ILO unemployment rate.", formatDisplay: fmtPct(1),
+    provenance: "live",
   },
   vacancies_per_unemployed: {
     id: "vacancies_per_unemployed", pillar: "labour", label: "Vacancies per unemployed person", shortLabel: "V/U",
     unit: "ratio", weight: 0.10, risingIsBad: false, sourceId: "ons_lms",
     description: "Tightness of the labour market; falling = slack.", formatDisplay: (v) => v.toFixed(2),
+    provenance: "live",
   },
   payroll_mom: {
     // Indicator ID preserved for DB continuity. The upstream CDID (K54L) is
@@ -260,21 +312,27 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "index", weight: 0.10, risingIsBad: false, sourceId: "ons_rti",
     description: "Average Weekly Earnings -- whole economy regular-pay index (2015=100, SA, excl. arrears). Rising means earnings are growing.",
     formatDisplay: fmtIndex(1),
+    provenance: "live",
   },
   real_regular_pay: {
     id: "real_regular_pay", pillar: "labour", label: "Real regular pay growth, YoY", shortLabel: "Real pay",
     unit: "%", weight: 0.10, risingIsBad: false, sourceId: "ons_lms",
     description: "CPIH-adjusted regular pay, year-on-year.", formatDisplay: fmtPct(1),
+    provenance: "live",
   },
   mortgage_2y_fix: {
     id: "mortgage_2y_fix", pillar: "labour", label: "Average 2y fixed mortgage rate", shortLabel: "2y fix",
     unit: "%", weight: 0.12, risingIsBad: true, sourceId: "moneyfacts",
     description: "UK average 2-year fixed-rate mortgage at 75% LTV.", formatDisplay: fmtPct(2),
+    provenance: "live",
   },
   dd_failure_rate: {
     id: "dd_failure_rate", pillar: "labour", label: "Direct-debit failure rate", shortLabel: "DD failures",
     unit: "%", weight: 0.08, risingIsBad: true, sourceId: "ons_rti",
     description: "ONS real-time indicators -- share of direct debits failing.", formatDisplay: fmtPct(2),
+    // ONS publishes this as an Excel indicator inside the RTI bundle, not as
+    // a queryable timeseries; we mirror the headline figure into a fixture.
+    provenance: "fixture",
   },
 
   // Growth Delivery (10%) -- inverted
@@ -282,35 +340,41 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     id: "housing_trajectory", pillar: "delivery", label: "Net housing additions vs. trajectory", shortLabel: "Housing",
     unit: "%", weight: 0.25, risingIsBad: false, sourceId: "mhclg",
     description: "Latest net additions as % of OBR trajectory for the year.", formatDisplay: fmtPct(1),
+    provenance: "fixture",
   },
   planning_consents: {
     id: "planning_consents", pillar: "delivery", label: "Planning consents vs. baseline", shortLabel: "Consents",
     unit: "%", weight: 0.20, risingIsBad: false, sourceId: "mhclg",
     description: "Residential planning consents vs. 2019 baseline.", formatDisplay: fmtPct(1),
+    provenance: "fixture",
   },
   new_towns_milestones: {
     id: "new_towns_milestones", pillar: "delivery", label: "New towns milestones hit", shortLabel: "New towns",
     unit: "%", weight: 0.15, risingIsBad: false, sourceId: "gov_uk",
     description: "Milestones hit as % of committed milestones YTD.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
+    provenance: "editorial",
   },
   bics_rollout: {
     id: "bics_rollout", pillar: "delivery", label: "BICS firms onboarded", shortLabel: "BICS",
     unit: "firms", weight: 0.15, risingIsBad: false, sourceId: "desnz",
     description: "Cumulative firms onboarded to the British Industrial Competitiveness Scheme.", formatDisplay: fmtCount,
     hasHistoricalSeries: false,
+    provenance: "editorial",
   },
   industrial_strategy: {
     id: "industrial_strategy", pillar: "delivery", label: "Industrial Strategy milestones", shortLabel: "Industrial",
     unit: "%", weight: 0.15, risingIsBad: false, sourceId: "dbt",
     description: "Industrial Strategy milestones on/ahead of schedule vs. slipped/missed.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
+    provenance: "editorial",
   },
   smr_programme: {
     id: "smr_programme", pillar: "delivery", label: "SMR fleet progress", shortLabel: "SMR",
     unit: "%", weight: 0.10, risingIsBad: false, sourceId: "gov_uk",
     description: "Small Modular Reactor programme progress against published milestones.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
+    provenance: "editorial",
   },
 };
 

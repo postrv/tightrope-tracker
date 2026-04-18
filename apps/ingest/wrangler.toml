@@ -3,8 +3,13 @@ main = "src/index.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Scheduled data ingestion + score recompute. Not routed for HTTP -- cron only.
-# Admin trigger via `wrangler dev --test-scheduled` locally.
+# Scheduled data ingestion + score recompute. Exposed at
+# ingest.tightropetracker.uk solely for the /admin/run and /__healthz
+# endpoints. /admin/run is guarded by a shared ADMIN_TOKEN and requires
+# POST; everything else on the host returns 405.
+routes = [
+  { pattern = "ingest.tightropetracker.uk", custom_domain = true }
+]
 
 [[d1_databases]]
 binding = "DB"

@@ -321,6 +321,12 @@ export const SOURCES: Record<string, DataSource> = {
     id: "boe_sonia", name: "Bank of England -- SONIA",
     homepage: "https://www.bankofengland.co.uk/markets/sonia-benchmark",
   },
+  boe_breakevens: {
+    id: "boe_breakevens", name: "Bank of England -- breakevens & index-linked gilt yields",
+    homepage: "https://www.bankofengland.co.uk/boeapps/database/",
+    endpoint: "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp",
+    notes: "Derived from the IADB CSV endpoint (IUDSNZC/IUDMNZC/IUDSIZC/IUDMIZC). We emit three indicators: 5y and 10y breakeven inflation, and the 10y index-linked real gilt yield.",
+  },
   ice_gas: {
     id: "ice_gas", name: "ICE -- UK Natural Gas Futures",
     homepage: "https://www.ice.com/products/910/UK-Natural-Gas-Futures",

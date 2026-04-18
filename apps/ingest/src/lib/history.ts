@@ -83,3 +83,26 @@ export function valueAtLeastAgo(
   }
   return undefined;
 }
+
+/**
+ * Downsample a time-series to one value per UTC day (latest observation per
+ * day wins). Used for the headline 90d sparkline: recompute writes a row
+ * every 5 minutes, so a naive slice(-90) would cover ~7.5 hours rather than
+ * 90 days. Output is ascending by day. Days with no observation are skipped
+ * entirely rather than carried forward — the sparkline renders as "days
+ * covered" rather than "last-known for an arbitrary cutoff".
+ */
+export function downsampleLatestPerDay(
+  series: readonly { observed_at: string; value: number }[],
+): number[] {
+  const latestByDay = new Map<string, { ts: string; v: number }>();
+  for (const row of series) {
+    // `observed_at` is ISO8601 with a 'T' separator. Treat the first 10 chars
+    // as the UTC calendar date — that's stable across the two row formats
+    // D1 may return (`2026-04-18T17:25:36.084Z` vs `2026-04-18 17:25:36`).
+    const day = row.observed_at.slice(0, 10);
+    const prev = latestByDay.get(day);
+    if (!prev || row.observed_at > prev.ts) latestByDay.set(day, { ts: row.observed_at, v: row.value });
+  }
+  return [...latestByDay.keys()].sort().map((d) => latestByDay.get(d)!.v);
+}

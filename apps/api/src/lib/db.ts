@@ -49,8 +49,18 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     db.prepare(
       "SELECT observed_at, value, band, dominant, editorial FROM headline_scores ORDER BY observed_at DESC LIMIT 1",
     ).first<HeadlineRow>(),
+    // Downsample to one row per UTC day (latest per day wins) over the last
+    // 90 days. Without this, 90 rows of 5-min recompute output covers ~7.5
+    // hours, producing a flat line every day indicators hold steady.
     db.prepare(
-      "SELECT observed_at, value FROM headline_scores ORDER BY observed_at DESC LIMIT 90",
+      `SELECT h.observed_at, h.value FROM headline_scores h
+       JOIN (
+         SELECT substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
+         FROM headline_scores
+         WHERE observed_at >= datetime('now', '-90 days')
+         GROUP BY substr(observed_at, 1, 10)
+       ) m ON h.observed_at = m.ts
+       ORDER BY h.observed_at ASC`,
     ).all<{ observed_at: string; value: number }>(),
     db.prepare(
       `SELECT p.pillar_id AS id, p.observed_at, p.value, p.band
@@ -110,7 +120,8 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
   }
 
   const hValue = headlineRow?.value ?? 0;
-  const hSeries = headlineHistory.results.map((r) => r.value).reverse();
+  // Already ordered ASC by observed_at (one row per UTC day, see SQL above).
+  const hSeries = headlineHistory.results.map((r) => r.value);
   // If the headline row is missing we stamp updatedAt at the unix epoch so
   // callers can distinguish an empty-seed placeholder from a real read. See
   // looksUnseeded() in ../handlers/score.ts.

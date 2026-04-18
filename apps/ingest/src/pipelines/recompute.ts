@@ -20,6 +20,7 @@ import {
 } from "@tightrope/methodology";
 import type { Env } from "../env.js";
 import {
+  downsampleLatestPerDay,
   readBaselineObservations,
   readHeadlineHistory,
   readPillarHistory,
@@ -136,8 +137,10 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
     .filter(([, ps]) => ps.stale)
     .map(([id]) => id);
 
-  // 90d headline sparkline.
-  const sparkline90d = headlineHist.slice(-90).map((h) => h.value);
+  // 90d headline sparkline, downsampled to one point per UTC day. Without
+  // this, the 90-row slice below covers ~7.5 hours of 5-minute recompute
+  // rows, producing a flat line every day indicators hold steady.
+  const sparkline90d = downsampleLatestPerDay(headlineHist).slice(-90);
   const value24hAgo = valueAtLeastAgo(headlineHist, 24 * 60 * 60 * 1000, now);
   const value30dAgo = valueAtLeastAgo(headlineHist, 30 * DAY_MS, now);
   const startOfYear = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));

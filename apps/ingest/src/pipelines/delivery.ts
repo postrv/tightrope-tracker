@@ -15,13 +15,17 @@ export async function ingestDelivery(env: Env): Promise<{ housingRows: number; c
   // observations. We manage the audit row ourselves so the DB still has a
   // record of the fetch attempt. A failure here is logged and audited but
   // does not propagate -- the rest of the scheduled run must still complete.
-  const handle = await openAudit(env.DB, { sourceId: "gov_uk", sourceUrl: "https://www.gov.uk/government/announcements.atom" });
+  const handle = await openAudit(env.DB, { sourceId: "gov_uk", sourceUrl: "https://www.gov.uk/search/news-and-communications.atom" });
   let candidates: TimelineEventCandidate[] = [];
   try {
     const result = await fetchGovUkCandidates(globalThis.fetch);
     candidates = result.candidates;
     const payloadHash = await sha256Hex(JSON.stringify(candidates.map((c) => c.id).sort()));
-    await closeAuditSuccess(env.DB, handle, { rowsWritten: 0, payloadHash });
+    // gov.uk RSS legitimately returns zero observations — it harvests
+    // timeline-event candidates via the side-channel above. Mark
+    // emitsNoObservations so the audit closer keeps this as 'success'
+    // rather than downgrading to 'partial' on rows_written === 0.
+    await closeAuditSuccess(env.DB, handle, { rowsWritten: 0, payloadHash, emitsNoObservations: true });
     if (env.DLQ && candidates.length > 0) {
       try {
         await env.DLQ.send({ kind: "timeline_candidates", candidates });

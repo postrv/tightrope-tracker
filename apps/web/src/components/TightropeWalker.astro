@@ -1,141 +1,271 @@
 ---
 interface Props {
   score: number;
-  /** If set, the walker starts at 0 and animates to `score` on load. */
+  /** If false, walker renders static (no sway, no parallax) at a representative lean. */
   animate?: boolean;
 }
 
 const { score, animate = true } = Astro.props;
 const safeScore = Math.max(0, Math.min(100, score ?? 0));
 
-// Walker x-position on rope: 60 -> 340 as score goes 0 -> 100.
-const xMin = 60;
-const xMax = 340;
-const x = xMin + ((xMax - xMin) * safeScore) / 100;
+// Maximum lateral sway amplitude (degrees) around the rope axis. Capped well
+// below "fall" so even score 100 reads as struggling rather than fallen.
+const MAX_SWAY = 30;
+const targetAmp = MAX_SWAY * Math.pow(safeScore / 100, 1.4);
 const label = Math.round(safeScore);
+
+// Stability arc behind the walker shows three zones: green ±10°, amber to ±20°,
+// red to ±30°. Each zone "lights up" once the walker's swept range reaches it,
+// so the arc reads as a colour-coded gauge of how far the walker is reaching.
+const amberLit = targetAmp > 9;
+const redLit = targetAmp > 18;
+const greenOpacity = 0.24;
+const amberOpacity = amberLit ? 0.30 : 0.08;
+const redOpacity = redLit ? 0.28 : 0.06;
+
+// Speed multiplier on the sway: ~1× at score 0, ~2.8× at score 100. High
+// instability reads as frantic micro-corrections; low instability stays calm.
+const speedMult = 1 + Math.pow(safeScore / 100, 1.5) * 1.8;
+
+// Static pose (used when animate=false, e.g. embed): a representative
+// mid-sway lean so the still image conveys instability instead of standing
+// perfectly vertical against an active red arc.
+const staticAngle = animate ? 0 : targetAmp * 0.55;
 ---
-<div class="tightrope-viz" data-animate={animate ? "true" : "false"} data-target-score={safeScore}>
-  <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-label={`Tightrope walker at ${label} of 100 pressure`} role="img">
-    <defs>
-      <linearGradient id="ropeGrad" x1="0" x2="1">
-        <stop offset="0" stop-color="#5FB27C"/>
-        <stop offset="0.4" stop-color="#D4A24C"/>
-        <stop offset="0.7" stop-color="#D97838"/>
-        <stop offset="1" stop-color="#C84B3C"/>
-      </linearGradient>
-      <linearGradient id="platGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#262C36"/>
-        <stop offset="1" stop-color="#12151A"/>
-      </linearGradient>
-      <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
-        <stop offset="0" stop-color="#D4A24C" stop-opacity="0.35"/>
-        <stop offset="1" stop-color="#D4A24C" stop-opacity="0"/>
-      </radialGradient>
-    </defs>
+<div
+  class="tightrope-walker"
+  data-animate={animate ? "true" : "false"}
+  data-score={safeScore}
+  data-amp={targetAmp.toFixed(3)}
+  data-speed={speedMult.toFixed(3)}
+  aria-label={`Tightrope walker, viewed from behind on a wire receding into the distance. Lateral sway amplitude reflects instability score ${label} of 100.`}
+  role="img"
+>
+  <div class="perspective">
+    <div class="scene">
+      <!-- Distant void backdrop, on a vertical plane far behind everything -->
+      <div class="layer bg-layer">
+        <svg viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <radialGradient id="tw-vp-glow" cx="0.5" cy="0.55" r="0.45">
+              <stop offset="0" stop-color="#D4A24C" stop-opacity="0.30"/>
+              <stop offset="0.5" stop-color="#D4A24C" stop-opacity="0.06"/>
+              <stop offset="1" stop-color="#D4A24C" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="tw-void" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#1A1F28"/>
+              <stop offset="0.55" stop-color="#0E1116"/>
+              <stop offset="1" stop-color="#06080B"/>
+            </linearGradient>
+          </defs>
+          <rect x="-200" y="-100" width="1000" height="700" fill="url(#tw-void)"/>
+          <!-- Distant atmospheric haze around the vanishing point -->
+          <ellipse cx="300" cy="280" rx="280" ry="60" fill="url(#tw-vp-glow)"/>
+          <!-- Distant ridge: low, soft, anchors the horizon -->
+          <path d="M 0 295 Q 80 280 160 290 Q 220 296 280 285 L 320 285 Q 380 296 440 290 Q 520 280 600 295 L 600 320 L 0 320 Z" fill="#0E1218" opacity="0.9"/>
+          <!-- Far anchor (where the rope ties off in the distance) -->
+          <rect x="284" y="280" width="32" height="5" fill="#252B33"/>
+          <rect x="284" y="285" width="32" height="9" fill="#0B0E13"/>
+        </svg>
+      </div>
 
-    <circle cx="268" cy="200" r="130" fill="url(#glow)"/>
+      <!-- Rope as a flat plane laid into 3D depth (rotated nearly horizontal) -->
+      <div class="layer rope-layer">
+        <svg viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="tw-rope" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#5A4825" stop-opacity="0.55"/>
+              <stop offset="0.35" stop-color="#A07530" stop-opacity="0.85"/>
+              <stop offset="1" stop-color="#E5BA68"/>
+            </linearGradient>
+          </defs>
+          <!-- Rope: thin stripe down the centre. Layer is rotated nearly flat
+               so this becomes a wire receding from the foreground (bottom) to
+               the vanishing point (top, near horizon). Atmospheric fade dims
+               the far end. -->
+          <rect x="294" y="0" width="12" height="500" fill="url(#tw-rope)" rx="4"/>
+          <rect x="298.5" y="0" width="3" height="500" fill="#F4D88A" opacity="0.55"/>
+          <!-- Evenly-spaced wraps along the rope. In perspective these visibly
+               compress toward the vanishing point — a strong depth cue. -->
+          <g fill="#5A4520" opacity="0.85">
+            <rect x="291" y="60"  width="18" height="3" rx="1"/>
+            <rect x="291" y="120" width="18" height="3" rx="1"/>
+            <rect x="291" y="190" width="18" height="3" rx="1"/>
+            <rect x="291" y="270" width="18" height="3" rx="1"/>
+            <rect x="291" y="360" width="18" height="3" rx="1"/>
+            <rect x="291" y="460" width="18" height="3" rx="1"/>
+          </g>
+        </svg>
+      </div>
 
-    <g font-family="IBM Plex Mono" font-size="9" fill="#4A463F" letter-spacing="0.5">
-      <text x="40" y="260" text-anchor="middle">0</text>
-      <text x="130" y="260" text-anchor="middle">25</text>
-      <text x="220" y="260" text-anchor="middle">50</text>
-      <text x="310" y="260" text-anchor="middle">75</text>
-      <text x="360" y="260" text-anchor="middle">100</text>
-    </g>
+      <!-- Walker stays on a vertical plane in the foreground -->
+      <div class="layer walker-layer">
+        <svg viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg">
+          <!-- Stability arc: ±30° fan behind walker, colour-coded by zone.
+               Centre at (300, 430) shared with the walker pivot, radius 140.
+               Green core ±10°, amber to ±20°, red to ±30°. Each zone's opacity
+               lifts once the walker's swept range reaches it. -->
+          <g class="stability-arc">
+            <path d="M 300 430 L 230 308.76 A 140 140 0 0 1 252.12 298.45 Z" fill="#C84B3C" opacity={redOpacity}/>
+            <path d="M 300 430 L 252.12 298.45 A 140 140 0 0 1 275.69 292.13 Z" fill="#D4A24C" opacity={amberOpacity}/>
+            <path d="M 300 430 L 275.69 292.13 A 140 140 0 0 1 324.31 292.13 Z" fill="#5C8C42" opacity={greenOpacity}/>
+            <path d="M 300 430 L 324.31 292.13 A 140 140 0 0 1 347.88 298.45 Z" fill="#D4A24C" opacity={amberOpacity}/>
+            <path d="M 300 430 L 347.88 298.45 A 140 140 0 0 1 370 308.76 Z" fill="#C84B3C" opacity={redOpacity}/>
+            <!-- Soft outer rim for definition -->
+            <path d="M 230 308.76 A 140 140 0 0 1 370 308.76" stroke="#3A3630" stroke-width="0.6" fill="none" opacity="0.45"/>
+            <!-- Vertical reference line at 0° (stable) -->
+            <line x1="300" y1="430" x2="300" y2="290" stroke="#7A7468" stroke-width="0.5" stroke-dasharray="2 4" opacity="0.3"/>
+          </g>
 
-    <rect x="10" y="230" width="50" height="16" rx="2" fill="url(#platGrad)" stroke="#262C36"/>
-    <rect x="10" y="246" width="50" height="110" fill="url(#platGrad)" opacity="0.55"/>
-    <text x="35" y="224" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#7A7468" letter-spacing="1">SLACK</text>
+          <g class="walker" transform={`translate(300, 430) rotate(${staticAngle.toFixed(2)})`}>
+            <!-- Balance pole, gentle droop at tips -->
+            <path d="M -140 -54 Q 0 -49 140 -54" stroke="#D4A24C" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <circle cx="-140" cy="-54" r="2.6" fill="#D4A24C"/>
+            <circle cx="140" cy="-54" r="2.6" fill="#D4A24C"/>
 
-    <rect x="340" y="230" width="50" height="16" rx="2" fill="url(#platGrad)" stroke="#262C36"/>
-    <rect x="340" y="246" width="50" height="110" fill="url(#platGrad)" opacity="0.55"/>
-    <text x="365" y="224" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#C84B3C" letter-spacing="1">CRITICAL</text>
+            <!-- Head (no face — rear view) -->
+            <circle cx="0" cy="-114" r="10" fill="#F4F1EA"/>
+            <line x1="0" y1="-104" x2="0" y2="-50" stroke="#F4F1EA" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="-16" y1="-94" x2="16" y2="-94" stroke="#F4F1EA" stroke-width="2.6" stroke-linecap="round"/>
+            <!-- Arms to balance pole -->
+            <line x1="-16" y1="-94" x2="-140" y2="-54" stroke="#F4F1EA" stroke-width="2.6" stroke-linecap="round"/>
+            <line x1="16" y1="-94" x2="140" y2="-54" stroke="#F4F1EA" stroke-width="2.6" stroke-linecap="round"/>
+            <!-- Hips -->
+            <line x1="-10" y1="-50" x2="10" y2="-50" stroke="#F4F1EA" stroke-width="2.6" stroke-linecap="round"/>
+            <!-- Legs -->
+            <line x1="-10" y1="-50" x2="-4" y2="0" stroke="#F4F1EA" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="10" y1="-50" x2="3" y2="0" stroke="#F4F1EA" stroke-width="2.8" stroke-linecap="round"/>
+            <!-- Foot shadow on rope -->
+            <ellipse cx="0" cy="3" rx="11" ry="1.6" fill="#000" opacity="0.55"/>
+          </g>
+        </svg>
+      </div>
 
-    <path d="M 60 238 Q 200 260 340 238" stroke="url(#ropeGrad)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-    <path d="M 60 238 Q 200 260 340 238" stroke="#D4A24C" stroke-width="0.4" fill="none" opacity="0.6"/>
-
-    <g class="walker" transform={`translate(${x}, 244)`}>
-      <ellipse cx="0" cy="2" rx="6" ry="1.2" fill="#000" opacity="0.5"/>
-      <line x1="-28" y1="-18" x2="28" y2="-14" stroke="#D4A24C" stroke-width="1.2" stroke-linecap="round"/>
-      <circle cx="0" cy="-40" r="4.2" fill="#F4F1EA"/>
-      <line x1="0" y1="-36" x2="0" y2="-18" stroke="#F4F1EA" stroke-width="1.8" stroke-linecap="round"/>
-      <line x1="0" y1="-28" x2="-20" y2="-17" stroke="#F4F1EA" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="0" y1="-28" x2="20" y2="-15" stroke="#F4F1EA" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="0" y1="-18" x2="-4" y2="-2" stroke="#F4F1EA" stroke-width="1.6" stroke-linecap="round"/>
-      <line x1="0" y1="-18" x2="5" y2="-2" stroke="#F4F1EA" stroke-width="1.6" stroke-linecap="round"/>
-    </g>
-
-    <line class="marker-line" x1={x} y1="246" x2={x} y2="270" stroke="#D97838" stroke-width="0.8" stroke-dasharray="2 2" opacity="0.7"/>
-    <text class="marker-label" x={x} y="282" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#D97838" font-weight="500">{label}</text>
-
-    <g stroke="#7A7468" stroke-width="0.6" fill="none" opacity="0.45" stroke-linecap="round">
-      <path d="M 300 130 Q 335 135 360 130"/>
-      <path d="M 310 160 Q 340 164 358 160"/>
-      <path d="M 305 180 Q 340 185 362 180"/>
-    </g>
-  </svg>
+      <!-- UI label -->
+      <div class="layer ui-layer">
+        <svg viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg">
+          <text x="300" y="488" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#7A7468" letter-spacing="3">INSTABILITY · {label}/100</text>
+        </svg>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
-.tightrope-viz {
+.tightrope-walker {
   position: relative;
-  aspect-ratio: 1 / 1;
-  max-width: 440px;
+  aspect-ratio: 6 / 5;
+  max-width: 480px;
   margin-left: auto;
+  overflow: hidden;
+  border-radius: 6px;
+  --mx: 0;
+  --my: 0;
 }
-.tightrope-viz svg { width: 100%; height: 100%; display: block; }
+.perspective {
+  position: absolute;
+  inset: 0;
+  perspective: 700px;
+  perspective-origin: 50% 8%;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateY(calc(var(--mx) * 8deg)) rotateX(calc(var(--my) * -3deg));
+  will-change: transform;
+}
+.layer { position: absolute; inset: 0; transform-style: preserve-3d; }
+.layer svg { width: 100%; height: 100%; display: block; overflow: visible; }
 
-.tightrope-viz[data-animate="true"] .walker,
-.tightrope-viz[data-animate="true"] .marker-line,
-.tightrope-viz[data-animate="true"] .marker-label {
-  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1),
-              x1 900ms cubic-bezier(0.16, 1, 0.3, 1),
-              x2 900ms cubic-bezier(0.16, 1, 0.3, 1),
-              x 900ms cubic-bezier(0.16, 1, 0.3, 1);
+/* BG: vertical plane, pushed back so it never occludes the receding rope */
+.bg-layer { transform: translateZ(-700px) scale(2.4); }
+
+/* Rope: flat plane laid nearly horizontal, hinged at its bottom edge.
+   After rotation, the SVG's top edge recedes into the distance
+   while its bottom stays at the foreground. */
+.rope-layer {
+  transform-origin: 50% 100%;
+  transform: translateZ(0) rotateX(72deg);
 }
+
+/* Walker: vertical plane in foreground */
+.walker-layer { transform: translateZ(20px); }
+
+/* Label: vertical plane, very front */
+.ui-layer { transform: translateZ(60px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .tightrope-viz[data-animate="true"] .walker,
-  .tightrope-viz[data-animate="true"] .marker-line,
-  .tightrope-viz[data-animate="true"] .marker-label {
-    transition: none;
-  }
+  .scene { transform: none; }
+}
+@media (hover: none), (pointer: coarse) {
+  .scene { transform: none; }
 }
 </style>
 
 <script>
 (() => {
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-  const viz = document.querySelector<HTMLElement>('.tightrope-viz[data-animate="true"]');
-  if (!viz) return;
-  const target = Number(viz.dataset.targetScore ?? "0");
-  if (!Number.isFinite(target)) return;
-  const walker = viz.querySelector<SVGGElement>(".walker");
-  const line = viz.querySelector<SVGLineElement>(".marker-line");
-  const label = viz.querySelector<SVGTextElement>(".marker-label");
+  const fineHover = window.matchMedia?.("(hover: hover) and (pointer: fine)").matches ?? false;
 
-  if (reduce) return;
+  const all = document.querySelectorAll<HTMLElement>('.tightrope-walker[data-animate="true"]');
+  all.forEach((viz) => {
+    const ampDeg = Number(viz.dataset.amp ?? "0");
+    const speedMult = Number(viz.dataset.speed ?? "1");
+    const walker = viz.querySelector<SVGGElement>(".walker");
+    if (!walker) return;
 
-  // Start from the left platform, slide to target.
-  const xFrom = 60;
-  const xTo = 60 + (280 * target) / 100;
-  const t0 = performance.now();
-  const dur = 900;
-  function frame(t: number) {
-    const p = Math.min(1, (t - t0) / dur);
-    const eased = 1 - Math.pow(1 - p, 3);
-    const x = xFrom + (xTo - xFrom) * eased;
-    if (walker) walker.setAttribute("transform", `translate(${x.toFixed(2)}, 244)`);
-    if (line) {
-      line.setAttribute("x1", x.toFixed(2));
-      line.setAttribute("x2", x.toFixed(2));
+    if (reduce) {
+      // Reduced motion: hold the walker at a representative static lean
+      // proportional to the swept amplitude, so the colour-coded arc still
+      // makes sense without any motion.
+      const restAngle = ampDeg * 0.55;
+      walker.setAttribute("transform", `translate(300, 430) rotate(${restAngle.toFixed(2)})`);
+      return;
     }
-    if (label) {
-      label.setAttribute("x", x.toFixed(2));
-      label.textContent = String(Math.round((target * eased)));
+
+    if (fineHover) {
+      let pendingMx = 0, pendingMy = 0, queued = false;
+      const flush = () => {
+        viz.style.setProperty("--mx", pendingMx.toFixed(3));
+        viz.style.setProperty("--my", pendingMy.toFixed(3));
+        queued = false;
+      };
+      viz.addEventListener("pointermove", (e) => {
+        const rect = viz.getBoundingClientRect();
+        pendingMx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        pendingMy = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+        if (!queued) { queued = true; requestAnimationFrame(flush); }
+      });
+      viz.addEventListener("pointerleave", () => {
+        pendingMx = 0; pendingMy = 0;
+        if (!queued) { queued = true; requestAnimationFrame(flush); }
+      });
     }
-    if (p < 1) requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
+
+    const w1 = 0.00092;
+    const w2 = 0.00213;
+    const w3 = 0.00497;
+    const phi2 = 1.7;
+    const phi3 = 0.5;
+    const norm = 1 + 0.55 + 0.25;
+    const t0 = performance.now();
+    const settleDur = 1100;
+
+    function frame(t: number) {
+      const elapsed = t - t0;
+      const settle = Math.min(1, elapsed / settleDur);
+      const eased = 1 - Math.pow(1 - settle, 3);
+      const sweptT = elapsed * speedMult;
+      const wave =
+        Math.sin(sweptT * w1) +
+        Math.sin(sweptT * w2 + phi2) * 0.55 +
+        Math.sin(sweptT * w3 + phi3) * 0.25;
+      const angle = (wave / norm) * ampDeg * eased;
+      walker!.setAttribute("transform", `translate(300, 430) rotate(${angle.toFixed(2)})`);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  });
 })();
 </script>

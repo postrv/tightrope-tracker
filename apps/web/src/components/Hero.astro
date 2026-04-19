@@ -34,7 +34,7 @@ const isStale = headline.stale === true;
               <span class="score-value">{scoreRounded}</span><span class="sub">/100</span>
             </div>
             <div class="delta-row" aria-label="Changes over time">
-              <span>24h <span class={trendClass(delta24)}>{trendArrow(delta24)} {signedDelta(Math.abs(delta24), 1)}</span></span>
+              <span>1d <span class={trendClass(delta24)}>{trendArrow(delta24)} {signedDelta(Math.abs(delta24), 1)}</span></span>
               <span>30d <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(Math.abs(delta30), 1)}</span></span>
               <span>YTD <span class={trendClass(deltaYtd)}>{trendArrow(deltaYtd)} {signedDelta(Math.abs(deltaYtd), 1)}</span></span>
             </div>

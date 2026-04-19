@@ -1,10 +1,10 @@
 {
-  "_comment": "Hand-maintained snapshot of the OBR Economic & Fiscal Outlook headline fiscal figures. Update on each OBR publication. Values are nominal GBP billions unless otherwise noted. TODO(source): replace with OBR's 'headline data' CSV ingest once OBR exposes it via a stable URL.",
+  "_comment": "Hand-maintained snapshot of the OBR Economic & Fiscal Outlook headline fiscal figures. Update on each OBR publication. Values are nominal GBP billions unless otherwise noted. Current entry is the March 2026 Spring Forecast (2026-03-03) — 23.6bn headroom, matching the seed timeline entry t_2026_03_03. Prior vintage was the March 2025 crunch (9.9bn). TODO(source): replace with OBR's 'headline data' CSV ingest once OBR exposes it via a stable URL.",
   "publication": "OBR EFO (hand-curated)",
-  "published": "2026-03-26",
-  "observed_at": "2026-03-26T00:00:00Z",
+  "published": "2026-03-03",
+  "observed_at": "2026-03-03T00:00:00Z",
   "indicators": {
-    "cb_headroom": { "value": 9.9, "unit": "GBPbn" },
+    "cb_headroom": { "value": 23.6, "unit": "GBPbn" },
     "psnfl_trajectory": { "value": 0.1, "unit": "pp" }
   },
   "source_url": "https://obr.uk/efo/"

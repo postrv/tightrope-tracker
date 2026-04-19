@@ -12,6 +12,7 @@ incident emerges.
 4. DLQ drain procedure
 5. Rotating `ADMIN_TOKEN`
 6. Known issue: OG worker `CompileError` on Cloudflare
+7. Fixture-refresh playbook (hand-curated data sources)
 
 ---
 
@@ -192,6 +193,70 @@ wrangler secret put ADMIN_TOKEN --name tightrope-ingest
 The `admin.ts` handler does a constant-time compare, so a brute-force
 attempt on a rotated token remains unfeasible -- but rotate anyway if the
 old value was ever written to a shared channel.
+
+---
+
+## 7. Fixture-refresh playbook (hand-curated data sources)
+
+Several indicators are fed by on-disk JSON fixtures rather than live
+adapters, because the upstream publisher either doesn't expose a machine
+-addressable API (OBR's EFO arrives as a PDF) or is behind a bot-check
+(DMO's D2.1E issuance report). Fixtures must be refreshed by hand on the
+upstream's publication cadence; stale fixtures are the worst-case credibility
+hit because the Auto / fresh chip lies silently.
+
+**Fixture inventory** (as of 2026-04):
+
+| Fixture | Source | Cadence | Where | Indicator(s) |
+|---|---|---|---|---|
+| `obr-efo.json` | OBR Economic & Fiscal Outlook | Twice a year (Spring/Autumn) | `packages/data-sources/src/fixtures/` | `cb_headroom`, `psnfl_trajectory` |
+| `housing-history.json` | MHCLG quarterly planning-consents series | Quarterly | same | `housing_trajectory`, `planning_consents` |
+| `delivery-milestones.json` | Hand-coded editorial read of departmental milestones | Quarterly | same | `new_towns_milestones`, `bics_rollout`, `industrial_strategy`, `smr_programme` |
+| `gas-m1.json` | ICE UK NBP front-month gas | ~Weekly (editorial) | same | `gas_m1` |
+| `ftse-250.json` | LSEG FTSE 250 close | Weekly (editorial) | same | `ftse_250` |
+
+**When to refresh**
+
+- OBR EFO: within 24h of each Spring Statement / Autumn Budget publication.
+  The `published` date and every value must be updated together — never
+  advance the date without refreshing the figures. The `obrEfo.test.ts`
+  regression test will fail if the fixture lands with the 2025-03 crunch
+  figure of 9.9bn paired with a 2026+ date.
+- MHCLG housing: within a week of each ONS live-tables update. The 2019
+  baseline denominator (11,500) is an estimate and documented as such on
+  /methodology — replace it with the true ONS 2019 average once we have
+  a reliable extraction.
+- Delivery milestones: on each ministerial milestone statement. Bump
+  `observed_at` even if the underlying state hasn't moved — this is how
+  we record that the editorial assessment was revisited.
+- ICE / LSEG fixtures: every 7 days. The `assertFixtureFresh` helper in
+  `packages/data-sources/src/lib/fixtureFreshness.ts` enforces a 14-day
+  hard stop — if a fixture is older than that, the live adapter throws
+  `AdapterError` and the source-health chip goes red.
+
+**How to refresh**
+
+1. Edit the fixture JSON in place. Keep the `_comment` field honest about
+   which vintage is shipping.
+2. Run the affected adapter tests: `pnpm --filter @tightrope/data-sources test <adapter-name>`.
+3. Regenerate the seed (for SSG / fresh-database cases):
+   `pnpm tsx db/seed/generate.ts > db/seed/seed.sql`.
+4. Re-run the seed-artifact guards: `pnpm --filter @tightrope/shared test seedArtifact`.
+5. Commit with a message naming the upstream release, e.g. "Refresh OBR
+   EFO fixture for 2026-03-26 Spring Statement (headroom 23.6bn)".
+6. After deploy, trigger a recompute so KV picks up the new values:
+   `curl -H "x-admin-token: $ADMIN_TOKEN" https://ingest.tightropetracker.uk/admin/run?source=recompute`.
+
+**Detecting silent staleness**
+
+Each fixture carries a `published` date. The `assertFixtureFresh` helper
+compares that to `Date.now()` and throws `AdapterError` with
+`ingestion_audit.status = 'failure'` when the fixture crosses its
+max-age threshold. Check `/admin/health` for red chips; the methodology
+page's "Last successful ingestion" table will also surface the failure.
+Because the audit now distinguishes `success` (content changed) from
+`unchanged` (payload byte-identical), a fixture being polled against an
+unchanged upstream will show `unchanged`, not a false `success`.
 
 ---
 

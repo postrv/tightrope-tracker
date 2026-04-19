@@ -121,13 +121,21 @@ export interface IndicatorDefinition {
   /**
    * Whether a defensible historical time-series exists for this indicator.
    * Defaults to `true` when omitted. Set `false` for indicators whose values
-   * are editorial interpretations of political announcements (e.g. delivery
-   * milestones, industrial-strategy progress) — these cannot be responsibly
-   * backfilled from primary sources, so the historical backfill pipeline
-   * excludes them from its quorum math. Live recompute still uses every
-   * indicator regardless.
+   * cannot be responsibly backfilled — either because they are editorial
+   * interpretations of political announcements (delivery milestones) or
+   * because the upstream feed only exposes today's snapshot (DMO D1A gilts
+   * in issue). The historical backfill pipeline excludes them from its
+   * quorum math; live recompute still uses every indicator regardless.
    */
   hasHistoricalSeries?: boolean;
+  /**
+   * When `hasHistoricalSeries` is `false`, a short sentence explaining
+   * _why_ the indicator is live-only. Surfaced verbatim in the methodology
+   * page's live-only disclosure table. Required whenever
+   * `hasHistoricalSeries === false` — the seedArtifact / historicalSubset
+   * tests enforce presence so the disclosure never ships with blank cells.
+   */
+  historicalExclusionReason?: string;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -193,9 +201,9 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     maxStaleMs: STALE_DAILY_MS,
   },
   sonia_12m: {
-    id: "sonia_12m", pillar: "market", label: "SONIA 12-month forward", shortLabel: "SONIA 12m",
+    id: "sonia_12m", pillar: "market", label: "SONIA 12-month trailing average", shortLabel: "SONIA 12m",
     unit: "%", weight: 0.08, risingIsBad: true, sourceId: "boe_sonia",
-    description: "12-month SONIA forward -- market-implied short-rate path.", formatDisplay: fmtBp,
+    description: "Rolling mean of daily SONIA fixings over the last 252 trading days — a backward-looking short-rate anchor. A market-implied OIS curve would give the true expected path; this is a cheaper proxy.", formatDisplay: fmtBp,
     provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
   },
@@ -323,6 +331,8 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     formatDisplay: fmtPct(1),
     provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
+    hasHistoricalSeries: false,
+    historicalExclusionReason: "DMO D1A feed only exposes today's gilts-in-issue snapshot; archived stock composition is not machine-addressable, so historical values cannot be reconstructed from primary source.",
   },
   issuance_long_share: {
     // Indicator ID preserved for DB continuity. The measure is now a
@@ -335,10 +345,12 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     // without the flow measure's intra-year seasonality.
     id: "issuance_long_share", pillar: "fiscal", label: "Long-dated share of conventional gilt stock", shortLabel: "Long share",
     unit: "%", weight: 0.10, risingIsBad: true, sourceId: "dmo",
-    description: "Long / Ultra-Long conventional gilts as % of all conventional gilt stock (DMO D1A). Higher = more exposure to long-dated rate moves.",
+    description: "Long / Ultra-Long conventional gilts as % of all conventional gilt stock (DMO D1A). Higher = more exposure to long-dated rate moves. Methodology note: the historical indicator was a flow-based annual issuance share; we switched to this stock-based measure in 2026-04 because the flow report is behind a ShieldSquare bot-check. The stock share captures the same structural signal without the flow measure's intra-year seasonality.",
     formatDisplay: fmtPct(1),
     provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
+    hasHistoricalSeries: false,
+    historicalExclusionReason: "DMO D1A feed only exposes today's gilts-in-issue snapshot; archived stock composition is not machine-addressable, so historical values cannot be reconstructed from primary source.",
   },
 
   // Labour & Living (20%)
@@ -418,7 +430,13 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   planning_consents: {
     id: "planning_consents", pillar: "delivery", label: "Planning consents vs. baseline", shortLabel: "Consents",
     unit: "%", weight: 0.20, risingIsBad: false, sourceId: "mhclg",
-    description: "Residential planning consents vs. 2019 baseline.", formatDisplay: fmtPct(1),
+    // The 2019 quarterly baseline (11,500) is an estimate reconstructed
+    // from MHCLG's pre-COVID archives — the authoritative figure would
+    // require manual PDF extraction, which is out of scope for the
+    // current fixture. Surfaced in the description so the caveat ships
+    // on /methodology next to the indicator.
+    description: "Quarterly residential planning-decisions-granted as a % of a self-declared estimated 2019 pre-COVID quarterly baseline of 11,500. The denominator is an estimate — archived MHCLG PDFs can tighten it; the caveat is intentional and surfaced here.",
+    formatDisplay: fmtPct(1),
     provenance: "fixture",
     maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
@@ -427,6 +445,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "%", weight: 0.15, risingIsBad: false, sourceId: "gov_uk",
     description: "Milestones hit as % of committed milestones YTD.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
+    historicalExclusionReason: "Editorial judgement against published departmental milestones — backfilling a score for a prior date would invent an assessment that was never made at the time.",
     // Fixture-backed via deliveryMilestones adapter with a 90-day
     // freshness guard. The indicator remains "editorial" because the
     // score is still a judgement call against political commitments;
@@ -439,6 +458,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "firms", weight: 0.15, risingIsBad: false, sourceId: "desnz",
     description: "Cumulative firms onboarded to the British Industrial Competitiveness Scheme.", formatDisplay: fmtCount,
     hasHistoricalSeries: false,
+    historicalExclusionReason: "Editorial judgement against the BICS rollout plan — the cumulative-firms figure is published quarterly only; intra-quarter historical days would be fabricated.",
     provenance: "editorial",
     maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
@@ -447,6 +467,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "%", weight: 0.15, risingIsBad: false, sourceId: "dbt",
     description: "Industrial Strategy milestones on/ahead of schedule vs. slipped/missed.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
+    historicalExclusionReason: "Editorial judgement against the Industrial Strategy commitments — historical days predate the current milestone list and cannot be scored against it retroactively.",
     provenance: "editorial",
     maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
@@ -455,6 +476,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "%", weight: 0.10, risingIsBad: false, sourceId: "gov_uk",
     description: "Small Modular Reactor programme progress against published milestones.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
+    historicalExclusionReason: "Editorial judgement against the SMR programme plan — progress assessments are episodic ministerial statements, not a time-series.",
     provenance: "editorial",
     maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
@@ -539,7 +561,7 @@ export const SOURCES: Record<string, DataSource> = {
     id: "dmo", name: "UK Debt Management Office -- gilts in issue",
     homepage: "https://www.dmo.gov.uk/data/gilt-market/gilts-in-issue/",
     endpoint: "https://www.dmo.gov.uk/data/XmlDataReport?reportCode=D1A",
-    notes: "Flat XML list of every outstanding gilt at the most recent close-of-business date (instrument type, maturity bracket, nominal + inflation-uplifted amount). Refreshes once per working day.",
+    notes: "Flat XML list of every outstanding gilt at the most recent close-of-business date (instrument type, maturity bracket, nominal + inflation-uplifted amount). Refreshes once per working day. Methodology note: `issuance_long_share` was originally a flow-based measure (planned annual issuance share); it is now stock-based (Long / Ultra-Long share of outstanding conventional gilt stock) because the flow report (D2.1E) is behind a ShieldSquare bot-check. The stock share captures the same structural signal without intra-year seasonality. The D1A feed exposes only today's snapshot, so both DMO indicators are excluded from historical backfill quorum; see the live-only disclosure on /methodology.",
   },
   ons_lms: {
     id: "ons_lms", name: "ONS -- Labour Market Statistics",

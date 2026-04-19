@@ -36,8 +36,18 @@ Yours sincerely,
 [Your name]
 [Your address]`;
 
-const embedHtml = `<iframe src="${siteOrigin}/embed/headline"
-   width="100%" height="220" frameborder="0"></iframe>`;
+// Three embed variants, each sized to fit its widget's natural height so
+// readers aren't forced to guess. Headline min-height is 180px; market
+// strip is one row (~110px); delivery scorecard scales with commitment
+// count (~440px at 8 rows). Copy buttons under each snippet.
+const embedSnippets = {
+  headline: `<iframe src="${siteOrigin}/embed/headline"
+   width="100%" height="220" frameborder="0" title="Tightrope headline"></iframe>`,
+  market: `<iframe src="${siteOrigin}/embed/market"
+   width="100%" height="150" frameborder="0" title="Tightrope market strip"></iframe>`,
+  delivery: `<iframe src="${siteOrigin}/embed/delivery"
+   width="100%" height="460" frameborder="0" title="Tightrope delivery scorecard"></iframe>`,
+};
 ---
 <section class="actions-sec" id="action" aria-labelledby="action-title">
   <div class="container">
@@ -77,16 +87,22 @@ const embedHtml = `<iframe src="${siteOrigin}/embed/headline"
 
       <div class="action-card">
         <h3>Embed the live score</h3>
-        <p>Think tank, Substack, internal dashboard — paste one iframe. Numbers update in real time from the same API that powers this site. No key needed.</p>
-        <div class="embed-code" id="embed-code">{embedHtml}</div>
+        <p>Think tank, Substack, internal dashboard — paste one iframe. Numbers update from the same API that powers this site. No key needed. Each variant ships with its natural height baked in so the widget doesn't clip on the receiving page.</p>
+        <details class="embed-detail" open>
+          <summary><strong>Headline score</strong> — 220px</summary>
+          <div class="embed-code" id="embed-code" data-embed-default>{embedSnippets.headline}</div>
+        </details>
+        <details class="embed-detail">
+          <summary><strong>Market strip</strong> — 150px, single row of 6 cells</summary>
+          <div class="embed-code" data-embed-variant="market">{embedSnippets.market}</div>
+        </details>
+        <details class="embed-detail">
+          <summary><strong>Delivery scorecard</strong> — 460px, expands for full commitment list</summary>
+          <div class="embed-code" data-embed-variant="delivery">{embedSnippets.delivery}</div>
+        </details>
         <div class="embed-actions">
-          <button class="btn ghost" type="button" data-copy-embed>Copy embed</button>
+          <button class="btn ghost" type="button" data-copy-embed>Copy highlighted snippet</button>
           <a href={`${apiBase}/api/v1/score`} class="btn ghost" target="_blank" rel="noopener">View JSON API ↗</a>
-        </div>
-        <div class="embed-variants">
-          <span class="embed-variant-label">Other widgets:</span>
-          <a href="/embed/market">Market strip</a>
-          <a href="/embed/delivery">Delivery scorecard</a>
         </div>
       </div>
     </div>
@@ -228,11 +244,15 @@ const embedHtml = `<iframe src="${siteOrigin}/embed/headline"
   padding: 14px 16px; font-family: var(--font-mono); font-size: 12px;
   color: var(--ink-1); white-space: pre; overflow-x: auto; margin-bottom: 12px;
 }
+.embed-detail { margin-bottom: 10px; }
+.embed-detail summary {
+  cursor: pointer; font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2);
+  padding: 8px 0;
+}
+.embed-detail summary strong { color: var(--ink-1); font-weight: 500; margin-right: 6px; }
+.embed-detail[open] summary { color: var(--ink-1); }
 .embed-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.embed-variants { margin-top: 20px; font-size: 12px; color: var(--ink-2); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-.embed-variant-label { font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; font-size: 10px; }
-.embed-variants a { color: var(--ink-1); border-bottom: 1px dotted var(--ink-3); }
-.embed-variants a:hover { color: var(--accent); border-color: var(--accent-dim); }
 
 .section-head {
   display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;

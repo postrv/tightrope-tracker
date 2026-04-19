@@ -9,11 +9,16 @@ const catalog = {
 };
 
 function baseFixture(): ObrFixture {
+  // Mirrors the on-disk obr-efo.json fixture: the March 2026 Spring
+  // Forecast published 2026-03-03 with headroom of 23.6bn. Do not flip
+  // back to the old March 2025 crunch figure (9.9bn) — that exact bug
+  // (stale value with a freshened date) was what triggered this audit
+  // item.
   return {
-    observed_at: "2026-03-26T00:00:00Z",
+    observed_at: "2026-03-03T00:00:00Z",
     source_url: "https://obr.uk/efo/",
     indicators: {
-      cb_headroom: { value: 9.9, unit: "GBPbn" },
+      cb_headroom: { value: 23.6, unit: "GBPbn" },
       psnfl_trajectory: { value: 0.1, unit: "pp" },
     },
   };
@@ -27,7 +32,7 @@ describe("parseObrEfoFixture", () => {
     expect(ids).toEqual(new Set(["cb_headroom", "psnfl_trajectory"]));
     expect(res.sourceUrl).toBe("https://obr.uk/efo/");
     for (const obs of res.observations) {
-      expect(obs.observedAt).toBe("2026-03-26T00:00:00Z");
+      expect(obs.observedAt).toBe("2026-03-03T00:00:00Z");
       expect(obs.sourceId).toBe("obr_efo");
     }
   });
@@ -37,7 +42,7 @@ describe("parseObrEfoFixture", () => {
     // This is the whole point of the validation — surface the mistake as
     // an ingest audit failure instead of silently accepting it.
     const f = baseFixture();
-    f.indicators.cb_hedrom = { value: 9.9, unit: "GBPbn" };
+    f.indicators.cb_hedrom = { value: 23.6, unit: "GBPbn" };
     await expect(parseObrEfoFixture(f, catalog)).rejects.toThrow(AdapterError);
     await expect(parseObrEfoFixture(f, catalog)).rejects.toThrow(/unknown indicator id 'cb_hedrom'/);
   });
@@ -94,5 +99,34 @@ describe("parseObrEfoFixture", () => {
     // test is the canary.
     const res = await parseObrEfoFixture(baseFixture());
     expect(res.observations.length).toBe(2);
+  });
+
+  it("on-disk obr-efo fixture carries the current OBR EFO vintage (regression: 2025 value with 2026 date)", async () => {
+    // Audit regression: the fixture once shipped `cb_headroom: 9.9`
+    // stamped `published: 2026-03-26`, but 9.9bn was the March 2025
+    // crunch figure. The value had never been refreshed even though the
+    // date was mechanically advanced. That kind of drift is the worst
+    // credibility hit possible — a freshness chip that lies. This test
+    // locks the fixture's published date and cb_headroom value together
+    // so a future update has to touch both at once.
+    const fixtureModule = await import("../fixtures/obr-efo.json", {
+      with: { type: "json" },
+    });
+    const fixture = fixtureModule.default as {
+      published: string;
+      observed_at: string;
+      indicators: Record<string, { value: number }>;
+    };
+    // Current vintage: March 2026 Spring Forecast published 2026-03-03
+    // with cb_headroom of 23.6bn. If OBR publishes a new EFO, update
+    // both fields in lock-step; the test surfaces partial updates as a
+    // failure rather than a silent stale fixture.
+    expect(fixture.published).toBe("2026-03-03");
+    expect(fixture.observed_at).toBe("2026-03-03T00:00:00Z");
+    expect(fixture.indicators.cb_headroom!.value).toBe(23.6);
+    // Sanity: the prior-vintage 9.9bn must never reappear paired with a
+    // post-2025 date. Any future edit that accidentally drops the old
+    // number back in will trip this guard.
+    expect(fixture.indicators.cb_headroom!.value).not.toBe(9.9);
   });
 });

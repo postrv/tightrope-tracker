@@ -42,6 +42,15 @@ export interface HeadlineScore {
   band: ScoreBand;
   editorial: string;
   updatedAt: Iso8601;
+  /**
+   * Headline delta over the most recent one-UTC-day step of the scored
+   * series. Historically named `delta24h` for API stability, but the UI
+   * label is "1d" — the value is indexed-based (series.at(-1) - series.at(-2))
+   * rather than a literal 24-hour-ago lookup, so it can be anywhere in
+   * [~12h, ~48h] depending on when the most recent recompute fell inside
+   * its day. The recompute path uses `valueAtLeastAgo(..., 24h)` which is
+   * closer to a true 24h diff; both paths round into the same field.
+   */
   delta24h: number;
   delta30d: number;
   deltaYtd: number;

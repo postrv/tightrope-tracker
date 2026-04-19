@@ -240,8 +240,12 @@ async function readSourceHealth(env: Env): Promise<readonly SourceHealthEntry[]>
        ) m ON i.source_id = m.source_id AND i.started_at = m.ts`,
     ).all<{ source_id: string; started_at: string; status: string }>(),
     env.DB.prepare(
+      // 'unchanged' counts as a healthy fetch (upstream returned 200 with
+      // a byte-identical body), so include it in the "last success" query
+      // — otherwise a source that runs daily but only publishes monthly
+      // (e.g. ONS PSF) would show as "last successful run 30 days ago".
       `SELECT source_id, MAX(started_at) AS last_success
-       FROM ingestion_audit WHERE status = 'success' GROUP BY source_id`,
+       FROM ingestion_audit WHERE status IN ('success', 'unchanged') GROUP BY source_id`,
     ).all<{ source_id: string; last_success: string }>(),
   ]);
   const lastSuccessBySource: Record<string, string> = {};

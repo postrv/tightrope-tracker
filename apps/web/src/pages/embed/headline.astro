@@ -17,7 +17,7 @@ const score = Math.round(h.value);
       <div class="num" aria-label={`Tightrope Score ${score}`}>{score}<span class="unit">/100</span></div>
       <div class="label">{band.editorialLabel}</div>
       <div class="delta" aria-label="Delta row">
-        <span>24h <span class={trendClass(h.delta24h)}>{trendArrow(h.delta24h)} {signedDelta(Math.abs(h.delta24h), 1)}</span></span>
+        <span>1d <span class={trendClass(h.delta24h)}>{trendArrow(h.delta24h)} {signedDelta(Math.abs(h.delta24h), 1)}</span></span>
         <span>30d <span class={trendClass(h.delta30d)}>{trendArrow(h.delta30d)} {signedDelta(Math.abs(h.delta30d), 1)}</span></span>
       </div>
       <a class="credit" href="https://tightropetracker.uk" target="_blank" rel="noopener">tightropetracker.uk</a>

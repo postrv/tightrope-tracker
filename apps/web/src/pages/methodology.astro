@@ -163,7 +163,7 @@ function ecdfPath(): string {
       <p>Every trajectory and sparkline on this site reads from stored pillar scores. Those scores are produced by two pipelines and the difference matters:</p>
       <ul class="bullets">
         <li><strong>Live recompute</strong> — runs every five minutes against <em>every</em> indicator in a pillar. This is what powers the headline score, the 24-hour change, and the latest points on every chart.</li>
-        <li><strong>Historical backfill</strong> — writes one row per UTC day for every day in range. For quorum and scoring, it uses only indicators whose values carry a defensible time-series. Indicators whose values are editorial interpretations of political milestones are excluded from the backfill's quorum math, so a score prior to today was never a score those indicators contributed to.</li>
+        <li><strong>Historical backfill</strong> — writes one row per UTC day for every day in range. For quorum and scoring, it uses only indicators whose values carry a defensible time-series. Two kinds of indicator are excluded: those whose values are editorial interpretations of political milestones (e.g. delivery progress scores), and those whose upstream feed only exposes today's snapshot with no machine-addressable history (e.g. DMO gilts-in-issue). In both cases a score prior to today was never a score those indicators contributed to.</li>
       </ul>
       {liveOnlyByPillar.length > 0 ? (
         <table class="inputs live-only">
@@ -178,7 +178,7 @@ function ecdfPath(): string {
                   <div class="ind-name">{ind.label}</div>
                   <div class="ind-desc">{ind.description}</div>
                 </td>
-                <td class="muted">Editorial judgement against published departmental milestones — backfilling would invent assessments that were never made at the time. Live composite still includes it.</td>
+                <td class="muted">{ind.historicalExclusionReason ?? "Live composite only."}</td>
               </tr>
             )))}
           </tbody>
@@ -193,19 +193,27 @@ function ecdfPath(): string {
 
     <section class="block">
       <h2>Last successful ingestion per source</h2>
+      <p class="muted small"><strong>success</strong> = fetch returned a payload different from the previous run (new data). <strong>unchanged</strong> = fetch returned the same bytes as last time (upstream has not republished since the previous "success" row; common for monthly ONS / semi-annual OBR series between publications). Both are healthy states.</p>
       {audit.length === 0 ? (
         <p class="muted">No ingestion audit rows yet. On first boot this table will populate within minutes.</p>
       ) : (
         <table class="inputs">
           <thead><tr><th>Source</th><th>Last run</th><th>Status</th></tr></thead>
           <tbody>
-            {audit.map((row) => (
-              <tr>
-                <td>{SOURCES[row.sourceId]?.name ?? row.sourceId}</td>
-                <td class="mono">{shortDate(row.startedAt)}</td>
-                <td class={row.status === "success" ? "ok" : row.status === "failure" ? "bad" : "warn"}>{row.status}</td>
-              </tr>
-            ))}
+            {audit.map((row) => {
+              const statusClass =
+                row.status === "success" ? "ok" :
+                row.status === "unchanged" ? "ok muted" :
+                row.status === "failure" ? "bad" :
+                "warn";
+              return (
+                <tr>
+                  <td>{SOURCES[row.sourceId]?.name ?? row.sourceId}</td>
+                  <td class="mono">{shortDate(row.startedAt)}</td>
+                  <td class={statusClass}>{row.status}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
@@ -242,7 +250,7 @@ function ecdfPath(): string {
         <li>The baseline window excludes 2020 Q2 but retains the 2021–22 energy shock period. Changing the baseline requires a versioned methodology update — no silent rebaselining.</li>
         <li>Intra-pillar weights sum to 1 per pillar; they are normalised at scoring time even if the raw <code>weight</code> values in <code>INDICATORS</code> don't sum to exactly 1 (they are target weights).</li>
         <li>Delivery is <em>inverted</em>: we flip the raw progress reading before combining with the other pillars so that every pillar score reads "higher = more pressure".</li>
-        <li>The geometric mean at the headline level cannot handle a zero input. In practice no pillar score reaches 0 — if it did, we would floor it at 1 for aggregation and publish the floor.</li>
+        <li>The geometric mean at the headline level cannot handle a zero input. In practice no pillar score reaches 0. We guard against it anyway by adding a tiny epsilon (<code>1e-6</code>) inside the <code>log</code> and subtracting the same epsilon after <code>exp</code> — so a zero pillar pulls the headline strongly toward zero (as an unguarded geometric mean would) without producing <code>log(0)</code>. See <code>weightedGeometricMean</code> in <code>packages/methodology/src/normalise.ts</code>.</li>
       </ul>
     </section>
 

@@ -27,7 +27,31 @@ export function assertLooksLikeCsv(sourceId: string, sourceUrl: string, body: st
   }
 }
 
-export function parseCsv(input: string): Array<Record<string, string>> {
+export interface ParseCsvOptions {
+  /**
+   * When `true`, rows with fewer cells than the header are padded with "",
+   * and rows with more cells are truncated to the header length. This
+   * restores the parser's pre-2026 behaviour but hides two bugs:
+   *
+   *   - Short rows look valid downstream (parseNum returns null on "",
+   *     the row drops silently, and the "zero observations" audit chip
+   *     may still go green for an adapter with a catalog-level expected
+   *     count of 1).
+   *   - Long rows (e.g. a BoE footnote that contains an embedded comma)
+   *     have the stray comma-split content shifted into the wrong column
+   *     and the final field silently dropped — a numeric yield can be
+   *     replaced by a footnote fragment with no error.
+   *
+   * Opt in only when the upstream feed is known to emit ragged rows and
+   * the caller has an explicit strategy to handle them.
+   */
+  tolerateRaggedRows?: boolean;
+}
+
+export function parseCsv(
+  input: string,
+  opts: ParseCsvOptions = {},
+): Array<Record<string, string>> {
   const lines = input
     .replace(/\r\n?/g, "\n")
     .split("\n")
@@ -38,6 +62,14 @@ export function parseCsv(input: string): Array<Record<string, string>> {
   const rows: Array<Record<string, string>> = [];
   for (let i = 1; i < lines.length; i++) {
     const cells = lines[i]!.split(",").map((c) => c.trim());
+    if (!opts.tolerateRaggedRows && cells.length !== header.length) {
+      throw new Error(
+        `parseCsv: row ${i + 1} has ${cells.length} cell${cells.length === 1 ? "" : "s"} ` +
+          `but header has ${header.length} column${header.length === 1 ? "" : "s"}; ` +
+          `column count mismatch. Pass { tolerateRaggedRows: true } only if the ` +
+          `upstream feed is known to emit ragged rows.`,
+      );
+    }
     const row: Record<string, string> = {};
     for (let j = 0; j < header.length; j++) {
       row[header[j]!] = cells[j] ?? "";

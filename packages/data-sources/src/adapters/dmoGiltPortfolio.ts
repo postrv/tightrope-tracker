@@ -75,12 +75,16 @@ export const dmoGiltPortfolioAdapter: DataSourceAdapter = {
     const observedAt = closeOfBusinessToIso(totals.closeOfBusinessDate, SOURCE_URL);
     const payloadHash = await sha256Hex(body);
 
+    // Store full double precision. DMO publishes daily and single-issuance
+    // moves change the long-share by thousandths of a percent; rounding at
+    // storage time would flatten the sparkline to a step function. The
+    // display layer (`fmtPct(1)`) handles rounding for humans.
     const ilgSharePct = (totals.indexLinked / totals.total) * 100;
     const longSharePct = (totals.conventionalLong / totals.conventional) * 100;
 
     const observations: RawObservation[] = [
-      { indicatorId: "ilg_share",           value: round2(ilgSharePct),  observedAt, sourceId: SOURCE_ID, payloadHash },
-      { indicatorId: "issuance_long_share", value: round2(longSharePct), observedAt, sourceId: SOURCE_ID, payloadHash },
+      { indicatorId: "ilg_share",           value: ilgSharePct,  observedAt, sourceId: SOURCE_ID, payloadHash },
+      { indicatorId: "issuance_long_share", value: longSharePct, observedAt, sourceId: SOURCE_ID, payloadHash },
     ];
 
     return { observations, sourceUrl: SOURCE_URL, fetchedAt: new Date().toISOString() };
@@ -198,10 +202,6 @@ function closeOfBusinessToIso(raw: string, url: string): string {
     });
   }
   return `${m[1]}T00:00:00Z`;
-}
-
-function round2(v: number): number {
-  return Math.round(v * 100) / 100;
 }
 
 registerAdapter(dmoGiltPortfolioAdapter);

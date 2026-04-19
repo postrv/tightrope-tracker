@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { boeSoniaAdapter } from "./boeSonia.js";
+import { INDICATORS } from "@tightrope/shared";
 
 function mockResponse(body: string, status = 200): Response {
   return new Response(body, { status, headers: { "content-type": "text/csv" } });
@@ -22,6 +23,24 @@ function syntheticCsv(firstIso: Date, n: number, rate: number): string {
   }
   return lines.join("\n");
 }
+
+describe("sonia_12m indicator label honesty", () => {
+  // The adapter computes a 252-trading-day trailing mean of daily SONIA
+  // fixings, not a market-implied 12-month forward. Calling it "forward"
+  // overclaims: a true forward curve would require an OIS bootstrap or an
+  // external vendor, neither of which this adapter has. The label must
+  // describe what the code does.
+  it("label and description state that the value is a trailing average, not a forward", () => {
+    const def = INDICATORS["sonia_12m"]!;
+    expect(def).toBeDefined();
+    expect(def.label.toLowerCase(), "label").not.toContain("forward");
+    expect(def.description.toLowerCase(), "description").not.toContain("forward");
+    // Must at least reference the trailing-average nature so readers can
+    // reconcile the chart value with the BoE source when they drill in.
+    const copy = `${def.label} ${def.description}`.toLowerCase();
+    expect(copy).toMatch(/trailing|rolling|compounded|average/);
+  });
+});
 
 describe("boeSoniaAdapter.fetchHistorical", () => {
   it("emits one sonia_12m observation per day in range once the 252-day window is filled", async () => {

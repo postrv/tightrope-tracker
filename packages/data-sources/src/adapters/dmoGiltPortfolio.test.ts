@@ -131,6 +131,33 @@ describe("dmoGiltPortfolioAdapter.fetch", () => {
     expect(result.sourceUrl).toContain("reportCode=D1A");
   });
 
+  it("preserves sub-2-dp precision so small day-to-day composition changes still register", async () => {
+    // Rationale: DMO D1A publishes daily with large stock amounts. A single
+    // issuance rolls the long-share by thousandths of a percent, which is
+    // the whole point of the sparkline. Rounding to 2 dp at storage time
+    // flattens those day-to-day moves to zero and kills the sparkline
+    // signal. Store full double precision; `fmtPct(1)` handles display-time
+    // rounding for humans.
+    //
+    // Construct input that yields a genuinely irrational pct: conv=3,
+    // conv-long=1 => 33.333333...%.
+    const body = `<Data>
+      <View_GILTS_IN_ISSUE CLOSE_OF_BUSINESS_DATE="2026-04-17T00:00:00" INSTRUMENT_TYPE="Conventional" MATURITY_BRACKET="Long" TOTAL_AMOUNT_INCLUDING_IL_UPLIFT="100"/>
+      <View_GILTS_IN_ISSUE CLOSE_OF_BUSINESS_DATE="2026-04-17T00:00:00" INSTRUMENT_TYPE="Conventional" MATURITY_BRACKET="Short" TOTAL_AMOUNT_INCLUDING_IL_UPLIFT="200"/>
+      <View_GILTS_IN_ISSUE CLOSE_OF_BUSINESS_DATE="2026-04-17T00:00:00" INSTRUMENT_TYPE="Index-linked 3 months" MATURITY_BRACKET="Medium" TOTAL_AMOUNT_INCLUDING_IL_UPLIFT="50"/>
+    </Data>`;
+    const fetchImpl = async () =>
+      new Response(body, { status: 200, headers: { "content-type": "application/xml" } });
+    const result = await dmoGiltPortfolioAdapter.fetch(fetchImpl as unknown as typeof globalThis.fetch);
+    const long = result.observations.find((o) => o.indicatorId === "issuance_long_share")!;
+    // True share: 100 / 300 = 33.33333...%
+    expect(long.value).toBeCloseTo(100 / 300 * 100, 6);
+    // The stored value must retain more than 2 dp of signal. Anything
+    // rounded to 2 dp would be exactly 33.33; the test requires a
+    // difference larger than floating-point noise.
+    expect(Math.abs(long.value - 33.33)).toBeGreaterThan(1e-4);
+  });
+
   it("throws AdapterError when the CLOSE_OF_BUSINESS_DATE shape is unrecognised", async () => {
     const body = `<Data>${row({
       CLOSE_OF_BUSINESS_DATE: "17/04/2026", // wrong shape on purpose

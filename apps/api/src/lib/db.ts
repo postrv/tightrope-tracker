@@ -96,8 +96,11 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     ).all<{ source_id: string; started_at: string; status: string }>(),
     // Last successful attempt per source -- lets the UI say "failing since X hours ago".
     db.prepare(
+      // 'unchanged' is a healthy fetch (same payload as last time).
+      // Include it so sources that publish less often than they're
+      // polled don't appear to be failing between real updates.
       `SELECT source_id, MAX(started_at) AS last_success
-       FROM ingestion_audit WHERE status = 'success' GROUP BY source_id`,
+       FROM ingestion_audit WHERE status IN ('success', 'unchanged') GROUP BY source_id`,
     ).all<{ source_id: string; last_success: string }>(),
     // Latest observation per indicator, for lightweight per-pillar
     // contributions in the D1-fallback path. The recompute+KV snapshot
@@ -275,7 +278,7 @@ export async function getLastIngestionAudit(
     `SELECT i.source_id, i.started_at, i.status FROM ingestion_audit i
      JOIN (
        SELECT source_id, MAX(started_at) AS ts FROM ingestion_audit
-       WHERE status = 'success' GROUP BY source_id
+       WHERE status IN ('success', 'unchanged') GROUP BY source_id
      ) m ON i.source_id = m.source_id AND i.started_at = m.ts`,
   ).all<{ source_id: string; started_at: string; status: string }>();
   const map: Record<string, string> = {};

@@ -151,6 +151,21 @@ describe("weightedGeometricMean", () => {
     expect(() => weightedGeometricMean([1, 2], [1])).toThrow();
     expect(() => weightedGeometricMean([1, 2], [0, 0])).toThrow();
   });
+  it("uses an epsilon offset (not a floor-at-1) so a zero input still yields a headline near zero", () => {
+    // Methodology locks in the actual numerical behavior: a zero pillar
+    // does NOT get lifted to 1 before aggregation. We add a tiny epsilon
+    // (1e-6) inside the log and subtract it after exp, so a single-zero
+    // composite stays very small rather than jumping to ~1. This prevents
+    // the methodology page from claiming a "floor at 1" that the code
+    // does not implement.
+    const g = weightedGeometricMean([0, 50, 50, 50], [0.25, 0.25, 0.25, 0.25]);
+    // With EPS = 1e-6 the output is ~ (1e-6 * 50 * 50 * 50)^0.25 - 1e-6
+    //                                = (0.125)^0.25 - 1e-6 ≈ 0.5946.
+    // A "floor at 1" implementation would return ≈ (1 * 50 * 50 * 50)^0.25
+    //                                = 125000^0.25 ≈ 18.8.
+    expect(g).toBeGreaterThan(0);
+    expect(g).toBeLessThan(2);
+  });
 });
 
 describe("trendSign", () => {

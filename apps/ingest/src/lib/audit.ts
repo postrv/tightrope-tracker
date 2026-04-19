@@ -46,10 +46,24 @@ export async function closeAuditSuccess(
   // candidates, for instance) set `emitsNoObservations: true` on their
   // AdapterResult and are kept as success.
   const isSilentFailure = opts.rowsWritten === 0 && !opts.emitsNoObservations;
-  const status = isSilentFailure ? "partial" : "success";
-  const error = isSilentFailure
-    ? "adapter returned 200 with zero observations -- probable parse regression or upstream schema drift"
-    : null;
+  let status: string;
+  let error: string | null;
+  if (isSilentFailure) {
+    status = "partial";
+    error = "adapter returned 200 with zero observations -- probable parse regression or upstream schema drift";
+  } else {
+    // Stale-but-200 detection: if the payload_hash matches the most recent
+    // successful run for this source, flag the row as 'unchanged'. This is
+    // an honest signal to ops ("we fetched, but upstream hasn't moved")
+    // that the /methodology "Last successful ingestion" table can surface
+    // distinctly from a genuine content refresh. ONS PSF / OBR EFO run on
+    // 5-min crons but publish monthly/semi-annually — without this flag
+    // the table misleadingly shows "updated 5 minutes ago" for sources
+    // whose last real update was weeks back.
+    const priorHash = await lastSuccessPayloadHash(db, handle.sourceId);
+    status = priorHash !== null && priorHash === opts.payloadHash ? "unchanged" : "success";
+    error = null;
+  }
   await db
     .prepare(
       `UPDATE ingestion_audit
@@ -62,6 +76,31 @@ export async function closeAuditSuccess(
     )
     .bind(status, new Date().toISOString(), opts.rowsWritten, opts.payloadHash, error, handle.id)
     .run();
+}
+
+/**
+ * Latest non-null payload_hash recorded for a source under status in
+ * ('success', 'unchanged'). Returns `null` if the source has no prior
+ * successful runs on record (first ingest).
+ *
+ * Exported for tests; production callers go through closeAuditSuccess.
+ */
+export async function lastSuccessPayloadHash(
+  db: D1Database,
+  sourceId: string,
+): Promise<string | null> {
+  const row = await db
+    .prepare(
+      `SELECT payload_hash FROM ingestion_audit
+        WHERE source_id = ?
+          AND status IN ('success', 'unchanged')
+          AND payload_hash IS NOT NULL
+        ORDER BY completed_at DESC
+        LIMIT 1`,
+    )
+    .bind(sourceId)
+    .first<{ payload_hash: string | null }>();
+  return row?.payload_hash ?? null;
 }
 
 export async function closeAuditFailure(

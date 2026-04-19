@@ -179,14 +179,14 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
 .labour-secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
 
 .mortgage-card {
-  background: linear-gradient(160deg, rgba(212, 162, 76, 0.1), var(--bg-1));
-  border: 1px solid rgba(212, 162, 76, 0.3);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 10%, transparent), var(--bg-1));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   border-radius: 12px;
   padding: 24px;
 }
 .mortgage-card h3 { font-family: var(--font-serif); font-weight: 400; font-size: 20px; margin: 0 0 4px; }
 .mortgage-card .hint { color: var(--ink-2); font-size: 12px; margin: 0 0 16px; }
-.mortgage-big { font-family: var(--font-serif); font-size: 56px; font-weight: 350; color: var(--accent); letter-spacing: -0.025em; line-height: 1; font-variant-numeric: tabular-nums; }
+.mortgage-big { font-family: var(--font-serif); font-size: 56px; font-weight: 700; color: var(--accent); letter-spacing: -0.025em; line-height: 1; font-variant-numeric: tabular-nums; }
 .mortgage-sub { font-family: var(--font-mono); font-size: 16px; color: var(--ink-2); font-weight: 400; }
 .mortgage-caption { font-family: var(--font-mono); font-size: 12px; color: var(--ink-1); margin: 14px 0 10px; letter-spacing: 0.01em; }
 .mortgage-note { font-size: 12.5px; color: var(--ink-1); line-height: 1.5; margin: 0; }

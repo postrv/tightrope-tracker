@@ -15,10 +15,7 @@ html, body {
 }
 
 body {
-  background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212, 162, 76, 0.08), transparent 70%),
-    linear-gradient(180deg, var(--bg-0) 0%, #0a0c0f 100%);
-  background-attachment: fixed;
+  background: var(--bg-0);
   min-height: 100vh;
   font-size: 16px;
   line-height: 1.55;
@@ -40,7 +37,7 @@ button {
 
 /* Selection */
 ::selection {
-  background: rgba(212, 162, 76, 0.35);
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
   color: var(--ink-0);
 }
 
@@ -85,11 +82,12 @@ button {
 /* Section heads */
 .sec-title {
   font-family: var(--font-serif);
-  font-weight: 350;
+  font-weight: 600;
   font-size: clamp(28px, 3.4vw, 36px);
-  letter-spacing: -0.015em;
-  line-height: 1.1;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
   margin: 0 0 6px;
+  text-transform: lowercase;
 }
 .section-sub {
   color: var(--ink-2);
@@ -120,10 +118,10 @@ button {
 }
 .chart-card h3 {
   font-family: var(--font-serif);
-  font-weight: 400;
+  font-weight: 600;
   font-size: 20px;
   margin: 0 0 4px;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 .chart-card .hint {
   color: var(--ink-2);
@@ -162,6 +160,22 @@ button {
 .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .btn.ghost { background: transparent; color: var(--ink-0); border: 1px solid var(--border); }
 .btn.ghost:hover { border-color: var(--accent-dim); color: var(--accent); }
+
+/*
+ * LFG underline motif — used on key phrases in hero/section copy to echo the
+ * LFG brand-sheet treatment. Default is orange; --blue and --yellow variants
+ * pick up the secondary brand colours. The thick, offset underline sits below
+ * descenders so copy still reads cleanly.
+ */
+.lfg-u {
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.12em;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 0.15em;
+  text-decoration-skip-ink: none;
+}
+.lfg-u--blue { text-decoration-color: var(--accent-cool); }
+.lfg-u--yellow { text-decoration-color: var(--accent-dim); }
 
 /* Hover rule */
 @media (hover: none) {

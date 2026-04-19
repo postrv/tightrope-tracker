@@ -12,10 +12,10 @@ interface Round { label: string; value: number; colour: string; x: number; highl
 // Editorially-curated static headroom plot (OBR forecast rounds).
 // Inputs are £bn current-budget headroom across four forecast rounds.
 const rounds: Round[] = [
-  { label: "Oct '24 Bud",  value: 22.0, colour: "#4B9BB0", x: 110 },
-  { label: "Mar '25 SF",   value: 9.9,  colour: "#D97838", x: 230 },
-  { label: "Nov '25 Bud",  value: 22.0, colour: "#4B9BB0", x: 350 },
-  { label: "Mar '26 SF",   value: 23.6, colour: "#D4A24C", x: 470, highlight: true },
+  { label: "Oct '24 Bud",  value: 22.0, colour: "var(--band-steady)", x: 110 },
+  { label: "Mar '25 SF",   value: 9.9,  colour: "var(--band-acute)",  x: 230 },
+  { label: "Nov '25 Bud",  value: 22.0, colour: "var(--band-steady)", x: 350 },
+  { label: "Mar '26 SF",   value: 23.6, colour: "var(--accent)",      x: 470, highlight: true },
 ];
 
 // map £bn to y in viewbox [0..240]; £10bn -> y=200; £40bn -> y=40.
@@ -49,8 +49,8 @@ function yFor(bn: number): number {
         <svg class="chart" viewBox="0 0 600 240" preserveAspectRatio="none" role="img" aria-label="Current budget headroom over OBR forecast rounds">
           <defs>
             <linearGradient id="headFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#D4A24C" stop-opacity="0.22"/>
-              <stop offset="1" stop-color="#D4A24C" stop-opacity="0"/>
+              <stop offset="0" stop-color="var(--accent)" stop-opacity="0.22"/>
+              <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>
             </linearGradient>
           </defs>
           <g stroke="var(--border-soft)" stroke-width="1">
@@ -75,7 +75,7 @@ function yFor(bn: number): number {
           />
           <path
             d={`M ${rounds[0].x} ${yFor(rounds[0].value)} L ${rounds[1].x} ${yFor(rounds[1].value)} L ${rounds[2].x} ${yFor(rounds[2].value)} L ${rounds[3].x} ${yFor(rounds[3].value)}`}
-            stroke="#D4A24C" stroke-width="1.5" fill="none" stroke-linecap="round"
+            stroke="var(--accent)" stroke-width="1.5" fill="none" stroke-linecap="round"
           />
 
           {rounds.map((r) => (
@@ -85,8 +85,8 @@ function yFor(bn: number): number {
             </g>
           ))}
 
-          <line x1="40" y1="200" x2="580" y2="200" stroke="#C84B3C" stroke-width="1" stroke-dasharray="3 4" opacity="0.6"/>
-          <text x="574" y="196" text-anchor="end" font-family="IBM Plex Mono" font-size="9.5" fill="#C84B3C" opacity="0.85">IFS prudent cushion · £10bn</text>
+          <line x1="40" y1="200" x2="580" y2="200" stroke="var(--band-critical)" stroke-width="1" stroke-dasharray="3 4" opacity="0.6"/>
+          <text x="574" y="196" text-anchor="end" font-family="IBM Plex Mono" font-size="9.5" fill="var(--band-critical)" opacity="0.85">IFS prudent cushion · £10bn</text>
         </svg>
       </div>
 

@@ -48,9 +48,9 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
         <svg viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
           <defs>
             <radialGradient id="tw-vp-glow" cx="0.5" cy="0.55" r="0.45">
-              <stop offset="0" stop-color="#D4A24C" stop-opacity="0.30"/>
-              <stop offset="0.5" stop-color="#D4A24C" stop-opacity="0.06"/>
-              <stop offset="1" stop-color="#D4A24C" stop-opacity="0"/>
+              <stop offset="0" stop-color="#FE5500" stop-opacity="0.28"/>
+              <stop offset="0.5" stop-color="#FE5500" stop-opacity="0.06"/>
+              <stop offset="1" stop-color="#FE5500" stop-opacity="0"/>
             </radialGradient>
             <linearGradient id="tw-void" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#1A1F28"/>
@@ -74,9 +74,9 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
         <svg viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="tw-rope" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#5A4825" stop-opacity="0.55"/>
-              <stop offset="0.35" stop-color="#A07530" stop-opacity="0.85"/>
-              <stop offset="1" stop-color="#E5BA68"/>
+              <stop offset="0" stop-color="#C94400" stop-opacity="0.55"/>
+              <stop offset="0.35" stop-color="#FE5500" stop-opacity="0.90"/>
+              <stop offset="1" stop-color="#EE9944"/>
             </linearGradient>
           </defs>
           <!-- Rope: thin stripe down the centre. Layer is rotated nearly flat
@@ -84,10 +84,10 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
                the vanishing point (top, near horizon). Atmospheric fade dims
                the far end. -->
           <rect x="294" y="0" width="12" height="500" fill="url(#tw-rope)" rx="4"/>
-          <rect x="298.5" y="0" width="3" height="500" fill="#F4D88A" opacity="0.55"/>
+          <rect x="298.5" y="0" width="3" height="500" fill="#EE9944" opacity="0.55"/>
           <!-- Evenly-spaced wraps along the rope. In perspective these visibly
                compress toward the vanishing point — a strong depth cue. -->
-          <g fill="#5A4520" opacity="0.85">
+          <g fill="#C94400" opacity="0.85">
             <rect x="291" y="60"  width="18" height="3" rx="1"/>
             <rect x="291" y="120" width="18" height="3" rx="1"/>
             <rect x="291" y="190" width="18" height="3" rx="1"/>
@@ -107,9 +107,9 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
                lifts once the walker's swept range reaches it. -->
           <g class="stability-arc">
             <path d="M 300 430 L 230 308.76 A 140 140 0 0 1 252.12 298.45 Z" fill="#C84B3C" opacity={redOpacity}/>
-            <path d="M 300 430 L 252.12 298.45 A 140 140 0 0 1 275.69 292.13 Z" fill="#D4A24C" opacity={amberOpacity}/>
-            <path d="M 300 430 L 275.69 292.13 A 140 140 0 0 1 324.31 292.13 Z" fill="#5C8C42" opacity={greenOpacity}/>
-            <path d="M 300 430 L 324.31 292.13 A 140 140 0 0 1 347.88 298.45 Z" fill="#D4A24C" opacity={amberOpacity}/>
+            <path d="M 300 430 L 252.12 298.45 A 140 140 0 0 1 275.69 292.13 Z" fill="#EE9944" opacity={amberOpacity}/>
+            <path d="M 300 430 L 275.69 292.13 A 140 140 0 0 1 324.31 292.13 Z" fill="#5FB27C" opacity={greenOpacity}/>
+            <path d="M 300 430 L 324.31 292.13 A 140 140 0 0 1 347.88 298.45 Z" fill="#EE9944" opacity={amberOpacity}/>
             <path d="M 300 430 L 347.88 298.45 A 140 140 0 0 1 370 308.76 Z" fill="#C84B3C" opacity={redOpacity}/>
             <!-- Soft outer rim for definition -->
             <path d="M 230 308.76 A 140 140 0 0 1 370 308.76" stroke="#3A3630" stroke-width="0.6" fill="none" opacity="0.45"/>
@@ -119,22 +119,22 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
 
           <g class="walker" transform={`translate(300, 430) rotate(${staticAngle.toFixed(2)})`}>
             <!-- Balance pole, gentle droop at tips -->
-            <path d="M -140 -54 Q 0 -49 140 -54" stroke="#D4A24C" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-            <circle cx="-140" cy="-54" r="2.6" fill="#D4A24C"/>
-            <circle cx="140" cy="-54" r="2.6" fill="#D4A24C"/>
+            <path d="M -140 -54 Q 0 -49 140 -54" stroke="#FE5500" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <circle cx="-140" cy="-54" r="2.6" fill="#FE5500"/>
+            <circle cx="140" cy="-54" r="2.6" fill="#FE5500"/>
 
             <!-- Head (no face — rear view) -->
-            <circle cx="0" cy="-114" r="10" fill="#F4F1EA"/>
-            <line x1="0" y1="-104" x2="0" y2="-50" stroke="#F4F1EA" stroke-width="2.8" stroke-linecap="round"/>
-            <line x1="-16" y1="-94" x2="16" y2="-94" stroke="#F4F1EA" stroke-width="2.6" stroke-linecap="round"/>
+            <circle cx="0" cy="-114" r="10" fill="#EBE3D0"/>
+            <line x1="0" y1="-104" x2="0" y2="-50" stroke="#EBE3D0" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="-16" y1="-94" x2="16" y2="-94" stroke="#EBE3D0" stroke-width="2.6" stroke-linecap="round"/>
             <!-- Arms to balance pole -->
-            <line x1="-16" y1="-94" x2="-140" y2="-54" stroke="#F4F1EA" stroke-width="2.6" stroke-linecap="round"/>
-            <line x1="16" y1="-94" x2="140" y2="-54" stroke="#F4F1EA" stroke-width="2.6" stroke-linecap="round"/>
+            <line x1="-16" y1="-94" x2="-140" y2="-54" stroke="#EBE3D0" stroke-width="2.6" stroke-linecap="round"/>
+            <line x1="16" y1="-94" x2="140" y2="-54" stroke="#EBE3D0" stroke-width="2.6" stroke-linecap="round"/>
             <!-- Hips -->
-            <line x1="-10" y1="-50" x2="10" y2="-50" stroke="#F4F1EA" stroke-width="2.6" stroke-linecap="round"/>
+            <line x1="-10" y1="-50" x2="10" y2="-50" stroke="#EBE3D0" stroke-width="2.6" stroke-linecap="round"/>
             <!-- Legs -->
-            <line x1="-10" y1="-50" x2="-4" y2="0" stroke="#F4F1EA" stroke-width="2.8" stroke-linecap="round"/>
-            <line x1="10" y1="-50" x2="3" y2="0" stroke="#F4F1EA" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="-10" y1="-50" x2="-4" y2="0" stroke="#EBE3D0" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="10" y1="-50" x2="3" y2="0" stroke="#EBE3D0" stroke-width="2.8" stroke-linecap="round"/>
             <!-- Foot shadow on rope -->
             <ellipse cx="0" cy="3" rx="11" ry="1.6" fill="#000" opacity="0.55"/>
           </g>

@@ -1,27 +1,30 @@
 /** Shared building blocks for every share card. */
 import { h } from "../jsx/jsx-runtime.js";
 
-// Keep these in sync with apps/web/src/styles/tokens.css. The mockup uses the
-// exact same hex values; we mirror them locally because Satori can't read CSS
-// custom properties.
+// Keep these in sync with apps/web/src/styles/tokens.css (light default).
+// Satori can't read CSS custom properties, so we mirror the LFG brand values
+// locally. OG cards render on the cream light theme for brand consistency
+// across the web app and social share surfaces.
 export const TOKENS = {
-  bg0: "#0B0D10",
-  bg1: "#12151A",
-  border: "#262C36",
-  ink0: "#F4F1EA",
-  ink1: "#B8B2A7",
-  ink2: "#7A7468",
-  accent: "#D4A24C",
-  accentDeep: "#8A6A30",
+  bg0: "#EBE3D0",
+  bg1: "#F4EEE0",
+  border: "#C7BBA0",
+  ink0: "#000000",
+  ink1: "#2A2825",
+  ink2: "#5A554A",
+  accent: "#FE5500",
+  accentDeep: "#C94400",
+  accentWarm: "#EE9944",
+  accentCool: "#79CAC4",
   bandSlack: "#5FB27C",
-  bandSteady: "#4B9BB0",
-  bandStrain: "#D4A24C",
-  bandAcute: "#D97838",
+  bandSteady: "#79CAC4",
+  bandStrain: "#EE9944",
+  bandAcute: "#FE5500",
   bandCritical: "#C84B3C",
 } as const;
 
-export const SERIF = "Fraunces";
-export const SANS = "Inter";
+export const SERIF = "Bricolage Grotesque";
+export const SANS = "DM Sans";
 export const MONO = "IBM Plex Mono";
 
 export const CARD_W = 1200;
@@ -67,32 +70,25 @@ function GridOverlay() {
 }
 
 /**
- * Tightrope Tracker logomark — a gold-brass rounded square cut with a 135deg
- * slash. Satori doesn't support `::after`, so we build it with two layered
- * divs inside a 28×28 flex container.
+ * Tightrope Tracker logomark — three stacked horizontal bars (orange, blue,
+ * black) stepped from wide to narrow, echoing the LFG "Progressing" graphical
+ * motif. Satori doesn't support pseudo-elements, so each bar is an explicit
+ * child div inside a 28×20 flex column.
  */
 export function BrandLogo() {
   return (
     <div
       style={{
-        width: "28px",
-        height: "28px",
-        borderRadius: "5px",
-        backgroundImage: `linear-gradient(135deg, ${TOKENS.accent} 0%, ${TOKENS.accentDeep} 100%)`,
-        position: "relative",
         display: "flex",
+        flexDirection: "column",
+        gap: "3px",
+        width: "28px",
+        height: "20px",
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          top: "0",
-          left: "0",
-          right: "0",
-          bottom: "0",
-          backgroundImage: `linear-gradient(135deg, transparent 49%, ${TOKENS.bg1} 49.5%, ${TOKENS.bg1} 50.5%, transparent 51%)`,
-        }}
-      />
+      <div style={{ display: "flex", width: "28px", height: "4px", backgroundColor: TOKENS.accent }} />
+      <div style={{ display: "flex", width: "20px", height: "4px", backgroundColor: TOKENS.accentCool }} />
+      <div style={{ display: "flex", width: "12px", height: "4px", backgroundColor: TOKENS.ink0 }} />
     </div>
   );
 }
@@ -100,23 +96,23 @@ export function BrandLogo() {
 function variantBackground(v: CardShellProps["variant"]): string {
   switch (v) {
     case "critical":
-      // Critical glow in the top-right; base tilts into warm near-black.
+      // Critical red glow sits in the top-right over cream.
       return `
-        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(200, 75, 60, 0.18), transparent 70%),
-        linear-gradient(135deg, #1a0f0e 0%, #0B0D10 100%)
+        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(200, 75, 60, 0.22), transparent 70%),
+        linear-gradient(135deg, ${TOKENS.bg1} 0%, ${TOKENS.bg0} 100%)
       `;
     case "accent":
       return `
-        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(212, 162, 76, 0.14), transparent 70%),
-        linear-gradient(135deg, #181410 0%, #0B0D10 100%)
+        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(254, 85, 0, 0.18), transparent 70%),
+        linear-gradient(135deg, ${TOKENS.bg1} 0%, ${TOKENS.bg0} 100%)
       `;
     case "warn":
       return `
-        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(217, 120, 56, 0.14), transparent 70%),
-        linear-gradient(135deg, #16110d 0%, #0B0D10 100%)
+        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(238, 153, 68, 0.22), transparent 70%),
+        linear-gradient(135deg, ${TOKENS.bg1} 0%, ${TOKENS.bg0} 100%)
       `;
     case "rope":
-      return `linear-gradient(180deg, #0e1216 0%, #0B0D10 100%)`;
+      return `linear-gradient(180deg, ${TOKENS.bg1} 0%, ${TOKENS.bg0} 100%)`;
     default:
       return `linear-gradient(135deg, ${TOKENS.bg1} 0%, ${TOKENS.bg0} 100%)`;
   }
@@ -124,9 +120,9 @@ function variantBackground(v: CardShellProps["variant"]): string {
 
 function variantBorder(v: CardShellProps["variant"]): string {
   switch (v) {
-    case "critical": return "rgba(200, 75, 60, 0.35)";
-    case "accent":   return "rgba(212, 162, 76, 0.30)";
-    case "warn":     return "rgba(217, 120, 56, 0.30)";
+    case "critical": return "rgba(200, 75, 60, 0.45)";
+    case "accent":   return "rgba(254, 85, 0, 0.35)";
+    case "warn":     return "rgba(238, 153, 68, 0.40)";
     default:         return TOKENS.border;
   }
 }
@@ -226,7 +222,7 @@ export function BigStat({ value, unit, tint, size }: BigStatProps) {
         display: "flex",
         alignItems: "baseline",
         fontFamily: SERIF,
-        fontWeight: 350,
+        fontWeight: 700,
         fontSize: `${size ?? 148}px`,
         lineHeight: 0.92,
         letterSpacing: "-0.035em",
@@ -252,7 +248,7 @@ export function Caption({ children }: { children?: unknown }) {
     <div
       style={{
         display: "flex",
-        fontFamily: SERIF,
+        fontFamily: SANS,
         fontStyle: "italic",
         fontWeight: 400,
         fontSize: "34px",

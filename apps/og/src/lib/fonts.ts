@@ -31,48 +31,59 @@ interface FontSpec {
 // mirror on jsDelivr — stable paths, permissive licences (OFL/SIL), and
 // they serve .woff which Satori reads natively. `upload-fonts.ts` writes
 // to the same r2Keys.
+//
+// Bricolage Grotesque stands in for Octarine (commercial) until licensed
+// .woff files land in R2. DM Sans is the LFG body face. Plex Mono is
+// retained for tabular data.
 const FONT_SPECS: FontSpec[] = [
   {
-    r2Key: "fraunces/Fraunces-Regular.woff",
-    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/fraunces/files/fraunces-latin-400-normal.woff",
-    name: "Fraunces",
+    r2Key: "bricolage/BricolageGrotesque-Regular.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-400-normal.woff",
+    name: "Bricolage Grotesque",
     weight: 400,
     style: "normal",
   },
   {
-    r2Key: "fraunces/Fraunces-Light.woff",
-    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/fraunces/files/fraunces-latin-300-normal.woff",
-    name: "Fraunces",
-    weight: 300,
+    r2Key: "bricolage/BricolageGrotesque-SemiBold.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-600-normal.woff",
+    name: "Bricolage Grotesque",
+    weight: 600,
     style: "normal",
   },
   {
-    r2Key: "fraunces/Fraunces-Italic.woff",
-    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/fraunces/files/fraunces-latin-400-italic.woff",
-    name: "Fraunces",
-    weight: 400,
-    style: "italic",
+    r2Key: "bricolage/BricolageGrotesque-Bold.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-700-normal.woff",
+    name: "Bricolage Grotesque",
+    weight: 700,
+    style: "normal",
   },
   {
-    r2Key: "inter/Inter-Regular.woff",
-    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/inter/files/inter-latin-400-normal.woff",
-    name: "Inter",
+    r2Key: "dmsans/DMSans-Regular.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/dm-sans/files/dm-sans-latin-400-normal.woff",
+    name: "DM Sans",
     weight: 400,
     style: "normal",
   },
   {
-    r2Key: "inter/Inter-Medium.woff",
-    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/inter/files/inter-latin-500-normal.woff",
-    name: "Inter",
+    r2Key: "dmsans/DMSans-Medium.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/dm-sans/files/dm-sans-latin-500-normal.woff",
+    name: "DM Sans",
     weight: 500,
     style: "normal",
   },
   {
-    r2Key: "inter/Inter-SemiBold.woff",
-    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/inter/files/inter-latin-600-normal.woff",
-    name: "Inter",
-    weight: 600,
+    r2Key: "dmsans/DMSans-Bold.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/dm-sans/files/dm-sans-latin-700-normal.woff",
+    name: "DM Sans",
+    weight: 700,
     style: "normal",
+  },
+  {
+    r2Key: "dmsans/DMSans-Italic.woff",
+    fallbackUrl: "https://cdn.jsdelivr.net/npm/@fontsource/dm-sans/files/dm-sans-latin-400-italic.woff",
+    name: "DM Sans",
+    weight: 400,
+    style: "italic",
   },
   {
     r2Key: "plex/IBMPlexMono-Regular.woff",

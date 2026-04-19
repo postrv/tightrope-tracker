@@ -50,6 +50,7 @@ const refreshLabel = stale ? "Last fresh refresh" : "Last data refresh";
         </ul>
       </div>
     </div>
+    <div class="foot-motif" aria-hidden="true"></div>
     <div class="foot-bottom">
       <span>© 2026 Tightrope Tracker · MIT-licensed · source on <a href="https://github.com/" rel="noopener" target="_blank">GitHub</a></span>
       <span>{refreshLabel}: <span class={`refresh-ts${stale ? " stale" : ""}`}>{ts}</span></span>
@@ -67,7 +68,18 @@ footer.site a:hover { color: var(--accent); }
 .foot-about { font-size: 13px; line-height: 1.6; max-width: 380px; }
 .foot-about strong { color: var(--ink-0); font-family: var(--font-serif); font-weight: 400; }
 .foot-credits { font-size: 12.5px; line-height: 1.6; max-width: 380px; margin-top: 12px; color: var(--ink-2); }
-.foot-bottom { border-top: 1px solid var(--border-soft); padding-top: 20px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.foot-motif {
+  height: 11px;
+  margin: 0 0 24px;
+  background-image:
+    linear-gradient(var(--accent), var(--accent)),
+    linear-gradient(var(--accent-cool), var(--accent-cool)),
+    linear-gradient(var(--ink-0), var(--ink-0));
+  background-position: 0 0, 0 4px, 0 8px;
+  background-size: 100% 3px, 60% 3px, 30% 3px;
+  background-repeat: no-repeat;
+}
+.foot-bottom { padding-top: 16px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
 .refresh-ts { font-family: var(--font-mono); color: var(--ink-1); }
 .refresh-ts.stale { color: var(--band-critical); }
 

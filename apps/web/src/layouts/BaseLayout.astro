@@ -51,13 +51,13 @@ const canonical = canonicalPath
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..800,0..100&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="theme-color" content="#0B0D10" />
+    <meta name="theme-color" content="#EBE3D0" />
 
     {embed ? null : (
       <script
@@ -75,9 +75,9 @@ const canonical = canonicalPath
 </html>
 
 <script is:inline>
-  // Default to dark mode; allow user override via localStorage.
+  // Default to LFG light/cream; allow user override to dark via localStorage.
   try {
     const pref = localStorage.getItem("tightrope-theme");
-    if (pref === "light") document.documentElement.classList.add("light");
+    if (pref === "dark") document.documentElement.classList.add("dark");
   } catch (e) { /* ignore */ }
 </script>

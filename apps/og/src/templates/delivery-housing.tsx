@@ -68,7 +68,7 @@ export function DeliveryHousingCard(props: DeliveryHousingProps): JsxNode {
           style={{
             display: "flex",
             fontFamily: SERIF,
-            fontWeight: 350,
+            fontWeight: 700,
             fontSize: "84px",
             lineHeight: 1.0,
             letterSpacing: "-0.02em",

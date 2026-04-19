@@ -119,12 +119,12 @@ const cards = [
 }
 .share-card:hover { transform: translateY(-3px); color: inherit; }
 .share-card .sc-brand { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-2); }
-.share-card .sc-stat { font-family: var(--font-serif); font-size: clamp(36px, 4vw, 56px); font-weight: 350; letter-spacing: -0.025em; line-height: 0.95; color: var(--ink-0); font-variant-numeric: tabular-nums; }
+.share-card .sc-stat { font-family: var(--font-serif); font-size: clamp(36px, 4vw, 56px); font-weight: 700; letter-spacing: -0.025em; line-height: 0.95; color: var(--ink-0); font-variant-numeric: tabular-nums; }
 .share-card .sc-label { font-family: var(--font-serif); font-size: 15px; color: var(--ink-1); line-height: 1.35; max-width: 85%; margin-top: 8px; font-weight: 400; }
 .share-card .sc-foot { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); letter-spacing: 0.05em; }
-.share-card.critical { background: linear-gradient(135deg, rgba(200, 75, 60, 0.12), var(--bg-1)); border-color: rgba(200, 75, 60, 0.35); }
+.share-card.critical { background: linear-gradient(135deg, color-mix(in srgb, var(--band-critical) 12%, transparent), var(--bg-1)); border-color: color-mix(in srgb, var(--band-critical) 35%, transparent); }
 .share-card.critical .sc-stat { color: var(--band-critical); }
-.share-card.accent { background: linear-gradient(135deg, rgba(212, 162, 76, 0.08), var(--bg-1)); border-color: rgba(212, 162, 76, 0.3); }
+.share-card.accent { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), var(--bg-1)); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
 .share-card.accent .sc-stat { color: var(--accent); }
 
 .section-head {

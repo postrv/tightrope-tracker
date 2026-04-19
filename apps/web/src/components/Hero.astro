@@ -11,7 +11,7 @@ interface Props {
 const { headline } = Astro.props;
 const band = BANDS.find((b) => b.id === headline.band) ?? bandFor(headline.value);
 const bandColour = band.colourToken;
-const dominantLabel = PILLARS[headline.dominantPillar]?.title ?? "Market Pressure";
+const dominantLabel = PILLARS[headline.dominantPillar]?.title ?? "The dominant pillar";
 const scoreRounded = Math.round(headline.value);
 const editorial = headline.editorial || `${dominantLabel} is the dominant pillar. See the sections below for the drivers.`;
 

@@ -39,8 +39,12 @@ function pillarHref(id: PillarId): string {
         const p = pillars[id];
         const def = PILLARS[id];
         const weightPct = Math.round(def.weight * 100);
-        const delta = p.delta7d;
-        const trendCls = p.trend7d === "up" ? "up" : p.trend7d === "down" ? "dn" : "flat";
+        // Defensive: a pre-upgrade snapshot cached in KV before this
+        // deploy's ingest re-prime will be missing 30d fields — fall
+        // back to flat rather than render NaN / 30d.
+        const delta = typeof p.delta30d === "number" ? p.delta30d : 0;
+        const trend30 = p.trend30d ?? "flat";
+        const trendCls = trend30 === "up" ? "up" : trend30 === "down" ? "dn" : "flat";
         const stroke = bandColour(p.band);
         return (
           <a href={pillarHref(id)} class="pillar" aria-label={`${def.title}: ${Math.round(p.value)} — see full section`}>
@@ -48,8 +52,8 @@ function pillarHref(id: PillarId): string {
             <span class="pillar-name">{def.title}</span>
             <div class="pillar-value-row">
               <span class="pillar-value">{Math.round(p.value)}</span>
-              <span class={`pillar-trend ${trendCls}`}>
-                {p.trend7d === "flat" ? "— flat" : `${trendArrow(delta)} ${signedDelta(Math.abs(delta), 1)}`} / 7d
+              <span class={`pillar-trend ${trendCls}`} title="Change across the 30-day sparkline window (first to last point).">
+                {trend30 === "flat" ? "— flat" : `${trendArrow(delta)} ${signedDelta(Math.abs(delta), 1)}`} / 30d
               </span>
               {p.stale ? <span class="pillar-stale" title="Fewer than a quorum of indicators have a fresh reading; value is a last-known carry.">stale</span> : null}
             </div>

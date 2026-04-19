@@ -61,13 +61,29 @@ const gridYs = Array.from({ length: gridLines }, (_, i) => padT + (i / (gridLine
 
 const minY = padT + plotH;
 const maxY = padT;
+
+// Numeric summary for screen readers and defensibility — includes
+// first/last/min/max so a reader never has to interpret the SVG path.
+const nums = series ? series.filter((n) => Number.isFinite(n)) : [];
+const first = nums.length ? nums[0]! : null;
+const last = nums.length ? nums[nums.length - 1]! : null;
+const lo = nums.length ? Math.min(...nums) : null;
+const hi = nums.length ? Math.max(...nums) : null;
+function fmt(n: number): string {
+  return Math.abs(n) >= 100 ? Math.round(n).toString() : n.toFixed(1);
+}
+const summary = first !== null && last !== null && lo !== null && hi !== null
+  ? `starts ${fmt(first)}, ends ${fmt(last)}, range ${fmt(lo)} to ${fmt(hi)} over ${nums.length} point${nums.length === 1 ? "" : "s"}`
+  : "no data";
+const baseLabel = ariaLabel ?? "Line chart of time-series data";
+const fullLabel = `${baseLabel}: ${summary}`;
 ---
 <svg
   class="chart"
   viewBox={`0 0 ${width} ${height}`}
   preserveAspectRatio="none"
   role="img"
-  aria-label={ariaLabel ?? "Line chart of time-series data"}
+  aria-label={fullLabel}
 >
   {fillGradientId ? (
     <defs>

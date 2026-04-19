@@ -25,11 +25,29 @@ const {
 
 const safeSeries = series && series.length ? series : [0, 0];
 const d = pathFromSeries(safeSeries, width, height, 1);
+
+// A numeric summary so screen-reader users (and anyone auditing the
+// chart) can pick up first/last/min/max without "reading" an SVG path.
+// Skip when the series is empty or degenerate — the two-zero fallback
+// above is not meaningful signal.
+const first = series && series.length ? series[0]! : null;
+const last = series && series.length ? series[series.length - 1]! : null;
+const nums = series && series.length >= 1 ? series.filter((n) => Number.isFinite(n)) : [];
+const lo = nums.length ? Math.min(...nums) : null;
+const hi = nums.length ? Math.max(...nums) : null;
+function fmt(n: number): string {
+  return Math.abs(n) >= 100 ? Math.round(n).toString() : n.toFixed(1);
+}
+const summary = first !== null && last !== null && lo !== null && hi !== null
+  ? `starts ${fmt(first)}, ends ${fmt(last)}, range ${fmt(lo)} to ${fmt(hi)} over ${nums.length} point${nums.length === 1 ? "" : "s"}`
+  : "no data";
+const baseLabel = ariaLabel ?? "Sparkline of recent values";
+const fullLabel = `${baseLabel}: ${summary}`;
 ---
 <svg
   viewBox={`0 0 ${width} ${height}`}
   preserveAspectRatio="none"
-  aria-label={ariaLabel ?? "Sparkline of recent values"}
+  aria-label={fullLabel}
   role="img"
   class={className}
 >

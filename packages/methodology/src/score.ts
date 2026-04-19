@@ -105,6 +105,18 @@ export function computePillarScore(
   const trend = asTrend(sign);
   const delta7d = input.value7dAgo === undefined ? 0 : roundTo(value - input.value7dAgo, 1);
 
+  // 30d trend/delta: first → last across the full sparkline. A sparkline
+  // shorter than two points can't span the window honestly, so both fall
+  // back to flat/0 — the UI renders "X of 30 days scored" for coverage.
+  let trend30d: Trend = "flat";
+  let delta30d = 0;
+  if (input.sparkline30d.length >= 2) {
+    const first = input.sparkline30d[0]!;
+    const last = input.sparkline30d[input.sparkline30d.length - 1]!;
+    trend30d = asTrend(trendSign(input.sparkline30d));
+    delta30d = roundTo(last - first, 1);
+  }
+
   return {
     pillar,
     label: pillarDef.shortTitle,
@@ -114,6 +126,8 @@ export function computePillarScore(
     contributions,
     trend7d: trend,
     delta7d,
+    trend30d,
+    delta30d,
     sparkline30d: input.sparkline30d.map((n) => roundTo(n, 2)),
   };
 }

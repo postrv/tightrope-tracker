@@ -13,6 +13,8 @@ function mkBaseline(size: number, centre: number, spread: number): number[] {
 
 function mkPillar(pillar: PillarId, value: number, sparkEnd: number = value): PillarScore {
   const spark = [value - 2, value - 1, value, value + 1, sparkEnd];
+  const sparkDelta = spark[spark.length - 1]! - spark[0]!;
+  const sparkTrend = sparkDelta > 0.5 ? "up" : sparkDelta < -0.5 ? "down" : "flat";
   return {
     pillar,
     label: PILLARS[pillar].shortTitle,
@@ -22,6 +24,8 @@ function mkPillar(pillar: PillarId, value: number, sparkEnd: number = value): Pi
     contributions: [],
     trend7d: sparkEnd > value ? "up" : sparkEnd < value ? "down" : "flat",
     delta7d: sparkEnd - value,
+    trend30d: sparkTrend,
+    delta30d: sparkDelta,
     sparkline30d: spark,
   };
 }
@@ -105,6 +109,72 @@ describe("computePillarScore", () => {
       value7dAgo: 55,
     });
     expect(pillar.delta7d).toBeCloseTo(pillar.value - 55, 1);
+  });
+
+  // Matches the visible-chart window so the label under a sparkline can
+  // never say "flat" when the chart obviously shows movement. Prod
+  // regression: the delivery pillar had a 30d sparkline of
+  // [72.4]*10 + [30.8]*20 (step drop at the backfill → live boundary)
+  // and rendered "flat / 7d" because the 7d window sat entirely in the
+  // post-drop regime.
+  it("exposes a 30d trend/delta computed from the sparkline window", () => {
+    const spark = [
+      ...Array.from({ length: 10 }, () => 72.4),
+      ...Array.from({ length: 20 }, () => 30.8),
+    ];
+    const pillar = computePillarScore("delivery", {
+      readings: [],
+      sparkline30d: spark,
+      // pillar value computes to 0 with no readings, so leave
+      // value7dAgo unset so delta7d is also 0 and we isolate the 30d path.
+    });
+    expect(pillar.trend7d).toBe("flat");
+    expect(pillar.delta7d).toBe(0);
+    expect(pillar.trend30d).toBe("down");
+    expect(pillar.delta30d).toBeCloseTo(-41.6, 1);
+  });
+
+  it("reports a flat 30d trend when the full sparkline moves less than the epsilon", () => {
+    const spark = Array.from({ length: 30 }, (_, i) => 50 + i * 0.01); // +0.29 over 30d
+    const pillar = computePillarScore("fiscal", {
+      readings: [],
+      sparkline30d: spark,
+      value7dAgo: 50.23,
+    });
+    expect(pillar.trend30d).toBe("flat");
+    expect(pillar.delta30d).toBeCloseTo(0.3, 1);
+  });
+
+  it("reports an up trend when the sparkline rises meaningfully over the 30d window", () => {
+    const spark = Array.from({ length: 30 }, (_, i) => 40 + i * 0.8); // ~+23 over 30d
+    const pillar = computePillarScore("market", {
+      readings: [],
+      sparkline30d: spark,
+      value7dAgo: 58,
+    });
+    expect(pillar.trend30d).toBe("up");
+    expect(pillar.delta30d).toBeGreaterThan(20);
+  });
+
+  it("reports a flat 30d trend/delta when the sparkline is empty or single-point", () => {
+    const pillarEmpty = computePillarScore("labour", { readings: [], sparkline30d: [] });
+    expect(pillarEmpty.trend30d).toBe("flat");
+    expect(pillarEmpty.delta30d).toBe(0);
+    const pillarOne = computePillarScore("labour", { readings: [], sparkline30d: [50] });
+    expect(pillarOne.trend30d).toBe("flat");
+    expect(pillarOne.delta30d).toBe(0);
+  });
+
+  it("reflects whatever span the sparkline actually covers (coverage disclosure is the UI's job)", () => {
+    // Mid-backfill: history only stretches back a week. The delta is
+    // the literal first→last change; the UI renders "7 of 30 days
+    // scored" via describeSparklineCoverage, not a flattened label.
+    const pillar = computePillarScore("labour", {
+      readings: [],
+      sparkline30d: [50, 51, 52, 52, 52.5, 53, 53.5],
+    });
+    expect(pillar.trend30d).toBe("up");
+    expect(pillar.delta30d).toBeCloseTo(3.5, 1);
   });
 });
 

@@ -121,6 +121,8 @@ function emptySnapshot(): ScoreSnapshot {
       contributions: [],
       trend7d: "flat",
       delta7d: 0,
+      trend30d: "flat",
+      delta30d: 0,
       sparkline30d: [],
     };
   }

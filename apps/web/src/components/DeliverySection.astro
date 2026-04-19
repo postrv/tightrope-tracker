@@ -32,9 +32,16 @@ function statusClass(status: string): string {
       <div class="pillar-score" aria-label={`Delivery pillar score ${Math.round(pillar.value)}`}>
         <span class="pillar-score-num">{Math.round(pillar.value)}</span>
         <span class="pillar-score-sub">/100</span>
-        <span class={`pillar-score-delta ${pillar.trend7d === "up" ? "up" : pillar.trend7d === "down" ? "dn" : "flat"}`}>
-          {pillar.trend7d === "flat" ? "flat" : `${pillar.trend7d === "up" ? "▲" : "▼"} ${signedDelta(Math.abs(pillar.delta7d), 1)}`} / 7d
-        </span>
+        {(() => {
+          const t30 = pillar.trend30d ?? "flat";
+          const d30 = typeof pillar.delta30d === "number" ? pillar.delta30d : 0;
+          const cls = t30 === "up" ? "up" : t30 === "down" ? "dn" : "flat";
+          return (
+            <span class={`pillar-score-delta ${cls}`} title="Change across the 30-day sparkline window (first to last point).">
+              {t30 === "flat" ? "flat" : `${t30 === "up" ? "▲" : "▼"} ${signedDelta(Math.abs(d30), 1)}`} / 30d
+            </span>
+          );
+        })()}
       </div>
     </div>
 

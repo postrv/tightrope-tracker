@@ -18,6 +18,14 @@ export interface PillarScore {
   trend7d: Trend;
   /** Delta vs. 7d ago, in score points. */
   delta7d: number;
+  /**
+   * Trend across the full `sparkline30d` window (first → last). Matches
+   * the visible chart, so a rendered "flat" label can never contradict
+   * an obvious drop or rise in the sparkline next to it.
+   */
+  trend30d: Trend;
+  /** Delta across the `sparkline30d` window, in score points (first → last). */
+  delta30d: number;
   sparkline30d: number[];
   /** True if fewer than a quorum of indicators have a fresh reading; the value is a last-known carry, not a fresh recompute. */
   stale?: boolean;

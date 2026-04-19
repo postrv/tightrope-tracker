@@ -131,6 +131,15 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     const sevenDaysAgo = series.at(-7) ?? value;
     const delta = value - sevenDaysAgo;
     const trend: Trend = Math.abs(delta) < 0.5 ? "flat" : delta > 0 ? "up" : "down";
+    // 30d trend/delta spans the full pillar sparkline (first → last) so
+    // chart-adjacent labels can't contradict the visible chart. See
+    // computePillarScore for the matching recompute-path implementation.
+    const first = series[0];
+    const last = series[series.length - 1];
+    const delta30 = series.length >= 2 && first !== undefined && last !== undefined
+      ? last - first
+      : 0;
+    const trend30: Trend = Math.abs(delta30) < 0.5 ? "flat" : delta30 > 0 ? "up" : "down";
     // Infer staleness at serve time. Recompute writes every non-stale pillar
     // every 5 minutes; if the latest row is past MAX_SCORE_AGE_MS (30 min),
     // either the loop is broken or this pillar has been failing its quorum.
@@ -146,6 +155,8 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       contributions: buildContributionsForPillar(p, obsByIndicator),
       trend7d: trend,
       delta7d: round1(delta),
+      trend30d: trend30,
+      delta30d: round1(delta30),
       sparkline30d: series,
       ...(stale ? { stale: true } : {}),
     };

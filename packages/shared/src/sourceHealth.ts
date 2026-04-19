@@ -22,13 +22,24 @@ export function computeSourceHealth(
 ): SourceHealthEntry[] {
   const out: SourceHealthEntry[] = [];
   for (const row of latestAttempts) {
-    if (row.status === "success") continue;
+    // 'unchanged' is closeAuditSuccess's status for a byte-identical repoll
+    // (payload hash matches the most recent success). It's a successful run
+    // by every meaningful definition -- we fetched, parsed, and confirmed
+    // upstream hasn't moved -- so it must not feed the failure banner.
+    // Mirrors the SQL filter for `lastSuccessAt` which also accepts both.
+    if (row.status === "success" || row.status === "unchanged") continue;
     // The ingest worker's DLQ handler writes ingestion_audit rows with
     // source_id = 'unknown' when a dead-lettered message carries no
     // sourceId. That row is an artefact of the DLQ plumbing, not a real
     // ingestion source a reader can act on -- suppress it here so the
     // public-facing banner stays focused on actual upstream failures.
     if (row.sourceId === "unknown") continue;
+    // backfillObservations audits under source_id="<adapter>:historical".
+    // Those rows aren't public-facing upstream feeds -- a 'partial' close
+    // usually just means the requested date range pre-dated the curated
+    // fixture. Backfill health is surfaced via /admin/health; keep the
+    // public banner focused on the live polling lane.
+    if (row.sourceId.endsWith(":historical")) continue;
     const status = row.status === "partial" ? "partial" : "failure";
     const entry: SourceHealthEntry = {
       sourceId: row.sourceId,

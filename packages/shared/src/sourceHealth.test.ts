@@ -72,6 +72,30 @@ describe("computeSourceHealth", () => {
     expect(out).toHaveLength(0);
   });
 
+  it("treats 'unchanged' as healthy (byte-identical repoll, not a failure)", () => {
+    // When closeAuditSuccess computes the payload_hash and finds it matches
+    // the most recent success for this source, it writes status='unchanged'
+    // instead of 'success'. That's an honest signal to ops ("we fetched, but
+    // upstream hasn't moved") but it is still a successful ingestion run, so
+    // it must not trigger the "Upstream feeds failing" banner. This was the
+    // bug that made every poll-driven adapter (BoE, EIA, ICE, LSEG, growth
+    // sentiment) show as failing on the homepage between real content
+    // refreshes, despite /admin/health reporting them green.
+    const out = computeSourceHealth(
+      [
+        { sourceId: "boe_yields", startedAt: "2026-04-19T08:25:37Z", status: "unchanged" },
+        { sourceId: "eia_brent", startedAt: "2026-04-19T08:20:42Z", status: "unchanged" },
+        { sourceId: "ons_psf", startedAt: "2026-04-19T02:00:38Z", status: "success" },
+      ],
+      {
+        boe_yields: "2026-04-19T08:25:37Z",
+        eia_brent: "2026-04-19T08:20:42Z",
+        ons_psf: "2026-04-19T02:00:38Z",
+      },
+    );
+    expect(out).toHaveLength(0);
+  });
+
   it("still surfaces unrecognised sourceIds other than the literal 'unknown'", () => {
     // Regression guard: make sure the 'unknown' filter doesn't accidentally
     // match substrings like 'unknown_feed' (a real but uncatalogued source).
@@ -81,5 +105,24 @@ describe("computeSourceHealth", () => {
     );
     expect(out).toHaveLength(1);
     expect(out[0]!.sourceId).toBe("unknown_feed");
+  });
+
+  it("filters backfill ':historical' source IDs out of the public banner", () => {
+    // backfillObservations opens audit rows with source_id="<adapter>:historical"
+    // to distinguish one-off backfill runs from the live polling lane. Those
+    // rows aren't user-facing upstream feeds -- they aren't in the SOURCES
+    // catalog (so .name falls back to the raw composite id), and a partial
+    // backfill usually just means the requested range pre-dated the curated
+    // fixture. Backfill health belongs in /admin/health; the public banner
+    // must stay focused on live adapter failures.
+    const out = computeSourceHealth(
+      [
+        { sourceId: "mhclg:historical", startedAt: "2026-04-19T08:17:55Z", status: "partial" },
+        { sourceId: "boe_yields:historical", startedAt: "2026-04-19T08:17:48Z", status: "failure" },
+        { sourceId: "boe_yields", startedAt: "2026-04-19T08:25:37Z", status: "unchanged" },
+      ],
+      { boe_yields: "2026-04-19T08:25:37Z" },
+    );
+    expect(out).toHaveLength(0);
   });
 });

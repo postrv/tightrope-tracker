@@ -124,8 +124,32 @@ export interface HeadlineComputationInput {
   value24hAgo?: number;
   value30dAgo?: number;
   valueYtdAgo?: number;
+  /**
+   * ISO date of the row actually used as the 30d baseline. When the row
+   * is more than `BASELINE_TOLERANCE_DAYS` off a clean 30d window (i.e.
+   * history doesn't yet reach back 30 days and we fell back to the
+   * oldest available row), the baseline date is surfaced on the output
+   * so the UI can render "since DD MMM" rather than a misleading "30d".
+   */
+  value30dAgoObservedAt?: Iso8601;
+  /**
+   * ISO date of the row actually used as the YTD baseline. When the row
+   * is meaningfully later than Jan 1 of `updatedAt`'s year, the baseline
+   * date is surfaced on the output.
+   */
+  valueYtdAgoObservedAt?: Iso8601;
   updatedAt: Iso8601;
 }
+
+/**
+ * How far the actual baseline observedAt can drift from the intended
+ * window before we flag it on the output as a "since X" fallback. Seven
+ * days matches the minimum-age floor on valueOldestIfAged (i.e. if the
+ * baseline row is within 7 days of the ideal target, it's close enough
+ * not to confuse a reader).
+ */
+const BASELINE_TOLERANCE_DAYS = 7;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function computeHeadlineScore(input: HeadlineComputationInput): HeadlineScore {
   const values = PILLAR_ORDER.map((p) => input.pillars[p].value);
@@ -147,6 +171,41 @@ export function computeHeadlineScore(input: HeadlineComputationInput): HeadlineS
   const editorial = renderEditorialNote(dominant, input.pillars);
   const band = bandFor(value).id;
 
+  const now = Date.parse(input.updatedAt);
+  const hasTime = Number.isFinite(now);
+
+  // A 30d baseline is "clean" if the row it came from is within
+  // BASELINE_TOLERANCE_DAYS of exactly 30 days ago. Outside that window
+  // — which happens when history doesn't yet stretch 30 days back and we
+  // fell back to the oldest available row — the UI should render
+  // "since DD MMM" instead of "30d", so expose the actual baseline date.
+  let delta30dBaselineDate: Iso8601 | undefined;
+  if (hasTime && input.value30dAgoObservedAt && input.value30dAgo !== undefined) {
+    const baselineMs = Date.parse(input.value30dAgoObservedAt);
+    if (Number.isFinite(baselineMs)) {
+      const ageDays = (now - baselineMs) / DAY_MS;
+      if (Math.abs(ageDays - 30) > BASELINE_TOLERANCE_DAYS) {
+        delta30dBaselineDate = input.value30dAgoObservedAt;
+      }
+    }
+  }
+
+  // A YTD baseline is "clean" only if the row it came from sits on or
+  // within a week of 1 January. In the bootstrap state where we only
+  // have a few weeks of history, valueYtdAgoObservedAt will fall inside
+  // the current year and should be flagged.
+  let deltaYtdBaselineDate: Iso8601 | undefined;
+  if (hasTime && input.valueYtdAgoObservedAt && input.valueYtdAgo !== undefined) {
+    const baselineMs = Date.parse(input.valueYtdAgoObservedAt);
+    if (Number.isFinite(baselineMs)) {
+      const yearStartMs = Date.UTC(new Date(now).getUTCFullYear(), 0, 1);
+      const daysAfterJan1 = (baselineMs - yearStartMs) / DAY_MS;
+      if (daysAfterJan1 > BASELINE_TOLERANCE_DAYS) {
+        deltaYtdBaselineDate = input.valueYtdAgoObservedAt;
+      }
+    }
+  }
+
   return {
     value,
     band,
@@ -155,6 +214,8 @@ export function computeHeadlineScore(input: HeadlineComputationInput): HeadlineS
     delta24h: input.value24hAgo === undefined ? 0 : roundTo(value - input.value24hAgo, 1),
     delta30d: input.value30dAgo === undefined ? 0 : roundTo(value - input.value30dAgo, 1),
     deltaYtd: input.valueYtdAgo === undefined ? 0 : roundTo(value - input.valueYtdAgo, 1),
+    ...(delta30dBaselineDate ? { delta30dBaselineDate } : {}),
+    ...(deltaYtdBaselineDate ? { deltaYtdBaselineDate } : {}),
     dominantPillar: dominant,
     sparkline90d: input.sparkline90d.map((n) => roundTo(n, 1)),
   };

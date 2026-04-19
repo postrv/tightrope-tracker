@@ -19,6 +19,35 @@ const delta24 = headline.delta24h;
 const delta30 = headline.delta30d;
 const deltaYtd = headline.deltaYtd;
 const isStale = headline.stale === true;
+
+// When delta30d / deltaYtd baselines are set, the label "30d" / "YTD"
+// is dishonest — the row we subtracted isn't actually 30d / YTD old.
+// Rendering rule:
+//   - If both baselines are set AND identical, show ONE "since DD MMM"
+//     row (not two copies of the same number). This is the bootstrap
+//     case where history is too short for either window.
+//   - If only one baseline is set, label that delta "since DD MMM" and
+//     keep the other as "30d" or "YTD" as appropriate.
+//   - If neither baseline is set, keep the conventional "30d" / "YTD"
+//     labels — they're literal truth.
+function shortDateLabel(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "unknown";
+  const day = d.getUTCDate();
+  const mon = d.toLocaleString("en-GB", { month: "short", timeZone: "UTC" });
+  return `${day} ${mon}`;
+}
+const d30Base = headline.delta30dBaselineDate;
+const dYtdBase = headline.deltaYtdBaselineDate;
+const sharedFallback = Boolean(d30Base && dYtdBase && d30Base === dYtdBase);
+const delta30Label = d30Base ? `since ${shortDateLabel(d30Base)}` : "30d";
+const deltaYtdLabel = dYtdBase ? `since ${shortDateLabel(dYtdBase)}` : "YTD";
+const delta30Tip = d30Base
+  ? `Baseline: ${shortDateLabel(d30Base)} — history does not yet stretch back a full 30 days.`
+  : "Baseline: 30 days ago.";
+const deltaYtdTip = dYtdBase
+  ? `Baseline: ${shortDateLabel(d30Base ?? dYtdBase)} — history does not yet stretch back to 1 January.`
+  : "Baseline: 1 January of the current year.";
 ---
 <section class="hero" id="headline">
   <div class="container">
@@ -34,9 +63,15 @@ const isStale = headline.stale === true;
               <span class="score-value">{scoreRounded}</span><span class="sub">/100</span>
             </div>
             <div class="delta-row" aria-label="Changes over time">
-              <span>1d <span class={trendClass(delta24)}>{trendArrow(delta24)} {signedDelta(Math.abs(delta24), 1)}</span></span>
-              <span>30d <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(Math.abs(delta30), 1)}</span></span>
-              <span>YTD <span class={trendClass(deltaYtd)}>{trendArrow(deltaYtd)} {signedDelta(Math.abs(deltaYtd), 1)}</span></span>
+              <span title="Baseline: one UTC day before the latest reading.">1d <span class={trendClass(delta24)}>{trendArrow(delta24)} {signedDelta(Math.abs(delta24), 1)}</span></span>
+              {sharedFallback ? (
+                <span class="delta-since" title={`History is only ~${Math.max(0, Math.round((Date.now() - new Date(d30Base!).getTime()) / 86_400_000))} days deep; 30d and YTD would both read the same number, so only one "since ${shortDateLabel(d30Base!)}" delta is shown until the backfill catches up.`}>since {shortDateLabel(d30Base!)} <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(Math.abs(delta30), 1)}</span></span>
+              ) : (
+                <>
+                  <span title={delta30Tip}>{delta30Label} <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(Math.abs(delta30), 1)}</span></span>
+                  <span title={deltaYtdTip}>{deltaYtdLabel} <span class={trendClass(deltaYtd)}>{trendArrow(deltaYtd)} {signedDelta(Math.abs(deltaYtd), 1)}</span></span>
+                </>
+              )}
             </div>
           </div>
           <div class="score-meta">

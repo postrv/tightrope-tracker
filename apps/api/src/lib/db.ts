@@ -164,6 +164,8 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
   // any pillar fails quorum, so an aging headline row is the canonical signal
   // that the dashboard is no longer live.
   const headlineStale = anyPillarStale || isScoreRowStale(headlineRow?.observed_at, now);
+  const deltas30d = deltaAgoWithFallback(hRows, 30, 7);
+  const deltasYtd = deltaAgoYtdWithFallback(hRows, now, 7);
   const headline: HeadlineScore = {
     value: hValue,
     band: (headlineRow?.band as HeadlineScore["band"]) ?? bandFor(hValue).id,
@@ -174,9 +176,14 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     delta24h: deltaAgo(hSeries, 1),
     // Mirrors the recompute fallback: if history doesn't reach back 30d, use
     // the oldest row as long as it's at least 7 days old. Converges to the
-    // true 30d delta once history accumulates past 30 days.
-    delta30d: deltaAgoWithFallback(hRows, 30, 7),
-    deltaYtd: deltaAgoYtdWithFallback(hRows, now, 7),
+    // true 30d delta once history accumulates past 30 days. The
+    // baselineDate is populated when the row we landed on sits more than
+    // a week off the ideal target, so the UI can honestly render
+    // "since DD MMM" rather than a misleading "30d" / "YTD" label.
+    delta30d: deltas30d.value,
+    deltaYtd: deltasYtd.value,
+    ...(deltas30d.baselineDate ? { delta30dBaselineDate: deltas30d.baselineDate as Iso8601 } : {}),
+    ...(deltasYtd.baselineDate ? { deltaYtdBaselineDate: deltasYtd.baselineDate as Iso8601 } : {}),
     ...(headlineStale ? { stale: true } : {}),
   };
 
@@ -330,6 +337,17 @@ function deltaAgo(series: readonly number[], n: number): number {
   return round1(now - then);
 }
 
+export interface DeltaWithBaseline {
+  value: number;
+  /**
+   * Populated when the row actually used as the baseline is meaningfully
+   * off-target (30d off by >7 days, or YTD later than Jan 8). Enables
+   * the UI to render "since DD MMM" instead of a misleading "30d" /
+   * "YTD" label when history is too short to cover the stated window.
+   */
+  baselineDate?: string;
+}
+
 /**
  * Delta over `targetDays` of one-row-per-day history. If the series doesn't
  * reach back far enough, fall back to the oldest row as long as it's at least
@@ -339,15 +357,20 @@ function deltaAgoWithFallback(
   rows: readonly { observed_at: string; value: number }[],
   targetDays: number,
   minFallbackDays: number,
-): number {
-  if (rows.length < 2) return 0;
-  const now = rows[rows.length - 1]!.value;
+): DeltaWithBaseline {
+  if (rows.length < 2) return { value: 0 };
+  const latest = rows[rows.length - 1]!;
   const idx = rows.length - 1 - targetDays;
-  if (idx >= 0) return round1(now - rows[idx]!.value);
+  if (idx >= 0) {
+    const baseline = rows[idx]!;
+    return { value: round1(latest.value - baseline.value) };
+  }
   const oldest = rows[0]!;
   const ageDays = (Date.now() - new Date(oldest.observed_at).getTime()) / (24 * 60 * 60 * 1000);
-  if (ageDays < minFallbackDays) return 0;
-  return round1(now - oldest.value);
+  if (ageDays < minFallbackDays) return { value: 0 };
+  // Fallback was used — flag baselineDate so the UI knows to say
+  // "since DD MMM" rather than the requested window.
+  return { value: round1(latest.value - oldest.value), baselineDate: oldest.observed_at };
 }
 
 /** Same idea, but with the target rooted at the 1 January of `now`'s year. */
@@ -355,20 +378,26 @@ function deltaAgoYtdWithFallback(
   rows: readonly { observed_at: string; value: number }[],
   now: Date,
   minFallbackDays: number,
-): number {
-  if (rows.length < 2) return 0;
-  const latest = rows[rows.length - 1]!.value;
+): DeltaWithBaseline {
+  if (rows.length < 2) return { value: 0 };
+  const latest = rows[rows.length - 1]!;
   const startOfYearMs = Date.UTC(now.getUTCFullYear(), 0, 1);
-  // Scan backwards for the last row observed on or before 1 Jan.
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  // Scan backwards for the last row observed on or before 1 Jan. If we
+  // find one within a week of Jan 1 it's "clean" YTD; further back is
+  // also fine (Jan 1 is the target, earlier is a superset).
   for (let i = rows.length - 1; i >= 0; i--) {
-    if (new Date(rows[i]!.observed_at).getTime() <= startOfYearMs) {
-      return round1(latest - rows[i]!.value);
+    const rowMs = new Date(rows[i]!.observed_at).getTime();
+    if (rowMs <= startOfYearMs) {
+      return { value: round1(latest.value - rows[i]!.value) };
     }
   }
   const oldest = rows[0]!;
-  const ageDays = (now.getTime() - new Date(oldest.observed_at).getTime()) / (24 * 60 * 60 * 1000);
-  if (ageDays < minFallbackDays) return 0;
-  return round1(latest - oldest.value);
+  const oldestMs = new Date(oldest.observed_at).getTime();
+  const ageDays = (now.getTime() - oldestMs) / DAY_MS;
+  if (ageDays < minFallbackDays) return { value: 0 };
+  // Fallback was used — oldest row sits inside the current year.
+  return { value: round1(latest.value - oldest.value), baselineDate: oldest.observed_at };
 }
 
 function round1(n: number): number {

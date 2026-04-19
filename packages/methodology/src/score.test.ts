@@ -173,6 +173,75 @@ describe("computeHeadlineScore", () => {
     expect(h.deltaYtd).toBeGreaterThan(h.delta30d);
   });
 
+  it("omits baseline-date fields when the baseline row sits cleanly on the target window", () => {
+    // value30dAgoObservedAt is exactly 30 days before updatedAt; the UI
+    // doesn't need a "since" override — "30d" is literal truth.
+    const pillars: Record<PillarId, PillarScore> = {
+      market: mkPillar("market", 78),
+      fiscal: mkPillar("fiscal", 61),
+      labour: mkPillar("labour", 72),
+      delivery: mkPillar("delivery", 54),
+    };
+    const h = computeHeadlineScore({
+      pillars,
+      sparkline90d: [60],
+      value30dAgo: 56,
+      value30dAgoObservedAt: "2026-03-18T14:00:00Z",
+      valueYtdAgo: 48,
+      valueYtdAgoObservedAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-04-17T14:00:00Z",
+    });
+    expect(h.delta30dBaselineDate).toBeUndefined();
+    expect(h.deltaYtdBaselineDate).toBeUndefined();
+  });
+
+  it("surfaces baseline-date fields when the baseline falls meaningfully short of the requested window", () => {
+    // Production failure mode: D1 only has 25 days of headline history.
+    // Both delta30d and deltaYtd fell back to the same 2026-03-26 row and
+    // the UI silently rendered "-7.9" for both without disclosing that
+    // the baseline was 24 days ago, not 30d / YTD. With baselineDate
+    // plumbed through the output, UI can render "since 26 Mar" instead.
+    const pillars: Record<PillarId, PillarScore> = {
+      market: mkPillar("market", 78),
+      fiscal: mkPillar("fiscal", 61),
+      labour: mkPillar("labour", 72),
+      delivery: mkPillar("delivery", 54),
+    };
+    const h = computeHeadlineScore({
+      pillars,
+      sparkline90d: [60],
+      value30dAgo: 56,
+      value30dAgoObservedAt: "2026-03-26T00:00:00Z", // 22 days ago, not 30
+      valueYtdAgo: 56,
+      valueYtdAgoObservedAt: "2026-03-26T00:00:00Z", // same — shared fallback
+      updatedAt: "2026-04-17T14:00:00Z",
+    });
+    expect(h.delta30dBaselineDate).toBe("2026-03-26T00:00:00Z");
+    expect(h.deltaYtdBaselineDate).toBe("2026-03-26T00:00:00Z");
+  });
+
+  it("surfaces only the deltaYtd baseline when YTD falls back but 30d is clean", () => {
+    // Ingest has ~45 days of history: enough for a true 30d delta, not
+    // enough for YTD (Jan 1 is ~107 days ago).
+    const pillars: Record<PillarId, PillarScore> = {
+      market: mkPillar("market", 78),
+      fiscal: mkPillar("fiscal", 61),
+      labour: mkPillar("labour", 72),
+      delivery: mkPillar("delivery", 54),
+    };
+    const h = computeHeadlineScore({
+      pillars,
+      sparkline90d: [60],
+      value30dAgo: 56,
+      value30dAgoObservedAt: "2026-03-18T14:00:00Z", // exactly 30d back
+      valueYtdAgo: 58,
+      valueYtdAgoObservedAt: "2026-03-04T14:00:00Z", // oldest row, ~44d back
+      updatedAt: "2026-04-17T14:00:00Z",
+    });
+    expect(h.delta30dBaselineDate).toBeUndefined();
+    expect(h.deltaYtdBaselineDate).toBe("2026-03-04T14:00:00Z");
+  });
+
   it("assembles a complete snapshot with schemaVersion", () => {
     const pillars: Record<PillarId, PillarScore> = {
       market: mkPillar("market", 78),

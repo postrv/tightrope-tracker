@@ -117,11 +117,11 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
         `recompute: pillar '${pillarId}' failed quorum -- ${freshness.freshCount}/${freshness.observedCount} fresh (quorum ${freshness.quorum}). ${stalePart}${missingPart}`,
       );
     }
-    const value7dAgo = valueAtLeastAgo(pillarHistByPillar[pillarId], 7 * DAY_MS, now);
+    const value7dBaseline = valueAtLeastAgo(pillarHistByPillar[pillarId], 7 * DAY_MS, now);
     const input = {
       readings,
       sparkline30d: pillarSparks[pillarId],
-      ...(value7dAgo !== undefined ? { value7dAgo } : {}),
+      ...(value7dBaseline !== undefined ? { value7dAgo: value7dBaseline.value } : {}),
     };
     const score = computePillarScore(pillarId, input);
     pillars[pillarId] = freshness.stale ? { ...score, stale: true } : score;
@@ -136,27 +136,39 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   // this, the 90-row slice below covers ~7.5 hours of 5-minute recompute
   // rows, producing a flat line every day indicators hold steady.
   const sparkline90d = downsampleLatestPerDay(headlineHist).slice(-90);
-  const value24hAgo = valueAtLeastAgo(headlineHist, 24 * 60 * 60 * 1000, now);
+  const baseline24h = valueAtLeastAgo(headlineHist, 24 * 60 * 60 * 1000, now);
   // When history doesn't reach back 30d / YTD (bootstrap period before the
   // historical backfill has run), fall back to the oldest available row if
   // it's at least 7 days old so the deltas render a meaningful "since we
   // started tracking" number rather than a flat 0. Converges to the true 30d
   // / YTD delta as history accumulates.
+  //
+  // The baseline's observedAt is threaded through to HeadlineScore so the UI
+  // can honestly label a fallback result "since 19 Jan" rather than a
+  // misleading "YTD" — the bug that had delta30d == deltaYtd == -7.9 in
+  // production was rooted in both lookups silently falling back to the same
+  // oldest row with no disclosure to the consumer.
   const MIN_FALLBACK_AGE_MS = 7 * DAY_MS;
-  const value30dAgo = valueAtLeastAgo(headlineHist, 30 * DAY_MS, now)
+  const baseline30d = valueAtLeastAgo(headlineHist, 30 * DAY_MS, now)
     ?? valueOldestIfAged(headlineHist, MIN_FALLBACK_AGE_MS, now);
   const startOfYear = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
   const ytdMs = now.getTime() - startOfYear.getTime();
-  const valueYtdAgo = valueAtLeastAgo(headlineHist, ytdMs, now)
+  const baselineYtd = valueAtLeastAgo(headlineHist, ytdMs, now)
     ?? valueOldestIfAged(headlineHist, MIN_FALLBACK_AGE_MS, now);
 
   const headlineCore = computeHeadlineScore({
     pillars: pillarRecord,
     sparkline90d,
     updatedAt,
-    ...(value24hAgo !== undefined ? { value24hAgo } : {}),
-    ...(value30dAgo !== undefined ? { value30dAgo } : {}),
-    ...(valueYtdAgo !== undefined ? { valueYtdAgo } : {}),
+    ...(baseline24h !== undefined ? { value24hAgo: baseline24h.value } : {}),
+    ...(baseline30d !== undefined ? {
+      value30dAgo: baseline30d.value,
+      value30dAgoObservedAt: baseline30d.observedAt,
+    } : {}),
+    ...(baselineYtd !== undefined ? {
+      valueYtdAgo: baselineYtd.value,
+      valueYtdAgoObservedAt: baselineYtd.observedAt,
+    } : {}),
   });
   const headline = anyStale ? { ...headlineCore, stale: true } : headlineCore;
   if (anyStale) {

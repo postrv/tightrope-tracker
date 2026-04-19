@@ -166,8 +166,17 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
 
   const hValue = headlineRow?.value ?? 0;
   // Already ordered ASC by observed_at (one row per UTC day, see SQL above).
-  const hSeries = (headlineHistory.results as ScoreRow[]).map((r: ScoreRow) => r.value);
+  const hRows = (headlineHistory.results as ScoreRow[]);
+  const hSeries = hRows.map((r: ScoreRow) => r.value);
   const headlineStale = anyPillarStale || isScoreRowStale(headlineRow?.observed_at, now);
+  // delta30d / deltaYtd pair the number with the ISO date of the row
+  // actually used as the baseline. When the row is meaningfully off the
+  // requested window (history doesn't stretch back 30d / to Jan 1), the
+  // UI should render "since DD MMM" instead of the "30d" / "YTD" label.
+  // This fixes the live-prod bug where both deltas silently collapsed to
+  // the same oldest-row number because the fallback was invisible.
+  const delta30d = deltaAgoWithDate(hRows, 30);
+  const deltaYtd = deltaAgoYtd(hRows, now);
   const headline: HeadlineScore = {
     value: hValue,
     band: (headlineRow?.band as HeadlineScore["band"]) ?? bandFor(hValue).id,
@@ -176,8 +185,10 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     dominantPillar: (headlineRow?.dominant as PillarId) ?? "market",
     sparkline90d: hSeries,
     delta24h: deltaAgo(hSeries, 1),
-    delta30d: deltaAgo(hSeries, 30),
-    deltaYtd: deltaAgo(hSeries, hSeries.length - 1),
+    delta30d: delta30d.value,
+    deltaYtd: deltaYtd.value,
+    ...(delta30d.baselineDate ? { delta30dBaselineDate: delta30d.baselineDate as Iso8601 } : {}),
+    ...(deltaYtd.baselineDate ? { deltaYtdBaselineDate: deltaYtd.baselineDate as Iso8601 } : {}),
     ...(headlineStale ? { stale: true } : {}),
   };
 
@@ -204,6 +215,47 @@ function deltaAgo(series: readonly number[], n: number): number {
   const now = series.at(-1) ?? 0;
   const then = series.at(Math.max(0, series.length - 1 - n)) ?? now;
   return Math.round((now - then) * 10) / 10;
+}
+
+interface DeltaWithBaseline {
+  value: number;
+  baselineDate?: string;
+}
+
+/**
+ * One-UTC-day-per-row history (as produced by the 90d headline query).
+ * Returns delta = latest - row[latest_index - n]. If history is too
+ * short, falls back to oldest row and surfaces its observedAt as
+ * baselineDate so the UI can label the number honestly.
+ */
+function deltaAgoWithDate(rows: readonly ScoreRow[], targetDays: number): DeltaWithBaseline {
+  if (rows.length < 2) return { value: 0 };
+  const latest = rows[rows.length - 1]!;
+  const idx = rows.length - 1 - targetDays;
+  if (idx >= 0) {
+    return { value: round1(latest.value - rows[idx]!.value) };
+  }
+  const oldest = rows[0]!;
+  return { value: round1(latest.value - oldest.value), baselineDate: oldest.observed_at };
+}
+
+function deltaAgoYtd(rows: readonly ScoreRow[], now: Date): DeltaWithBaseline {
+  if (rows.length < 2) return { value: 0 };
+  const latest = rows[rows.length - 1]!;
+  const startOfYearMs = Date.UTC(now.getUTCFullYear(), 0, 1);
+  // Scan backwards for the last row observed on or before 1 Jan.
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const rowMs = new Date(rows[i]!.observed_at).getTime();
+    if (rowMs <= startOfYearMs) {
+      return { value: round1(latest.value - rows[i]!.value) };
+    }
+  }
+  const oldest = rows[0]!;
+  return { value: round1(latest.value - oldest.value), baselineDate: oldest.observed_at };
+}
+
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
 }
 
 /**

@@ -214,12 +214,12 @@ export async function backfillHistoricalScores(
         stalePillars.push(pillarId);
         continue;
       }
-      const value7dAgo = valueAtLeastAgo(priorPillars[pillarId], 7 * DAY_MS, day);
+      const baseline7d = valueAtLeastAgo(priorPillars[pillarId], 7 * DAY_MS, day);
       const sparkline30d = priorPillars[pillarId].slice(-30).map((p) => p.value);
       pillars[pillarId] = computePillarScore(pillarId, {
         readings,
         sparkline30d,
-        ...(value7dAgo !== undefined ? { value7dAgo } : {}),
+        ...(baseline7d !== undefined ? { value7dAgo: baseline7d.value } : {}),
       });
     }
 
@@ -252,16 +252,18 @@ export async function backfillHistoricalScores(
     if (stalePillars.length === 0) {
       const pillarRecord = pillars as Record<PillarId, PillarScore>;
       const sparkline90d = priorHeadline.slice(-90).map((h) => h.value);
-      const value24hAgo = valueAtLeastAgo(priorHeadline, DAY_MS, day);
+      const baseline24h = valueAtLeastAgo(priorHeadline, DAY_MS, day);
       // Fallback to oldest-if-aged for 30d / YTD matches the live recompute
-      // path -- early backfill days (few prior days in the synthesised history)
-      // still get a populated delta rather than a flat 0.
+      // path — early backfill days (few prior days in the synthesised
+      // history) still get a populated delta rather than a flat 0. Baseline
+      // dates are threaded through so the UI can honestly render "since
+      // DD MMM" when history is too thin for the requested window.
       const MIN_FALLBACK_AGE_MS = 7 * DAY_MS;
-      const value30dAgo = valueAtLeastAgo(priorHeadline, 30 * DAY_MS, day)
+      const baseline30d = valueAtLeastAgo(priorHeadline, 30 * DAY_MS, day)
         ?? valueOldestIfAged(priorHeadline, MIN_FALLBACK_AGE_MS, day);
       const startOfYearMs = Date.UTC(day.getUTCFullYear(), 0, 1);
       const ytdMs = day.getTime() - startOfYearMs;
-      const valueYtdAgo = ytdMs > 0
+      const baselineYtd = ytdMs > 0
         ? (valueAtLeastAgo(priorHeadline, ytdMs, day)
             ?? valueOldestIfAged(priorHeadline, MIN_FALLBACK_AGE_MS, day))
         : undefined;
@@ -270,9 +272,15 @@ export async function backfillHistoricalScores(
         pillars: pillarRecord,
         sparkline90d,
         updatedAt: observedAt,
-        ...(value24hAgo !== undefined ? { value24hAgo } : {}),
-        ...(value30dAgo !== undefined ? { value30dAgo } : {}),
-        ...(valueYtdAgo !== undefined ? { valueYtdAgo } : {}),
+        ...(baseline24h !== undefined ? { value24hAgo: baseline24h.value } : {}),
+        ...(baseline30d !== undefined ? {
+          value30dAgo: baseline30d.value,
+          value30dAgoObservedAt: baseline30d.observedAt,
+        } : {}),
+        ...(baselineYtd !== undefined ? {
+          valueYtdAgo: baselineYtd.value,
+          valueYtdAgoObservedAt: baselineYtd.observedAt,
+        } : {}),
       });
       stmts.unshift(
         env.DB

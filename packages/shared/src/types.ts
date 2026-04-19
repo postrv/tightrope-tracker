@@ -54,6 +54,25 @@ export interface HeadlineScore {
   delta24h: number;
   delta30d: number;
   deltaYtd: number;
+  /**
+   * ISO date of the row actually used as the 30d baseline. Populated
+   * when the baseline is meaningfully older or younger than a clean 30
+   * days — i.e. when the history doesn't yet reach the intended window.
+   * UI should render "since DD MMM" from this field rather than the
+   * hardcoded "30d" label. Omitted when the baseline sits within a few
+   * days of the target (cleanly 30d-old).
+   */
+  delta30dBaselineDate?: Iso8601;
+  /**
+   * ISO date of the row actually used as the YTD baseline. Populated
+   * when the baseline is meaningfully later than 1 January of the
+   * current year (history doesn't yet reach back to Jan 1). Also
+   * populated in the shared-fallback case where the delta30d and
+   * deltaYtd baselines collapse to the same row — the UI can then
+   * honestly render one "since DD MMM" note instead of two misleading
+   * identical numbers.
+   */
+  deltaYtdBaselineDate?: Iso8601;
   dominantPillar: PillarId;
   sparkline90d: number[];
   /** True if any pillar was flagged stale; consumers should show a "stale data" chip and avoid treating the headline as authoritative. */

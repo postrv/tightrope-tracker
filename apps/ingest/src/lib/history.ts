@@ -77,41 +77,54 @@ export async function readPillarHistory(db: D1Database, days: number): Promise<P
 }
 
 /**
+ * Baseline sample: a value paired with the ISO timestamp of the row it
+ * was read from, so callers can honestly label the delta ("since 19 Jan"
+ * vs. a misleading "YTD" when history doesn't actually reach Jan 1).
+ */
+export interface HistoryBaseline {
+  value: number;
+  observedAt: string;
+}
+
+/**
  * Given an ordered headline series (oldest first), return the most recent
- * value at least `targetAgeMs` old, or undefined if the series doesn't reach
- * back that far.
+ * {value, observedAt} at least `targetAgeMs` old, or undefined if the
+ * series doesn't reach back that far. Returning observedAt (not just the
+ * value) lets callers surface the true baseline date to users — critical
+ * for YTD/30d deltas that fall back to a nearer row because history
+ * doesn't yet stretch to the ideal window.
  */
 export function valueAtLeastAgo(
   series: readonly { observed_at: string; value: number }[],
   targetAgeMs: number,
   now: Date = new Date(),
-): number | undefined {
+): HistoryBaseline | undefined {
   const cutoff = now.getTime() - targetAgeMs;
   for (let i = series.length - 1; i >= 0; i--) {
     const ts = new Date(series[i]!.observed_at).getTime();
-    if (ts <= cutoff) return series[i]!.value;
+    if (ts <= cutoff) return { value: series[i]!.value, observedAt: series[i]!.observed_at };
   }
   return undefined;
 }
 
 /**
- * Return the oldest value in `series` only if its observation is at least
- * `minAgeMs` old. Used as a fallback when `valueAtLeastAgo` can't reach the
- * ideal target window: emits "delta since we started tracking" rather than 0,
- * but guards against labelling a 2-day-old row as a 30-day baseline by
- * requiring a minimum age. When history eventually extends past the target
- * window, the primary `valueAtLeastAgo` lookup wins and this fallback goes
- * unused.
+ * Return the oldest {value, observedAt} in `series` only if the row is at
+ * least `minAgeMs` old. Used as a fallback when `valueAtLeastAgo` can't
+ * reach the ideal target window: emits "delta since we started tracking"
+ * rather than 0, but guards against labelling a 2-day-old row as a 30-day
+ * baseline by requiring a minimum age. When history eventually extends
+ * past the target window, the primary `valueAtLeastAgo` lookup wins and
+ * this fallback goes unused.
  */
 export function valueOldestIfAged(
   series: readonly { observed_at: string; value: number }[],
   minAgeMs: number,
   now: Date = new Date(),
-): number | undefined {
+): HistoryBaseline | undefined {
   if (series.length === 0) return undefined;
   const oldest = series[0]!;
   const ageMs = now.getTime() - new Date(oldest.observed_at).getTime();
-  return ageMs >= minAgeMs ? oldest.value : undefined;
+  return ageMs >= minAgeMs ? { value: oldest.value, observedAt: oldest.observed_at } : undefined;
 }
 
 /**

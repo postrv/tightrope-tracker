@@ -3,7 +3,7 @@ import {
   INDICATORS,
   PILLAR_ORDER,
   computeSourceHealth,
-  maxStaleMsForPillar,
+  evaluatePillarFreshness,
   type IndicatorDefinition,
   type PillarId,
   type PillarScore,
@@ -32,9 +32,6 @@ import { maybeAlertSourceHealth } from "./alerts.js";
 
 const KV_TTL_6H = 60 * 60 * 6;
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-/** Fraction of pillar indicators that must be fresh to count as a quorum. */
-const QUORUM_FRACTION = 0.5;
 
 export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   const [baseline, recent, headlineHist, pillarHist] = await Promise.all([
@@ -72,7 +69,6 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
     pillarHistByPillar[row.pillar_id].push({ observed_at: row.observed_at, value: row.value });
   }
   const now = new Date();
-  const nowMs = now.getTime();
   const updatedAt = now.toISOString();
 
   const pillarSparks: Record<PillarId, number[]> = {
@@ -95,19 +91,10 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   let anyStale = false;
   for (const pillarId of PILLAR_ORDER) {
     const pillarIndicators = Object.values(INDICATORS).filter((i) => i.pillar === pillarId);
-    const maxStale = maxStaleMsForPillar(pillarId);
     const readings: IndicatorReading[] = [];
-    let freshCount = 0;
-    const staleIds: string[] = [];
     for (const def of pillarIndicators) {
       const latest = latestByIndicator.get(def.id);
-      if (!latest) {
-        staleIds.push(def.id);
-        continue;
-      }
-      const ageMs = nowMs - new Date(latest.observedAt).getTime();
-      if (ageMs <= maxStale) freshCount++;
-      else staleIds.push(def.id);
+      if (!latest) continue;
       readings.push({
         indicatorId: def.id,
         value: latest.value,
@@ -115,12 +102,18 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
         baseline: baselineByIndicator.get(def.id) ?? [],
       });
     }
-    const quorum = Math.max(1, Math.ceil(pillarIndicators.length * QUORUM_FRACTION));
-    const stale = freshCount < quorum;
-    if (stale) {
+    // Quorum check uses per-indicator freshness windows + excludes
+    // never-observed indicators from the denominator. See
+    // packages/shared/src/staleness.ts::evaluatePillarFreshness.
+    const freshness = evaluatePillarFreshness(pillarId, pillarIndicators, latestByIndicator, now);
+    if (freshness.stale) {
       anyStale = true;
+      const stalePart = freshness.staleIndicatorIds.length > 0
+        ? `stale=[${freshness.staleIndicatorIds.join(",")}]` : "stale=[]";
+      const missingPart = freshness.missingIndicatorIds.length > 0
+        ? ` missing=[${freshness.missingIndicatorIds.join(",")}]` : "";
       console.warn(
-        `recompute: pillar '${pillarId}' stale -- ${freshCount}/${pillarIndicators.length} fresh (quorum ${quorum}). Stale indicators: ${staleIds.join(", ")}`,
+        `recompute: pillar '${pillarId}' failed quorum -- ${freshness.freshCount}/${freshness.observedCount} fresh (quorum ${freshness.quorum}). ${stalePart}${missingPart}`,
       );
     }
     const value7dAgo = valueAtLeastAgo(pillarHistByPillar[pillarId], 7 * DAY_MS, now);
@@ -130,7 +123,7 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
       ...(value7dAgo !== undefined ? { value7dAgo } : {}),
     };
     const score = computePillarScore(pillarId, input);
-    pillars[pillarId] = stale ? { ...score, stale: true } : score;
+    pillars[pillarId] = freshness.stale ? { ...score, stale: true } : score;
   }
 
   const pillarRecord = pillars as Record<PillarId, PillarScore>;

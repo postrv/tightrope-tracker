@@ -1,31 +1,18 @@
-import { PILLARS, type PillarId } from "./indicators.js";
-
-const DAY_MS = 24 * 60 * 60 * 1000;
+import type { IndicatorDefinition, PillarId } from "./indicators.js";
 
 /**
- * Fast-cadence pillars (intraday / daily) must have a reading inside a 2-day
- * window to be considered fresh; slow-cadence pillars (monthly / event) get 7
- * days. These thresholds are used both server-side at recompute time (to
- * decide whether to persist a new pillar row) and at API serve time (to flag
- * a previously-fresh row as stale because the data layer has gone quiet).
+ * Freshness threshold for a single indicator, tied to its source's
+ * publication cadence (captured in `IndicatorDefinition.maxStaleMs`) rather
+ * than the pillar it happens to sit in.
+ *
+ * Example: OBR EFO publishes twice a year, so a one-size-fits-all pillar
+ * window would call the fiscal pillar stale between every EFO release.
+ * Per-indicator values (~220d for EFO, ~90d for ONS PSF, ~5d for DMO / BoE
+ * daily feeds) reflect the real cadence so the quorum check only fires
+ * when an adapter has actually gone quiet.
  */
-export const MAX_STALE_MS_FAST = 2 * DAY_MS;
-export const MAX_STALE_MS_SLOW = 7 * DAY_MS;
-
-export function maxStaleMsForPillar(pillarId: PillarId): number {
-  const cadence = PILLARS[pillarId].cadence;
-  return cadence === "intraday" || cadence === "daily" ? MAX_STALE_MS_FAST : MAX_STALE_MS_SLOW;
-}
-
-/**
- * Is the reading at `observedAt` outside the staleness window for `pillarId`?
- * Used at recompute time to decide whether a pillar's indicator observations
- * are old enough to poison the pillar score. `now` is injectable for tests.
- */
-export function isPillarStale(pillarId: PillarId, observedAt: string, now: Date = new Date()): boolean {
-  const ts = Date.parse(observedAt);
-  if (!Number.isFinite(ts)) return true;
-  return now.getTime() - ts > maxStaleMsForPillar(pillarId);
+export function maxStaleMsForIndicator(def: IndicatorDefinition): number {
+  return def.maxStaleMs;
 }
 
 /**
@@ -43,4 +30,84 @@ export function isScoreRowStale(observedAt: string | undefined, now: Date = new 
   const ts = Date.parse(observedAt);
   if (!Number.isFinite(ts)) return true;
   return now.getTime() - ts > MAX_SCORE_AGE_MS;
+}
+
+/**
+ * Fraction of a pillar's *observed* indicators that must be fresh to count
+ * as a quorum. Exported so recompute (and tests) share one source of truth.
+ */
+export const PILLAR_FRESHNESS_QUORUM_FRACTION = 0.5;
+
+/**
+ * One pillar's quorum evaluation result. Returned by
+ * `evaluatePillarFreshness` and consumed by the ingest recompute to decide
+ * whether to skip persisting the pillar and flag it stale on the homepage.
+ */
+export interface PillarFreshnessResult {
+  pillarId: PillarId;
+  /** Number of indicators with observations inside their own maxStaleMs. */
+  freshCount: number;
+  /** Number of indicators that have at least one observation in the DB. */
+  observedCount: number;
+  /** Quorum threshold: ceil(observedCount * QUORUM_FRACTION), min 1. */
+  quorum: number;
+  /** Indicator ids whose latest observation is past its own maxStaleMs. */
+  staleIndicatorIds: string[];
+  /** Indicator ids with no observation at all (excluded from quorum math). */
+  missingIndicatorIds: string[];
+  /** True iff freshCount < quorum (or there are no observations at all). */
+  stale: boolean;
+}
+
+/**
+ * Decide whether a pillar meets the freshness quorum at `now`. For each
+ * indicator in the pillar,
+ *
+ *   - no observation at all            -> `missingIndicatorIds`, ignored
+ *                                         from both numerator and denominator
+ *   - observation age <= its maxStaleMs -> contributes to `freshCount`
+ *   - observation age >  its maxStaleMs -> `staleIndicatorIds`
+ *
+ * The pillar is stale iff `freshCount < ceil(observedCount * 0.5)`. An
+ * unconfigured indicator (no observations) does not block the pillar from
+ * meeting quorum -- it's a data-engineering gap, not a data staleness
+ * issue, and surfacing it via the stale banner would be wrong.
+ */
+export function evaluatePillarFreshness(
+  pillarId: PillarId,
+  pillarIndicators: readonly IndicatorDefinition[],
+  latestByIndicator: ReadonlyMap<string, { value: number; observedAt: string }>,
+  now: Date,
+): PillarFreshnessResult {
+  const nowMs = now.getTime();
+  let freshCount = 0;
+  const staleIndicatorIds: string[] = [];
+  const missingIndicatorIds: string[] = [];
+  for (const def of pillarIndicators) {
+    const latest = latestByIndicator.get(def.id);
+    if (!latest) {
+      missingIndicatorIds.push(def.id);
+      continue;
+    }
+    const ageMs = nowMs - Date.parse(latest.observedAt);
+    if (Number.isFinite(ageMs) && ageMs <= maxStaleMsForIndicator(def)) {
+      freshCount++;
+    } else {
+      staleIndicatorIds.push(def.id);
+    }
+  }
+  const observedCount = pillarIndicators.length - missingIndicatorIds.length;
+  const quorum = observedCount > 0
+    ? Math.max(1, Math.ceil(observedCount * PILLAR_FRESHNESS_QUORUM_FRACTION))
+    : 0;
+  const stale = observedCount === 0 || freshCount < quorum;
+  return {
+    pillarId,
+    freshCount,
+    observedCount,
+    quorum,
+    staleIndicatorIds,
+    missingIndicatorIds,
+    stale,
+  };
 }

@@ -23,6 +23,12 @@ export function computeSourceHealth(
   const out: SourceHealthEntry[] = [];
   for (const row of latestAttempts) {
     if (row.status === "success") continue;
+    // The ingest worker's DLQ handler writes ingestion_audit rows with
+    // source_id = 'unknown' when a dead-lettered message carries no
+    // sourceId. That row is an artefact of the DLQ plumbing, not a real
+    // ingestion source a reader can act on -- suppress it here so the
+    // public-facing banner stays focused on actual upstream failures.
+    if (row.sourceId === "unknown") continue;
     const status = row.status === "partial" ? "partial" : "failure";
     const entry: SourceHealthEntry = {
       sourceId: row.sourceId,

@@ -108,6 +108,17 @@ export interface IndicatorDefinition {
    */
   provenance: IndicatorProvenance;
   /**
+   * Per-indicator freshness window, in milliseconds. An observation is
+   * "fresh" for the pillar quorum check if `(now - observedAt) <=
+   * maxStaleMs`. The value must match the source's publication cadence
+   * plus a buffer for weekends / bank holidays / known reporting lag --
+   * e.g. BoE daily feeds get ~5 days, ONS PSF (monthly with 45-day lag)
+   * gets ~90 days, OBR EFO (semi-annual) gets ~220 days. Values are
+   * expressed via the `STALE_*_MS` constants below so each entry is
+   * self-documenting.
+   */
+  maxStaleMs: number;
+  /**
    * Whether a defensible historical time-series exists for this indicator.
    * Defaults to `true` when omitted. Set `false` for indicators whose values
    * are editorial interpretations of political announcements (e.g. delivery
@@ -118,6 +129,27 @@ export interface IndicatorDefinition {
    */
   hasHistoricalSeries?: boolean;
 }
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Per-cadence freshness windows used by `IndicatorDefinition.maxStaleMs`.
+ *
+ * These are not arbitrary: each answers "how old can the latest observation
+ * reasonably get while the adapter is still healthy?". If an observation is
+ * older than this, the upstream source has actually gone quiet -- the
+ * homepage "stale" banner should fire for exactly that case, not for the
+ * natural gap between a twice-yearly OBR release or a quarterly MHCLG print.
+ */
+const STALE_DAILY_MS = 5 * DAY_MS;
+const STALE_WEEKLY_FIXTURE_MS = 14 * DAY_MS;
+const STALE_MONTHLY_FIXTURE_MS = 50 * DAY_MS;
+const STALE_RTI_MONTHLY_MS = 60 * DAY_MS;
+const STALE_ONS_PSF_MS = 90 * DAY_MS;
+const STALE_MHCLG_QUARTERLY_MS = 130 * DAY_MS;
+const STALE_ONS_LMS_MS = 180 * DAY_MS;
+const STALE_OBR_SEMIANNUAL_MS = 220 * DAY_MS;
+const STALE_EDITORIAL_MS = 365 * DAY_MS;
 
 const fmtPct = (digits = 2) => (v: number) => `${v.toFixed(digits)}%`;
 const fmtBp = (v: number) => `${v.toFixed(2)}%`;
@@ -138,30 +170,35 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "%", weight: 0.15, risingIsBad: true, sourceId: "boe_yields",
     description: "UK 10-year benchmark gilt yield (daily close).", formatDisplay: fmtBp,
     provenance: "live",
+    maxStaleMs: STALE_DAILY_MS,
   },
   gilt_30y: {
     id: "gilt_30y", pillar: "market", label: "30-year gilt yield", shortLabel: "30y gilt",
     unit: "%", weight: 0.13, risingIsBad: true, sourceId: "boe_yields",
     description: "UK 30-year gilt yield. Sensitivity proxy for long-duration borrowing.", formatDisplay: fmtBp,
     provenance: "live",
+    maxStaleMs: STALE_DAILY_MS,
   },
   gbp_usd: {
     id: "gbp_usd", pillar: "market", label: "GBP / USD", shortLabel: "GBP/USD",
     unit: "ccy", weight: 0.06, risingIsBad: false, sourceId: "boe_fx",
     description: "Sterling vs. US dollar.", formatDisplay: fmtRatio,
     provenance: "live",
+    maxStaleMs: STALE_DAILY_MS,
   },
   gbp_twi: {
     id: "gbp_twi", pillar: "market", label: "GBP trade-weighted index", shortLabel: "GBP TWI",
     unit: "index", weight: 0.06, risingIsBad: false, sourceId: "boe_fx",
     description: "Broad effective exchange rate index for sterling.", formatDisplay: fmtIndex(2),
     provenance: "live",
+    maxStaleMs: STALE_DAILY_MS,
   },
   sonia_12m: {
     id: "sonia_12m", pillar: "market", label: "SONIA 12-month forward", shortLabel: "SONIA 12m",
     unit: "%", weight: 0.08, risingIsBad: true, sourceId: "boe_sonia",
     description: "12-month SONIA forward -- market-implied short-rate path.", formatDisplay: fmtBp,
     provenance: "live",
+    maxStaleMs: STALE_DAILY_MS,
   },
   gas_m1: {
     id: "gas_m1", pillar: "market", label: "UK natural gas front-month", shortLabel: "Gas M+1",
@@ -169,6 +206,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Front-month NBP natural gas settlement price.", formatDisplay: fmtPence,
     // No adapter wired yet; ICE exposes futures only under a commercial feed.
     provenance: "editorial",
+    maxStaleMs: STALE_EDITORIAL_MS,
   },
   ftse_250: {
     id: "ftse_250", pillar: "market", label: "FTSE 250", shortLabel: "FTSE 250",
@@ -176,6 +214,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Mid-cap index -- cleaner domestic UK read than FTSE 100.", formatDisplay: fmtIndex(0),
     // No adapter wired yet; LSEG's free feeds don't include an index level stream.
     provenance: "editorial",
+    maxStaleMs: STALE_EDITORIAL_MS,
   },
   // OBR-proxy extension -- see docs/OBR_PROXIES.md for the mechanism per indicator.
   // Inflation-input proxies: breakevens from BoE zero-coupon curves, Brent in GBP.
@@ -185,6 +224,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "5y nominal minus 5y real gilt yield -- market-implied CPI/RPI 5y ahead, a direct proxy for OBR's CPI inflation path over the forecast horizon.",
     formatDisplay: fmtBp,
     provenance: "live",
+    maxStaleMs: STALE_DAILY_MS,
   },
   breakeven_10y: {
     id: "breakeven_10y", pillar: "market", label: "10y breakeven inflation", shortLabel: "10y BE",
@@ -192,6 +232,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "10y nominal minus 10y real gilt yield -- proxy for longer-horizon inflation expectations feeding OBR's medium-term CPI and debt-interest forecast.",
     formatDisplay: fmtBp,
     provenance: "live",
+    maxStaleMs: STALE_DAILY_MS,
   },
   gilt_il_10y_real: {
     id: "gilt_il_10y_real", pillar: "market", label: "10y real (IL) gilt yield", shortLabel: "10y real",
@@ -199,6 +240,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "10y index-linked gilt real yield -- proxy for the real rate regime that OBR uses when deriving potential-output and trend-growth assumptions.",
     formatDisplay: fmtBp,
     provenance: "live",
+    maxStaleMs: STALE_DAILY_MS,
   },
   brent_gbp: {
     id: "brent_gbp", pillar: "market", label: "Brent crude in GBP", shortLabel: "Brent GBP",
@@ -206,6 +248,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Brent dated spot price converted to GBP -- the single largest swing input to OBR's CPI energy subcomponent and fuel-duty receipts.",
     formatDisplay: (v) => `GBP ${v.toFixed(2)}/bbl`,
     provenance: "fixture",
+    maxStaleMs: STALE_WEEKLY_FIXTURE_MS,
   },
   // Growth-input proxies: housebuilder composite, Services PMI, consumer confidence, RICS balance.
   housebuilder_idx: {
@@ -214,6 +257,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Equal-weighted price index of the five largest listed UK housebuilders (rebased 100 = 2019 avg) -- leads OBR's residential investment and construction GVA lines by 3-6 months.",
     formatDisplay: fmtIndex(1),
     provenance: "fixture",
+    maxStaleMs: STALE_DAILY_MS,
   },
   services_pmi: {
     id: "services_pmi", pillar: "market", label: "S&P Global UK Services PMI", shortLabel: "Services PMI",
@@ -221,6 +265,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Headline Services PMI -- 50 = no change. Services is ~80% of UK GVA, so this leads OBR's real-GDP growth forecast by roughly one quarter.",
     formatDisplay: fmtIndex(1),
     provenance: "fixture",
+    maxStaleMs: STALE_MONTHLY_FIXTURE_MS,
   },
   consumer_confidence: {
     id: "consumer_confidence", pillar: "market", label: "GfK consumer confidence", shortLabel: "Cons. conf.",
@@ -228,6 +273,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "GfK/NIESR consumer confidence headline index -- leading signal for household-consumption growth, the largest single expenditure line in OBR's GDP decomposition.",
     formatDisplay: fmtIndex(0),
     provenance: "fixture",
+    maxStaleMs: STALE_MONTHLY_FIXTURE_MS,
   },
   rics_price_balance: {
     id: "rics_price_balance", pillar: "market", label: "RICS house-price balance", shortLabel: "RICS price",
@@ -235,6 +281,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Net balance of RICS surveyors reporting price rises vs. falls -- leads residential investment in OBR's expenditure GDP by 1-2 quarters.",
     formatDisplay: fmtPct(0),
     provenance: "fixture",
+    maxStaleMs: STALE_MONTHLY_FIXTURE_MS,
   },
 
   // Fiscal (30%)
@@ -243,24 +290,28 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "GBPbn", weight: 0.35, risingIsBad: false, sourceId: "obr_efo",
     description: "Surplus against the stability rule at the target year.", formatDisplay: fmtGbpBn,
     provenance: "fixture",
+    maxStaleMs: STALE_OBR_SEMIANNUAL_MS,
   },
   psnfl_trajectory: {
     id: "psnfl_trajectory", pillar: "fiscal", label: "PSNFL trajectory deviation", shortLabel: "PSNFL dev",
     unit: "pp", weight: 0.15, risingIsBad: true, sourceId: "obr_efo",
     description: "Deviation of PSNFL path from OBR baseline, percentage points of GDP.", formatDisplay: fmtPct(2),
     provenance: "fixture",
+    maxStaleMs: STALE_OBR_SEMIANNUAL_MS,
   },
   borrowing_outturn: {
     id: "borrowing_outturn", pillar: "fiscal", label: "Public-sector net borrowing", shortLabel: "PSNB",
     unit: "GBPbn", weight: 0.15, risingIsBad: true, sourceId: "ons_psf",
     description: "Monthly public-sector net borrowing excluding public-sector banks (ONS J5II). Higher values = more borrowing.", formatDisplay: fmtGbpBn,
     provenance: "live",
+    maxStaleMs: STALE_ONS_PSF_MS,
   },
   debt_interest: {
     id: "debt_interest", pillar: "fiscal", label: "Central-government net interest payable", shortLabel: "Debt interest",
     unit: "GBPbn", weight: 0.15, risingIsBad: true, sourceId: "ons_psf",
     description: "Central-government net interest payable, monthly (ONS NMFX).", formatDisplay: fmtGbpBn,
     provenance: "live",
+    maxStaleMs: STALE_ONS_PSF_MS,
   },
   ilg_share: {
     id: "ilg_share", pillar: "fiscal", label: "Index-linked gilt share of stock", shortLabel: "ILG share",
@@ -268,6 +319,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Share of outstanding gilt stock (inflation-uplifted nominal) that is index-linked -- inflation-sensitivity proxy. Source: DMO D1A gilts-in-issue feed.",
     formatDisplay: fmtPct(1),
     provenance: "live",
+    maxStaleMs: STALE_DAILY_MS,
   },
   issuance_long_share: {
     // Indicator ID preserved for DB continuity. The measure is now a
@@ -283,6 +335,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Long / Ultra-Long conventional gilts as % of all conventional gilt stock (DMO D1A). Higher = more exposure to long-dated rate moves.",
     formatDisplay: fmtPct(1),
     provenance: "live",
+    maxStaleMs: STALE_DAILY_MS,
   },
 
   // Labour & Living (20%)
@@ -291,24 +344,28 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "%", weight: 0.22, risingIsBad: true, sourceId: "ons_lms",
     description: "Share of 16-64 population neither in work nor looking for work.", formatDisplay: fmtPct(1),
     provenance: "live",
+    maxStaleMs: STALE_ONS_LMS_MS,
   },
   inactivity_health: {
     id: "inactivity_health", pillar: "labour", label: "Health-related inactivity (m)", shortLabel: "Health inactive",
     unit: "m", weight: 0.18, risingIsBad: true, sourceId: "ons_lms",
     description: "Millions reporting long-term sickness as main reason for inactivity.", formatDisplay: fmtMillions,
     provenance: "live",
+    maxStaleMs: STALE_ONS_LMS_MS,
   },
   unemployment: {
     id: "unemployment", pillar: "labour", label: "Unemployment rate, 16+", shortLabel: "Unemployment",
     unit: "%", weight: 0.10, risingIsBad: true, sourceId: "ons_lms",
     description: "ILO unemployment rate.", formatDisplay: fmtPct(1),
     provenance: "live",
+    maxStaleMs: STALE_ONS_LMS_MS,
   },
   vacancies_per_unemployed: {
     id: "vacancies_per_unemployed", pillar: "labour", label: "Vacancies per unemployed person", shortLabel: "V/U",
     unit: "ratio", weight: 0.10, risingIsBad: false, sourceId: "ons_lms",
     description: "Tightness of the labour market; falling = slack.", formatDisplay: (v) => v.toFixed(2),
     provenance: "live",
+    maxStaleMs: STALE_ONS_LMS_MS,
   },
   payroll_mom: {
     // Indicator ID preserved for DB continuity. The upstream CDID (K54L) is
@@ -321,18 +378,21 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Average Weekly Earnings -- whole economy regular-pay index (2015=100, SA, excl. arrears). Rising means earnings are growing.",
     formatDisplay: fmtIndex(1),
     provenance: "live",
+    maxStaleMs: STALE_RTI_MONTHLY_MS,
   },
   real_regular_pay: {
     id: "real_regular_pay", pillar: "labour", label: "Real regular pay growth, YoY", shortLabel: "Real pay",
     unit: "%", weight: 0.10, risingIsBad: false, sourceId: "ons_lms",
     description: "CPIH-adjusted regular pay, year-on-year.", formatDisplay: fmtPct(1),
     provenance: "live",
+    maxStaleMs: STALE_ONS_LMS_MS,
   },
   mortgage_2y_fix: {
     id: "mortgage_2y_fix", pillar: "labour", label: "Average 2y fixed mortgage rate", shortLabel: "2y fix",
     unit: "%", weight: 0.12, risingIsBad: true, sourceId: "moneyfacts",
     description: "UK average 2-year fixed-rate mortgage at 75% LTV.", formatDisplay: fmtPct(2),
     provenance: "live",
+    maxStaleMs: STALE_DAILY_MS,
   },
   dd_failure_rate: {
     id: "dd_failure_rate", pillar: "labour", label: "Direct-debit failure rate", shortLabel: "DD failures",
@@ -341,6 +401,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     // ONS publishes this as an Excel indicator inside the RTI bundle, not as
     // a queryable timeseries; we mirror the headline figure into a fixture.
     provenance: "fixture",
+    maxStaleMs: STALE_RTI_MONTHLY_MS,
   },
 
   // Growth Delivery (10%) -- inverted
@@ -349,12 +410,14 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "%", weight: 0.25, risingIsBad: false, sourceId: "mhclg",
     description: "Latest net additions as % of OBR trajectory for the year.", formatDisplay: fmtPct(1),
     provenance: "fixture",
+    maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
   planning_consents: {
     id: "planning_consents", pillar: "delivery", label: "Planning consents vs. baseline", shortLabel: "Consents",
     unit: "%", weight: 0.20, risingIsBad: false, sourceId: "mhclg",
     description: "Residential planning consents vs. 2019 baseline.", formatDisplay: fmtPct(1),
     provenance: "fixture",
+    maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
   new_towns_milestones: {
     id: "new_towns_milestones", pillar: "delivery", label: "New towns milestones hit", shortLabel: "New towns",
@@ -362,6 +425,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Milestones hit as % of committed milestones YTD.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
     provenance: "editorial",
+    maxStaleMs: STALE_EDITORIAL_MS,
   },
   bics_rollout: {
     id: "bics_rollout", pillar: "delivery", label: "BICS firms onboarded", shortLabel: "BICS",
@@ -369,6 +433,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Cumulative firms onboarded to the British Industrial Competitiveness Scheme.", formatDisplay: fmtCount,
     hasHistoricalSeries: false,
     provenance: "editorial",
+    maxStaleMs: STALE_EDITORIAL_MS,
   },
   industrial_strategy: {
     id: "industrial_strategy", pillar: "delivery", label: "Industrial Strategy milestones", shortLabel: "Industrial",
@@ -376,6 +441,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Industrial Strategy milestones on/ahead of schedule vs. slipped/missed.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
     provenance: "editorial",
+    maxStaleMs: STALE_EDITORIAL_MS,
   },
   smr_programme: {
     id: "smr_programme", pillar: "delivery", label: "SMR fleet progress", shortLabel: "SMR",
@@ -383,6 +449,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Small Modular Reactor programme progress against published milestones.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
     provenance: "editorial",
+    maxStaleMs: STALE_EDITORIAL_MS,
   },
 };
 

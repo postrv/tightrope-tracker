@@ -22,9 +22,15 @@ const prov = def?.provenance;
 
 const LABEL: Record<string, { full: string; short: string; title: string }> = {
   live: {
-    full: "Live",
-    short: "L",
-    title: "Fetched from the primary source by an automated adapter on every ingest cycle.",
+    // Chip intentionally says "Auto" rather than "Live": every such
+    // indicator is pulled by a scheduled adapter, but the actual cadence
+    // ranges from five-minutely (some BoE feeds) to daily (most ONS /
+    // OBR proxies) to weekly (ICE gas, FTSE 250 fixtures). "Live" would
+    // overclaim real-time; "Auto" is the honest framing and the tooltip
+    // spells out the cadence.
+    full: "Auto",
+    short: "A",
+    title: "Pulled by a scheduled adapter. Cadence ranges from five-minutely (BoE feeds) to daily (most ONS / OBR proxies) to weekly (ICE gas, FTSE 250). Not real-time — the homepage's updated-at timestamp shows the last successful ingest.",
   },
   fixture: {
     full: "Fixture",

@@ -49,13 +49,34 @@ export async function resolveOnsDataUrl(
     });
   }
   const items = parsed.items ?? [];
-  // ONS URIs end in `/{cdid_lower}/{dataset_lower}`. When a dataset is supplied
-  // prefer the exact match so we don't accidentally pick a different revision.
-  const wantedSuffix = dataset ? `/${dataset.toLowerCase()}` : null;
-  const match = wantedSuffix
-    ? items.find((it) => typeof it.uri === "string" && it.uri.toLowerCase().endsWith(wantedSuffix))
-    : items[0];
-  const pick = match ?? items[0];
+  // ONS URIs end in `/{cdid_lower}/{dataset_lower}`. When a dataset is
+  // supplied we require an exact match on the trailing suffix — without a
+  // dataset, any item whose URI contains the CDID substring is
+  // acceptable. The resolver must NEVER fall back to an arbitrary
+  // items[0] pick, because the ONS search occasionally returns hits from
+  // legacy or revision-history URIs whose CDID does not match the one
+  // the caller actually requested. Silently returning such a hit would
+  // drive the adapter to fetch the wrong series.
+  const cdidLower = cdid.toLowerCase();
+  const candidates = items.filter(
+    (it) => typeof it.uri === "string" && it.uri.toLowerCase().includes(`/${cdidLower}/`),
+  );
+  let pick: { uri?: string } | undefined;
+  if (dataset) {
+    const suffix = `/${dataset.toLowerCase()}`;
+    pick = candidates.find(
+      (it) => typeof it.uri === "string" && it.uri.toLowerCase().endsWith(suffix),
+    );
+    if (!pick) {
+      throw new AdapterError({
+        sourceId,
+        sourceUrl: searchUrl,
+        message: `ONS: no timeseries URI for CDID ${cdid} (dataset ${dataset}) — ${items.length} result${items.length === 1 ? "" : "s"} but none end in '${suffix}'`,
+      });
+    }
+  } else {
+    pick = candidates[0];
+  }
   if (!pick || typeof pick.uri !== "string" || pick.uri.length === 0) {
     throw new AdapterError({
       sourceId,

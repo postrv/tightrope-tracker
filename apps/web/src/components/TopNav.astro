@@ -68,13 +68,19 @@ const age = ageShort(updatedAt);
         <ul class="primary">
           {links.map((l) => (<li><a href={l.href}>{l.label}</a></li>))}
         </ul>
-        <span class={`live-chip${stale ? " stale" : ""}`} aria-live="polite" title={stale ? `Last fresh reading ${hh}` : undefined}>
+        <span
+          class={`live-chip${stale ? " stale" : ""}`}
+          aria-live="polite"
+          title={stale
+            ? `Last fresh reading ${hh}`
+            : "Auto-ingest: scheduled adapters run from five-minutely (BoE rates) to daily (most ONS / OBR proxies). Not real-time; the stamp shown is the last successful ingest."}
+        >
           <span class="dot" style={`background: ${dotColour}; --pulse: ${dotColour};`}></span>
           {stale
             ? `Stale · last fresh ${age || hh}`
             : hh
-              ? `Live · Updated ${hh}`
-              : "Live · Awaiting first ingestion"}
+              ? `Auto · Updated ${hh}`
+              : "Auto · Awaiting first ingestion"}
         </span>
         <button class="hamburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav-panel" data-nav-toggle>
           <span></span><span></span><span></span>

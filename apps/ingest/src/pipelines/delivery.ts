@@ -1,4 +1,5 @@
 import {
+  deliveryMilestonesAdapter,
   fetchGovUkCandidates,
   mhclgHousingAdapter,
   type TimelineEventCandidate,
@@ -10,6 +11,12 @@ import { runAdapterSafe } from "./runAdapter.js";
 
 export async function ingestDelivery(env: Env): Promise<{ housingRows: number; candidates: number }> {
   const housing = await runAdapterSafe(env, mhclgHousingAdapter);
+  // Editorial delivery-milestone indicators (new_towns_milestones,
+  // bics_rollout, industrial_strategy, smr_programme) live in a
+  // fixture with a 90-day freshness guard. Run under runAdapterSafe so
+  // a stale fixture audits as a failure without taking out the rest of
+  // the pipeline.
+  await runAdapterSafe(env, deliveryMilestonesAdapter);
 
   // gov.uk feed is separate -- it produces timeline event candidates, not
   // observations. We manage the audit row ourselves so the DB still has a

@@ -1,0 +1,12 @@
+{
+  "_comment": "FTSE 250 index level at most recent London close. The FTSE 250 is a cleaner read on the domestic UK economy than the FTSE 100 (which is dominated by global commodity and pharma names). LSEG does not expose a free index-level JSON feed; the number is transcribed from the published closing price each week. The adapter's freshness guard rejects fixtures older than 14 days so a missed refresh surfaces in the ingest audit. TODO(source): an authorised LSEG index-licence vendor would let us drop this fixture and fetch the close directly.",
+  "as_of": "2026-04-17",
+  "observed_at": "2026-04-17T16:30:00Z",
+  "ftse_250": {
+    "value": 19842,
+    "unit": "index",
+    "source": "London Stock Exchange FTSE 250 closing level, 17 April 2026"
+  },
+  "source_url": "https://www.londonstockexchange.com/indices/ftse-250",
+  "release_schedule": "Every London trading day at ~16:30; editorial fixture refreshed weekly."
+}

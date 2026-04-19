@@ -8,7 +8,9 @@ export const historicalPayloadHash = sharedHistoricalPayloadHash;
 /**
  * Write a batch of raw observations with `INSERT OR REPLACE` semantics so a
  * re-run of the same ingest (same indicator + observed_at) overwrites the
- * previous value idempotently.
+ * previous value idempotently. `released_at` is persisted when the adapter
+ * supplies it (ONS family) and left NULL otherwise (daily BoE/FX, fixtures
+ * where reference period == publication date).
  */
 export async function writeObservations(
   db: D1Database,
@@ -17,12 +19,12 @@ export async function writeObservations(
   if (observations.length === 0) return 0;
   const stmt = db.prepare(
     `INSERT OR REPLACE INTO indicator_observations
-       (indicator_id, observed_at, value, source_id, ingested_at, payload_hash)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+       (indicator_id, observed_at, value, source_id, ingested_at, payload_hash, released_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
   );
   const now = new Date().toISOString();
   const batch: D1PreparedStatement[] = observations.map((o) =>
-    stmt.bind(o.indicatorId, o.observedAt, o.value, o.sourceId, now, o.payloadHash),
+    stmt.bind(o.indicatorId, o.observedAt, o.value, o.sourceId, now, o.payloadHash, o.releasedAt ?? null),
   );
   await db.batch(batch);
   return observations.length;
@@ -98,15 +100,15 @@ export async function writeHistoricalObservations(
   const verb = opts.overwrite ? "INSERT OR REPLACE" : "INSERT OR IGNORE";
   const stmt = db.prepare(
     `${verb} INTO indicator_observations
-       (indicator_id, observed_at, value, source_id, ingested_at, payload_hash)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+       (indicator_id, observed_at, value, source_id, ingested_at, payload_hash, released_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
   );
   const now = new Date().toISOString();
   let written = 0;
   for (let i = 0; i < filtered.length; i += HIST_BATCH_SIZE) {
     const slice = filtered.slice(i, i + HIST_BATCH_SIZE);
     const batch: D1PreparedStatement[] = slice.map((o) =>
-      stmt.bind(o.indicatorId, o.observedAt, o.value, o.sourceId, now, o.payloadHash),
+      stmt.bind(o.indicatorId, o.observedAt, o.value, o.sourceId, now, o.payloadHash, o.releasedAt ?? null),
     );
     await db.batch(batch);
     written += slice.length;

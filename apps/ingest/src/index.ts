@@ -2,6 +2,7 @@ import type { ExecutionContext, MessageBatch, ScheduledEvent } from "@cloudflare
 import type { Env } from "./env.js";
 import type { DlqPayload } from "./types.js";
 import { handleAdminRun } from "./admin.js";
+import { handleCorrectionCreate } from "./corrections.js";
 import { handleAdminHealth } from "./health.js";
 import { ingestDelivery } from "./pipelines/delivery.js";
 import { ingestFiscal } from "./pipelines/fiscal.js";
@@ -19,6 +20,9 @@ export default {
     const url = new URL(req.url);
     if (url.pathname === "/admin/run") {
       return handleAdminRun(req, env, url);
+    }
+    if (url.pathname === "/admin/correction") {
+      return handleCorrectionCreate(req, env);
     }
     if (url.pathname === "/admin/health") {
       return handleAdminHealth(req, env);

@@ -26,10 +26,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# editor
+# editor / per-machine tooling
 .vscode/*
 !.vscode/extensions.json
 .idea/
+.claude/
+.mcp.json
+forge.toml
 .DS_Store
 *.swp
 *.swo

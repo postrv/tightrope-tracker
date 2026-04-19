@@ -2,6 +2,7 @@
 import type { PillarScore } from "@tightrope/shared";
 import { signedDelta } from "~/lib/format.js";
 import { mortgageDelta, formatExtra } from "~/lib/mortgage.js";
+import IllustrativeBadge from "./IllustrativeBadge.astro";
 
 interface Props {
   pillar: PillarScore;
@@ -62,7 +63,13 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
 
     <div class="labour-grid">
       <div class="chart-card wide">
-        <h3>Inactivity rate vs. health-related count</h3>
+        <div class="card-head">
+          <h3>Inactivity rate vs. health-related count</h3>
+          <IllustrativeBadge
+            sourceSummary="Annual averages from ONS Labour Force Survey: inactivity rate (series LF24) and health-related economically inactive (series LF2R). One point per year."
+            sourceUrl="https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/economicinactivity"
+          />
+        </div>
         <p class="hint">Annual averages, 16-64. Left axis: rate (%). Right axis: health-related inactive (millions).</p>
         <svg class="chart" viewBox="0 0 600 240" preserveAspectRatio="none" role="img" aria-label="Inactivity rate and health-related inactivity 2019 to 2026">
           <g stroke="var(--border-soft)" stroke-width="1">
@@ -125,7 +132,13 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
       </div>
 
       <div class="mortgage-card">
-        <h3>Mortgage translator</h3>
+        <div class="card-head">
+          <h3>Mortgage translator</h3>
+          <IllustrativeBadge
+            sourceSummary="Arithmetic worked from the live 2-year fixed rate (indicator `mortgage_2y_fix`, Moneyfacts). The £250k / 25-year worked example is illustrative — change the two rates in apps/web/src/lib/mortgage.js to reproduce."
+            sourceUrl="https://www.moneyfactscompare.co.uk/mortgages/"
+          />
+        </div>
         <p class="hint">What the 2-year fixed-rate move means on a £250,000, 25-year repayment mortgage.</p>
         <div class="mortgage-big">{formatExtra(m.extraPerMonth)}<span class="mortgage-sub"> / month</span></div>
         <p class="mortgage-caption">Extra vs. the rate at the last Budget ({m.baselineRate.toFixed(2)}% → {m.currentRate.toFixed(2)}%). Payment: £{m.currentPayment.toLocaleString("en-GB")} vs. £{m.baselinePayment.toLocaleString("en-GB")}.</p>
@@ -135,7 +148,13 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
 
     <div class="labour-secondary">
       <div class="chart-card">
-        <h3>Vacancies per unemployed person</h3>
+        <div class="card-head">
+          <h3>Vacancies per unemployed person</h3>
+          <IllustrativeBadge
+            sourceSummary="Derived ratio of ONS monthly vacancies (V) over ONS monthly unemployed (U). Live indicator `vacancies_per_unemployed` feeds from the same adapter — this chart shows the illustrative 12-month arc."
+            sourceUrl="https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment"
+          />
+        </div>
         <p class="hint">Rolling quarterly ratio — falling = more slack appearing in the labour market.</p>
         <svg class="chart" viewBox="0 0 400 160" preserveAspectRatio="none" role="img" aria-label="Vacancies per unemployed person">
           <g stroke="var(--border-soft)" stroke-width="1">
@@ -147,7 +166,13 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
         </svg>
       </div>
       <div class="chart-card">
-        <h3>Real regular pay growth (YoY)</h3>
+        <div class="card-head">
+          <h3>Real regular pay growth (YoY)</h3>
+          <IllustrativeBadge
+            sourceSummary="ONS Average Weekly Earnings regular pay (series KAC3) deflated by CPIH (L55O). Live indicator `real_regular_pay` feeds from the same ONS series."
+            sourceUrl="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours"
+          />
+        </div>
         <p class="hint">CPIH-adjusted. Positive values = real wages growing.</p>
         <svg class="chart" viewBox="0 0 400 160" preserveAspectRatio="none" role="img" aria-label="Real regular pay year on year">
           <g stroke="var(--border-soft)" stroke-width="1">
@@ -177,6 +202,8 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
 
 .labour-grid { display: grid; grid-template-columns: 1.45fr 1fr; gap: 32px; margin-bottom: 32px; }
 .labour-secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 2px; }
+.card-head h3 { margin: 0; }
 
 .mortgage-card {
   background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 10%, transparent), var(--bg-1));

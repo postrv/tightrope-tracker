@@ -10,7 +10,13 @@ import {
   BASELINE_START_ISO,
   COVID_EXCLUDE_START_ISO,
   COVID_EXCLUDE_END_ISO,
+  BANDS,
+  liveOnlyIndicatorsForPillar,
 } from "@tightrope/shared";
+
+const liveOnlyByPillar = PILLAR_ORDER
+  .map((p) => ({ pillar: p, indicators: liveOnlyIndicatorsForPillar(p) }))
+  .filter((entry) => entry.indicators.length > 0);
 import { loadIngestionAudit, loadSnapshot } from "~/lib/page-data.js";
 import { shortDate } from "~/lib/format.js";
 
@@ -54,6 +60,36 @@ function ecdfPath(): string {
         <li><strong>Pillar score.</strong> Weighted arithmetic mean of the pillar's indicators. Arithmetic at the pillar level means individual inputs are additive and debuggable.</li>
         <li><strong>Headline Tightrope Score.</strong> Weighted <em>geometric</em> mean of the four pillar scores. Geometric at the headline level means one pillar blowing out (e.g. a gilt shock) pulls the headline hard — the correct behaviour for a systemic-stress metric.</li>
       </ol>
+
+      <div class="band-table">
+        <h3>Score bands</h3>
+        <p class="caption">The headline and pillar scores are bucketed into five bands at 20-point steps. The same thresholds drive colour choices throughout the site and the OG-card rendering; change one and the tests in <code>packages/shared/src/bands.test.ts</code> flag the drift.</p>
+        <table class="inputs bands">
+          <thead>
+            <tr>
+              <th>Range</th>
+              <th>Band</th>
+              <th>Editorial label</th>
+              <th>Swatch</th>
+            </tr>
+          </thead>
+          <tbody>
+            {BANDS.map((b) => {
+              const lo = b.min;
+              const hi = b.max > 100 ? 100 : b.max;
+              const inclusive = b.max > 100 ? "≤" : "<";
+              return (
+                <tr>
+                  <td class="mono">{lo} ≤ score {inclusive} {hi}</td>
+                  <td>{b.label}</td>
+                  <td class="muted">{b.editorialLabel}</td>
+                  <td><span class="band-swatch" style={`background:${b.hex}`} aria-hidden="true"></span><span class="mono band-hex">{b.hex}</span></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       <div class="ecdf-demo">
         <h3>ECDF — the z → [0, 100] mapping</h3>
@@ -122,6 +158,39 @@ function ecdfPath(): string {
       })}
     </section>
 
+    <section class="block" id="historical-coverage">
+      <h2>What the historical chart covers</h2>
+      <p>Every trajectory and sparkline on this site reads from stored pillar scores. Those scores are produced by two pipelines and the difference matters:</p>
+      <ul class="bullets">
+        <li><strong>Live recompute</strong> — runs every five minutes against <em>every</em> indicator in a pillar. This is what powers the headline score, the 24-hour change, and the latest points on every chart.</li>
+        <li><strong>Historical backfill</strong> — writes one row per UTC day for every day in range. For quorum and scoring, it uses only indicators whose values carry a defensible time-series. Indicators whose values are editorial interpretations of political milestones are excluded from the backfill's quorum math, so a score prior to today was never a score those indicators contributed to.</li>
+      </ul>
+      {liveOnlyByPillar.length > 0 ? (
+        <table class="inputs live-only">
+          <thead>
+            <tr><th>Pillar</th><th>Indicator (live-only)</th><th>Why excluded from backfill</th></tr>
+          </thead>
+          <tbody>
+            {liveOnlyByPillar.flatMap((entry) => entry.indicators.map((ind) => (
+              <tr>
+                <td>{PILLARS[entry.pillar].shortTitle}</td>
+                <td>
+                  <div class="ind-name">{ind.label}</div>
+                  <div class="ind-desc">{ind.description}</div>
+                </td>
+                <td class="muted">Editorial judgement against published departmental milestones — backfilling would invent assessments that were never made at the time. Live composite still includes it.</td>
+              </tr>
+            )))}
+          </tbody>
+        </table>
+      ) : null}
+      <p class="muted small">Implemented by <code>historicalIndicatorsForPillar()</code> in <code>packages/shared/src/historicalSubset.ts</code> and exercised by <code>packages/shared/src/historicalSubset.test.ts</code>. Drop <code>hasHistoricalSeries: false</code> on a catalog entry and the disclosure above picks it up automatically.</p>
+
+      <h3 style="margin-top:28px;">Missing days on the trajectory</h3>
+      <p>Each trajectory sparkline covers a 30-day window with one plot-point per UTC day. A day is plotted when the pillar meets quorum: at least half of its observed indicators are within their freshness window. A day that fails quorum is <em>not</em> plotted — the line skips that day rather than carrying forward the previous value.</p>
+      <p>Under each trajectory chart we report "Scored N of 30 days" so readers can see how complete the rendered series is. If N &lt; 30, the missing days failed quorum (typically a batch of indicators not yet ingested for that day, or an adapter outage). The homepage's <strong>stale</strong> chip surfaces today's quorum state; the trajectory coverage count surfaces the last 30 days at a glance.</p>
+    </section>
+
     <section class="block">
       <h2>Last successful ingestion per source</h2>
       {audit.length === 0 ? (
@@ -140,6 +209,31 @@ function ecdfPath(): string {
           </tbody>
         </table>
       )}
+    </section>
+
+    <section class="block" id="pillar-quorum">
+      <h2>Pillar quorum &amp; staleness</h2>
+      <p>Not every indicator is fresh every day. ONS PSF publishes monthly with a 45-day lag; OBR EFO publishes twice a year; even the BoE's daily rate feed is quiet at weekends. We want the headline score to <em>keep running</em> when a single upstream goes quiet, but we also don't want to publish a pillar score composed mostly of stale readings. The quorum rule is the bright line between those.</p>
+      <ul class="bullets">
+        <li><strong>Per-indicator freshness.</strong> Every indicator carries its own <code>maxStaleMs</code> — tuned to the publisher's cadence, not a pillar-wide window. An ONS PSF observation is "fresh" if it is within ~90 days; an OBR EFO figure is "fresh" within ~220 days. See the inputs table above.</li>
+        <li><strong>Pillar quorum = half the <em>observed</em> indicators.</strong> For each pillar we count how many indicators have <em>any</em> observation on file (observedCount). The quorum is <code>ceil(observedCount × 0.5)</code>, floored at 1. If fewer than that many indicators are fresh, the pillar is marked stale.</li>
+        <li><strong>Missing &ne; stale.</strong> An indicator with no observations at all (a data-engineering gap) is excluded from the quorum denominator. It shows up in the /sources page as "no data" without tripping the pillar into stale.</li>
+        <li><strong>What happens when a pillar is stale.</strong> The ingest recompute still computes a pillar score from the observations on file, but it does <em>not</em> persist a new <code>pillar_scores</code> row for that pillar and does not write the headline row. The UI surfaces the <strong>stale</strong> chip on that pillar tile and on the nav bar.</li>
+        <li><strong>Historical backfill is stricter.</strong> The backfill only writes a <code>pillar_scores</code> row for days that met quorum, so gap days never carry forward (see "Missing days on the trajectory" below). The headline row is written only when <em>all four</em> pillars met quorum on that day.</li>
+      </ul>
+      <p class="muted small">Implemented by <code>evaluatePillarFreshness()</code> in <code>packages/shared/src/staleness.ts</code>. Tested via <code>packages/shared/src/staleness.test.ts</code>. The exact fraction (0.5) is exported as <code>PILLAR_FRESHNESS_QUORUM_FRACTION</code> so live recompute and backfill share one constant.</p>
+    </section>
+
+    <section class="block" id="revisions">
+      <h2>Upstream revisions &amp; our correction policy</h2>
+      <p>Official statistics are revised. The ONS labour-market release, the PSF outturn figures, and MHCLG's quarterly housing numbers are all routinely restated — sometimes for several releases in a row. Our ingest policy acknowledges that:</p>
+      <ul class="bullets">
+        <li><strong>Upstream revisions overwrite silently.</strong> Our <code>indicator_observations</code> writes use <code>INSERT OR REPLACE</code> keyed on <code>(indicator_id, observed_at)</code>. When ONS issues a revised value for February's PSF, the next ingest run replaces the old row. The <em>current</em> snapshot on this site always reflects the <em>latest</em> upstream vintage.</li>
+        <li><strong>What we don't do:</strong> we don't keep a vintage history of every prior value ONS published. Reconstructing "what the ONS said on Tuesday vs Thursday" is not a goal of this project — that's what the ONS revision log is for. We link to it from each affected indicator's source card.</li>
+        <li><strong>What counts as a correction:</strong> a <em>Tightrope</em> correction is a change <em>we</em> made on our side — a methodology change, a sign fix, a label mistake, an editorial figure restated. Every one appears dated in the <a href="/corrections">corrections log</a> with both original and revised values. Upstream revisions by the ONS, OBR, BoE, etc. are <em>not</em> Tightrope corrections — they are restatements by the primary source, and we link to the source rather than duplicate its version history here.</li>
+        <li><strong>Backfill idempotency:</strong> when we re-ingest historical data, the default is <code>INSERT OR REPLACE</code> so a reprocessed batch converges to the upstream's current truth. The admin path can flip to <code>INSERT OR IGNORE</code> to freeze a vintage (used, e.g., when auditing what a prior recompute had seen).</li>
+      </ul>
+      <p class="muted small">Implemented in <code>apps/ingest/src/lib/observations.ts</code> (<code>writeObservations</code> / <code>writeHistoricalObservations</code>). Tested in <code>apps/ingest/src/tests/backfillObservations.test.ts</code>.</p>
     </section>
 
     <section class="block">
@@ -180,6 +274,13 @@ code { font-family: var(--font-mono); font-size: 12.5px; color: var(--accent); b
 .ecdf-demo { margin-top: 32px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
 .ecdf-demo svg { width: 100%; height: 180px; display: block; }
 .ecdf-demo .caption { margin: 10px 0 0; color: var(--ink-2); font-size: 12.5px; }
+
+.band-table { margin-top: 32px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.band-table .caption { margin: 6px 0 16px; color: var(--ink-2); font-size: 12.5px; line-height: 1.6; }
+.band-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 8px; vertical-align: -2px; border: 1px solid rgba(0,0,0,0.2); }
+.band-hex { font-size: 11.5px; }
+
+.small { font-size: 12px; line-height: 1.6; margin-top: 14px; }
 
 .pillar-block { margin: 32px 0 20px; }
 .pillar-weight { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); letter-spacing: 0.1em; margin-left: 10px; }

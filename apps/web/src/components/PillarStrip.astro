@@ -1,6 +1,6 @@
 ---
 import type { PillarScore, PillarId } from "@tightrope/shared";
-import { PILLAR_ORDER, PILLARS, BANDS } from "@tightrope/shared";
+import { PILLAR_ORDER, PILLARS, BANDS, liveOnlyIndicatorsForPillar, describeSparklineCoverage } from "@tightrope/shared";
 import Sparkline from "./charts/Sparkline.astro";
 import { signedDelta, trendArrow } from "~/lib/format.js";
 
@@ -62,6 +62,27 @@ function pillarHref(id: PillarId): string {
               className="pillar-spark"
               ariaLabel={`30-day trend for ${def.title}`}
             />
+            {(() => {
+              const coverage = describeSparklineCoverage(p.sparkline30d);
+              const liveOnlyCount = liveOnlyIndicatorsForPillar(id).length;
+              const notes: string[] = [];
+              if (!coverage.isComplete) {
+                notes.push(`${coverage.plotted}/${coverage.window} days scored`);
+              }
+              if (liveOnlyCount > 0) {
+                notes.push(`${liveOnlyCount} live-only`);
+              }
+              if (notes.length === 0) return null;
+              const tip = [
+                !coverage.isComplete
+                  ? `${coverage.missing} day${coverage.missing === 1 ? "" : "s"} in the 30-day window failed pillar quorum and are not plotted.`
+                  : "",
+                liveOnlyCount > 0
+                  ? `${liveOnlyCount} indicator${liveOnlyCount === 1 ? "" : "s"} contribute to today's live score only — see /methodology.`
+                  : "",
+              ].filter(Boolean).join(" ");
+              return <span class="pillar-historical-note" title={tip}>{notes.join(" · ")}</span>;
+            })()}
             <span class="pillar-desc">{DESCRIPTIONS[id]}</span>
           </a>
         );
@@ -118,6 +139,11 @@ function pillarHref(id: PillarId): string {
   border: 1px dashed var(--ink-2); color: var(--ink-2);
 }
 .pillar-spark { height: 32px; margin-top: 2px; }
+.pillar-historical-note {
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.08em;
+  color: var(--ink-2); margin-top: -4px;
+  border-bottom: 1px dotted var(--ink-3); align-self: flex-start; cursor: help;
+}
 .pillar-desc { font-size: 12.5px; color: var(--ink-1); line-height: 1.5; }
 .pillar-weight { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: 0.08em; text-transform: uppercase; position: absolute; top: 18px; right: 20px; }
 

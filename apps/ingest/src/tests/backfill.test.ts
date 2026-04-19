@@ -4,6 +4,8 @@ import { backfillHistoricalScores } from "../pipelines/backfill.js";
 import type { Env } from "../env.js";
 import type { ObservationRow } from "../lib/history.js";
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 /**
  * Minimal D1 stub that routes the two queries our backfill issues
  * (readBaselineObservations + readRecentObservations) to canned observation
@@ -272,5 +274,99 @@ describe("backfillHistoricalScores", () => {
     expect(r1.daysRequested).toBe(365);
     const r2 = await backfillHistoricalScores(env, { days: 0, overwrite: true });
     expect(r2.daysRequested).toBe(1);
+  });
+
+  /**
+   * Lookahead-bias regression.
+   *
+   * ONS PSF is published with a ~45-day lag: the March 2025 figure appears
+   * as `observed_at=2025-03-31` in the observation row, but the actual
+   * release date is ~22 April 2025. A naive cutoff check (`observed_at <=
+   * end-of-day(D)`) would therefore include the March figure in a backfill
+   * score for any day in the first three weeks of April, using data that
+   * was not yet public on that day. That's lookahead bias, and it
+   * systematically flatters the backfilled historical scores for monthly
+   * ONS indicators.
+   *
+   * After the `released_at` fix, the cutoff comparison is
+   * `COALESCE(released_at, observed_at) <= end-of-day(D)`, so the March
+   * observation is correctly excluded from any day before the release.
+   */
+  it("respects released_at: an observation whose release postdates the backfill day is excluded", async () => {
+    // Scenario: fiscal indicators have exactly one recent observation each,
+    // whose `released_at` is AFTER the target backfill day's cutoff (the
+    // canonical PSF-lag: March data released in April). Non-fiscal pillars
+    // have pre-release observations so they score normally. The fix under
+    // test must drop the fiscal observation on the target day → fiscal
+    // fails quorum → no fiscal pillar row and the day's headline is
+    // suppressed. Timestamps are anchored to the real current day because
+    // `backfillHistoricalScores` uses `new Date()` internally.
+    const nowLocal = new Date();
+    const todayStartMs = Date.UTC(
+      nowLocal.getUTCFullYear(), nowLocal.getUTCMonth(), nowLocal.getUTCDate(),
+    );
+    const today = todayStartMs;
+    const backfillOffset = 10;
+    const backfillDayMs = today - backfillOffset * DAY_MS;
+    const rows: ObservationRow[] = [];
+
+    // Baseline + recent for NON-fiscal indicators so their pillars score.
+    for (const id of Object.keys(INDICATORS)) {
+      const def = INDICATORS[id]!;
+      if (def.pillar === "fiscal") continue;
+      if (def.hasHistoricalSeries === false) continue;
+      const base = hash(id) % 50 + 20;
+      for (let wk = 26; wk >= 1; wk--) {
+        const ts = new Date(today - wk * 7 * DAY_MS).toISOString();
+        rows.push({ indicator_id: id, observed_at: ts, value: base + (wk % 5), released_at: ts });
+      }
+      rows.push({
+        indicator_id: id,
+        observed_at: new Date(backfillDayMs - DAY_MS).toISOString(),
+        value: 50,
+        released_at: new Date(backfillDayMs - DAY_MS).toISOString(),
+      });
+    }
+
+    // Fiscal: exactly ONE observation per indicator, observed-on-backfill-day
+    // but released 2 days AFTER the target day. No baseline — so once
+    // released_at filtering removes the single observation, fiscal has
+    // nothing to score against.
+    const fiscalIds = Object.values(INDICATORS).filter((d) => d.pillar === "fiscal").map((d) => d.id);
+    const releasedAfterCutoffMs = today - (backfillOffset - 2) * DAY_MS; // published 2 days later
+    for (const id of fiscalIds) {
+      rows.push({
+        indicator_id: id,
+        observed_at: new Date(backfillDayMs).toISOString(),
+        value: 999, // sentinel - any leak of this into scoring is obvious
+        released_at: new Date(releasedAfterCutoffMs).toISOString(),
+      });
+    }
+
+    const { env, batches } = makeEnv(rows);
+    const result = await backfillHistoricalScores(env, { days: backfillOffset, overwrite: true });
+
+    // The specific day we care about (backfill offset=10) must record
+    // fiscal as stale — its only "recent" observations are released AFTER
+    // that day. Other pillars should pass.
+    const targetDayIso = new Date(backfillDayMs).toISOString().slice(0, 10);
+    const gap = result.gaps.find((g) => g.day === targetDayIso);
+    expect(gap).toBeDefined();
+    expect(gap!.stalePillars).toContain("fiscal");
+    expect(gap!.stalePillars).not.toContain("market");
+
+    // Hard evidence the sentinel value never leaked into scoring: no
+    // written pillar_scores value for fiscal on the target day. Iterate all
+    // batches to guarantee no fiscal row for that observed_at.
+    const targetObservedAt = `${targetDayIso}T23:59:00.000Z`;
+    for (const batch of batches) {
+      for (const stmt of batch) {
+        if (stmt.sql.includes("pillar_scores")
+            && stmt.bindings[0] === "fiscal"
+            && stmt.bindings[1] === targetObservedAt) {
+          throw new Error(`fiscal pillar row written for ${targetObservedAt} despite release date after cutoff`);
+        }
+      }
+    }
   });
 });

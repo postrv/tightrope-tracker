@@ -58,6 +58,7 @@ export const onsRtiAdapter: DataSourceAdapter = {
       observedAt: parsed.observedAt,
       sourceId: SOURCE_ID,
       payloadHash: hash,
+      ...(parsed.releasedAt ? { releasedAt: parsed.releasedAt } : {}),
     });
 
     // DD failure rate fixture fallback.
@@ -98,6 +99,7 @@ export const onsRtiAdapter: DataSourceAdapter = {
         observedAt: point.observedAt,
         sourceId: SOURCE_ID,
         payloadHash: await historicalPayloadHash("payroll_mom", point.observedAt, point.value),
+        ...(point.releasedAt ? { releasedAt: point.releasedAt } : {}),
       });
     }
     const notes: string[] = ["dd_failure_rate is fixture-only; not emitted in historical mode"];

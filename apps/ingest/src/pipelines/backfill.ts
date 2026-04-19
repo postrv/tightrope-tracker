@@ -2,6 +2,7 @@ import type { D1PreparedStatement } from "@cloudflare/workers-types";
 import {
   INDICATORS,
   PILLAR_ORDER,
+  historicalIndicatorsForPillar,
   type PillarId,
   type PillarScore,
 } from "@tightrope/shared";
@@ -141,24 +142,41 @@ export async function backfillHistoricalScores(
     const observedAt = `${dayIso}T23:59:00.000Z`;
     const cutoffMs = dayStartMs + DAY_MS - 1;
 
+    // Clip on publication date, not reference period. For indicators whose
+    // adapter knows when the data became public (ONS PSF, LMS, RTI all
+    // expose `updateDate` per observation), `released_at` is persisted and
+    // used here; for daily series where published ≈ observed (BoE gilt
+    // yields, fixture-backed adapters) it falls back to `observed_at`.
+    // Without this, a March PSNB figure (observed_at=2025-03-31, released
+    // ~2025-04-22) would flatter every backfilled score for April 1-21.
+    const asOfMs = (r: ObservationRow): number => {
+      const stamp = r.released_at ?? r.observed_at;
+      return new Date(stamp).getTime();
+    };
+
     // Baseline filtered to observations ≤ cutoff — no lookahead bias.
+    // NOTE: baseline observations are sorted ASC by observed_at, but the
+    // published-date cutoff may be non-monotonic (a later reference period
+    // can have an earlier revision). Scan the whole slice rather than
+    // breaking on the first out-of-range row.
     const baselineAsOf = new Map<string, number[]>();
     for (const [id, arr] of baselineByIndicator) {
       const vals: number[] = [];
       for (const r of arr) {
-        const ts = new Date(r.observed_at).getTime();
-        if (ts <= cutoffMs) vals.push(r.value);
-        else break; // arr is ASC by observed_at, remainder is all future
+        if (asOfMs(r) <= cutoffMs) vals.push(r.value);
       }
       baselineAsOf.set(id, vals);
     }
 
-    // Latest observation per indicator ≤ cutoff.
+    // Latest observation per indicator ≤ cutoff, comparing on release date.
+    // Walk backwards (rows are sorted ASC by observed_at) and stop on the
+    // first row whose release date is on/before cutoff. For indicators
+    // where released_at is absent, this collapses to observed_at as before.
     const latestAsOf = new Map<string, { value: number; observedAt: string }>();
     for (const [id, arr] of recentByIndicator) {
       for (let i = arr.length - 1; i >= 0; i--) {
         const r = arr[i]!;
-        if (new Date(r.observed_at).getTime() <= cutoffMs) {
+        if (asOfMs(r) <= cutoffMs) {
           latestAsOf.set(id, { value: r.value, observedAt: r.observed_at });
           break;
         }
@@ -176,10 +194,9 @@ export async function backfillHistoricalScores(
       // tagged `hasHistoricalSeries: false` and deliberately excluded from
       // both the readings loop and the quorum denominator. This keeps the
       // historical dataset honest without preventing the pillar from ever
-      // passing quorum — live recompute still uses every indicator.
-      const historicalIndicators = Object.values(INDICATORS).filter(
-        (i) => i.pillar === pillarId && i.hasHistoricalSeries !== false,
-      );
+      // passing quorum — live recompute still uses every indicator. The
+      // disclosure lives on /methodology via `liveOnlyIndicatorsForPillar`.
+      const historicalIndicators = historicalIndicatorsForPillar(pillarId);
       const readings: IndicatorReading[] = [];
       for (const def of historicalIndicators) {
         const latest = latestAsOf.get(def.id);

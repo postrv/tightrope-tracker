@@ -1,0 +1,55 @@
+---
+/**
+ * Badge rendered next to illustrative charts — SVG panels on the Fiscal
+ * and Labour sections that use a handful of editorially-curated figures
+ * rather than the live indicator series. These should never be mistaken
+ * for live data.
+ *
+ * The chip mirrors the "Editorial" variant of `ProvenanceBadge` so the
+ * reader sees the same visual vocabulary as the per-indicator chips,
+ * but with a chart-level label and a tooltip that names the specific
+ * source rows the numbers come from.
+ */
+interface Props {
+  /** Short hover-text naming the primary source of the chart's figures. */
+  sourceSummary: string;
+  /** Optional canonical URL the reader can open to verify. */
+  sourceUrl?: string;
+  /** Optional one-word label override (default "Editorial"). */
+  label?: string;
+}
+
+const { sourceSummary, sourceUrl, label = "Editorial" } = Astro.props;
+---
+<span
+  class="illustrative-badge"
+  title={`Illustrative chart — ${sourceSummary}`}
+  aria-label={`Illustrative chart: ${sourceSummary}`}
+>
+  {label}
+  {sourceUrl ? (
+    <a href={sourceUrl} rel="noopener" target="_blank" class="illustrative-link" aria-label="Open primary source">↗</a>
+  ) : null}
+</span>
+
+<style>
+.illustrative-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  vertical-align: middle;
+  white-space: nowrap;
+  color: var(--accent-dim, #c89657);
+  background: rgba(200, 150, 87, 0.08);
+}
+.illustrative-link { color: inherit; text-decoration: none; }
+.illustrative-link:hover { text-decoration: underline; }
+</style>

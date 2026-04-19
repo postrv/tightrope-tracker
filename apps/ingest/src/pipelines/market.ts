@@ -5,6 +5,8 @@ import {
   boeYieldsAdapter,
   eiaBrentAdapter,
   growthSentimentAdapter,
+  iceGasM1Adapter,
+  lseFtse250Adapter,
   lseHousebuildersAdapter,
 } from "@tightrope/data-sources";
 import type { Env } from "../env.js";
@@ -45,5 +47,7 @@ export async function ingestMarket(
   await runAdapterSafe(env, eiaBrentAdapter);
   await runAdapterSafe(env, growthSentimentAdapter);
   await runAdapterSafe(env, lseHousebuildersAdapter);
+  await runAdapterSafe(env, iceGasM1Adapter);
+  await runAdapterSafe(env, lseFtse250Adapter);
   return { ran: true };
 }

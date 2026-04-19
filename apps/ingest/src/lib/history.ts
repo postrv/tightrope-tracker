@@ -10,6 +10,16 @@ export interface ObservationRow {
   indicator_id: string;
   observed_at: string;
   value: number;
+  /**
+   * ISO-8601 timestamp of when the upstream publisher released this
+   * observation, if known. Populated by adapters that get the publication
+   * date from the upstream API (the ONS timeseries envelope ships
+   * `updateDate` per month). Nullable because older rows pre-date the
+   * feature and non-time-lagged adapters (e.g. daily gilt yields) don't
+   * need it. Consumers that care about lookahead (`backfill.ts`) should
+   * `released_at ?? observed_at` when comparing against a day cutoff.
+   */
+  released_at?: string | null;
 }
 
 /** Read the last N days of raw observations for every indicator. */
@@ -20,7 +30,7 @@ export async function readRecentObservations(
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   const res = await db
     .prepare(
-      `SELECT indicator_id, observed_at, value
+      `SELECT indicator_id, observed_at, value, released_at
        FROM indicator_observations
        WHERE observed_at >= ?
        ORDER BY indicator_id, observed_at ASC`,
@@ -34,7 +44,7 @@ export async function readRecentObservations(
 export async function readBaselineObservations(db: D1Database): Promise<ObservationRow[]> {
   const res = await db
     .prepare(
-      `SELECT indicator_id, observed_at, value
+      `SELECT indicator_id, observed_at, value, released_at
        FROM indicator_observations
        WHERE observed_at >= ?
          AND NOT (observed_at >= ? AND observed_at <= ?)

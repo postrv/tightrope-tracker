@@ -1,6 +1,7 @@
 ---
 import type { PillarScore } from "@tightrope/shared";
 import { signedDelta } from "~/lib/format.js";
+import IllustrativeBadge from "./IllustrativeBadge.astro";
 
 interface Props {
   pillar: PillarScore;
@@ -44,7 +45,13 @@ function yFor(bn: number): number {
 
     <div class="fiscal-grid">
       <div class="chart-card">
-        <h3>Current-budget headroom, 2024 → 2029/30</h3>
+        <div class="card-head">
+          <h3>Current-budget headroom, 2024 → 2029/30</h3>
+          <IllustrativeBadge
+            sourceSummary="Four published OBR forecast rounds (Oct 2024 Budget, Mar 2025 SF, Nov 2025 Budget, Mar 2026 SF). Each dot is the current-budget headroom figure from that round's public Economic and Fiscal Outlook."
+            sourceUrl="https://obr.uk/efo/"
+          />
+        </div>
         <p class="hint">£ billion, surplus against the stability rule target year. Each dot is a separate OBR forecast round.</p>
         <svg class="chart" viewBox="0 0 600 240" preserveAspectRatio="none" role="img" aria-label="Current budget headroom over OBR forecast rounds">
           <defs>
@@ -91,7 +98,13 @@ function yFor(bn: number): number {
       </div>
 
       <div class="chart-card">
-        <h3>The DMO gilt stack</h3>
+        <div class="card-head">
+          <h3>The DMO gilt stack</h3>
+          <IllustrativeBadge
+            sourceSummary="DMO 2026/27 Gilt Remit (published alongside the Spring Statement). Shares recomputed from DMO's maturity-bucket totals; debt-interest figure from OBR EFO Table 3.8."
+            sourceUrl="https://www.dmo.gov.uk/publications/annual-review/"
+          />
+        </div>
         <p class="hint">Planned 2026/27 issuance · £252.1bn total</p>
         <div class="factrow"><span class="k">Total issuance</span><span class="v">£252.1bn</span></div>
         <div class="factrow"><span class="k">Short conventional</span><span class="v">£72.1bn · 28.6%</span></div>
@@ -120,6 +133,8 @@ function yFor(bn: number): number {
 .pillar-score-delta.flat { color: var(--ink-2); }
 
 .fiscal-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 2px; }
+.card-head h3 { margin: 0; }
 
 @media (max-width: 920px) {
   .fiscal-grid { grid-template-columns: 1fr; }

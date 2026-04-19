@@ -49,12 +49,34 @@ describe("maxStaleMsForIndicator", () => {
     }
   });
 
-  it("editorial indicators (no live adapter) do not poison freshness checks", () => {
-    const editorialIds = ["gas_m1", "ftse_250", "new_towns_milestones",
-                          "bics_rollout", "industrial_strategy", "smr_programme"];
-    for (const id of editorialIds) {
-      expect(INDICATORS[id]!.maxStaleMs, `${id}`).toBeGreaterThanOrEqual(EDITORIAL_MIN_MS);
+  it("gas_m1 and ftse_250 use the weekly-fixture window (adapter has a 14-day freshness guard)", () => {
+    const weeklyFixtureMs = 14 * DAY_MS;
+    for (const id of ["gas_m1", "ftse_250"]) {
+      expect(INDICATORS[id]!.maxStaleMs, `${id}`).toBe(weeklyFixtureMs);
+      expect(INDICATORS[id]!.provenance, `${id}`).toBe("live");
     }
+  });
+
+  it("editorial delivery-milestone indicators use the quarterly fixture window", () => {
+    // These four indicators are editorial judgements against political
+    // commitments with no machine-readable upstream. The fixture-backed
+    // `deliveryMilestones` adapter enforces a 90-day freshness guard, so
+    // `maxStaleMs` can be tightened from the old 365-day "editorial"
+    // fallback to the quarterly-MHCLG window. If any indicator moves
+    // back above that window, the fixture freshness guard has probably
+    // been removed — surface the regression here rather than let the
+    // figure silently rot.
+    const quarterlyFixtureMs = 130 * DAY_MS;
+    const editorialIds = ["new_towns_milestones", "bics_rollout",
+                          "industrial_strategy", "smr_programme"];
+    for (const id of editorialIds) {
+      expect(INDICATORS[id]!.maxStaleMs, `${id}`).toBe(quarterlyFixtureMs);
+      expect(INDICATORS[id]!.provenance, `${id}`).toBe("editorial");
+    }
+    // The EDITORIAL_MIN_MS sanity floor is no longer used — the only
+    // remaining "editorial" indicators live under a tighter, adapter-
+    // enforced threshold.
+    expect(EDITORIAL_MIN_MS).toBeGreaterThan(quarterlyFixtureMs);
   });
 
   it("daily live feeds use a window between 3 and 7 days", () => {

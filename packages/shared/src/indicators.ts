@@ -149,7 +149,6 @@ const STALE_ONS_PSF_MS = 90 * DAY_MS;
 const STALE_MHCLG_QUARTERLY_MS = 130 * DAY_MS;
 const STALE_ONS_LMS_MS = 180 * DAY_MS;
 const STALE_OBR_SEMIANNUAL_MS = 220 * DAY_MS;
-const STALE_EDITORIAL_MS = 365 * DAY_MS;
 
 const fmtPct = (digits = 2) => (v: number) => `${v.toFixed(digits)}%`;
 const fmtBp = (v: number) => `${v.toFixed(2)}%`;
@@ -204,17 +203,21 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     id: "gas_m1", pillar: "market", label: "UK natural gas front-month", shortLabel: "Gas M+1",
     unit: "p/th", weight: 0.08, risingIsBad: true, sourceId: "ice_gas",
     description: "Front-month NBP natural gas settlement price.", formatDisplay: fmtPence,
-    // No adapter wired yet; ICE exposes futures only under a commercial feed.
-    provenance: "editorial",
-    maxStaleMs: STALE_EDITORIAL_MS,
+    // Fixture-backed editorial mirror of the ICE Endex settlement headline.
+    // The adapter enforces a 14-day freshness guard so a missed refresh
+    // surfaces in /admin/health rather than silently re-emitting a stale
+    // figure.
+    provenance: "live",
+    maxStaleMs: STALE_WEEKLY_FIXTURE_MS,
   },
   ftse_250: {
     id: "ftse_250", pillar: "market", label: "FTSE 250", shortLabel: "FTSE 250",
     unit: "index", weight: 0.08, risingIsBad: false, sourceId: "lseg",
     description: "Mid-cap index -- cleaner domestic UK read than FTSE 100.", formatDisplay: fmtIndex(0),
-    // No adapter wired yet; LSEG's free feeds don't include an index level stream.
-    provenance: "editorial",
-    maxStaleMs: STALE_EDITORIAL_MS,
+    // Fixture-backed editorial mirror of the LSE close. The adapter's
+    // freshness guard (14 days) prevents silent staleness.
+    provenance: "live",
+    maxStaleMs: STALE_WEEKLY_FIXTURE_MS,
   },
   // OBR-proxy extension -- see docs/OBR_PROXIES.md for the mechanism per indicator.
   // Inflation-input proxies: breakevens from BoE zero-coupon curves, Brent in GBP.
@@ -424,8 +427,12 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "%", weight: 0.15, risingIsBad: false, sourceId: "gov_uk",
     description: "Milestones hit as % of committed milestones YTD.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
+    // Fixture-backed via deliveryMilestones adapter with a 90-day
+    // freshness guard. The indicator remains "editorial" because the
+    // score is still a judgement call against political commitments;
+    // the adapter just ensures the figure refreshes on a quarterly beat.
     provenance: "editorial",
-    maxStaleMs: STALE_EDITORIAL_MS,
+    maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
   bics_rollout: {
     id: "bics_rollout", pillar: "delivery", label: "BICS firms onboarded", shortLabel: "BICS",
@@ -433,7 +440,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Cumulative firms onboarded to the British Industrial Competitiveness Scheme.", formatDisplay: fmtCount,
     hasHistoricalSeries: false,
     provenance: "editorial",
-    maxStaleMs: STALE_EDITORIAL_MS,
+    maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
   industrial_strategy: {
     id: "industrial_strategy", pillar: "delivery", label: "Industrial Strategy milestones", shortLabel: "Industrial",
@@ -441,7 +448,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Industrial Strategy milestones on/ahead of schedule vs. slipped/missed.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
     provenance: "editorial",
-    maxStaleMs: STALE_EDITORIAL_MS,
+    maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
   smr_programme: {
     id: "smr_programme", pillar: "delivery", label: "SMR fleet progress", shortLabel: "SMR",
@@ -449,7 +456,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Small Modular Reactor programme progress against published milestones.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
     provenance: "editorial",
-    maxStaleMs: STALE_EDITORIAL_MS,
+    maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
 };
 

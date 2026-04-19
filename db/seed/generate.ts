@@ -20,6 +20,8 @@ import {
   PILLARS,
   PILLAR_ORDER,
   INDICATORS,
+  CURRENT_SEED_VALUES,
+  DELIVERY_COMMITMENTS_SEED,
   type PillarId,
   bandFor,
 } from "../../packages/shared/src/index.js";
@@ -145,41 +147,12 @@ for (let i = 0; i < 90; i++) {
 }
 out.push("");
 
-// Current indicator observations (one per indicator).
-// Values are hand-calibrated to produce a pillar mix consistent with the mockup.
-const currentValues: Record<string, number> = {
-  // market
-  gilt_10y: 4.78,
-  gilt_30y: 5.73,
-  gbp_usd: 1.2418,
-  gbp_twi: 78.4,
-  sonia_12m: 3.92,
-  gas_m1: 118.0,
-  ftse_250: 19842,
-  // fiscal
-  cb_headroom: 23.6,
-  psnfl_trajectory: 0.42,
-  borrowing_outturn: 4.1,
-  debt_interest: 2.7,
-  ilg_share: 22.1,
-  issuance_long_share: 29.6,
-  // labour
-  inactivity_rate: 20.7,
-  inactivity_health: 2.81,
-  unemployment: 4.6,
-  vacancies_per_unemployed: 0.82,
-  payroll_mom: -0.02,
-  real_regular_pay: 0.7,
-  mortgage_2y_fix: 5.84,
-  dd_failure_rate: 0.88,
-  // delivery
-  housing_trajectory: 72.6,
-  planning_consents: 88.3,
-  new_towns_milestones: 68.0,
-  bics_rollout: 81.4,
-  industrial_strategy: 74.0,
-  smr_programme: 62.0,
-};
+// Current indicator observations (one per indicator). The hand-calibrated
+// starting values live in `packages/shared/src/seedValues.ts` and are
+// validated by `seedValues.test.ts` to be (a) complete and (b) within each
+// indicator's plausible magnitude range (so a MoM-% value can't leak into an
+// index-scale indicator again).
+const currentValues = CURRENT_SEED_VALUES;
 
 for (const id of Object.keys(INDICATORS)) {
   const def = INDICATORS[id]!;
@@ -200,151 +173,107 @@ for (const id of Object.keys(INDICATORS)) {
 }
 out.push("");
 
-// Delivery commitments from the mockup.
-type DeliveryRow = {
-  id: string; name: string; department: string;
-  latest: string; target: string; status: string;
-  sourceUrl: string; sourceLabel: string; sort: number;
-};
-const delivery: DeliveryRow[] = [
-  {
-    id: "housing_305k", name: "Net housing additions toward 305k/year by 2030/31",
-    department: "MHCLG", latest: "221,400 (FY24/25), next print June 2026",
-    target: "OBR path: 305k by 2030", status: "slipping",
-    sourceUrl: "https://www.gov.uk/government/statistical-data-sets/live-tables-on-housebuilding",
-    sourceLabel: "MHCLG", sort: 10,
-  },
-  {
-    id: "new_towns", name: "Seven new towns -- designation and first spade",
-    department: "DLUHC", latest: "3 of 7 designated, 0 of 7 first-spade",
-    target: "Target: all designated 2026", status: "on_track",
-    sourceUrl: "https://www.gov.uk/government/publications/new-towns-taskforce",
-    sourceLabel: "DLUHC", sort: 20,
-  },
-  {
-    id: "bics_rollout", name: "British Industrial Competitiveness Scheme rollout",
-    department: "DESNZ", latest: "8,140 firms onboarded, target >10,000 by Apr 2027",
-    target: "Up to 25% electricity relief", status: "on_track",
-    sourceUrl: "https://www.gov.uk/government/organisations/department-for-energy-security-and-net-zero",
-    sourceLabel: "DESNZ", sort: 30,
-  },
-  {
-    id: "smr_fleet", name: "Small Modular Reactor fleet, first site selected",
-    department: "GBE", latest: "Shortlist of 3 sites, final FID slipped to Q3",
-    target: "Original target: Q1 2026", status: "slipping",
-    sourceUrl: "https://www.gov.uk/government/organisations/great-british-energy",
-    sourceLabel: "GBE", sort: 40,
-  },
-  {
-    id: "planning_bill", name: "Planning and Infrastructure Bill -- Royal Assent",
-    department: "Parliament", latest: "Received Royal Assent 14 Feb 2026",
-    target: "Commitment delivered", status: "shipped",
-    sourceUrl: "https://bills.parliament.uk/",
-    sourceLabel: "Parliament", sort: 50,
-  },
-  {
-    id: "keep_britain_working", name: "Keep Britain Working -- health-related inactivity",
-    department: "DWP", latest: "2.81m, effectively unchanged from 2.80m at launch",
-    target: "Stated ambition: meaningful reduction by 2027", status: "missed",
-    sourceUrl: "https://www.gov.uk/government/organisations/department-for-work-and-pensions",
-    sourceLabel: "DWP", sort: 60,
-  },
-  {
-    id: "sizewell_c", name: "Sizewell C -- construction milestones",
-    department: "DESNZ", latest: "Main civils underway, on schedule vs. 2024 baseline",
-    target: "Commissioning late 2030s", status: "on_track",
-    sourceUrl: "https://www.sizewellc.com/",
-    sourceLabel: "DESNZ", sort: 70,
-  },
-  {
-    id: "grid_connections", name: "Grid connections reform -- queue reduction",
-    department: "DESNZ/NESO", latest: "Queue re-ordered, first cohort through in Q1",
-    target: "End \"first come first served\" by 2026", status: "on_track",
-    sourceUrl: "https://www.neso.energy/",
-    sourceLabel: "NESO", sort: 80,
-  },
-];
-for (const d of delivery) {
+// Delivery commitments are owned by the shared package so web, api, and
+// the ingest writer all see the same contract. The seed generator just
+// formats each row as SQL — the canonical data and invariants live in
+// packages/shared/src/deliveryCommitmentsSeed.ts, tested in
+// deliveryCommitmentsSeed.test.ts.
+for (const d of DELIVERY_COMMITMENTS_SEED) {
   out.push(
-    `INSERT INTO delivery_commitments (id, name, department, latest, target, status, source_url, source_label, updated_at, sort_order) VALUES ('${esc(d.id)}', '${esc(d.name)}', '${esc(d.department)}', '${esc(d.latest)}', '${esc(d.target)}', '${esc(d.status)}', '${esc(d.sourceUrl)}', '${esc(d.sourceLabel)}', '${ISO(TODAY)}', ${d.sort});`,
+    `INSERT INTO delivery_commitments (id, name, department, latest, target, status, source_url, source_label, notes, updated_at, sort_order) VALUES ('${esc(d.id)}', '${esc(d.name)}', '${esc(d.department)}', '${esc(d.latest)}', '${esc(d.target)}', '${esc(d.status)}', '${esc(d.sourceUrl)}', '${esc(d.sourceLabel)}', '${esc(d.notes)}', '${ISO(TODAY)}', ${d.sortOrder});`,
   );
 }
 out.push("");
 
-// Timeline events from the mockup, extended backwards ~18 months.
-type TLRow = { id: string; date: string; title: string; summary: string; category: string; sourceLabel: string; sourceUrl?: string };
+// Timeline events from the mockup, extended backwards ~18 months. Every
+// row now carries a sourceUrl pointing at the primary source the reader
+// can open to verify. Where a deep URL is not confidently available
+// (for instance a specific MPC meeting page), we link to the durable
+// BoE / OBR / gov.uk section that aggregates the series — never a news
+// aggregator. Tested in packages/shared/src/timelineSeed.test.ts.
+type TLRow = { id: string; date: string; title: string; summary: string; category: string; sourceLabel: string; sourceUrl: string };
 const timeline: TLRow[] = [
   {
     id: "t_2026_04_17", date: "2026-04-17",
     title: "Sterling recovers to pre-war levels",
     summary: "GBP/USD back near 1.2400 as the Iran ceasefire holds and Strait of Hormuz shipping normalises. Oil and UK gas sell off sharply. BoE officials nonetheless stress inflation control remains the priority.",
-    category: "market", sourceLabel: "Reuters, Bank of England",
+    category: "market", sourceLabel: "Bank of England exchange rates",
+    sourceUrl: "https://www.bankofengland.co.uk/statistics/exchange-rates",
   },
   {
     id: "t_2026_04_16", date: "2026-04-16",
     title: "Reeves rules out tax rises or borrowing for extra defence spending",
     summary: "Chancellor tells reporters additional defence outlays up to the 3.5% commitment will not be funded by more borrowing or higher taxes, pointing the pressure back at welfare and departmental restraint.",
-    category: "fiscal", sourceLabel: "Reuters, HM Treasury",
+    category: "fiscal", sourceLabel: "HM Treasury news",
+    sourceUrl: "https://www.gov.uk/government/organisations/hm-treasury",
   },
   {
     id: "t_2026_03_03", date: "2026-03-03",
     title: "OBR Spring Forecast: headroom 23.6bn, GDP cut to 1.1%",
     summary: "Current-budget headroom ticks up from 22.0bn at the November Budget. 2026 growth downgraded from 1.4%. IMF subsequently cuts to 0.8% citing the Middle East shock.",
-    category: "fiscal", sourceLabel: "OBR, IMF", sourceUrl: "https://obr.uk/efo/",
+    category: "fiscal", sourceLabel: "OBR EFO",
+    sourceUrl: "https://obr.uk/efo/",
   },
   {
     id: "t_2026_02_28", date: "2026-02-28",
     title: "Iran conflict begins, energy shock lands",
     summary: "UK natural gas front-month jumps 38% inside a week. 30y gilts break 5.5% for the first time since 1998. Tightrope Score moves from 51 to 68 over four trading sessions.",
-    category: "geopolitical", sourceLabel: "ICE, Bank of England",
+    category: "geopolitical", sourceLabel: "BoE markets",
+    sourceUrl: "https://www.bankofengland.co.uk/markets",
   },
   {
     id: "t_2026_02_14", date: "2026-02-14",
     title: "Planning & Infrastructure Bill receives Royal Assent",
     summary: "Landmark reform of the planning system passes both houses with cross-bench support; commencement orders expected by late spring.",
-    category: "delivery", sourceLabel: "Parliament", sourceUrl: "https://bills.parliament.uk/",
+    category: "delivery", sourceLabel: "UK Parliament Bills",
+    sourceUrl: "https://bills.parliament.uk/",
   },
   {
     id: "t_2026_02_12", date: "2026-02-12",
     title: "BoE cuts Bank Rate to 3.75%",
     summary: "7-2 vote. MPC minutes emphasise inflation persistence; markets trim the 2026 cut path.",
-    category: "monetary", sourceLabel: "Bank of England MPC",
+    category: "monetary", sourceLabel: "BoE MPC minutes",
+    sourceUrl: "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes",
   },
   {
     id: "t_2025_11", date: "2025-11-26",
     title: "Autumn Budget: 22.0bn headroom restored",
     summary: "Combination of receipts upgrade and tighter departmental envelope rebuilds the cushion after the March 2025 crunch (9.9bn).",
-    category: "fiscal", sourceLabel: "HM Treasury, OBR",
+    category: "fiscal", sourceLabel: "HM Treasury",
+    sourceUrl: "https://www.gov.uk/government/organisations/hm-treasury",
   },
   {
     id: "t_2025_09", date: "2025-09-18",
     title: "BoE holds Bank Rate at 4.00%, starts reducing gilt sales",
     summary: "QT pace pared back; MPC cites technical market conditions rather than policy loosening.",
-    category: "monetary", sourceLabel: "Bank of England MPC",
+    category: "monetary", sourceLabel: "BoE MPC minutes",
+    sourceUrl: "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes",
   },
   {
     id: "t_2025_06", date: "2025-06-10",
     title: "Industrial Strategy white paper published",
     summary: "Sets out eight priority sectors and the British Industrial Competitiveness Scheme framework.",
     category: "policy", sourceLabel: "DBT",
+    sourceUrl: "https://www.gov.uk/government/organisations/department-for-business-and-trade",
   },
   {
     id: "t_2025_03", date: "2025-03-26",
     title: "OBR Spring Forecast: headroom collapses to 9.9bn",
     summary: "The crunch. Gilts reprice and the Chancellor promises restoration in the next fiscal event.",
-    category: "fiscal", sourceLabel: "OBR",
+    category: "fiscal", sourceLabel: "OBR EFO",
+    sourceUrl: "https://obr.uk/efo/",
   },
   {
     id: "t_2024_10", date: "2024-10-30",
     title: "First Reeves Budget: 22.0bn headroom set",
     summary: "Opening fiscal envelope. Employer NICs rise, capital budgets reprioritised toward infrastructure.",
     category: "fiscal", sourceLabel: "HM Treasury",
+    sourceUrl: "https://www.gov.uk/government/organisations/hm-treasury",
   },
 ];
 for (const t of timeline) {
-  const sourceUrl = t.sourceUrl ? `'${esc(t.sourceUrl)}'` : "NULL";
   out.push(
-    `INSERT INTO timeline_events (id, event_date, title, summary, category, source_label, source_url) VALUES ('${esc(t.id)}', '${esc(t.date)}', '${esc(t.title)}', '${esc(t.summary)}', '${esc(t.category)}', '${esc(t.sourceLabel)}', ${sourceUrl});`,
+    `INSERT INTO timeline_events (id, event_date, title, summary, category, source_label, source_url) VALUES ('${esc(t.id)}', '${esc(t.date)}', '${esc(t.title)}', '${esc(t.summary)}', '${esc(t.category)}', '${esc(t.sourceLabel)}', '${esc(t.sourceUrl)}');`,
   );
 }
 out.push("");

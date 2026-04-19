@@ -76,6 +76,7 @@ export const onsLmsAdapter: DataSourceAdapter = {
         observedAt: parsed.observedAt,
         sourceId: SOURCE_ID,
         payloadHash: hash,
+        ...(parsed.releasedAt ? { releasedAt: parsed.releasedAt } : {}),
       });
     }
 
@@ -97,12 +98,18 @@ export const onsLmsAdapter: DataSourceAdapter = {
         const hash = await sha256Hex(vBody + "|" + uBody);
         // Use the later of the two observations.
         const observedAt = v.observedAt > u.observedAt ? v.observedAt : u.observedAt;
+        // Released-at for a derived ratio is the later of the two inputs —
+        // the ratio only becomes public once both legs have been released.
+        const releasedAt = v.releasedAt && u.releasedAt
+          ? (v.releasedAt > u.releasedAt ? v.releasedAt : u.releasedAt)
+          : (v.releasedAt ?? u.releasedAt);
         observations.push({
           indicatorId: "vacancies_per_unemployed",
           value: ratio,
           observedAt,
           sourceId: SOURCE_ID,
           payloadHash: hash,
+          ...(releasedAt ? { releasedAt } : {}),
         });
       }
     } catch (err) {
@@ -140,6 +147,7 @@ export const onsLmsAdapter: DataSourceAdapter = {
           observedAt: point.observedAt,
           sourceId: SOURCE_ID,
           payloadHash: await historicalPayloadHash(spec.indicatorId, point.observedAt, value),
+          ...(point.releasedAt ? { releasedAt: point.releasedAt } : {}),
         });
       }
     }
@@ -156,19 +164,23 @@ export const onsLmsAdapter: DataSourceAdapter = {
       const [vBody, uBody] = await Promise.all([vRes.text(), uRes.text()]);
       const vSeries = parseOnsMonthlySeries(vBody, SOURCE_ID, vUrl);
       const uSeries = parseOnsMonthlySeries(uBody, SOURCE_ID, uUrl);
-      const uByMonth = new Map(uSeries.map((p) => [p.observedAt, p.value]));
+      const uByMonth = new Map(uSeries.map((p) => [p.observedAt, p] as const));
       for (const v of vSeries) {
-        const uVal = uByMonth.get(v.observedAt);
-        if (uVal === undefined || uVal <= 0) continue;
+        const uPoint = uByMonth.get(v.observedAt);
+        if (!uPoint || uPoint.value <= 0) continue;
         const ms = Date.parse(v.observedAt);
         if (!Number.isFinite(ms) || ms < fromMs || ms > toMs) continue;
-        const ratio = v.value / uVal;
+        const ratio = v.value / uPoint.value;
+        const releasedAt = v.releasedAt && uPoint.releasedAt
+          ? (v.releasedAt > uPoint.releasedAt ? v.releasedAt : uPoint.releasedAt)
+          : (v.releasedAt ?? uPoint.releasedAt);
         observations.push({
           indicatorId: "vacancies_per_unemployed",
           value: ratio,
           observedAt: v.observedAt,
           sourceId: SOURCE_ID,
           payloadHash: await historicalPayloadHash("vacancies_per_unemployed", v.observedAt, ratio),
+          ...(releasedAt ? { releasedAt } : {}),
         });
       }
     } catch (err) {

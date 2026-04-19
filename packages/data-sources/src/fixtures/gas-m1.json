@@ -1,0 +1,12 @@
+{
+  "_comment": "UK NBP natural gas front-month (M+1) settlement price in pence per therm. Reference: ICE Endex UK Natural Gas Futures public settlement print plus the daily Reuters energy recap. ICE publishes settlements at close but requires a commercial feed for API access; we mirror the published settlement headline weekly as an editorial fixture. The freshness guard in the adapter rejects any fixture older than 14 days so a forgotten refresh becomes an ingest-audit failure rather than silent rot. TODO(source): swap for a licensed ICE Endex API once budget permits, or use Ofgem's spot-price publication if an authorised mirror appears.",
+  "as_of": "2026-04-17",
+  "observed_at": "2026-04-17T00:00:00Z",
+  "gas_m1": {
+    "value": 118.0,
+    "unit": "p/th",
+    "source": "ICE Endex UK Natural Gas Futures (front-month) settlement, 17 April 2026"
+  },
+  "source_url": "https://www.theice.com/products/910/UK-Natural-Gas-Futures",
+  "release_schedule": "Daily market close (5pm London); editorial fixture refreshed weekly."
+}

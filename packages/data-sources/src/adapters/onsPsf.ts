@@ -86,6 +86,7 @@ export const onsPsfAdapter: DataSourceAdapter = {
         observedAt: parsed.observedAt,
         sourceId: SOURCE_ID,
         payloadHash,
+        ...(parsed.releasedAt ? { releasedAt: parsed.releasedAt } : {}),
       });
     }
 
@@ -121,6 +122,7 @@ export const onsPsfAdapter: DataSourceAdapter = {
           observedAt: point.observedAt,
           sourceId: SOURCE_ID,
           payloadHash: await historicalPayloadHash(indicatorId, point.observedAt, value),
+          ...(point.releasedAt ? { releasedAt: point.releasedAt } : {}),
         });
       }
     }
@@ -136,10 +138,28 @@ export const onsPsfAdapter: DataSourceAdapter = {
   },
 };
 
-interface OnsMonthPoint { date: string; year: string; month: string; value: string; }
+interface OnsMonthPoint {
+  date: string;
+  year: string;
+  month: string;
+  value: string;
+  /**
+   * ISO-8601 string stamped by ONS for when this month's row was last
+   * published or revised. Populated in live timeseries JSON for every
+   * month; reading it lets us persist a true publication date alongside
+   * the reference period (`observed_at`) and so eliminate lookahead bias
+   * in the historical backfill.
+   */
+  updateDate?: string;
+}
 
 /** One parsed month from an ONS `months[]` envelope. */
-export interface OnsMonthlyPoint { value: number; observedAt: string; }
+export interface OnsMonthlyPoint {
+  value: number;
+  observedAt: string;
+  /** Publication date from the upstream `updateDate` field, if present. */
+  releasedAt?: string;
+}
 
 /**
  * Parse every `months[]` entry from an ONS timeseries JSON envelope into an
@@ -171,7 +191,11 @@ export function parseOnsMonthlySeries(body: string, sourceId: string, url: strin
     } catch {
       continue;
     }
-    out.push({ value, observedAt });
+    const entry: OnsMonthlyPoint = { value, observedAt };
+    if (typeof point.updateDate === "string" && point.updateDate !== "") {
+      entry.releasedAt = point.updateDate;
+    }
+    out.push(entry);
   }
   out.sort((a, b) => a.observedAt < b.observedAt ? -1 : a.observedAt > b.observedAt ? 1 : 0);
   return out;
@@ -181,7 +205,7 @@ export function parseOnsMonthlySeries(body: string, sourceId: string, url: strin
  * Pull the most recent `months` item from an ONS timeseries JSON envelope.
  * Exported for unit tests.
  */
-export function parseOnsMonthly(body: string, sourceId: string, url: string): { value: number; observedAt: string } {
+export function parseOnsMonthly(body: string, sourceId: string, url: string): OnsMonthlyPoint {
   let parsed: { months?: OnsMonthPoint[] };
   try {
     parsed = JSON.parse(body) as { months?: OnsMonthPoint[] };
@@ -199,7 +223,11 @@ export function parseOnsMonthly(body: string, sourceId: string, url: string): { 
     throw new AdapterError({ sourceId, sourceUrl: url, message: `ONS: latest value '${latest.value}' not numeric` });
   }
   const iso = onsMonthToIso(latest);
-  return { value, observedAt: iso };
+  const out: OnsMonthlyPoint = { value, observedAt: iso };
+  if (typeof latest.updateDate === "string" && latest.updateDate !== "") {
+    out.releasedAt = latest.updateDate;
+  }
+  return out;
 }
 
 function onsMonthToIso(point: OnsMonthPoint): string {

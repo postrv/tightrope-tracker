@@ -1,5 +1,6 @@
 ---
 import type { PillarScore, TodayMovement } from "@tightrope/shared";
+import { describeSparklineCoverage } from "@tightrope/shared";
 import LineChart from "./charts/LineChart.astro";
 import ProvenanceBadge from "./ProvenanceBadge.astro";
 import { signedDelta } from "~/lib/format.js";
@@ -23,6 +24,7 @@ const sonia = findMovement("sonia_12m");
 const gas = findMovement("gas_m1");
 const sparkline = (pillar.sparkline30d ?? []).filter((n) => Number.isFinite(n));
 const hasSparkline = sparkline.length >= 2;
+const coverage = describeSparklineCoverage(sparkline);
 ---
 <section class="section" id="market" aria-labelledby="market-title">
   <div class="container">
@@ -83,16 +85,24 @@ const hasSparkline = sparkline.length >= 2;
         <h3>Market pressure trajectory</h3>
         <p class="hint">30-day pillar score. Higher = more constraint from markets.</p>
         {hasSparkline ? (
-          <LineChart
-            series={sparkline}
-            width={540}
-            height={220}
-            stroke="var(--band-acute)"
-            fillGradientId="marketFill"
-            minLabel={`${Math.floor(Math.min(...sparkline))}`}
-            maxLabel={`${Math.ceil(Math.max(...sparkline))}`}
-            ariaLabel="Market pressure pillar score, last 30 days"
-          />
+          <>
+            <LineChart
+              series={sparkline}
+              width={540}
+              height={220}
+              stroke="var(--band-acute)"
+              fillGradientId="marketFill"
+              minLabel={`${Math.floor(Math.min(...sparkline))}`}
+              maxLabel={`${Math.ceil(Math.max(...sparkline))}`}
+              ariaLabel="Market pressure pillar score, last 30 days"
+            />
+            <p class={`coverage-note ${coverage.isComplete ? "complete" : "partial"}`}>
+              Scored {coverage.plotted} of {coverage.window} days.
+              {coverage.isComplete ? "" : ` ${coverage.missing} day${coverage.missing === 1 ? "" : "s"} failed quorum and are not plotted — see `}
+              {coverage.isComplete ? "" : <a href="/methodology#historical-coverage">methodology</a>}
+              {coverage.isComplete ? "" : "."}
+            </p>
+          </>
         ) : (
           <p class="chart-empty">Trajectory will populate after the first 24h of recompute history.</p>
         )}
@@ -121,6 +131,9 @@ const hasSparkline = sparkline.length >= 2;
 
 .market-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px; }
 .chart-empty { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); padding: 80px 0; text-align: center; }
+.coverage-note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); margin: 8px 0 0; letter-spacing: 0.04em; }
+.coverage-note.partial { color: var(--ink-1); }
+.coverage-note a { color: var(--accent); text-decoration: underline dotted; }
 
 .quad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 8px; overflow: hidden; margin-top: 8px; }
 .mini { background: var(--bg-0); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }

@@ -7,6 +7,17 @@ export interface RawObservation {
   observedAt: Iso8601;
   sourceId: string;
   payloadHash: string;
+  /**
+   * Publication date, i.e. when the upstream actually made the observation
+   * public. Distinct from `observedAt` for time-lagged releases (ONS PSF,
+   * LMS, RTI — monthly reference period, ~3-6 week release lag). Adapters
+   * that know the release date MUST set this so the backfill pipeline can
+   * clip out data that would have been future-published on the target day
+   * (lookahead bias). Adapters where published ≈ observed (daily BoE gilt
+   * yields, daily FX) may omit the field; consumers fall back to
+   * `observedAt` in that case.
+   */
+  releasedAt?: Iso8601;
 }
 
 /** Result returned from an adapter's `fetch()` call. */

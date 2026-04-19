@@ -55,8 +55,12 @@ const canonical = canonicalPath
       rel="stylesheet"
     />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Favicon: LFG brand mark (concentric orange/cream/teal arcs).
+         Source asset: https://lookingforgrowth.uk/ favicon.
+         PNG is primary so the polished raster LFG mark renders in all
+         browsers and mobile home-screens. -->
+    <link rel="icon" type="image/png" sizes="178x178" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
     <meta name="theme-color" content="#EBE3D0" />
 
     {embed ? null : (

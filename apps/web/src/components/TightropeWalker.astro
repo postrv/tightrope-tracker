@@ -19,9 +19,11 @@ const label = Math.round(safeScore);
 // so the arc reads as a colour-coded gauge of how far the walker is reaching.
 const amberLit = targetAmp > 9;
 const redLit = targetAmp > 18;
-const greenOpacity = 0.24;
-const amberOpacity = amberLit ? 0.30 : 0.08;
-const redOpacity = redLit ? 0.28 : 0.06;
+// Opacities tuned for the warm cream backdrop: colour-coded zones need to
+// read strongly against cream without overwhelming the walker silhouette.
+const greenOpacity = 0.38;
+const amberOpacity = amberLit ? 0.48 : 0.14;
+const redOpacity = redLit ? 0.50 : 0.12;
 
 // Speed multiplier on the sway: ~1× at score 0, ~2.8× at score 100. High
 // instability reads as frantic micro-corrections; low instability stays calm.
@@ -43,29 +45,36 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
 >
   <div class="perspective">
     <div class="scene">
-      <!-- Distant void backdrop, on a vertical plane far behind everything -->
+      <!-- Distant atmospheric backdrop, on a vertical plane far behind
+           everything. Warm cream sky fading through soft tan to an ember
+           horizon glow -- the "dawn over the City" mood the LFG palette is
+           built around. The dark ridge silhouette anchors the horizon and
+           gives the walker something solid to be framed against. -->
       <div class="layer bg-layer">
         <svg viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
           <defs>
-            <radialGradient id="tw-vp-glow" cx="0.5" cy="0.55" r="0.45">
-              <stop offset="0" stop-color="#FE5500" stop-opacity="0.28"/>
-              <stop offset="0.5" stop-color="#FE5500" stop-opacity="0.06"/>
-              <stop offset="1" stop-color="#FE5500" stop-opacity="0"/>
+            <radialGradient id="tw-vp-glow" cx="0.5" cy="0.62" r="0.55">
+              <stop offset="0" stop-color="#FE5500" stop-opacity="0.38"/>
+              <stop offset="0.45" stop-color="#EE9944" stop-opacity="0.18"/>
+              <stop offset="1" stop-color="#EE9944" stop-opacity="0"/>
             </radialGradient>
-            <linearGradient id="tw-void" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#1A1F28"/>
-              <stop offset="0.55" stop-color="#0E1116"/>
-              <stop offset="1" stop-color="#06080B"/>
+            <linearGradient id="tw-sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#F4EEE0"/>
+              <stop offset="0.45" stop-color="#EBE3D0"/>
+              <stop offset="0.82" stop-color="#E0D0A6"/>
+              <stop offset="1" stop-color="#C98A3E"/>
             </linearGradient>
           </defs>
-          <rect x="-200" y="-100" width="1000" height="700" fill="url(#tw-void)"/>
-          <!-- Distant atmospheric haze around the vanishing point -->
-          <ellipse cx="300" cy="280" rx="280" ry="60" fill="url(#tw-vp-glow)"/>
-          <!-- Distant ridge: low, soft, anchors the horizon -->
-          <path d="M 0 295 Q 80 280 160 290 Q 220 296 280 285 L 320 285 Q 380 296 440 290 Q 520 280 600 295 L 600 320 L 0 320 Z" fill="#0E1218" opacity="0.9"/>
+          <rect x="-200" y="-100" width="1000" height="700" fill="url(#tw-sky)"/>
+          <!-- Ember halo around the vanishing point. -->
+          <ellipse cx="300" cy="305" rx="320" ry="80" fill="url(#tw-vp-glow)"/>
+          <!-- Distant city ridge: low silhouette against the warm sky.
+               Dark enough to read as the skyline, warm enough to sit in
+               the LFG palette. -->
+          <path d="M 0 302 Q 70 290 140 298 Q 190 304 240 294 L 260 294 L 260 300 L 275 300 L 275 288 L 290 288 L 290 300 L 310 300 L 310 290 L 325 290 L 325 300 L 340 300 L 340 294 L 360 294 Q 420 302 480 292 Q 540 286 600 298 L 600 320 L 0 320 Z" fill="#2A2825" opacity="0.92"/>
           <!-- Far anchor (where the rope ties off in the distance) -->
-          <rect x="284" y="280" width="32" height="5" fill="#252B33"/>
-          <rect x="284" y="285" width="32" height="9" fill="#0B0E13"/>
+          <rect x="284" y="286" width="32" height="4" fill="#4A4540"/>
+          <rect x="284" y="290" width="32" height="10" fill="#1A1815"/>
         </svg>
       </div>
 
@@ -118,25 +127,29 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
           </g>
 
           <g class="walker" transform={`translate(300, 430) rotate(${staticAngle.toFixed(2)})`}>
+            <!-- Walker silhouette in ink-0 black -- high contrast against the
+                 warm cream sky, which is the LFG "black figure on cream
+                 panel" motif translated into this illustration. Balance pole
+                 same ink so the whole figure reads as one shape. -->
             <!-- Balance pole, gentle droop at tips -->
-            <path d="M -140 -54 Q 0 -49 140 -54" stroke="#FE5500" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-            <circle cx="-140" cy="-54" r="2.6" fill="#FE5500"/>
-            <circle cx="140" cy="-54" r="2.6" fill="#FE5500"/>
+            <path d="M -140 -54 Q 0 -49 140 -54" stroke="#000000" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+            <circle cx="-140" cy="-54" r="3" fill="#000000"/>
+            <circle cx="140" cy="-54" r="3" fill="#000000"/>
 
             <!-- Head (no face — rear view) -->
-            <circle cx="0" cy="-114" r="10" fill="#EBE3D0"/>
-            <line x1="0" y1="-104" x2="0" y2="-50" stroke="#EBE3D0" stroke-width="2.8" stroke-linecap="round"/>
-            <line x1="-16" y1="-94" x2="16" y2="-94" stroke="#EBE3D0" stroke-width="2.6" stroke-linecap="round"/>
+            <circle cx="0" cy="-114" r="10.5" fill="#000000"/>
+            <line x1="0" y1="-104" x2="0" y2="-50" stroke="#000000" stroke-width="3.2" stroke-linecap="round"/>
+            <line x1="-16" y1="-94" x2="16" y2="-94" stroke="#000000" stroke-width="2.8" stroke-linecap="round"/>
             <!-- Arms to balance pole -->
-            <line x1="-16" y1="-94" x2="-140" y2="-54" stroke="#EBE3D0" stroke-width="2.6" stroke-linecap="round"/>
-            <line x1="16" y1="-94" x2="140" y2="-54" stroke="#EBE3D0" stroke-width="2.6" stroke-linecap="round"/>
+            <line x1="-16" y1="-94" x2="-140" y2="-54" stroke="#000000" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="16" y1="-94" x2="140" y2="-54" stroke="#000000" stroke-width="2.8" stroke-linecap="round"/>
             <!-- Hips -->
-            <line x1="-10" y1="-50" x2="10" y2="-50" stroke="#EBE3D0" stroke-width="2.6" stroke-linecap="round"/>
+            <line x1="-10" y1="-50" x2="10" y2="-50" stroke="#000000" stroke-width="2.8" stroke-linecap="round"/>
             <!-- Legs -->
-            <line x1="-10" y1="-50" x2="-4" y2="0" stroke="#EBE3D0" stroke-width="2.8" stroke-linecap="round"/>
-            <line x1="10" y1="-50" x2="3" y2="0" stroke="#EBE3D0" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="-10" y1="-50" x2="-4" y2="0" stroke="#000000" stroke-width="3.2" stroke-linecap="round"/>
+            <line x1="10" y1="-50" x2="3" y2="0" stroke="#000000" stroke-width="3.2" stroke-linecap="round"/>
             <!-- Foot shadow on rope -->
-            <ellipse cx="0" cy="3" rx="11" ry="1.6" fill="#000" opacity="0.55"/>
+            <ellipse cx="0" cy="3" rx="11" ry="1.6" fill="#000000" opacity="0.4"/>
           </g>
         </svg>
       </div>

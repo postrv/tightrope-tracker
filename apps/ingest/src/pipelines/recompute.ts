@@ -26,6 +26,7 @@ import {
   readPillarHistory,
   readRecentObservations,
   valueAtLeastAgo,
+  valueOldestIfAged,
   type ObservationRow,
 } from "../lib/history.js";
 import { maybeAlertSourceHealth } from "./alerts.js";
@@ -136,10 +137,18 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   // rows, producing a flat line every day indicators hold steady.
   const sparkline90d = downsampleLatestPerDay(headlineHist).slice(-90);
   const value24hAgo = valueAtLeastAgo(headlineHist, 24 * 60 * 60 * 1000, now);
-  const value30dAgo = valueAtLeastAgo(headlineHist, 30 * DAY_MS, now);
+  // When history doesn't reach back 30d / YTD (bootstrap period before the
+  // historical backfill has run), fall back to the oldest available row if
+  // it's at least 7 days old so the deltas render a meaningful "since we
+  // started tracking" number rather than a flat 0. Converges to the true 30d
+  // / YTD delta as history accumulates.
+  const MIN_FALLBACK_AGE_MS = 7 * DAY_MS;
+  const value30dAgo = valueAtLeastAgo(headlineHist, 30 * DAY_MS, now)
+    ?? valueOldestIfAged(headlineHist, MIN_FALLBACK_AGE_MS, now);
   const startOfYear = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
   const ytdMs = now.getTime() - startOfYear.getTime();
-  const valueYtdAgo = valueAtLeastAgo(headlineHist, ytdMs, now);
+  const valueYtdAgo = valueAtLeastAgo(headlineHist, ytdMs, now)
+    ?? valueOldestIfAged(headlineHist, MIN_FALLBACK_AGE_MS, now);
 
   const headlineCore = computeHeadlineScore({
     pillars: pillarRecord,

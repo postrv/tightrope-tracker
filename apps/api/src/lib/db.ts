@@ -151,6 +151,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
   const hValue = headlineRow?.value ?? 0;
   // Already ordered ASC by observed_at (one row per UTC day, see SQL above).
   const hSeries = headlineHistory.results.map((r) => r.value);
+  const hRows = headlineHistory.results;
   // If the headline row is missing we stamp updatedAt at the unix epoch so
   // callers can distinguish an empty-seed placeholder from a real read. See
   // looksUnseeded() in ../handlers/score.ts.
@@ -168,8 +169,11 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     dominantPillar: (headlineRow?.dominant as PillarId) ?? "market",
     sparkline90d: hSeries,
     delta24h: deltaAgo(hSeries, 1),
-    delta30d: deltaAgo(hSeries, 30),
-    deltaYtd: deltaAgo(hSeries, Math.max(0, hSeries.length - 1)),
+    // Mirrors the recompute fallback: if history doesn't reach back 30d, use
+    // the oldest row as long as it's at least 7 days old. Converges to the
+    // true 30d delta once history accumulates past 30 days.
+    delta30d: deltaAgoWithFallback(hRows, 30, 7),
+    deltaYtd: deltaAgoYtdWithFallback(hRows, now, 7),
     ...(headlineStale ? { stale: true } : {}),
   };
 
@@ -321,6 +325,47 @@ function deltaAgo(series: readonly number[], n: number): number {
   const now = series.at(-1) ?? 0;
   const then = series.at(Math.max(0, series.length - 1 - n)) ?? now;
   return round1(now - then);
+}
+
+/**
+ * Delta over `targetDays` of one-row-per-day history. If the series doesn't
+ * reach back far enough, fall back to the oldest row as long as it's at least
+ * `minFallbackDays` old. Returns 0 when history is too thin to say anything.
+ */
+function deltaAgoWithFallback(
+  rows: readonly { observed_at: string; value: number }[],
+  targetDays: number,
+  minFallbackDays: number,
+): number {
+  if (rows.length < 2) return 0;
+  const now = rows[rows.length - 1]!.value;
+  const idx = rows.length - 1 - targetDays;
+  if (idx >= 0) return round1(now - rows[idx]!.value);
+  const oldest = rows[0]!;
+  const ageDays = (Date.now() - new Date(oldest.observed_at).getTime()) / (24 * 60 * 60 * 1000);
+  if (ageDays < minFallbackDays) return 0;
+  return round1(now - oldest.value);
+}
+
+/** Same idea, but with the target rooted at the 1 January of `now`'s year. */
+function deltaAgoYtdWithFallback(
+  rows: readonly { observed_at: string; value: number }[],
+  now: Date,
+  minFallbackDays: number,
+): number {
+  if (rows.length < 2) return 0;
+  const latest = rows[rows.length - 1]!.value;
+  const startOfYearMs = Date.UTC(now.getUTCFullYear(), 0, 1);
+  // Scan backwards for the last row observed on or before 1 Jan.
+  for (let i = rows.length - 1; i >= 0; i--) {
+    if (new Date(rows[i]!.observed_at).getTime() <= startOfYearMs) {
+      return round1(latest - rows[i]!.value);
+    }
+  }
+  const oldest = rows[0]!;
+  const ageDays = (now.getTime() - new Date(oldest.observed_at).getTime()) / (24 * 60 * 60 * 1000);
+  if (ageDays < minFallbackDays) return 0;
+  return round1(latest - oldest.value);
 }
 
 function round1(n: number): number {

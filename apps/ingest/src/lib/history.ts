@@ -85,6 +85,26 @@ export function valueAtLeastAgo(
 }
 
 /**
+ * Return the oldest value in `series` only if its observation is at least
+ * `minAgeMs` old. Used as a fallback when `valueAtLeastAgo` can't reach the
+ * ideal target window: emits "delta since we started tracking" rather than 0,
+ * but guards against labelling a 2-day-old row as a 30-day baseline by
+ * requiring a minimum age. When history eventually extends past the target
+ * window, the primary `valueAtLeastAgo` lookup wins and this fallback goes
+ * unused.
+ */
+export function valueOldestIfAged(
+  series: readonly { observed_at: string; value: number }[],
+  minAgeMs: number,
+  now: Date = new Date(),
+): number | undefined {
+  if (series.length === 0) return undefined;
+  const oldest = series[0]!;
+  const ageMs = now.getTime() - new Date(oldest.observed_at).getTime();
+  return ageMs >= minAgeMs ? oldest.value : undefined;
+}
+
+/**
  * Downsample a time-series to one value per UTC day (latest observation per
  * day wins). Used for the headline 90d sparkline: recompute writes a row
  * every 5 minutes, so a naive slice(-90) would cover ~7.5 hours rather than

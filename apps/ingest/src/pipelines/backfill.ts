@@ -15,6 +15,7 @@ import {
   readBaselineObservations,
   readRecentObservations,
   valueAtLeastAgo,
+  valueOldestIfAged,
   type ObservationRow,
 } from "../lib/history.js";
 
@@ -235,10 +236,18 @@ export async function backfillHistoricalScores(
       const pillarRecord = pillars as Record<PillarId, PillarScore>;
       const sparkline90d = priorHeadline.slice(-90).map((h) => h.value);
       const value24hAgo = valueAtLeastAgo(priorHeadline, DAY_MS, day);
-      const value30dAgo = valueAtLeastAgo(priorHeadline, 30 * DAY_MS, day);
+      // Fallback to oldest-if-aged for 30d / YTD matches the live recompute
+      // path -- early backfill days (few prior days in the synthesised history)
+      // still get a populated delta rather than a flat 0.
+      const MIN_FALLBACK_AGE_MS = 7 * DAY_MS;
+      const value30dAgo = valueAtLeastAgo(priorHeadline, 30 * DAY_MS, day)
+        ?? valueOldestIfAged(priorHeadline, MIN_FALLBACK_AGE_MS, day);
       const startOfYearMs = Date.UTC(day.getUTCFullYear(), 0, 1);
       const ytdMs = day.getTime() - startOfYearMs;
-      const valueYtdAgo = ytdMs > 0 ? valueAtLeastAgo(priorHeadline, ytdMs, day) : undefined;
+      const valueYtdAgo = ytdMs > 0
+        ? (valueAtLeastAgo(priorHeadline, ytdMs, day)
+            ?? valueOldestIfAged(priorHeadline, MIN_FALLBACK_AGE_MS, day))
+        : undefined;
 
       headline = computeHeadlineScore({
         pillars: pillarRecord,

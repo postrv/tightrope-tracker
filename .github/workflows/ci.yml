@@ -36,6 +36,8 @@ jobs:
 
       - name: Typecheck all packages
         run: pnpm -r typecheck
+        env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
 
       - name: Run all tests
         run: pnpm -r test

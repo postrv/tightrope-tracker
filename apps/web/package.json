@@ -10,7 +10,7 @@
     "preview": "wrangler pages dev ./dist --compatibility-date=2025-01-01",
     "deploy": "pnpm build && wrangler pages deploy ./dist --project-name=tightrope-tracker --branch=main",
     "astro": "astro",
-    "typecheck": "pnpm run vendor && astro check"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
@@ -21,6 +21,7 @@
     "typescript": "^5.7.2"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250601.0",
     "@scalar/api-reference": "1.52.3",
     "@types/node": "^22.10.0"
   }

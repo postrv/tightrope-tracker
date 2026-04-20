@@ -123,6 +123,9 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
     devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20250601.0
+        version: 4.20260417.1
       '@scalar/api-reference':
         specifier: 1.52.3
         version: 1.52.3(@vue/compiler-sfc@3.5.32)(tailwindcss@4.2.3)(typescript@5.9.3)

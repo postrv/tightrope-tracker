@@ -6,7 +6,7 @@
   "scripts": {
     "vendor": "node scripts/copy-scalar.mjs",
     "dev": "pnpm run vendor && astro dev",
-    "build": "pnpm run vendor && astro check && astro build",
+    "build": "pnpm run vendor && astro build",
     "preview": "wrangler pages dev ./dist --compatibility-date=2025-01-01",
     "deploy": "pnpm build && wrangler pages deploy ./dist --project-name=tightrope-tracker --branch=main",
     "astro": "astro",

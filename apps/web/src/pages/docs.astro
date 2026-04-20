@@ -1,0 +1,190 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import TopNav from "~/components/TopNav.astro";
+import SiteFooter from "~/components/SiteFooter.astro";
+import { loadSnapshot } from "~/lib/page-data.js";
+
+/**
+ * Interactive API reference rendered by Scalar from `/openapi.json`.
+ *
+ * The Scalar bundle is vendored from node_modules at build time by
+ * apps/web/scripts/copy-scalar.mjs and served same-origin at
+ * /vendor/scalar.js, so the existing strict-self CSP applies without
+ * modification. The OpenAPI document is served by
+ * apps/web/src/pages/openapi.json.ts (and mirrored by the API worker
+ * at /api/v1/openapi.json).
+ */
+const snapshot = await loadSnapshot(Astro.locals);
+
+// Scalar configuration. Kept minimal on purpose: the theme, layout and
+// spec URL — everything else inherits Scalar's sensible defaults.
+const scalarConfig = {
+  url: "/openapi.json",
+  theme: "default",
+  layout: "modern",
+  hideDownloadButton: false,
+  hideDarkModeToggle: false,
+  metaData: {
+    title: "Tightrope API reference",
+    description: "Interactive reference for the Tightrope Tracker public API.",
+  },
+};
+---
+
+<BaseLayout
+  title="API reference — Tightrope Tracker"
+  description="Interactive reference for the Tightrope Tracker public API. OpenAPI 3.1 spec + try-it-out UI, rendered by Scalar."
+  canonicalPath="/docs"
+>
+  <TopNav
+    compact
+    band={snapshot.headline.band}
+    updatedAt={snapshot.headline.updatedAt}
+    stale={Boolean(snapshot.headline.stale)}
+  />
+  <main id="main" class="docs-main">
+    <header class="container page-head">
+      <span class="eyebrow">Developer</span>
+      <h1>API reference</h1>
+      <p class="lede">
+        The same data that drives the dashboard is a public JSON API — free to
+        read, CORS-open, rate-limited at 120 req/60s/IP. The full spec is below,
+        with live requests against
+        <code>https://api.tightropetracker.uk</code>.
+      </p>
+      <ul class="meta-links">
+        <li>
+          <a href="/openapi.json" rel="nofollow">openapi.json</a>
+          <span class="meta-note">(this site — same-origin)</span>
+        </li>
+        <li>
+          <a href="https://api.tightropetracker.uk/api/v1/openapi.json" rel="noopener" target="_blank">
+            api.tightropetracker.uk/api/v1/openapi.json
+          </a>
+          <span class="meta-note">(worker mirror)</span>
+        </li>
+        <li>
+          <a href="/methodology">Methodology &amp; indicator definitions →</a>
+        </li>
+      </ul>
+    </header>
+
+    <!--
+      Scalar's standalone bundle auto-initialises on the script tag with
+      id="api-reference" when the bundle script loads. The surrounding
+      <div class="docs-host"> exists so the injected UI inherits page
+      width and background tokens; Scalar replaces the inner script tag
+      with its rendered reference.
+    -->
+    <section class="docs-host" aria-label="Interactive API reference">
+      <script
+        id="api-reference"
+        is:inline
+        data-url="/openapi.json"
+        data-configuration={JSON.stringify(scalarConfig)}
+      ></script>
+      <script is:inline defer src="/vendor/scalar.js"></script>
+      <noscript>
+        <div class="noscript-fallback container">
+          <p>
+            The interactive API reference requires JavaScript. The raw
+            OpenAPI document is available at
+            <a href="/openapi.json"><code>/openapi.json</code></a> and
+            at
+            <a href="https://api.tightropetracker.uk/api/v1/openapi.json">
+              <code>api.tightropetracker.uk/api/v1/openapi.json</code>
+            </a>.
+          </p>
+        </div>
+      </noscript>
+    </section>
+  </main>
+  <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={Boolean(snapshot.headline.stale)} />
+</BaseLayout>
+
+<style>
+  .docs-main { padding-bottom: 48px; }
+
+  .page-head {
+    padding: 48px 0 24px;
+  }
+  .page-head .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .page-head h1 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 44px;
+    line-height: 1.08;
+    margin: 10px 0 14px;
+    letter-spacing: -0.02em;
+    color: var(--ink-0);
+  }
+  .page-head .lede {
+    max-width: 62ch;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ink-1);
+  }
+  .page-head .lede code {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    background: color-mix(in srgb, var(--ink-0) 5%, transparent);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  .meta-links {
+    list-style: none;
+    padding: 0;
+    margin: 22px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    font-size: 13px;
+  }
+  .meta-links li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .meta-links a {
+    color: var(--ink-0);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .meta-links a:hover { color: var(--accent); }
+  .meta-links .meta-note {
+    color: var(--ink-3);
+    font-size: 11.5px;
+  }
+
+  .docs-host {
+    /* Scalar ships its own internal layout + tokens; we give it the full
+       viewport width minus the standard page gutter and let its modern
+       layout carry from there. A subtle top border separates the branded
+       header from the embedded reference. */
+    margin-top: 28px;
+    border-top: 1px solid var(--border-soft);
+    min-height: 480px;
+    background: var(--bg-0);
+  }
+  .noscript-fallback { padding: 32px 0; color: var(--ink-1); }
+  .noscript-fallback code {
+    font-family: var(--font-mono);
+    background: color-mix(in srgb, var(--ink-0) 6%, transparent);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 720px) {
+    .page-head h1 { font-size: 34px; }
+  }
+</style>

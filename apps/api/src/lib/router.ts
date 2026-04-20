@@ -57,6 +57,15 @@ export class Router {
     return this.fallbackOptionsPaths.has(pathname);
   }
 
+  /**
+   * All registered paths for the given method, in registration order.
+   * Used by the OpenAPI drift-guard test to assert every route is
+   * documented and vice versa.
+   */
+  listPaths(method: Method = "GET"): readonly string[] {
+    return this.routes.filter((r) => r.method === method).map((r) => r.path);
+  }
+
   async handle(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
     const method = req.method.toUpperCase();
@@ -96,6 +105,7 @@ const JSON_HEADERS: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "geolocation=(), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()",
+  "Vary": "Origin",
   "Cross-Origin-Resource-Policy": "cross-origin",
   "X-Frame-Options": "DENY",
 };

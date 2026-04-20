@@ -1,0 +1,608 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tightrope Tracker Public API",
+    "version": "1.0.0",
+    "summary": "Live, transparent dashboard of the UK growth agenda's real constraints.",
+    "description": "Tightrope Tracker exposes the same normalised scoring data that drives the public dashboard at https://tightropetracker.uk. All endpoints are read-only JSON, CORS-open, and cached briefly at the edge. Every number ultimately traces back to a named public publisher (Bank of England, ONS, OBR, DMO, MHCLG, parliament.uk). Numbers can be verified against the `sourceId` field on each contribution and cross-checked on the /methodology page of the site.\n\nThe API is provided under the MIT licence of the underlying code, with no warranty. Primary-source data retains its original publisher's licence; see the /sources page of the site for per-source terms.\n\nRate limit: 120 requests / 60s / client IP. Exceeding returns `429` with `Retry-After`, `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers. The `/api/v1/health` endpoint is exempt.",
+    "contact": {
+      "name": "Tightrope Tracker",
+      "url": "https://tightropetracker.uk/corrections"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/postrv/tightrope-tracker/blob/main/LICENSE"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.tightropetracker.uk",
+      "description": "Production"
+    }
+  ],
+  "externalDocs": {
+    "description": "Methodology and per-indicator definitions",
+    "url": "https://tightropetracker.uk/methodology"
+  },
+  "tags": [
+    { "name": "Score", "description": "Headline score and pillar breakdown." },
+    { "name": "Delivery", "description": "Curated delivery commitments tracked against published targets." },
+    { "name": "Timeline", "description": "Editorial timeline of events that moved the score." },
+    { "name": "Lookup", "description": "Utility lookups — e.g. MP by postcode." },
+    { "name": "Meta", "description": "Health, spec, and other meta endpoints." }
+  ],
+  "paths": {
+    "/api/v1/score": {
+      "get": {
+        "tags": ["Score"],
+        "summary": "Latest headline + pillar snapshot",
+        "description": "Returns the most recent recompute of the headline score, all four pillar scores, and — when any source has recently failed — a list of affected sources. Cached at the edge with a 30-minute freshness guard.",
+        "operationId": "getScore",
+        "responses": {
+          "200": {
+            "description": "Current snapshot.",
+            "headers": { "Cache-Control": { "$ref": "#/components/headers/CacheControl" } },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ScoreSnapshot" }
+              }
+            }
+          },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "500": { "$ref": "#/components/responses/DbError" },
+          "503": { "$ref": "#/components/responses/NotSeeded" }
+        }
+      }
+    },
+    "/api/v1/score/history": {
+      "get": {
+        "tags": ["Score"],
+        "summary": "Headline and pillar history",
+        "description": "Daily-granularity history of headline + pillar scores over the requested window. The default `days=90` slice is served from an edge cache; other windows are computed on demand.",
+        "operationId": "getScoreHistory",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "description": "Window length in days (inclusive of today). Minimum 1, maximum 365.",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 365, "default": 30 },
+            "example": 30
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "History points, ordered by timestamp ascending.",
+            "headers": { "Cache-Control": { "$ref": "#/components/headers/CacheControl" } },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ScoreHistory" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadQuery" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "500": { "$ref": "#/components/responses/DbError" }
+        }
+      }
+    },
+    "/api/v1/delivery": {
+      "get": {
+        "tags": ["Delivery"],
+        "summary": "Curated delivery commitments",
+        "description": "Editorial scorecard of specific growth-agenda commitments (new towns, SMR fleet, Industrial Strategy milestones, housing trajectory, etc.) with status, source label, and a link back to the primary announcement.",
+        "operationId": "getDelivery",
+        "responses": {
+          "200": {
+            "description": "All tracked commitments, sorted by editorial `sort_order` then name.",
+            "headers": { "Cache-Control": { "$ref": "#/components/headers/CacheControl" } },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/DeliveryCommitment" }
+                }
+              }
+            }
+          },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "500": { "$ref": "#/components/responses/DbError" },
+          "503": { "$ref": "#/components/responses/NotSeeded" }
+        }
+      }
+    },
+    "/api/v1/timeline": {
+      "get": {
+        "tags": ["Timeline"],
+        "summary": "Editorial timeline of score-moving events",
+        "description": "Reverse-chronological list of events (monetary, fiscal, policy, geopolitical, market, delivery) with short editorial summaries and, where meaningful, an attributed score delta. The default window (`limit=40`) is served from an edge cache; custom limits are computed on demand.",
+        "operationId": "getTimeline",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum events to return. Minimum 1, maximum 200.",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 40 },
+            "example": 40
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Timeline events, newest first.",
+            "headers": { "Cache-Control": { "$ref": "#/components/headers/CacheControl" } },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TimelineEvent" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadQuery" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "500": { "$ref": "#/components/responses/DbError" },
+          "503": { "$ref": "#/components/responses/NotSeeded" }
+        }
+      }
+    },
+    "/api/v1/mp": {
+      "get": {
+        "tags": ["Lookup"],
+        "summary": "Look up a Member of Parliament by postcode",
+        "description": "Resolves a UK postcode to the current MP via the parliament.uk Members API. Results are cached per outward code (e.g. `SW1A`) for 7 days. Emails are not exposed by the upstream API — use the `profileUrl` to open the MP's official contact page.",
+        "operationId": "getMp",
+        "parameters": [
+          {
+            "name": "postcode",
+            "in": "query",
+            "required": true,
+            "description": "UK postcode. Accepts with or without the internal space. Case-insensitive.",
+            "schema": { "type": "string", "pattern": "^[A-Za-z]{1,2}\\d[A-Za-z\\d]?\\s?\\d[A-Za-z]{2}$" },
+            "example": "SW1A 1AA"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MP currently representing the constituency that contains this postcode.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MpLookupResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing, malformed, or unknown query parameter.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "examples": {
+                  "missingPostcode": { "value": { "error": "postcode required", "code": "MISSING_PARAM" } },
+                  "badPostcode": { "value": { "error": "invalid UK postcode", "code": "BAD_POSTCODE" } }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No MP found for the given postcode (valid shape, no match upstream).",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": { "error": "no MP found for postcode", "code": "NOT_FOUND" }
+              }
+            }
+          },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "502": {
+            "description": "Upstream parliament.uk API failed.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": { "error": "upstream lookup failed", "code": "UPSTREAM_ERROR" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": ["Meta"],
+        "summary": "Liveliness probe",
+        "description": "Cheap health signal. Returns `ok: true` when the DB is reachable and includes the last-success timestamp of every ingestion source so operators can chart feed lag. Returns `ok: false` with HTTP 503 if the audit table can't be read. Exempt from rate limiting.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Healthy.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthOk" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadQuery" },
+          "503": {
+            "description": "Degraded — audit table unreachable. Not rate-limited.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthDegraded" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/openapi.json": {
+      "get": {
+        "tags": ["Meta"],
+        "summary": "This OpenAPI specification",
+        "description": "Serves this document in its canonical form. The web app serves the same content at https://tightropetracker.uk/openapi.json and renders it interactively at https://tightropetracker.uk/docs.",
+        "operationId": "getOpenapi",
+        "responses": {
+          "200": {
+            "description": "OpenAPI 3.1 document.",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadQuery" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    }
+  },
+  "components": {
+    "headers": {
+      "CacheControl": {
+        "description": "Edge + browser cache hints. Errors override to `no-store`.",
+        "schema": { "type": "string", "example": "public, max-age=60, s-maxage=300" }
+      },
+      "RetryAfter": {
+        "description": "Seconds until the rate-limit window resets.",
+        "schema": { "type": "integer", "minimum": 1 }
+      },
+      "RateLimitLimit": {
+        "description": "Maximum requests per window for this client IP.",
+        "schema": { "type": "integer", "example": 120 }
+      },
+      "RateLimitRemaining": {
+        "description": "Requests remaining in the current window. Always `0` on a 429.",
+        "schema": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "responses": {
+      "BadQuery": {
+        "description": "One or more query parameters were unknown or out of range.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "days must be an integer between 1 and 365", "code": "BAD_QUERY" }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Rate limit exceeded (120 req/60s/IP).",
+        "headers": {
+          "Retry-After": { "$ref": "#/components/headers/RetryAfter" },
+          "X-RateLimit-Limit": { "$ref": "#/components/headers/RateLimitLimit" },
+          "X-RateLimit-Remaining": { "$ref": "#/components/headers/RateLimitRemaining" }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "rate limit exceeded", "code": "RATE_LIMITED" }
+          }
+        }
+      },
+      "DbError": {
+        "description": "Database read failed. Transient — retry.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "failed to load score snapshot", "code": "DB_ERROR" }
+          }
+        }
+      },
+      "NotSeeded": {
+        "description": "The underlying data hasn't been ingested yet. Distinct from `DB_ERROR` — the database is up; there is simply no data to return. Note the response body uses `message` rather than `error`.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/NotSeededError" },
+            "example": { "code": "NOT_SEEDED", "message": "Data has not been ingested yet" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Iso8601": {
+        "type": "string",
+        "format": "date-time",
+        "description": "ISO-8601 UTC timestamp.",
+        "example": "2026-04-20T14:02:00Z"
+      },
+      "PillarId": {
+        "type": "string",
+        "enum": ["market", "fiscal", "labour", "delivery"],
+        "description": "The four scored pillars of the Tightrope index."
+      },
+      "Trend": {
+        "type": "string",
+        "enum": ["up", "down", "flat"],
+        "description": "Direction of a trend arrow. `up`/`down`/`flat` is semantically neutral: whether up is good or bad depends on the indicator's `risingIsBad` flag (see /methodology)."
+      },
+      "ScoreBand": {
+        "type": "string",
+        "enum": ["slack", "steady", "strained", "acute", "critical"],
+        "description": "Qualitative band for a score in [0,100]. Thresholds: slack 0–20, steady 20–40, strained 40–60, acute 60–80, critical 80–100."
+      },
+      "DeliveryStatus": {
+        "type": "string",
+        "enum": ["on_track", "slipping", "missed", "shipped"],
+        "description": "Editorial assessment of a delivery commitment against its stated target."
+      },
+      "TimelineCategory": {
+        "type": "string",
+        "enum": ["monetary", "fiscal", "geopolitical", "policy", "market", "delivery"]
+      },
+      "IndicatorContribution": {
+        "type": "object",
+        "description": "One indicator's contribution to its pillar score.\n\nNote: on a cache miss, `zScore` and `normalised` may be returned as `0` placeholders until the full snapshot is rebuilt. `rawValue`, `observedAt`, `sourceId`, and `weight` are always authoritative.",
+        "required": ["indicatorId", "rawValue", "rawValueUnit", "zScore", "normalised", "weight", "sourceId", "observedAt"],
+        "properties": {
+          "indicatorId": { "type": "string", "example": "gilt_10y" },
+          "rawValue": { "type": "number", "example": 4.27 },
+          "rawValueUnit": { "type": "string", "example": "%" },
+          "zScore": { "type": "number" },
+          "normalised": { "type": "number", "minimum": 0, "maximum": 100 },
+          "weight": { "type": "number", "minimum": 0, "maximum": 1, "description": "Intra-pillar weight, normalised so siblings sum to 1." },
+          "sourceId": { "type": "string", "example": "boe_yields" },
+          "observedAt": { "$ref": "#/components/schemas/Iso8601" }
+        }
+      },
+      "PillarScore": {
+        "type": "object",
+        "required": ["pillar", "label", "value", "band", "weight", "contributions", "trend7d", "delta7d", "trend30d", "delta30d", "sparkline30d"],
+        "properties": {
+          "pillar": { "$ref": "#/components/schemas/PillarId" },
+          "label": { "type": "string", "description": "Human-readable short title.", "example": "Market" },
+          "value": { "type": "number", "minimum": 0, "maximum": 100, "description": "0 = no pressure / on track, 100 = maximum stress / badly off track." },
+          "band": { "$ref": "#/components/schemas/ScoreBand" },
+          "weight": { "type": "number", "minimum": 0, "maximum": 1, "description": "Headline weight (Market 0.40, Fiscal 0.30, Labour 0.20, Delivery 0.10)." },
+          "contributions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/IndicatorContribution" }
+          },
+          "trend7d": { "$ref": "#/components/schemas/Trend" },
+          "delta7d": { "type": "number", "description": "Change in score points vs ~7 days ago." },
+          "trend30d": { "$ref": "#/components/schemas/Trend" },
+          "delta30d": { "type": "number", "description": "Change in score points across the full `sparkline30d` window (first → last)." },
+          "sparkline30d": {
+            "type": "array",
+            "items": { "type": "number" },
+            "description": "Up to 30 values, one per UTC day, oldest first."
+          },
+          "stale": {
+            "type": "boolean",
+            "const": true,
+            "description": "Present and `true` iff fewer than a quorum of indicators have a fresh reading; the value is a last-known carry, not a fresh recompute. Omitted otherwise."
+          }
+        }
+      },
+      "HeadlineScore": {
+        "type": "object",
+        "required": ["value", "band", "editorial", "updatedAt", "delta24h", "delta30d", "deltaYtd", "dominantPillar", "sparkline90d"],
+        "properties": {
+          "value": { "type": "number", "minimum": 0, "maximum": 100 },
+          "band": { "$ref": "#/components/schemas/ScoreBand" },
+          "editorial": { "type": "string", "description": "Editorial one-liner chosen to match the current band." },
+          "updatedAt": { "$ref": "#/components/schemas/Iso8601" },
+          "delta24h": {
+            "type": "number",
+            "description": "Headline delta across the most recent one-UTC-day step of the scored series. Historically named for API stability; labelled `1d` in the UI."
+          },
+          "delta30d": { "type": "number" },
+          "delta30dBaselineDate": {
+            "$ref": "#/components/schemas/Iso8601",
+            "description": "ISO date of the row actually used as the 30d baseline. Populated only when the baseline sits meaningfully off a clean 30 days (typically because history doesn't reach back far enough)."
+          },
+          "deltaYtd": { "type": "number", "description": "Headline delta since 1 January of the current year." },
+          "deltaYtdBaselineDate": {
+            "$ref": "#/components/schemas/Iso8601",
+            "description": "ISO date of the row actually used as the YTD baseline. Populated when the baseline is later than Jan 1, or when it collapsed onto the 30d baseline row."
+          },
+          "dominantPillar": {
+            "$ref": "#/components/schemas/PillarId",
+            "description": "The pillar contributing the most to current pressure."
+          },
+          "sparkline90d": {
+            "type": "array",
+            "items": { "type": "number" },
+            "description": "Up to 90 values, one per UTC day, oldest first."
+          },
+          "stale": {
+            "type": "boolean",
+            "const": true,
+            "description": "Present and `true` iff any pillar was flagged stale. Consumers should show a \"stale data\" chip and avoid treating the headline as authoritative."
+          }
+        }
+      },
+      "SourceHealthEntry": {
+        "type": "object",
+        "description": "A source whose most recent ingestion attempt did not succeed. Surfaces upstream outages before the staleness thresholds on pillars/headline fire.",
+        "required": ["sourceId", "name", "status", "lastAttemptAt"],
+        "properties": {
+          "sourceId": { "type": "string", "example": "ons_lms" },
+          "name": { "type": "string", "example": "ONS — Labour Market Statistics" },
+          "status": { "type": "string", "enum": ["failure", "partial"] },
+          "lastAttemptAt": { "$ref": "#/components/schemas/Iso8601" },
+          "lastSuccessAt": { "$ref": "#/components/schemas/Iso8601" }
+        }
+      },
+      "ScoreSnapshot": {
+        "type": "object",
+        "required": ["headline", "pillars", "schemaVersion"],
+        "properties": {
+          "headline": { "$ref": "#/components/schemas/HeadlineScore" },
+          "pillars": {
+            "type": "object",
+            "description": "Keyed by pillar id.",
+            "required": ["market", "fiscal", "labour", "delivery"],
+            "properties": {
+              "market": { "$ref": "#/components/schemas/PillarScore" },
+              "fiscal": { "$ref": "#/components/schemas/PillarScore" },
+              "labour": { "$ref": "#/components/schemas/PillarScore" },
+              "delivery": { "$ref": "#/components/schemas/PillarScore" }
+            }
+          },
+          "sourceHealth": {
+            "type": "array",
+            "description": "Sources whose latest ingestion attempt did not succeed. Absent or empty when every source is healthy.",
+            "items": { "$ref": "#/components/schemas/SourceHealthEntry" }
+          },
+          "schemaVersion": { "type": "integer", "const": 1 }
+        }
+      },
+      "ScoreHistoryPoint": {
+        "type": "object",
+        "required": ["timestamp", "headline", "pillars"],
+        "properties": {
+          "timestamp": { "$ref": "#/components/schemas/Iso8601" },
+          "headline": { "type": "number" },
+          "pillars": {
+            "type": "object",
+            "required": ["market", "fiscal", "labour", "delivery"],
+            "properties": {
+              "market": { "type": "number" },
+              "fiscal": { "type": "number" },
+              "labour": { "type": "number" },
+              "delivery": { "type": "number" }
+            }
+          }
+        }
+      },
+      "ScoreHistory": {
+        "type": "object",
+        "required": ["points", "rangeDays", "schemaVersion"],
+        "properties": {
+          "points": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ScoreHistoryPoint" }
+          },
+          "rangeDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365,
+            "description": "Maximum range returned. Older data is available in the site's historical archives."
+          },
+          "schemaVersion": { "type": "integer", "const": 1 }
+        }
+      },
+      "DeliveryCommitment": {
+        "type": "object",
+        "required": ["id", "name", "department", "latest", "target", "status", "sourceUrl", "sourceLabel", "updatedAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string", "example": "Build 1.5m homes this Parliament" },
+          "department": { "type": "string", "example": "MHCLG" },
+          "latest": { "type": "string", "description": "Latest observed figure, formatted for display." },
+          "target": { "type": "string", "description": "Stated target, formatted for display." },
+          "status": { "$ref": "#/components/schemas/DeliveryStatus" },
+          "sourceUrl": { "type": "string", "format": "uri" },
+          "sourceLabel": { "type": "string" },
+          "updatedAt": { "$ref": "#/components/schemas/Iso8601" },
+          "notes": { "type": "string", "description": "Editorial caveat, where appropriate." }
+        }
+      },
+      "TimelineEvent": {
+        "type": "object",
+        "required": ["id", "date", "title", "summary", "category", "sourceLabel"],
+        "properties": {
+          "id": { "type": "string" },
+          "date": { "type": "string", "format": "date" },
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "category": { "$ref": "#/components/schemas/TimelineCategory" },
+          "sourceLabel": { "type": "string" },
+          "sourceUrl": { "type": "string", "format": "uri" },
+          "scoreDelta": { "type": "number", "description": "Score points attributed to this event, signed. Present only when we have enough confidence to attribute it." }
+        }
+      },
+      "MpLookupResponse": {
+        "type": "object",
+        "required": ["name", "party", "email", "constituency", "memberId", "profileUrl"],
+        "properties": {
+          "name": { "type": "string", "example": "Rt Hon Rachel Reeves MP" },
+          "party": { "type": "string", "example": "Labour" },
+          "email": {
+            "type": ["string", "null"],
+            "description": "Always `null` — the parliament.uk Members API does not expose member email directly. Use `profileUrl` to open the member's official contact page."
+          },
+          "constituency": { "type": "string" },
+          "memberId": { "type": "integer", "description": "parliament.uk member ID." },
+          "profileUrl": { "type": "string", "format": "uri", "description": "Canonical members.parliament.uk contact page." }
+        }
+      },
+      "HealthOk": {
+        "type": "object",
+        "required": ["ok", "updatedAt", "ingestionLastSuccess"],
+        "properties": {
+          "ok": { "type": "boolean", "const": true },
+          "updatedAt": { "$ref": "#/components/schemas/Iso8601" },
+          "ingestionLastSuccess": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/components/schemas/Iso8601" },
+            "description": "Map of `sourceId` → ISO timestamp of the last successful ingest for that source."
+          }
+        }
+      },
+      "HealthDegraded": {
+        "type": "object",
+        "required": ["ok", "updatedAt", "ingestionLastSuccess", "code"],
+        "properties": {
+          "ok": { "type": "boolean", "const": false },
+          "updatedAt": { "$ref": "#/components/schemas/Iso8601" },
+          "ingestionLastSuccess": { "type": "object", "description": "Empty object when the audit table is unreachable." },
+          "code": { "type": "string", "const": "DB_ERROR" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error", "code"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Human-readable description. Content is not part of the stable API contract — clients should dispatch on `code`."
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "NOT_FOUND",
+              "METHOD_NOT_ALLOWED",
+              "BAD_QUERY",
+              "MISSING_PARAM",
+              "BAD_POSTCODE",
+              "RATE_LIMITED",
+              "NOT_SEEDED",
+              "DB_ERROR",
+              "UPSTREAM_ERROR",
+              "INTERNAL"
+            ],
+            "description": "Stable machine-readable error code. Clients should switch on this."
+          }
+        }
+      },
+      "NotSeededError": {
+        "type": "object",
+        "description": "The `NOT_SEEDED` 503 uses `message` rather than `error` — historical wart preserved for clients that already handle it.",
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string", "const": "NOT_SEEDED" },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  }
+}

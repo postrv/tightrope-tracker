@@ -10,7 +10,8 @@
     "./indicators": "./src/indicators.ts",
     "./delivery": "./src/delivery.ts",
     "./timeline": "./src/timeline.ts",
-    "./bands": "./src/bands.ts"
+    "./bands": "./src/bands.ts",
+    "./openapi": "./src/openapi.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",

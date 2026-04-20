@@ -4,22 +4,24 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro check && astro build",
+    "vendor": "node scripts/copy-scalar.mjs",
+    "dev": "pnpm run vendor && astro dev",
+    "build": "pnpm run vendor && astro check && astro build",
     "preview": "wrangler pages dev ./dist --compatibility-date=2025-01-01",
     "deploy": "pnpm build && wrangler pages deploy ./dist --project-name=tightrope-tracker --branch=main",
     "astro": "astro",
-    "typecheck": "astro check"
+    "typecheck": "pnpm run vendor && astro check"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^12.5.0",
     "@astrojs/check": "^0.9.4",
+    "@astrojs/cloudflare": "^12.5.0",
     "@tightrope/methodology": "workspace:*",
     "@tightrope/shared": "workspace:*",
     "astro": "^5.14.0",
     "typescript": "^5.7.2"
   },
   "devDependencies": {
+    "@scalar/api-reference": "1.52.3",
     "@types/node": "^22.10.0"
   }
 }

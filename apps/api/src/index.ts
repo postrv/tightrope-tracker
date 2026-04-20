@@ -11,14 +11,20 @@ import { handleDelivery } from "./handlers/delivery.js";
 import { handleTimeline } from "./handlers/timeline.js";
 import { handleMp } from "./handlers/mp.js";
 import { handleHealth } from "./handlers/health.js";
+import { handleOpenapi } from "./handlers/openapi.js";
 
-const router = new Router()
+/**
+ * Exported so the OpenAPI drift-guard test can list registered paths and
+ * assert they match the published spec (`apps/api/src/tests/openapi.test.ts`).
+ */
+export const router = new Router()
   .get("/api/v1/score", handleScore)
   .get("/api/v1/score/history", handleScoreHistory)
   .get("/api/v1/delivery", handleDelivery)
   .get("/api/v1/timeline", handleTimeline)
   .get("/api/v1/mp", (req, env) => handleMp(req, env))
-  .get("/api/v1/health", (req, env) => handleHealth(req, env));
+  .get("/api/v1/health", (req, env) => handleHealth(req, env))
+  .get("/api/v1/openapi.json", handleOpenapi);
 
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {

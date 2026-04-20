@@ -9,3 +9,4 @@ export * from "./sourceHealth.js";
 export * from "./staleness.js";
 export * from "./timeline.js";
 export * from "./types.js";
+export * from "./openapi.js";

@@ -225,8 +225,8 @@ const timeline: TLRow[] = [
     id: "t_2026_02_14", date: "2026-02-14",
     title: "Planning & Infrastructure Bill receives Royal Assent",
     summary: "Landmark reform of the planning system passes both houses with cross-bench support; commencement orders expected by late spring.",
-    category: "delivery", sourceLabel: "UK Parliament Bills",
-    sourceUrl: "https://bills.parliament.uk/",
+    category: "delivery", sourceLabel: "Planning & Infrastructure Act 2025",
+    sourceUrl: "https://www.legislation.gov.uk/ukpga/2025/34/enacted",
   },
   {
     id: "t_2026_02_12", date: "2026-02-12",

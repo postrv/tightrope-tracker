@@ -106,34 +106,30 @@ const scalarConfig = {
   .docs-main { padding-bottom: 48px; }
 
   .page-head {
-    padding: 48px 0 24px;
-  }
-  .page-head .eyebrow {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-3);
+    padding: 80px 0 0;
+    margin-bottom: 48px;
   }
   .page-head h1 {
     font-family: var(--font-serif);
-    font-weight: 400;
-    font-size: 44px;
-    line-height: 1.08;
-    margin: 10px 0 14px;
+    font-weight: 700;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.05;
+    margin: 16px 0;
     letter-spacing: -0.02em;
+    text-transform: lowercase;
     color: var(--ink-0);
   }
   .page-head .lede {
-    max-width: 62ch;
-    font-size: 16px;
-    line-height: 1.55;
+    max-width: 640px;
+    font-size: 17px;
+    line-height: 1.6;
     color: var(--ink-1);
   }
   .page-head .lede code {
     font-family: var(--font-mono);
     font-size: 14px;
-    background: color-mix(in srgb, var(--ink-0) 5%, transparent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
     padding: 1px 6px;
     border-radius: 4px;
   }
@@ -167,11 +163,7 @@ const scalarConfig = {
   }
 
   .docs-host {
-    /* Scalar ships its own internal layout + tokens; we give it the full
-       viewport width minus the standard page gutter and let its modern
-       layout carry from there. A subtle top border separates the branded
-       header from the embedded reference. */
-    margin-top: 28px;
+    margin-top: 0;
     border-top: 1px solid var(--border-soft);
     min-height: 480px;
     background: var(--bg-0);
@@ -179,12 +171,13 @@ const scalarConfig = {
   .noscript-fallback { padding: 32px 0; color: var(--ink-1); }
   .noscript-fallback code {
     font-family: var(--font-mono);
-    background: color-mix(in srgb, var(--ink-0) 6%, transparent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
     padding: 1px 6px;
     border-radius: 4px;
   }
 
   @media (max-width: 720px) {
-    .page-head h1 { font-size: 34px; }
+    .page-head h1 { font-size: clamp(28px, 5vw, 36px); }
   }
 </style>

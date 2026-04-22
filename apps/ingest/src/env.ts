@@ -20,6 +20,8 @@ export interface Env {
    * spam on every 5-minute tick.
    */
   ALERT_WEBHOOK_URL?: string;
-  /** Twelve Data API key for live housebuilder/FTSE quotes. */
+  /** Twelve Data API key for live housebuilder/FTSE quotes (deprecated — use EODHD). */
   TWELVE_DATA_KEY?: string;
+  /** EODHD API key for daily housebuilder EOD close prices. */
+  EODHD_API_KEY?: string;
 }

@@ -194,6 +194,27 @@ out.push("");
 type TLRow = { id: string; date: string; title: string; summary: string; category: string; sourceLabel: string; sourceUrl: string };
 const timeline: TLRow[] = [
   {
+    id: "t_2026_04_22", date: "2026-04-22",
+    title: "March CPI rises to 3.3%, BoE path under scrutiny",
+    summary: "ONS releases March 2026 CPI inflation data showing headline CPI at 3.3% YoY (up from ~3.0% in February), driven by lingering energy and petrol price effects from the Iran conflict period. Markets price in a more cautious BoE path ahead of the 30 April MPC decision; gilt yields stabilise but remain elevated.",
+    category: "fiscal", sourceLabel: "ONS Consumer price inflation",
+    sourceUrl: "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/latest",
+  },
+  {
+    id: "t_2026_04_21", date: "2026-04-21",
+    title: "Resolution Foundation: conflict could erase £16bn of headroom",
+    summary: "Resolution Foundation warns that a prolonged or severe Middle East conflict could erase up to £16bn of the Chancellor's current-budget headroom — almost three-quarters of the March OBR cushion — via higher energy prices, inflation, and debt interest. Report highlights fiscal vulnerability even under the current ceasefire.",
+    category: "fiscal", sourceLabel: "Resolution Foundation",
+    sourceUrl: "https://www.resolutionfoundation.org/publications/",
+  },
+  {
+    id: "t_2026_04_08", date: "2026-04-08",
+    title: "US, Israel and Iran agree conditional ceasefire",
+    summary: "US, Israel and Iran agree a conditional two-week ceasefire; UK Foreign Secretary and international finance ministers welcome the de-escalation, citing restored Strait of Hormuz shipping and falling oil and gas prices. Initial market relief begins, setting the stage for sterling's recovery to pre-war levels by 17 April.",
+    category: "geopolitical", sourceLabel: "Foreign Office / gov.uk",
+    sourceUrl: "https://www.gov.uk/government/organisations/foreign-commonwealth-development-office",
+  },
+  {
     id: "t_2026_04_17", date: "2026-04-17",
     title: "Sterling recovers to pre-war levels",
     summary: "GBP/USD back near 1.2400 as the Iran ceasefire holds and Strait of Hormuz shipping normalises. Oil and UK gas sell off sharply. BoE officials nonetheless stress inflation control remains the priority.",

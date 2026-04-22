@@ -7,7 +7,7 @@ import {
   growthSentimentAdapter,
   iceGasM1Adapter,
   lseFtse250Adapter,
-  lseHousebuildersAdapter,
+  twelveDataHousebuildersAdapter,
 } from "@tightrope/data-sources";
 import type { Env } from "../env.js";
 import { isUkMarketHours } from "../lib/time.js";
@@ -22,10 +22,9 @@ import { runAdapterSafe } from "./runAdapter.js";
  * Adapter ordering:
  *   1. BoE IADB live adapters (yields, FX, SONIA, breakevens) -- hit the same
  *      origin so we serialise to stay polite.
- *   2. Fixture-backed OBR-proxy adapters (housebuilders, Brent-in-GBP, growth
- *      sentiment composite) -- these are local reads, do no I/O against the
- *      public internet, but are fired through the same runAdapter path so they
- *      appear in the ingestion_audit log and surface in the observability UI.
+ *   2. OBR-proxy adapters (housebuilders via Twelve Data, Brent-in-GBP, growth
+ *      sentiment composite). Housebuilders now hit a live API (falls back to
+ *      fixture if TWELVE_DATA_KEY is unset); the rest are still fixture-backed.
  */
 export async function ingestMarket(
   env: Env,
@@ -46,7 +45,7 @@ export async function ingestMarket(
   await runAdapterSafe(env, boeBreakevensAdapter);
   await runAdapterSafe(env, eiaBrentAdapter);
   await runAdapterSafe(env, growthSentimentAdapter);
-  await runAdapterSafe(env, lseHousebuildersAdapter);
+  await runAdapterSafe(env, twelveDataHousebuildersAdapter);
   await runAdapterSafe(env, iceGasM1Adapter);
   await runAdapterSafe(env, lseFtse250Adapter);
   return { ran: true };

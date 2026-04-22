@@ -20,4 +20,6 @@ export interface Env {
    * spam on every 5-minute tick.
    */
   ALERT_WEBHOOK_URL?: string;
+  /** Twelve Data API key for live housebuilder/FTSE quotes. */
+  TWELVE_DATA_KEY?: string;
 }

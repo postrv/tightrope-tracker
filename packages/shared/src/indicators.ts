@@ -264,10 +264,10 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   // Growth-input proxies: housebuilder composite, Services PMI, consumer confidence, RICS balance.
   housebuilder_idx: {
     id: "housebuilder_idx", pillar: "market", label: "UK housebuilder composite", shortLabel: "Housebuilders",
-    unit: "index", weight: 0.05, risingIsBad: false, sourceId: "lseg_housebuilders",
+    unit: "index", weight: 0.05, risingIsBad: false, sourceId: "twelve_data_housebuilders",
     description: "Equal-weighted price index of the five largest listed UK housebuilders (rebased 100 = 2019 avg) -- leads OBR's residential investment and construction GVA lines by 3-6 months.",
     formatDisplay: fmtIndex(1),
-    provenance: "fixture",
+    provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
   },
   services_pmi: {
@@ -527,6 +527,11 @@ export const SOURCES: Record<string, DataSource> = {
     id: "lseg_housebuilders", name: "LSEG -- UK listed housebuilders (composite)",
     homepage: "https://www.londonstockexchange.com",
     notes: "Equal-weighted composite of Persimmon, Barratt Redrow, Taylor Wimpey, Berkeley, Vistry. No free daily bulk feed; data editorially curated from public last-close quotes. Licence: individual issuer closing prices are public domain; the composite calculation is ours.",
+  },
+  twelve_data_housebuilders: {
+    id: "twelve_data_housebuilders", name: "Twelve Data -- UK housebuilder composite (live)",
+    homepage: "https://twelvedata.com",
+    notes: "Equal-weighted composite of Persimmon, Barratt Redrow, Taylor Wimpey, Berkeley, Vistry via Twelve Data quote API. Rebased to 100 at 2019 average. Falls back to editorial fixture when API key is unset.",
   },
   eia_brent: {
     id: "eia_brent", name: "US EIA -- Europe Brent Spot Price (FOB)",

@@ -11,6 +11,7 @@ export { boeFxAdapter } from "./adapters/boeFx.js";
 export { boeSoniaAdapter } from "./adapters/boeSonia.js";
 export { boeBreakevensAdapter } from "./adapters/boeBreakevens.js";
 export { lseHousebuildersAdapter } from "./adapters/lseHousebuilders.js";
+export { twelveDataHousebuildersAdapter } from "./adapters/twelveDataHousebuilders.js";
 export { lseFtse250Adapter } from "./adapters/lseFtse250.js";
 export { iceGasM1Adapter } from "./adapters/iceGasM1.js";
 export { deliveryMilestonesAdapter } from "./adapters/deliveryMilestones.js";

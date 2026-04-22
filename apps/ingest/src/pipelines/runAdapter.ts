@@ -1,4 +1,4 @@
-import type { DataSourceAdapter, AdapterResult } from "@tightrope/data-sources";
+import type { DataSourceAdapter, AdapterResult, AdapterContext } from "@tightrope/data-sources";
 import type { Env } from "../env.js";
 import { closeAuditFailure, closeAuditSuccess, openAudit } from "../lib/audit.js";
 import { writeObservations } from "../lib/observations.js";
@@ -16,8 +16,13 @@ export async function runAdapter(env: Env, adapter: DataSourceAdapter): Promise<
   // We defer the sourceUrl until the adapter returns, but D1 requires a value
   // at INSERT time -- use the registry URL by convention.
   const handle = await openAudit(env.DB, { sourceId: adapter.id, sourceUrl: placeholderUrl(adapter) });
+  const ctx: AdapterContext = {
+    secrets: {
+      TWELVE_DATA_KEY: env.TWELVE_DATA_KEY,
+    },
+  };
   try {
-    const result = await adapter.fetch(globalThis.fetch);
+    const result = await adapter.fetch(globalThis.fetch, ctx);
     const rowsWritten = await writeObservations(env.DB, result.observations);
     const payloadHash = combineHashes(result.observations.map((o) => o.payloadHash));
     await closeAuditSuccess(env.DB, handle, {

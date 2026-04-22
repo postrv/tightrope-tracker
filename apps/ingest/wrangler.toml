@@ -50,6 +50,9 @@ crons = [
 ENVIRONMENT = "production"
 # secret required: ADMIN_TOKEN -- shared token for POST /admin/run?source=...
 # set via `wrangler secret put ADMIN_TOKEN` (do NOT commit to this file).
+# optional: TWELVE_DATA_KEY -- free-tier API key for live housebuilder quotes.
+# set via `wrangler secret put TWELVE_DATA_KEY`. Without it the adapter
+# falls back to the editorial fixture (packages/data-sources/fixtures/housebuilders.json).
 
 [observability]
 enabled = true

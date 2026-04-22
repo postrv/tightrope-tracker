@@ -54,14 +54,15 @@ const deltaYtdTip = dYtdBase
     <div class="hero-grid">
       <div>
         <span class="eyebrow">Civic data · {eyebrowDate(headline.updatedAt)}</span>
-        <h1>the UK is walking a <span class="lfg-u">fiscal tightrope</span>. this is how <span class="lfg-u lfg-u--blue">unstable</span> it is, right now.</h1>
-        <p class="lede">A live, transparent accountability dashboard tracking the real constraints on the UK government's growth agenda — markets, fiscal rules, the labour force, and delivery. One score. Four pillars. Every number sourced and open.</p>
+        <h1>the UK is on a <span class="lfg-u">fiscal tightrope</span>. the more it sways, the harder it is to <span class="lfg-u lfg-u--blue">move forward</span>.</h1>
+        <p class="lede">Fiscal headroom is thin. The less stable the economic picture — markets, borrowing costs, the labour force — the less freedom the government has to invest in growth. This score tracks that instability: how much the rope is swaying, and whether the government is steadying it or making it worse. Every number sourced and open.</p>
 
         <div class="score-card" style={`--band-colour: var(${bandColour});`}>
           <div>
             <div class="score-num" data-target={scoreRounded} aria-label={`Tightrope Score: ${scoreRounded} out of 100`}>
               <span class="score-value">{scoreRounded}</span><span class="sub">/100</span>
             </div>
+            <p class="score-direction">higher = less fiscal freedom</p>
             <div class="delta-row" aria-label="Changes over time">
               <span title="Baseline: one UTC day before the latest reading.">1d <span class={trendClass(delta24)}>{trendArrow(delta24)} {signedDelta(Math.abs(delta24), 1)}</span></span>
               {sharedFallback ? (
@@ -120,6 +121,7 @@ const deltaYtdTip = dYtdBase
 }
 .score-num { font-family: var(--font-mono); font-size: 88px; font-weight: 500; letter-spacing: -0.04em; line-height: 1; color: var(--ink-0); font-variant-numeric: tabular-nums; }
 .score-num .sub { font-size: 22px; color: var(--ink-2); font-weight: 400; }
+.score-direction { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ink-2); margin: 6px 0 0; text-transform: uppercase; }
 .score-meta { display: flex; flex-direction: column; gap: 6px; }
 .band-pill {
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;

@@ -65,11 +65,16 @@ export interface HistoricalFetchResult {
   notes?: string[];
 }
 
+/** Optional context passed to adapters at runtime (secrets, config). */
+export interface AdapterContext {
+  secrets?: Record<string, string | undefined>;
+}
+
 /** Adapter contract -- every source must implement this. */
 export interface DataSourceAdapter {
   id: string;
   name: string;
-  fetch(fetchImpl: typeof globalThis.fetch): Promise<AdapterResult>;
+  fetch(fetchImpl: typeof globalThis.fetch, ctx?: AdapterContext): Promise<AdapterResult>;
   /**
    * Optional: bulk fetch of historical observations over `[opts.from, opts.to]`.
    * Adapters that have no public historical source (fixture-backed live path)
@@ -80,5 +85,6 @@ export interface DataSourceAdapter {
   fetchHistorical?(
     fetchImpl: typeof globalThis.fetch,
     opts: HistoricalFetchOptions,
+    ctx?: AdapterContext,
   ): Promise<HistoricalFetchResult>;
 }

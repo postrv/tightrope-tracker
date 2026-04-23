@@ -166,12 +166,13 @@ const embedSnippets = {
 
         if (email && email !== FALLBACK_EMAIL) {
           // Primary CTA: open mailto: to the MP's parliamentary email.
-          updateMailto(email, letter.value);
-          sendBtn.href = mailto.href;
+          var mailtoUrl = 'mailto:' + email + '?subject=' + encodeURIComponent(SUBJECT) + '&body=' + encodeURIComponent(letter.value);
+          sendBtn.href = mailtoUrl;
           sendBtn.textContent = 'Email ' + (mp.name || 'MP') + ' ↗';
           sendBtn.onclick = (ev) => {
             ev.preventDefault();
-            window.location.href = mailto.href;
+            mailtoUrl = 'mailto:' + email + '?subject=' + encodeURIComponent(SUBJECT) + '&body=' + encodeURIComponent(letter.value);
+            window.location.href = mailtoUrl;
           };
           mailto.textContent = 'Copy letter & open contact page';
           mailto.href = profileUrl;
@@ -191,7 +192,12 @@ const embedSnippets = {
           };
           updateMailto(FALLBACK_EMAIL, letter.value);
         }
-        letter.addEventListener('input', () => { if (email) updateMailto(email, letter.value); }, { once: false });
+        letter.addEventListener('input', () => {
+          if (email) {
+            mailtoUrl = 'mailto:' + email + '?subject=' + encodeURIComponent(SUBJECT) + '&body=' + encodeURIComponent(letter.value);
+            sendBtn.href = mailtoUrl;
+          }
+        }, { once: false });
       } catch (err) {
         errorEl.hidden = false;
         errorEl.textContent = 'Could not look up that postcode. Check the format (e.g. EX4 4QJ) and try again.';

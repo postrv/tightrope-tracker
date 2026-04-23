@@ -98,7 +98,9 @@ function glossFor(indicatorId: string, change: number): string {
   const def = INDICATORS[indicatorId]!;
   if (change === 0) return `${def.label}: unchanged on the session.`;
   const dir = change > 0 ? "up" : "down";
-  const mag = Math.abs(change).toFixed(2);
+  const mag = def.unit === "%"
+    ? `${Math.round(Math.abs(change) * 100)}bp`
+    : Math.abs(change).toFixed(2);
   return `${def.label}: ${dir} ${mag} on the session.`;
 }
 

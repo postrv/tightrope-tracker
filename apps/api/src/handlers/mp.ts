@@ -6,13 +6,7 @@ const CACHE_DAYS = 7;
 export interface MpLookupResponse {
   name: string;
   party: string;
-  /**
-   * Parliament's Members API exposes `/Members/{id}/Contact`, but the email
-   * field is almost always absent (members choose what to publish). Rather
-   * than chasing a null field, we surface the canonical contact page URL and
-   * let the user submit the letter through Parliament's own form. Kept here
-   * as `string | null` so older clients that read `email` still compile.
-   */
+  /** Parliamentary email for the MP (firstname.lastname.mp@parliament.uk). */
   email: string | null;
   constituency: string;
   memberId: number;
@@ -127,16 +121,18 @@ async function fetchMpFromParliament(env: Env, postcode: string): Promise<MpLook
 
   // Prefer the embedded member if present, otherwise fall back to the explicit endpoint.
   const embedded = first.currentRepresentation?.member?.value;
-  if (embedded) return shapeMember(embedded, first.name);
-
-  const memberRes = await fetch(`${base}/Members/Location/Constituency/${first.id}/CurrentRepresentation`, {
-    headers: { accept: "application/json" },
-  });
-  if (!memberRes.ok) throw new Error(`member lookup ${memberRes.status}`);
-  const memberJson = await memberRes.json() as { value?: { member?: { value: ParliamentMember } } };
-  const member = memberJson.value?.member?.value;
+  const member = embedded ?? await (async () => {
+    const memberRes = await fetch(`${base}/Members/Location/Constituency/${first.id}/CurrentRepresentation`, {
+      headers: { accept: "application/json" },
+    });
+    if (!memberRes.ok) throw new Error(`member lookup ${memberRes.status}`);
+    const memberJson = await memberRes.json() as { value?: { member?: { value: ParliamentMember } } };
+    return memberJson.value?.member?.value ?? null;
+  })();
   if (!member) return null;
-  return shapeMember(member, first.name);
+
+  const email = await fetchContactEmail(base, member.id);
+  return shapeMember(member, first.name, email);
 }
 
 interface ParliamentMember {
@@ -145,20 +141,46 @@ interface ParliamentMember {
   nameFullTitle?: string;
   latestParty?: { name?: string };
   latestHouseMembership?: { membershipFrom?: string };
-  // The members API does not return email directly; it is available via
-  // /api/Members/{id}/Contact. We fetch lazily below.
 }
 
-function shapeMember(member: ParliamentMember, constituency: string): MpLookupResponse {
-  // Upstream fields are trusted today but cached for 7 days — scrub control
-  // chars and length-cap so a malformed response can't poison downstream
-  // renderers (mailto header injection, oversized DB rows).
+function deriveEmail(displayName: string): string | null {
+  const cleaned = displayName
+    .replace(/^(Sir|Dame|Dr|Mr|Mrs|Ms|Rt Hon|The)\s+/gi, "")
+    .replace(/\s+(MP|CBE|OBE|MBE|KC|QC|KBE|DBE)$/gi, "")
+    .trim();
+  const parts = cleaned.split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return null;
+  const first = parts[0]!.toLowerCase().replace(/[^a-z-]/g, "");
+  const last = parts[parts.length - 1]!.toLowerCase().replace(/[^a-z-]/g, "");
+  if (!first || !last) return null;
+  return `${first}.${last}.mp@parliament.uk`;
+}
+
+async function fetchContactEmail(base: string, memberId: number): Promise<string | null> {
+  try {
+    const res = await fetch(`${base}/Members/${memberId}/Contact`, {
+      headers: { accept: "application/json" },
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as { value?: Array<{ type?: string; email?: string }> };
+    const parliamentary = data.value?.find(
+      (c) => c.type === "Parliamentary" && typeof c.email === "string" && c.email.includes("@"),
+    );
+    return parliamentary?.email ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function shapeMember(member: ParliamentMember, constituency: string, email: string | null): MpLookupResponse {
   const safe = (s: string | undefined, max: number): string =>
     (s ?? "").replace(/[\r\n\t\x00-\x1f\x7f]/g, "").slice(0, max);
+  const name = safe(member.nameDisplayAs ?? member.nameFullTitle, 200);
   return {
-    name: safe(member.nameDisplayAs ?? member.nameFullTitle, 200),
+    name,
     party: safe(member.latestParty?.name, 120),
-    email: null,
+    email: email ?? deriveEmail(name),
     constituency: safe(member.latestHouseMembership?.membershipFrom ?? constituency, 120),
     memberId: member.id,
     profileUrl: buildProfileUrl(member.id),

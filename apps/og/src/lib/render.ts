@@ -1,18 +1,23 @@
 /**
  * Satori -> resvg-wasm -> PNG pipeline.
  *
- * We lazy-init the wasm module on first use and keep the promise on module
- * scope so subsequent renders skip initialisation. The wasm bytes are bundled
- * into the worker via the `wasm` import (wrangler handles the module import).
+ * Cloudflare Workers forbid dynamic WebAssembly.compile(). Both Satori (Yoga
+ * layout engine) and resvg need wasm — we use the "standalone" Satori build
+ * and import each .wasm file as a CompiledWasm module so wrangler pre-compiles
+ * them at deploy time.
  */
-import satori from "satori";
-// @cf-wasm/resvg is a drop-in replacement for @resvg/resvg-wasm specifically
-// built for Cloudflare Workers: the wasm module is pre-compiled and wired up
-// at import time, which avoids the runtime WebAssembly.compile() that Workers
-// forbids. No explicit initWasm() call is needed.
+import satoriStandalone, { init as initYoga } from "satori/standalone";
+// @ts-expect-error -- wrangler resolves the export as a compiled WebAssembly.Module
+import yogaWasm from "satori/yoga.wasm";
 import { Resvg } from "@cf-wasm/resvg";
 import type { SatoriFont } from "./fonts.js";
 import type { JsxNode } from "../jsx/jsx-runtime.js";
+
+let yogaReady: Promise<void> | null = null;
+function ensureYoga(): Promise<void> {
+  if (!yogaReady) yogaReady = initYoga(yogaWasm);
+  return yogaReady;
+}
 
 export interface RenderOptions {
   width: number;
@@ -38,7 +43,8 @@ export async function renderPng(tree: JsxNode, opts: RenderOptions): Promise<Uin
 }
 
 async function runPipeline(tree: JsxNode, opts: RenderOptions): Promise<Uint8Array> {
-  const svg = await satori(tree as unknown as Parameters<typeof satori>[0], {
+  await ensureYoga();
+  const svg = await satoriStandalone(tree as unknown as Parameters<typeof satoriStandalone>[0], {
     width: opts.width,
     height: opts.height,
     fonts: opts.fonts,

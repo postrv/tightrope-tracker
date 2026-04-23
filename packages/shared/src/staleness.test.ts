@@ -49,9 +49,9 @@ describe("maxStaleMsForIndicator", () => {
     }
   });
 
-  it("gas_m1 and ftse_250 use the weekly-fixture window (adapter has a 14-day freshness guard)", () => {
+  it("ftse_250 uses the weekly-fixture window (adapter has a 14-day freshness guard)", () => {
     const weeklyFixtureMs = 14 * DAY_MS;
-    for (const id of ["gas_m1", "ftse_250"]) {
+    for (const id of ["ftse_250"]) {
       expect(INDICATORS[id]!.maxStaleMs, `${id}`).toBe(weeklyFixtureMs);
       expect(INDICATORS[id]!.provenance, `${id}`).toBe("live");
     }
@@ -81,8 +81,8 @@ describe("maxStaleMsForIndicator", () => {
 
   it("daily live feeds use a window between 3 and 7 days", () => {
     const dailyIds = [
-      "gilt_10y", "gilt_30y", "breakeven_5y", "breakeven_10y", "gilt_il_10y_real",
-      "gbp_usd", "gbp_twi", "sonia_12m",
+      "gilt_10y", "gilt_30y", "breakeven_5y",
+      "gbp_usd", "gbp_twi",
       "ilg_share", "issuance_long_share",
       "mortgage_2y_fix", "housebuilder_idx",
     ];

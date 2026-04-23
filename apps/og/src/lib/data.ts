@@ -12,6 +12,17 @@ export async function loadSnapshot(env: Env): Promise<ScoreSnapshot> {
   return buildFromD1(env);
 }
 
+export interface CardIndicators {
+  gilt30y: number | null;
+}
+
+export async function loadCardIndicators(env: Env): Promise<CardIndicators> {
+  const row = await env.DB.prepare(
+    "SELECT value FROM indicator_observations WHERE indicator_id = 'gilt_30y' ORDER BY observed_at DESC LIMIT 1",
+  ).first<{ value: number }>();
+  return { gilt30y: row?.value ?? null };
+}
+
 async function buildFromD1(env: Env): Promise<ScoreSnapshot> {
   const [headlineRow, pillarsLatest] = await Promise.all([
     env.DB.prepare(

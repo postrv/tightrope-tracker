@@ -15,7 +15,7 @@
 import type { PillarId } from "@tightrope/shared";
 import { PILLAR_ORDER } from "@tightrope/shared";
 import { loadFonts } from "./lib/fonts.js";
-import { loadSnapshot } from "./lib/data.js";
+import { loadSnapshot, loadCardIndicators } from "./lib/data.js";
 import { OgRenderTimeoutError, pngResponse, renderPng, renderTimeoutResponse } from "./lib/render.js";
 import { CARD_H, CARD_W } from "./templates/components.js";
 import { HeadlineCard } from "./templates/headline.js";
@@ -126,14 +126,28 @@ async function renderInactivity(env: Env): Promise<Response> {
   return pngResponse(png);
 }
 
+const MORTGAGE_BASELINE_PCT = 5.18;
+const MORTGAGE_CURRENT_PCT = 5.84;
+
+function mortgageExtra(baselinePct: number, currentPct: number, principal = 250_000, termYears = 25): number {
+  const monthly = (p: number, r: number, n: number) => {
+    const mr = r / 100 / 12;
+    return mr === 0 ? p / n : (p * mr) / (1 - Math.pow(1 + mr, -n));
+  };
+  const n = termYears * 12;
+  return Math.round(monthly(principal, currentPct, n) - monthly(principal, baselinePct, n));
+}
+
 async function renderMortgage(env: Env): Promise<Response> {
   const snapshot = await loadSnapshot(env);
   const fonts = await loadFonts(env);
+  const extra = mortgageExtra(MORTGAGE_BASELINE_PCT, MORTGAGE_CURRENT_PCT);
+  const spreadBp = Math.round((MORTGAGE_CURRENT_PCT - MORTGAGE_BASELINE_PCT) * 100);
   const png = await renderPng(
     MortgagePressureCard({
-      extraPerMonth: 142,
-      twoYearFixPct: 5.84,
-      spreadBp: 125,
+      extraPerMonth: extra,
+      twoYearFixPct: MORTGAGE_CURRENT_PCT,
+      spreadBp,
       updatedAt: snapshot.headline.updatedAt,
     }),
     { width: CARD_W, height: CARD_H, fonts },
@@ -142,10 +156,11 @@ async function renderMortgage(env: Env): Promise<Response> {
 }
 
 async function renderGilt30y(env: Env): Promise<Response> {
-  const snapshot = await loadSnapshot(env);
-  const fonts = await loadFonts(env);
+  const [snapshot, indicators, fonts] = await Promise.all([
+    loadSnapshot(env), loadCardIndicators(env), loadFonts(env),
+  ]);
   const png = await renderPng(
-    Gilt30yCard({ yieldPct: 5.73, updatedAt: snapshot.headline.updatedAt }),
+    Gilt30yCard({ yieldPct: indicators.gilt30y ?? 5.73, updatedAt: snapshot.headline.updatedAt }),
     { width: CARD_W, height: CARD_H, fonts },
   );
   return pngResponse(png);

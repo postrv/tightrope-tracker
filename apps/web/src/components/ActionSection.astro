@@ -61,7 +61,7 @@ const embedSnippets = {
     <div class="actions-grid">
       <div class="action-card" data-mp-card>
         <h3>Write to your MP</h3>
-        <p>Enter your postcode. We'll find your MP and pre-fill a short, factual letter citing today's Tightrope Score, the worst-performing pillar, and the methodology page. One click copies the letter and opens the MP's Parliament contact form — no email needed.</p>
+        <p>Enter your postcode. We'll find your MP and pre-fill a short, factual letter citing today's Tightrope Score, the worst-performing pillar, and the methodology page. One click opens a draft email to your MP's parliamentary address.</p>
         <form class="mp-form" aria-label="MP postcode lookup">
           <label class="mp-label" for="mp-postcode">UK postcode</label>
           <div class="input-row">
@@ -76,8 +76,8 @@ const embedSnippets = {
           <label for="mp-letter" class="mp-label">Your draft</label>
           <textarea id="mp-letter" data-mp-letter rows="14">{defaultLetter}</textarea>
           <div class="mp-actions">
-            <a class="btn" data-mp-send href="#" target="_blank" rel="noopener">Copy letter &amp; open contact page ↗</a>
-            <a class="btn ghost" data-mp-mailto href="#">Open in email</a>
+            <a class="btn" data-mp-send href="#" target="_blank" rel="noopener">Email your MP ↗</a>
+            <a class="btn ghost" data-mp-mailto href="#">Contact page</a>
             <button class="btn ghost" type="button" data-mp-reset>Reset draft</button>
           </div>
           <p class="mp-hint" data-mp-copy-feedback hidden>Letter copied to clipboard — paste it into the form on Parliament's site.</p>
@@ -158,30 +158,40 @@ const embedSnippets = {
         const mp = await res.json();
         const filled = String(defaultLetter).replace('[MP name]', mp.name || 'MP');
         letter.value = filled;
-        meta.textContent = mp.name + ' — ' + mp.party + ' · ' + mp.constituency;
+        meta.textContent = mp.name + ' — ' + mp.party + ' · ' + mp.constituency + (mp.email ? ' · ' + mp.email : '');
         result.hidden = false;
 
-        // Primary CTA: copy letter + open the MP's Parliament contact page.
-        // This is more reliable than mailto: because email is rarely published
-        // and mailto: handlers are inconsistent across browsers/OSes.
         const profileUrl = safeProfileUrl(mp.profileUrl);
-        sendBtn.href = profileUrl;
-        sendBtn.textContent = 'Copy letter & open ' + (mp.name || 'MP') + "'s contact page ↗";
-        sendBtn.onclick = async (ev) => {
-          ev.preventDefault();
-          try {
-            await navigator.clipboard.writeText(letter.value);
-            if (copyFeedback) copyFeedback.hidden = false;
-          } catch {
-            // Clipboard denied -- open the page anyway, user can re-type.
-          }
-          setTimeout(() => { window.open(profileUrl, '_blank', 'noopener'); }, 400);
-        };
+        const email = mp.email ? safeEmail(mp.email) : null;
 
-        // Secondary CTA: mailto: fallback for users who prefer their own client.
-        const email = mp.email || FALLBACK_EMAIL;
-        updateMailto(email, letter.value);
-        letter.addEventListener('input', () => { updateMailto(email, letter.value); }, { once: false });
+        if (email && email !== FALLBACK_EMAIL) {
+          // Primary CTA: open mailto: to the MP's parliamentary email.
+          updateMailto(email, letter.value);
+          sendBtn.href = mailto.href;
+          sendBtn.textContent = 'Email ' + (mp.name || 'MP') + ' ↗';
+          sendBtn.onclick = (ev) => {
+            ev.preventDefault();
+            window.location.href = mailto.href;
+          };
+          mailto.textContent = 'Copy letter & open contact page';
+          mailto.href = profileUrl;
+          mailto.onclick = async (ev) => {
+            ev.preventDefault();
+            try { await navigator.clipboard.writeText(letter.value); if (copyFeedback) copyFeedback.hidden = false; } catch {}
+            setTimeout(() => { window.open(profileUrl, '_blank', 'noopener'); }, 400);
+          };
+        } else {
+          // Fallback: copy letter + open Parliament contact form.
+          sendBtn.href = profileUrl;
+          sendBtn.textContent = 'Copy letter & open ' + (mp.name || 'MP') + "'s contact page ↗";
+          sendBtn.onclick = async (ev) => {
+            ev.preventDefault();
+            try { await navigator.clipboard.writeText(letter.value); if (copyFeedback) copyFeedback.hidden = false; } catch {}
+            setTimeout(() => { window.open(profileUrl, '_blank', 'noopener'); }, 400);
+          };
+          updateMailto(FALLBACK_EMAIL, letter.value);
+        }
+        letter.addEventListener('input', () => { if (email) updateMailto(email, letter.value); }, { once: false });
       } catch (err) {
         errorEl.hidden = false;
         errorEl.textContent = 'Could not look up that postcode. Check the format (e.g. EX4 4QJ) and try again.';

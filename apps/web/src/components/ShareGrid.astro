@@ -54,7 +54,7 @@ const cards = [
     variant: "",
     brand: "Tightrope Tracker · Market",
     stat: gilt30 ? gilt30.displayValue : "5.73%",
-    label: "30-year gilt yield. A fresh multi-decade high. UK borrowing costs above Italy and Greece.",
+    label: "20-year gilt yield. A fresh multi-decade high. UK borrowing costs above Italy and Greece.",
     foot: ["Source · DMO, BoE", today],
     ogPath: "/og/gilt-30y-high.png",
   },
@@ -90,7 +90,7 @@ const cards = [
 
     <div class="share-grid">
       {cards.map((c) => (
-        <a class={`share-card ${c.variant}`} href={c.ogPath} rel="noopener" aria-label={`Open share image: ${c.brand}`}>
+        <a class={`share-card ${c.variant}`} href={`https://og.tightropetracker.uk${c.ogPath}`} rel="noopener" aria-label={`Open share image: ${c.brand}`}>
           <div class="sc-brand">{c.brand}</div>
           <div>
             <div class="sc-stat">{c.stat}</div>

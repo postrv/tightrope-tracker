@@ -61,3 +61,4 @@ wrangler.toml.bak
 # vendored third-party JS copied from node_modules at build time
 # (see apps/web/scripts/copy-scalar.mjs). Source of truth is package.json.
 apps/web/public/vendor/
+/ADMIN.md

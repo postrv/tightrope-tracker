@@ -314,7 +314,7 @@ const movements: MovementRow[] = [
     gloss: "Above the 4.7% MPC comfort zone.",
   },
   {
-    indicatorId: "gilt_30y", label: "30y gilt", latest: 5.73, display: "5.73%",
+    indicatorId: "gilt_30y", label: "20y gilt", latest: 5.73, display: "5.73%",
     change: 0.09, changePct: 1.60, changeDisplay: "+9 bp", direction: "up", worsening: 1,
     sparkline: [5.58, 5.60, 5.62, 5.65, 5.68, 5.70, 5.71, 5.73],
     gloss: "Fresh multi-decade high.",
@@ -326,22 +326,10 @@ const movements: MovementRow[] = [
     gloss: "Off pre-war highs, BoE dovish repricing.",
   },
   {
-    indicatorId: "ftse_250", label: "FTSE 250", latest: 19842, display: "19,842",
-    change: -164, changePct: -0.82, changeDisplay: "-0.82%", direction: "down", worsening: 1,
-    sparkline: [20020, 19980, 19950, 19910, 19900, 19880, 19860, 19842],
-    gloss: "Domestic names leading the fall.",
-  },
-  {
-    indicatorId: "gas_m1", label: "UK gas M+1", latest: 118, display: "118 p/th",
-    change: -5.04, changePct: -4.1, changeDisplay: "-4.1%", direction: "down", worsening: 0,
-    sparkline: [126, 124, 123, 122, 121, 120, 119, 118],
-    gloss: "Ceasefire relief, still 41% YoY.",
-  },
-  {
-    indicatorId: "sonia_12m", label: "SONIA 12m", latest: 3.92, display: "3.92%",
-    change: -0.03, changePct: -0.76, changeDisplay: "-3 bp", direction: "down", worsening: 0,
-    sparkline: [3.97, 3.96, 3.96, 3.95, 3.94, 3.93, 3.93, 3.92],
-    gloss: "One cut priced by September.",
+    indicatorId: "ftse_250", label: "FTSE 250", latest: 22984, display: "22,984",
+    change: 312, changePct: 1.38, changeDisplay: "+1.38%", direction: "up", worsening: 0,
+    sparkline: [22100, 22280, 22450, 22580, 22700, 22810, 22900, 22984],
+    gloss: "Post-tariff recovery extends.",
   },
 ];
 for (const m of movements) {

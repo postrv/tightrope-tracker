@@ -1,11 +1,9 @@
 import {
   boeBreakevensAdapter,
   boeFxAdapter,
-  boeSoniaAdapter,
   boeYieldsAdapter,
   eiaBrentAdapter,
   growthSentimentAdapter,
-  iceGasM1Adapter,
   lseFtse250Adapter,
 } from "@tightrope/data-sources";
 import type { Env } from "../env.js";
@@ -19,8 +17,8 @@ import { runAdapterSafe } from "./runAdapter.js";
  * but skip the fetches.
  *
  * Adapter ordering:
- *   1. BoE IADB live adapters (yields, FX, SONIA, breakevens) -- hit the same
- *      origin so we serialise to stay polite.
+ *   1. BoE IADB live adapters (yields, FX, breakevens) -- hit the same origin
+ *      so we serialise to stay polite.
  *   2. OBR-proxy adapters (Brent-in-GBP, growth sentiment composite) -- still
  *      fixture-backed. Housebuilders moved to the fiscal pipeline (daily via
  *      EODHD, free-tier rate limit).
@@ -40,11 +38,9 @@ export async function ingestMarket(
   // the caller can proceed to the next adapter and ultimately to recompute.
   await runAdapterSafe(env, boeYieldsAdapter);
   await runAdapterSafe(env, boeFxAdapter);
-  await runAdapterSafe(env, boeSoniaAdapter);
   await runAdapterSafe(env, boeBreakevensAdapter);
   await runAdapterSafe(env, eiaBrentAdapter);
   await runAdapterSafe(env, growthSentimentAdapter);
-  await runAdapterSafe(env, iceGasM1Adapter);
   await runAdapterSafe(env, lseFtse250Adapter);
   return { ran: true };
 }

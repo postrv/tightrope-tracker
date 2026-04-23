@@ -1,11 +1,11 @@
 /**
- * Bank of England IADB -- 10y and 30y nominal gilt yields.
+ * Bank of England IADB -- 10y and 20y nominal gilt yields.
  *
  * Series codes:
- *   IUDMNPY  -- 10-year nominal par yield
- *   IUDMNZC  -- 30-year nominal par yield (long end proxy)
+ *   IUDMNZC  -- 10-year nominal zero-coupon yield
+ *   IUDLNZC  -- 20-year nominal zero-coupon yield
  *
- * The IADB CSV endpoint returns a small table: DATE, IUDMNPY, IUDMNZC.
+ * The IADB CSV endpoint returns a small table: DATE, IUDMNZC, IUDLNZC.
  * We take the most recent row with at least one non-empty yield.
  */
 import type {
@@ -23,11 +23,11 @@ import { buildBoEIadbUrl, BOE_FETCH_HEADERS } from "../lib/boe.js";
 import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "boe_yields";
-const SERIES_CODES = "IUDMNPY,IUDMNZC";
+const SERIES_CODES = "IUDMNZC,IUDLNZC";
 
 export const boeYieldsAdapter: DataSourceAdapter = {
   id: SOURCE_ID,
-  name: "Bank of England -- gilt yields (IUDMNPY, IUDMNZC)",
+  name: "Bank of England -- gilt yields (IUDMNZC, IUDLNZC)",
   async fetch(fetchImpl): Promise<AdapterResult> {
     const url = buildBoEIadbUrl(SERIES_CODES);
     const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
@@ -44,9 +44,9 @@ export const boeYieldsAdapter: DataSourceAdapter = {
       });
     }
     const dateKey = findKey(rows[0]!, ["DATE", "Date"]);
-    const tenKey = findKey(rows[0]!, ["IUDMNPY"]);
-    const thirtyKey = findKey(rows[0]!, ["IUDMNZC"]);
-    if (!dateKey || !tenKey || !thirtyKey) {
+    const tenKey = findKey(rows[0]!, ["IUDMNZC"]);
+    const twentyKey = findKey(rows[0]!, ["IUDLNZC"]);
+    if (!dateKey || !tenKey || !twentyKey) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
         sourceUrl: url,
@@ -55,13 +55,13 @@ export const boeYieldsAdapter: DataSourceAdapter = {
     }
 
     // Walk from the bottom to find the most recent row with usable data.
-    let latest: { date: string; ten: number | null; thirty: number | null } | null = null;
+    let latest: { date: string; ten: number | null; twenty: number | null } | null = null;
     for (let i = rows.length - 1; i >= 0; i--) {
       const row = rows[i]!;
       const ten = parseNum(row[tenKey]);
-      const thirty = parseNum(row[thirtyKey]);
-      if (ten === null && thirty === null) continue;
-      latest = { date: row[dateKey]!, ten, thirty };
+      const twenty = parseNum(row[twentyKey]);
+      if (ten === null && twenty === null) continue;
+      latest = { date: row[dateKey]!, ten, twenty };
       break;
     }
     if (!latest) {
@@ -78,8 +78,8 @@ export const boeYieldsAdapter: DataSourceAdapter = {
     if (latest.ten !== null) {
       observations.push({ indicatorId: "gilt_10y", value: latest.ten, observedAt, sourceId: SOURCE_ID, payloadHash });
     }
-    if (latest.thirty !== null) {
-      observations.push({ indicatorId: "gilt_30y", value: latest.thirty, observedAt, sourceId: SOURCE_ID, payloadHash });
+    if (latest.twenty !== null) {
+      observations.push({ indicatorId: "gilt_30y", value: latest.twenty, observedAt, sourceId: SOURCE_ID, payloadHash });
     }
     return { observations, sourceUrl: url, fetchedAt: new Date().toISOString() };
   },
@@ -101,9 +101,9 @@ async function fetchBoeYieldsHistorical(
     throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: url, message: "BoE yields: no rows in CSV payload" });
   }
   const dateKey = findKey(rows[0]!, ["DATE", "Date"]);
-  const tenKey = findKey(rows[0]!, ["IUDMNPY"]);
-  const thirtyKey = findKey(rows[0]!, ["IUDMNZC"]);
-  if (!dateKey || !tenKey || !thirtyKey) {
+  const tenKey = findKey(rows[0]!, ["IUDMNZC"]);
+  const twentyKey = findKey(rows[0]!, ["IUDLNZC"]);
+  if (!dateKey || !tenKey || !twentyKey) {
     throw new AdapterError({
       sourceId: SOURCE_ID,
       sourceUrl: url,
@@ -123,8 +123,8 @@ async function fetchBoeYieldsHistorical(
     if (!Number.isFinite(rowMs) || rowMs < fromMs || rowMs > toMs) continue;
 
     const ten = parseNum(row[tenKey]);
-    const thirty = parseNum(row[thirtyKey]);
-    if (ten === null && thirty === null) {
+    const twenty = parseNum(row[twentyKey]);
+    if (ten === null && twenty === null) {
       skippedBlank++;
       continue;
     }
@@ -137,13 +137,13 @@ async function fetchBoeYieldsHistorical(
         payloadHash: await historicalPayloadHash("gilt_10y", observedAt, ten),
       });
     }
-    if (thirty !== null) {
+    if (twenty !== null) {
       observations.push({
         indicatorId: "gilt_30y",
-        value: thirty,
+        value: twenty,
         observedAt,
         sourceId: SOURCE_ID,
-        payloadHash: await historicalPayloadHash("gilt_30y", observedAt, thirty),
+        payloadHash: await historicalPayloadHash("gilt_30y", observedAt, twenty),
       });
     }
   }

@@ -20,8 +20,8 @@ const gilt10 = findMovement("gilt_10y");
 const gilt30 = findMovement("gilt_30y");
 const ftse = findMovement("ftse_250");
 const gbp = findMovement("gbp_usd");
-const sonia = findMovement("sonia_12m");
-const gas = findMovement("gas_m1");
+const brent = findMovement("brent_gbp");
+const be5 = findMovement("breakeven_5y");
 const sparkline = (pillar.sparkline30d ?? []).filter((n) => Number.isFinite(n));
 const hasSparkline = sparkline.length >= 2;
 const coverage = describeSparklineCoverage(sparkline);
@@ -53,7 +53,7 @@ const coverage = describeSparklineCoverage(sparkline);
     <div class="market-grid">
       <div class="chart-card">
         <h3>Gilt curve anchors</h3>
-        <p class="hint">10y and 30y benchmark yields — the long end is the squeeze.</p>
+        <p class="hint">10y and 20y zero-coupon yields, breakeven inflation, and risk assets.</p>
         <div class="quad">
           <div class="mini">
             <div class="mini-head"><span class="mini-label">10y gilt</span><ProvenanceBadge indicatorId="gilt_10y" compact /></div>
@@ -61,14 +61,14 @@ const coverage = describeSparklineCoverage(sparkline);
             <span class={`mini-chg ${gilt10?.worsening ? "up" : "dn"}`}>{gilt10?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <div class="mini-head"><span class="mini-label">30y gilt</span><ProvenanceBadge indicatorId="gilt_30y" compact /></div>
+            <div class="mini-head"><span class="mini-label">20y gilt</span><ProvenanceBadge indicatorId="gilt_30y" compact /></div>
             <span class="mini-val">{gilt30?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${gilt30?.worsening ? "up" : "dn"}`}>{gilt30?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <div class="mini-head"><span class="mini-label">SONIA 12m</span><ProvenanceBadge indicatorId="sonia_12m" compact /></div>
-            <span class="mini-val">{sonia?.displayValue ?? "—"}</span>
-            <span class={`mini-chg ${sonia?.worsening ? "up" : "dn"}`}>{sonia?.changeDisplay ?? ""}</span>
+            <div class="mini-head"><span class="mini-label">5y BE</span><ProvenanceBadge indicatorId="breakeven_5y" compact /></div>
+            <span class="mini-val">{be5?.displayValue ?? "—"}</span>
+            <span class={`mini-chg ${be5?.worsening ? "up" : "dn"}`}>{be5?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
             <div class="mini-head"><span class="mini-label">GBP / USD</span><ProvenanceBadge indicatorId="gbp_usd" compact /></div>
@@ -81,9 +81,9 @@ const coverage = describeSparklineCoverage(sparkline);
             <span class={`mini-chg ${ftse?.worsening ? "up" : "dn"}`}>{ftse?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <div class="mini-head"><span class="mini-label">UK gas M+1</span><ProvenanceBadge indicatorId="gas_m1" compact /></div>
-            <span class="mini-val">{gas?.displayValue ?? "—"}</span>
-            <span class={`mini-chg ${gas?.worsening ? "up" : "dn"}`}>{gas?.changeDisplay ?? ""}</span>
+            <div class="mini-head"><span class="mini-label">Brent GBP</span><ProvenanceBadge indicatorId="brent_gbp" compact /></div>
+            <span class="mini-val">{brent?.displayValue ?? "—"}</span>
+            <span class={`mini-chg ${brent?.worsening ? "up" : "dn"}`}>{brent?.changeDisplay ?? ""}</span>
           </div>
         </div>
       </div>
@@ -118,7 +118,7 @@ const coverage = describeSparklineCoverage(sparkline);
 
     <div class="why">
       <h4>Why this matters</h4>
-      <p>Long gilt yields are the price the government pays to borrow for thirty years. When they rise, debt service bills rise with them, the Chancellor's fiscal headroom shrinks, and sterling often weakens — compounding inflation via imports. The 30-year yield is the single most-quoted indicator of "markets are tightening the vice", and it is the one that moves first when policy credibility is in question.</p>
+      <p>Long gilt yields are the price the government pays to borrow. When they rise, debt service bills rise with them, the Chancellor's fiscal headroom shrinks, and sterling often weakens — compounding inflation via imports. The 20-year zero-coupon yield is the clearest long-duration read on the BoE curve, and it is the one that moves first when policy credibility is in question.</p>
     </div>
   </div>
 </section>

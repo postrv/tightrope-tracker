@@ -4,7 +4,7 @@ import Sparkline from "~/components/charts/Sparkline.astro";
 import { loadMovements } from "~/lib/page-data.js";
 
 const movements = await loadMovements(Astro.locals);
-const marketIds = ["gilt_10y", "gilt_30y", "gbp_usd", "ftse_250", "gas_m1", "sonia_12m"] as const;
+const marketIds = ["gilt_10y", "gilt_30y", "breakeven_5y", "gbp_usd", "ftse_250", "brent_gbp"] as const;
 const cards = marketIds
   .map((id) => movements.find((m) => m.indicatorId === id))
   .filter((x): x is NonNullable<typeof x> => Boolean(x));

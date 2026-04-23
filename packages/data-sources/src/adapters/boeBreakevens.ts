@@ -1,22 +1,17 @@
 /**
- * Bank of England IADB -- breakeven inflation and index-linked real yields.
+ * Bank of England IADB -- 5-year breakeven inflation.
  *
  * Series codes:
  *   IUDSNZC  -- 5-year nominal zero-coupon yield
- *   IUDMNZC  -- 10-year nominal zero-coupon yield
  *   IUDSIZC  -- 5-year real (index-linked) zero-coupon yield
- *   IUDMIZC  -- 10-year real (index-linked) zero-coupon yield
  *
- * We pull all four in one IADB CSV request, take the most recent row where
- * every series has a numeric value, and emit three indicators:
+ * We pull both in one IADB CSV request, take the most recent row where
+ * both series have a numeric value, and emit one indicator:
  *
- *   breakeven_5y        = nominal 5y - real 5y     (market-implied CPI 5y)
- *   breakeven_10y       = nominal 10y - real 10y   (market-implied CPI 10y)
- *   gilt_il_10y_real    = real 10y                 (real-rate regime proxy)
+ *   breakeven_5y = nominal 5y - real 5y   (market-implied CPI 5y)
  *
- * These are OBR-proxy indicators: breakevens lead the OBR's CPI inflation
- * forecast and the 10y real yield tracks the real-rate assumption behind
- * OBR's trend-growth path. See docs/OBR_PROXIES.md.
+ * This is an OBR-proxy indicator: the 5y breakeven leads the OBR's CPI
+ * inflation forecast. See docs/OBR_PROXIES.md.
  */
 import type {
   AdapterResult,
@@ -33,19 +28,17 @@ import { buildBoEIadbUrl, BOE_FETCH_HEADERS } from "../lib/boe.js";
 import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "boe_yields";
-const SERIES_CODES = "IUDSNZC,IUDMNZC,IUDSIZC,IUDMIZC";
+const SERIES_CODES = "IUDSNZC,IUDSIZC";
 
 interface LatestRow {
   date: string;
   nom5: number;
-  nom10: number;
   real5: number;
-  real10: number;
 }
 
 export const boeBreakevensAdapter: DataSourceAdapter = {
   id: "boe_breakevens",
-  name: "Bank of England -- breakevens & real yields (IUDSNZC/IUDMNZC/IUDSIZC/IUDMIZC)",
+  name: "Bank of England -- 5y breakeven (IUDSNZC/IUDSIZC)",
   async fetch(fetchImpl): Promise<AdapterResult> {
     const url = buildBoEIadbUrl(SERIES_CODES);
     const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
@@ -65,11 +58,9 @@ export const boeBreakevensAdapter: DataSourceAdapter = {
     const dateKey = "DATE" in first ? "DATE" : "Date" in first ? "Date" : null;
     const keys = {
       nom5: "IUDSNZC" in first ? "IUDSNZC" : null,
-      nom10: "IUDMNZC" in first ? "IUDMNZC" : null,
       real5: "IUDSIZC" in first ? "IUDSIZC" : null,
-      real10: "IUDMIZC" in first ? "IUDMIZC" : null,
     };
-    if (!dateKey || !keys.nom5 || !keys.nom10 || !keys.real5 || !keys.real10) {
+    if (!dateKey || !keys.nom5 || !keys.real5) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
         sourceUrl: url,
@@ -77,34 +68,28 @@ export const boeBreakevensAdapter: DataSourceAdapter = {
       });
     }
 
-    // Walk from newest to oldest to find the first row where every series parses.
     let latest: LatestRow | null = null;
     for (let i = rows.length - 1; i >= 0; i--) {
       const row = rows[i]!;
       const nom5 = parseNum(row[keys.nom5]);
-      const nom10 = parseNum(row[keys.nom10]);
       const real5 = parseNum(row[keys.real5]);
-      const real10 = parseNum(row[keys.real10]);
-      if (nom5 === null || nom10 === null || real5 === null || real10 === null) continue;
-      latest = { date: row[dateKey]!, nom5, nom10, real5, real10 };
+      if (nom5 === null || real5 === null) continue;
+      latest = { date: row[dateKey]!, nom5, real5 };
       break;
     }
     if (!latest) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
         sourceUrl: url,
-        message: "BoE breakevens: no row with all four yields populated",
+        message: "BoE breakevens: no row with both 5y yields populated",
       });
     }
 
     const observedAt = boeDateToIso(latest.date);
     const payloadHash = await sha256Hex(body);
     const be5 = latest.nom5 - latest.real5;
-    const be10 = latest.nom10 - latest.real10;
     const observations: RawObservation[] = [
-      { indicatorId: "breakeven_5y",      value: be5,           observedAt, sourceId: SOURCE_ID, payloadHash },
-      { indicatorId: "breakeven_10y",     value: be10,          observedAt, sourceId: SOURCE_ID, payloadHash },
-      { indicatorId: "gilt_il_10y_real",  value: latest.real10, observedAt, sourceId: SOURCE_ID, payloadHash },
+      { indicatorId: "breakeven_5y", value: be5, observedAt, sourceId: SOURCE_ID, payloadHash },
     ];
     return { observations, sourceUrl: url, fetchedAt: new Date().toISOString() };
   },
@@ -129,11 +114,9 @@ async function fetchBoeBreakevensHistorical(
   const dateKey = "DATE" in first ? "DATE" : "Date" in first ? "Date" : null;
   const keys = {
     nom5: "IUDSNZC" in first ? "IUDSNZC" : null,
-    nom10: "IUDMNZC" in first ? "IUDMNZC" : null,
     real5: "IUDSIZC" in first ? "IUDSIZC" : null,
-    real10: "IUDMIZC" in first ? "IUDMIZC" : null,
   };
-  if (!dateKey || !keys.nom5 || !keys.nom10 || !keys.real5 || !keys.real10) {
+  if (!dateKey || !keys.nom5 || !keys.real5) {
     throw new AdapterError({
       sourceId: SOURCE_ID,
       sourceUrl: url,
@@ -153,15 +136,12 @@ async function fetchBoeBreakevensHistorical(
     if (!Number.isFinite(rowMs) || rowMs < fromMs || rowMs > toMs) continue;
 
     const nom5 = parseNum(row[keys.nom5]);
-    const nom10 = parseNum(row[keys.nom10]);
     const real5 = parseNum(row[keys.real5]);
-    const real10 = parseNum(row[keys.real10]);
-    if (nom5 === null || nom10 === null || real5 === null || real10 === null) {
+    if (nom5 === null || real5 === null) {
       skippedIncomplete++;
       continue;
     }
     const be5 = nom5 - real5;
-    const be10 = nom10 - real10;
     observations.push({
       indicatorId: "breakeven_5y",
       value: be5,
@@ -169,24 +149,10 @@ async function fetchBoeBreakevensHistorical(
       sourceId: SOURCE_ID,
       payloadHash: await historicalPayloadHash("breakeven_5y", observedAt, be5),
     });
-    observations.push({
-      indicatorId: "breakeven_10y",
-      value: be10,
-      observedAt,
-      sourceId: SOURCE_ID,
-      payloadHash: await historicalPayloadHash("breakeven_10y", observedAt, be10),
-    });
-    observations.push({
-      indicatorId: "gilt_il_10y_real",
-      value: real10,
-      observedAt,
-      sourceId: SOURCE_ID,
-      payloadHash: await historicalPayloadHash("gilt_il_10y_real", observedAt, real10),
-    });
   }
 
   const notes: string[] = [];
-  if (skippedIncomplete > 0) notes.push(`${skippedIncomplete} rows skipped (partial yield curve)`);
+  if (skippedIncomplete > 0) notes.push(`${skippedIncomplete} rows skipped (incomplete yield pair)`);
   return buildHistoricalResult(observations, url, notes);
 }
 

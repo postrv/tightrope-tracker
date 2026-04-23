@@ -7,13 +7,12 @@
  *
  *   /boeapps/database/_iadb-fromshowcolumns.asp
  *     ?csv.x=yes
- *     &SeriesCodes=IUDMNPY,IUDMNZC       -- comma-separated series codes
+ *     &SeriesCodes=IUDMNZC,IUDLNZC       -- comma-separated series codes
  *     &Datefrom=01/Apr/2024              -- DD/MMM/YYYY, English abbreviations
  *     &Dateto=18/Apr/2026                -- DD/MMM/YYYY
  *     &UsingCodes=Y                      -- required, or it 302s
  *
- * Default lookback is two years -- comfortably more than the 252-day window
- * the SONIA adapter needs, and well beyond what the yield/FX/breakevens
+ * Default lookback is two years -- well beyond what the yield/FX/breakevens
  * adapters consume (they only take the most recent populated row).
  */
 import { toBoEDateParam } from "./csv.js";

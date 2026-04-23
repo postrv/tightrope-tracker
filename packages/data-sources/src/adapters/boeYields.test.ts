@@ -9,7 +9,7 @@ function mockResponse(body: string, status = 200): Response {
 describe("boeYieldsAdapter", () => {
   it("emits gilt_10y and gilt_30y observations from the latest populated row", async () => {
     const csv = [
-      "DATE,IUDMNPY,IUDMNZC",
+      "DATE,IUDMNZC,IUDLNZC",
       "15 Apr 2026,4.42,4.88",
       "16 Apr 2026,4.47,4.91",
       "17 Apr 2026,4.51,4.96",
@@ -25,12 +25,12 @@ describe("boeYieldsAdapter", () => {
     expect(ten.sourceId).toBe("boe_yields");
     expect(ten.payloadHash).toMatch(/^[0-9a-f]{64}$/);
     expect(thirty.payloadHash).toBe(ten.payloadHash);
-    expect(result.sourceUrl).toContain("IUDMNPY");
+    expect(result.sourceUrl).toContain("IUDMNZC");
   });
 
   it("walks back past blank rows to find the most recent numeric row", async () => {
     const csv = [
-      "DATE,IUDMNPY,IUDMNZC",
+      "DATE,IUDMNZC,IUDLNZC",
       "15 Apr 2026,4.42,4.88",
       "16 Apr 2026,,",
       "17 Apr 2026,,",
@@ -81,7 +81,7 @@ describe("boeYieldsAdapter.fetchHistorical", () => {
 
   it("emits one observation per indicator per populated row in range", async () => {
     const csv = [
-      "DATE,IUDMNPY,IUDMNZC",
+      "DATE,IUDMNZC,IUDLNZC",
       "14 Apr 2026,4.40,4.85",
       "15 Apr 2026,4.42,4.88",
       "16 Apr 2026,4.47,4.91",
@@ -101,7 +101,7 @@ describe("boeYieldsAdapter.fetchHistorical", () => {
 
   it("skips blank rows and reports them in notes", async () => {
     const csv = [
-      "DATE,IUDMNPY,IUDMNZC",
+      "DATE,IUDMNZC,IUDLNZC",
       "15 Apr 2026,4.42,4.88",
       "16 Apr 2026,,",
       "17 Apr 2026,4.51,4.96",
@@ -115,7 +115,7 @@ describe("boeYieldsAdapter.fetchHistorical", () => {
   });
 
   it("is deterministic: same value produces identical payloadHash across runs", async () => {
-    const csv = "DATE,IUDMNPY,IUDMNZC\n15 Apr 2026,4.42,4.88";
+    const csv = "DATE,IUDMNZC,IUDLNZC\n15 Apr 2026,4.42,4.88";
     const opts = { from: new Date("2026-04-15T00:00:00Z"), to: new Date("2026-04-15T00:00:00Z") };
     const r1 = await boeYieldsAdapter.fetchHistorical!(fetchCsv(csv) as unknown as typeof globalThis.fetch, opts);
     const r2 = await boeYieldsAdapter.fetchHistorical!(fetchCsv(csv) as unknown as typeof globalThis.fetch, opts);

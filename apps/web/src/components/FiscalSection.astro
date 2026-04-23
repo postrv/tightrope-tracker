@@ -112,13 +112,20 @@ function yFor(bn: number): number {
             sourceUrl="https://www.dmo.gov.uk/publications/annual-review/"
           />
         </div>
-        <p class="hint">Planned 2026/27 issuance · £252.1bn total</p>
-        <div class="factrow"><span class="k">Total issuance</span><span class="v">£252.1bn</span></div>
-        <div class="factrow"><span class="k">Short conventional</span><span class="v">£72.1bn · 28.6%</span></div>
-        <div class="factrow"><span class="k">Medium conventional</span><span class="v">£81.8bn · 32.4%</span></div>
-        <div class="factrow"><span class="k">Long conventional</span><span class="v">£74.7bn · 29.6%</span></div>
-        <div class="factrow"><span class="k">Index-linked</span><span class="v">£23.4bn · 9.3%</span></div>
-        <div class="factrow"><span class="k">PSND / GDP</span><span class="v">93.1%</span></div>
+        <p class="hint">Planned 2026/27 issuance · £252.1bn total · GDP = £2,709bn (OBR Mar 26)</p>
+        <table class="gilt-table">
+          <thead>
+            <tr><th></th><th>Nominal</th><th>% of GDP</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Total issuance</td><td>£252.1bn</td><td>9.3%</td></tr>
+            <tr><td>Short conventional</td><td>£72.1bn</td><td>2.7%</td></tr>
+            <tr><td>Medium conventional</td><td>£81.8bn</td><td>3.0%</td></tr>
+            <tr><td>Long conventional</td><td>£74.7bn</td><td>2.8%</td></tr>
+            <tr><td>Index-linked</td><td>£23.4bn</td><td>0.9%</td></tr>
+          </tbody>
+        </table>
+        <div class="factrow" style="margin-top: 12px;"><span class="k">PSND / GDP</span><span class="v">93.1%</span></div>
         <div class="factrow"><span class="k">Debt interest, FY</span><span class="v">£111.3bn</span></div>
         <p class="hint" style="margin-top: 16px; margin-bottom: 0;">Long issuance cut back; index-linked stock still a sensitivity to inflation shocks.</p>
       </div>
@@ -142,6 +149,24 @@ function yFor(bn: number): number {
 .fiscal-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; }
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 2px; }
 .card-head h3 { margin: 0; }
+
+.gilt-table {
+  width: 100%; border-collapse: collapse; margin-top: 8px;
+  font-family: var(--font-mono); font-size: 12px;
+}
+.gilt-table th {
+  text-align: right; font-weight: 500; font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2);
+  padding: 6px 10px; border-bottom: 1px solid var(--border-soft);
+}
+.gilt-table th:first-child { text-align: left; }
+.gilt-table td {
+  padding: 7px 10px; border-bottom: 1px solid var(--border-soft); color: var(--ink-1);
+}
+.gilt-table td:first-child { color: var(--ink-0); font-weight: 400; }
+.gilt-table td:nth-child(2),
+.gilt-table td:nth-child(3) { text-align: right; font-variant-numeric: tabular-nums; }
+.gilt-table tbody tr:first-child td { font-weight: 500; color: var(--ink-0); }
 
 @media (max-width: 920px) {
   .fiscal-grid { grid-template-columns: 1fr; }

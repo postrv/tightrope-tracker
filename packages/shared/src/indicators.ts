@@ -163,7 +163,6 @@ const fmtBp = (v: number) => `${v.toFixed(2)}%`;
 const fmtIndex = (digits = 0) => (v: number) => v.toFixed(digits);
 const fmtGbpBn = (v: number) => `GBP ${v.toFixed(1)}bn`;
 const fmtMillions = (v: number) => `${v.toFixed(2)}m`;
-const fmtPence = (v: number) => `${v.toFixed(0)} p/th`;
 const fmtRatio = (v: number) => v.toFixed(4);
 const fmtCount = (v: number) => v.toLocaleString("en-GB");
 
@@ -174,53 +173,35 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   // eight OBR-proxy indicators below, which sit in a collective 0.36 slot.
   gilt_10y: {
     id: "gilt_10y", pillar: "market", label: "10-year gilt yield", shortLabel: "10y gilt",
-    unit: "%", weight: 0.15, risingIsBad: true, sourceId: "boe_yields",
-    description: "UK 10-year benchmark gilt yield (daily close).", formatDisplay: fmtBp,
+    unit: "%", weight: 0.18, risingIsBad: true, sourceId: "boe_yields",
+    description: "UK 10-year nominal zero-coupon gilt yield (BoE IUDMNZC, daily close).", formatDisplay: fmtBp,
     provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
   },
   gilt_30y: {
-    id: "gilt_30y", pillar: "market", label: "30-year gilt yield", shortLabel: "30y gilt",
-    unit: "%", weight: 0.13, risingIsBad: true, sourceId: "boe_yields",
-    description: "UK 30-year gilt yield. Sensitivity proxy for long-duration borrowing.", formatDisplay: fmtBp,
+    id: "gilt_30y", pillar: "market", label: "20-year gilt yield", shortLabel: "20y gilt",
+    unit: "%", weight: 0.16, risingIsBad: true, sourceId: "boe_yields",
+    description: "UK 20-year nominal zero-coupon gilt yield (BoE IUDLNZC). Sensitivity proxy for long-duration borrowing. Indicator ID preserved as gilt_30y for DB continuity.", formatDisplay: fmtBp,
     provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
   },
   gbp_usd: {
     id: "gbp_usd", pillar: "market", label: "GBP / USD", shortLabel: "GBP/USD",
-    unit: "ccy", weight: 0.06, risingIsBad: false, sourceId: "boe_fx",
+    unit: "ccy", weight: 0.07, risingIsBad: false, sourceId: "boe_fx",
     description: "Sterling vs. US dollar.", formatDisplay: fmtRatio,
     provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
   },
   gbp_twi: {
     id: "gbp_twi", pillar: "market", label: "GBP trade-weighted index", shortLabel: "GBP TWI",
-    unit: "index", weight: 0.06, risingIsBad: false, sourceId: "boe_fx",
+    unit: "index", weight: 0.07, risingIsBad: false, sourceId: "boe_fx",
     description: "Broad effective exchange rate index for sterling.", formatDisplay: fmtIndex(2),
     provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
   },
-  sonia_12m: {
-    id: "sonia_12m", pillar: "market", label: "SONIA 12-month trailing average", shortLabel: "SONIA 12m",
-    unit: "%", weight: 0.08, risingIsBad: true, sourceId: "boe_sonia",
-    description: "Rolling mean of daily SONIA fixings over the last 252 trading days — a backward-looking short-rate anchor. A market-implied OIS curve would give the true expected path; this is a cheaper proxy.", formatDisplay: fmtBp,
-    provenance: "live",
-    maxStaleMs: STALE_DAILY_MS,
-  },
-  gas_m1: {
-    id: "gas_m1", pillar: "market", label: "UK natural gas front-month", shortLabel: "Gas M+1",
-    unit: "p/th", weight: 0.08, risingIsBad: true, sourceId: "ice_gas",
-    description: "Front-month NBP natural gas settlement price.", formatDisplay: fmtPence,
-    // Fixture-backed editorial mirror of the ICE Endex settlement headline.
-    // The adapter enforces a 14-day freshness guard so a missed refresh
-    // surfaces in /admin/health rather than silently re-emitting a stale
-    // figure.
-    provenance: "live",
-    maxStaleMs: STALE_WEEKLY_FIXTURE_MS,
-  },
   ftse_250: {
     id: "ftse_250", pillar: "market", label: "FTSE 250", shortLabel: "FTSE 250",
-    unit: "index", weight: 0.08, risingIsBad: false, sourceId: "lseg",
+    unit: "index", weight: 0.10, risingIsBad: false, sourceId: "lseg",
     description: "Mid-cap index -- cleaner domestic UK read than FTSE 100.", formatDisplay: fmtIndex(0),
     // Fixture-backed editorial mirror of the LSE close. The adapter's
     // freshness guard (14 days) prevents silent staleness.
@@ -231,31 +212,15 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   // Inflation-input proxies: breakevens from BoE zero-coupon curves, Brent in GBP.
   breakeven_5y: {
     id: "breakeven_5y", pillar: "market", label: "5y breakeven inflation", shortLabel: "5y BE",
-    unit: "%", weight: 0.08, risingIsBad: true, sourceId: "boe_yields",
+    unit: "%", weight: 0.12, risingIsBad: true, sourceId: "boe_yields",
     description: "5y nominal minus 5y real gilt yield -- market-implied CPI/RPI 5y ahead, a direct proxy for OBR's CPI inflation path over the forecast horizon.",
-    formatDisplay: fmtBp,
-    provenance: "live",
-    maxStaleMs: STALE_DAILY_MS,
-  },
-  breakeven_10y: {
-    id: "breakeven_10y", pillar: "market", label: "10y breakeven inflation", shortLabel: "10y BE",
-    unit: "%", weight: 0.06, risingIsBad: true, sourceId: "boe_yields",
-    description: "10y nominal minus 10y real gilt yield -- proxy for longer-horizon inflation expectations feeding OBR's medium-term CPI and debt-interest forecast.",
-    formatDisplay: fmtBp,
-    provenance: "live",
-    maxStaleMs: STALE_DAILY_MS,
-  },
-  gilt_il_10y_real: {
-    id: "gilt_il_10y_real", pillar: "market", label: "10y real (IL) gilt yield", shortLabel: "10y real",
-    unit: "%", weight: 0.04, risingIsBad: true, sourceId: "boe_yields",
-    description: "10y index-linked gilt real yield -- proxy for the real rate regime that OBR uses when deriving potential-output and trend-growth assumptions.",
     formatDisplay: fmtBp,
     provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
   },
   brent_gbp: {
     id: "brent_gbp", pillar: "market", label: "Brent crude in GBP", shortLabel: "Brent GBP",
-    unit: "GBP/bbl", weight: 0.05, risingIsBad: true, sourceId: "eia_brent",
+    unit: "GBP/bbl", weight: 0.10, risingIsBad: true, sourceId: "eia_brent",
     description: "Brent dated spot price converted to GBP -- the single largest swing input to OBR's CPI energy subcomponent and fuel-duty receipts.",
     formatDisplay: (v) => `GBP ${v.toFixed(2)}/bbl`,
     provenance: "fixture",
@@ -264,7 +229,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   // Growth-input proxies: housebuilder composite, Services PMI, consumer confidence, RICS balance.
   housebuilder_idx: {
     id: "housebuilder_idx", pillar: "market", label: "UK housebuilder composite", shortLabel: "Housebuilders",
-    unit: "index", weight: 0.05, risingIsBad: false, sourceId: "eodhd_housebuilders",
+    unit: "index", weight: 0.08, risingIsBad: false, sourceId: "eodhd_housebuilders",
     description: "Equal-weighted price index of the five largest listed UK housebuilders (rebased 100 = 2019 avg) -- leads OBR's residential investment and construction GVA lines by 3-6 months.",
     formatDisplay: fmtIndex(1),
     provenance: "live",
@@ -272,7 +237,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   },
   services_pmi: {
     id: "services_pmi", pillar: "market", label: "S&P Global UK Services PMI", shortLabel: "Services PMI",
-    unit: "index", weight: 0.04, risingIsBad: false, sourceId: "sp_global_pmi",
+    unit: "index", weight: 0.05, risingIsBad: false, sourceId: "sp_global_pmi",
     description: "Headline Services PMI -- 50 = no change. Services is ~80% of UK GVA, so this leads OBR's real-GDP growth forecast by roughly one quarter.",
     formatDisplay: fmtIndex(1),
     provenance: "fixture",
@@ -280,7 +245,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   },
   consumer_confidence: {
     id: "consumer_confidence", pillar: "market", label: "GfK consumer confidence", shortLabel: "Cons. conf.",
-    unit: "index", weight: 0.02, risingIsBad: false, sourceId: "gfk_confidence",
+    unit: "index", weight: 0.04, risingIsBad: false, sourceId: "gfk_confidence",
     description: "GfK/NIESR consumer confidence headline index -- leading signal for household-consumption growth, the largest single expenditure line in OBR's GDP decomposition.",
     formatDisplay: fmtIndex(0),
     provenance: "fixture",
@@ -288,7 +253,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   },
   rics_price_balance: {
     id: "rics_price_balance", pillar: "market", label: "RICS house-price balance", shortLabel: "RICS price",
-    unit: "%", weight: 0.02, risingIsBad: false, sourceId: "rics_rms",
+    unit: "%", weight: 0.03, risingIsBad: false, sourceId: "rics_rms",
     description: "Net balance of RICS surveyors reporting price rises vs. falls -- leads residential investment in OBR's expenditure GDP by 1-2 quarters.",
     formatDisplay: fmtPct(0),
     provenance: "fixture",
@@ -505,19 +470,11 @@ export const SOURCES: Record<string, DataSource> = {
     id: "boe_fx", name: "Bank of England -- Exchange rates",
     homepage: "https://www.bankofengland.co.uk/statistics/exchange-rates",
   },
-  boe_sonia: {
-    id: "boe_sonia", name: "Bank of England -- SONIA",
-    homepage: "https://www.bankofengland.co.uk/markets/sonia-benchmark",
-  },
   boe_breakevens: {
-    id: "boe_breakevens", name: "Bank of England -- breakevens & index-linked gilt yields",
+    id: "boe_breakevens", name: "Bank of England -- 5y breakeven inflation",
     homepage: "https://www.bankofengland.co.uk/boeapps/database/",
     endpoint: "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp",
-    notes: "Derived from the IADB CSV endpoint (IUDSNZC/IUDMNZC/IUDSIZC/IUDMIZC). We emit three indicators: 5y and 10y breakeven inflation, and the 10y index-linked real gilt yield.",
-  },
-  ice_gas: {
-    id: "ice_gas", name: "ICE -- UK Natural Gas Futures",
-    homepage: "https://www.ice.com/products/910/UK-Natural-Gas-Futures",
+    notes: "Derived from the IADB CSV endpoint (IUDSNZC/IUDSIZC). Emits 5y breakeven inflation (nominal minus real).",
   },
   lseg: {
     id: "lseg", name: "LSEG -- FTSE 250",

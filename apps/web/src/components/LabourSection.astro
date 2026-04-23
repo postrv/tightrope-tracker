@@ -68,8 +68,103 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
       </div>
     </div>
 
+    <div class="labour-secondary">
+      <div class="chart-card">
+        <div class="card-head">
+          <h3>Real regular pay growth (YoY)</h3>
+          <IllustrativeBadge
+            sourceSummary="ONS Average Weekly Earnings regular pay (series KAC3) deflated by CPIH (L55O). Live indicator `real_regular_pay` feeds from the same ONS series."
+            sourceUrl="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours"
+          />
+        </div>
+        <p class="hint">CPIH-adjusted. Positive values = real wages growing.</p>
+        <svg class="chart" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Real regular pay year on year">
+          <g stroke="var(--border-soft)" stroke-width="1">
+            <line x1="40" y1="20" x2="380" y2="20"/>
+            <line x1="40" y1="60" x2="380" y2="60"/>
+            <line x1="40" y1="100" x2="380" y2="100"/>
+            <line x1="40" y1="140" x2="380" y2="140"/>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)">
+            <text x="36" y="24" text-anchor="end">+3%</text>
+            <text x="36" y="64" text-anchor="end">+1%</text>
+            <text x="36" y="104" text-anchor="end">0%</text>
+            <text x="36" y="144" text-anchor="end">-2%</text>
+          </g>
+          {/* X-axis: months Apr 2025 → Mar 2026 */}
+          <g font-family="IBM Plex Mono" font-size="9" fill="var(--ink-2)">
+            {["Apr", "Jun", "Aug", "Oct", "Dec", "Feb"].map((lbl, i) => {
+              const x = 50 + (i / 5) * 320;
+              return <text x={x} y={158} text-anchor="middle">{lbl}</text>;
+            })}
+          </g>
+          <line x1="40" y1="100" x2="380" y2="100" stroke="var(--ink-2)" stroke-width="0.5" stroke-dasharray="3 3"/>
+          <path d={(() => {
+            const min = -3; const max = 3;
+            return realPay.map((v, i) => {
+              const x = 50 + (i / (realPay.length - 1)) * 320;
+              const y = 20 + ((max - v) / (max - min)) * 120;
+              return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
+            }).join(" ");
+          })()} stroke="var(--band-slack)" stroke-width="1.6" fill="none"/>
+        </svg>
+      </div>
+      <div class="chart-card">
+        <div class="card-head">
+          <h3>Vacancies per unemployed person</h3>
+          <IllustrativeBadge
+            sourceSummary="Derived ratio of ONS monthly vacancies (V) over ONS monthly unemployed (U). Live indicator `vacancies_per_unemployed` feeds from the same adapter — this chart shows the illustrative 12-month arc."
+            sourceUrl="https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment"
+          />
+        </div>
+        <p class="hint">Rolling quarterly ratio — falling = more slack appearing in the labour market. <strong>Lower is worse.</strong></p>
+        <svg class="chart" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Vacancies per unemployed person">
+          <g stroke="var(--border-soft)" stroke-width="1">
+            <line x1="40" y1="20" x2="380" y2="20"/>
+            <line x1="40" y1="60" x2="380" y2="60"/>
+            <line x1="40" y1="100" x2="380" y2="100"/>
+            <line x1="40" y1="140" x2="380" y2="140"/>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)">
+            <text x="36" y="24" text-anchor="end">1.10</text>
+            <text x="36" y="64" text-anchor="end">0.95</text>
+            <text x="36" y="104" text-anchor="end">0.80</text>
+            <text x="36" y="144" text-anchor="end">0.65</text>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="9" fill="var(--ink-2)">
+            {["Apr", "Jun", "Aug", "Oct", "Dec", "Feb"].map((lbl, i) => {
+              const x = 50 + (i / 5) * 320;
+              return <text x={x} y={158} text-anchor="middle">{lbl}</text>;
+            })}
+          </g>
+          <path d={(() => {
+            const min = 0.65; const max = 1.10;
+            return vuRatio.map((v, i) => {
+              const x = 50 + (i / (vuRatio.length - 1)) * 320;
+              const y = 20 + ((max - v) / (max - min)) * 120;
+              return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
+            }).join(" ");
+          })()} stroke="var(--band-strain)" stroke-width="1.6" fill="none"/>
+        </svg>
+      </div>
+    </div>
+
     <div class="labour-grid">
-      <div class="chart-card wide">
+      <div class="mortgage-card">
+        <div class="card-head">
+          <h3>Mortgage translator</h3>
+          <IllustrativeBadge
+            sourceSummary="Arithmetic worked from the live 2-year fixed rate (indicator `mortgage_2y_fix`, Moneyfacts). The £250k / 25-year worked example is illustrative — change the two rates in apps/web/src/lib/mortgage.js to reproduce."
+            sourceUrl="https://www.moneyfactscompare.co.uk/mortgages/"
+          />
+        </div>
+        <p class="hint">What the 2-year fixed-rate move means on a £250,000, 25-year repayment mortgage.</p>
+        <div class="mortgage-big">{formatExtra(m.extraPerMonth)}<span class="mortgage-sub"> / month</span></div>
+        <p class="mortgage-caption">Extra vs. the rate at the last Budget ({m.baselineRate.toFixed(2)}% → {m.currentRate.toFixed(2)}%). Payment: £{m.currentPayment.toLocaleString("en-GB")} vs. £{m.baselinePayment.toLocaleString("en-GB")}.</p>
+        <p class="mortgage-note">This is the line you will see quoted in the press. The rate series is Moneyfacts' reported average 2-year fix at 75% LTV.</p>
+      </div>
+
+      <div class="chart-card">
         <div class="card-head">
           <h3>Inactivity rate vs. health-related count</h3>
           <IllustrativeBadge
@@ -103,8 +198,6 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
               return <text x={x} y={234} text-anchor="middle">{row[0] as string}</text>;
             })}
           </g>
-
-          {/* Inactivity rate line (left axis: 20% -> 220, 22% -> 40) */}
           <path
             d={inactivity.map((row, i) => {
               const x = 60 + (i / (inactivity.length - 1)) * 480;
@@ -114,7 +207,6 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
             }).join(" ")}
             stroke="var(--ink-0)" stroke-width="1.6" fill="none"
           />
-          {/* Health-related count line (right axis: 1.5m -> 220, 3m -> 40) */}
           <path
             d={inactivity.map((row, i) => {
               const x = 60 + (i / (inactivity.length - 1)) * 480;
@@ -124,7 +216,6 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
             }).join(" ")}
             stroke="var(--band-acute)" stroke-width="1.6" fill="none" stroke-dasharray="4 3"
           />
-
           {inactivity.map((row, i) => {
             const x = 60 + (i / (inactivity.length - 1)) * 480;
             const r = row[1] as number;
@@ -136,59 +227,6 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
           <span class="lg"><span class="sw solid" style="background: var(--ink-0);"></span> Inactivity rate (left)</span>
           <span class="lg"><span class="sw dashed" style="background: var(--band-acute);"></span> Health-related inactive (right)</span>
         </div>
-      </div>
-
-      <div class="mortgage-card">
-        <div class="card-head">
-          <h3>Mortgage translator</h3>
-          <IllustrativeBadge
-            sourceSummary="Arithmetic worked from the live 2-year fixed rate (indicator `mortgage_2y_fix`, Moneyfacts). The £250k / 25-year worked example is illustrative — change the two rates in apps/web/src/lib/mortgage.js to reproduce."
-            sourceUrl="https://www.moneyfactscompare.co.uk/mortgages/"
-          />
-        </div>
-        <p class="hint">What the 2-year fixed-rate move means on a £250,000, 25-year repayment mortgage.</p>
-        <div class="mortgage-big">{formatExtra(m.extraPerMonth)}<span class="mortgage-sub"> / month</span></div>
-        <p class="mortgage-caption">Extra vs. the rate at the last Budget ({m.baselineRate.toFixed(2)}% → {m.currentRate.toFixed(2)}%). Payment: £{m.currentPayment.toLocaleString("en-GB")} vs. £{m.baselinePayment.toLocaleString("en-GB")}.</p>
-        <p class="mortgage-note">This is the line you will see quoted in the press. The rate series is Moneyfacts' reported average 2-year fix at 75% LTV.</p>
-      </div>
-    </div>
-
-    <div class="labour-secondary">
-      <div class="chart-card">
-        <div class="card-head">
-          <h3>Vacancies per unemployed person</h3>
-          <IllustrativeBadge
-            sourceSummary="Derived ratio of ONS monthly vacancies (V) over ONS monthly unemployed (U). Live indicator `vacancies_per_unemployed` feeds from the same adapter — this chart shows the illustrative 12-month arc."
-            sourceUrl="https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment"
-          />
-        </div>
-        <p class="hint">Rolling quarterly ratio — falling = more slack appearing in the labour market.</p>
-        <svg class="chart" viewBox="0 0 400 160" preserveAspectRatio="none" role="img" aria-label="Vacancies per unemployed person">
-          <g stroke="var(--border-soft)" stroke-width="1">
-            <line x1="30" y1="20" x2="390" y2="20"/>
-            <line x1="30" y1="80" x2="390" y2="80"/>
-            <line x1="30" y1="140" x2="390" y2="140"/>
-          </g>
-          <path d={svgLinePath(vuRatio, 400, 160, 30)} stroke="var(--band-strain)" stroke-width="1.6" fill="none"/>
-        </svg>
-      </div>
-      <div class="chart-card">
-        <div class="card-head">
-          <h3>Real regular pay growth (YoY)</h3>
-          <IllustrativeBadge
-            sourceSummary="ONS Average Weekly Earnings regular pay (series KAC3) deflated by CPIH (L55O). Live indicator `real_regular_pay` feeds from the same ONS series."
-            sourceUrl="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours"
-          />
-        </div>
-        <p class="hint">CPIH-adjusted. Positive values = real wages growing.</p>
-        <svg class="chart" viewBox="0 0 400 160" preserveAspectRatio="none" role="img" aria-label="Real regular pay year on year">
-          <g stroke="var(--border-soft)" stroke-width="1">
-            <line x1="30" y1="20" x2="390" y2="20"/>
-            <line x1="30" y1="80" x2="390" y2="80"/>
-            <line x1="30" y1="140" x2="390" y2="140"/>
-          </g>
-          <path d={svgLinePath(realPay, 400, 160, 30)} stroke="var(--band-slack)" stroke-width="1.6" fill="none"/>
-        </svg>
       </div>
     </div>
   </div>
@@ -207,8 +245,8 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
 .pillar-score-delta.dn { color: var(--band-slack); }
 .pillar-score-delta.flat { color: var(--ink-2); }
 
-.labour-grid { display: grid; grid-template-columns: 1.45fr 1fr; gap: 32px; margin-bottom: 32px; }
-.labour-secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.labour-secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+.labour-grid { display: grid; grid-template-columns: 1fr 1.45fr; gap: 32px; }
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 2px; }
 .card-head h3 { margin: 0; }
 

@@ -1,14 +1,14 @@
 {
   "_comment": "Equal-weighted composite index of the five largest listed UK housebuilders: Persimmon (PSN), Barratt Redrow (BTRW), Taylor Wimpey (TW), Berkeley (BKG), Vistry (VTY). The composite rebases each issuer's close to 100 at the 2019 mean and takes the simple average. Updated weekly from the LSE last-close quotes. TODO(source): LSE has no free bulk daily API; consider a paid vendor (Alpha Vantage premium, FCS API) if we want an intraday feed.",
-  "as_of": "2026-04-17",
-  "observed_at": "2026-04-17T16:30:00Z",
+  "as_of": "2026-04-23",
+  "observed_at": "2026-04-23T16:30:00Z",
   "constituents": {
-    "PSN.L":  { "close": 1248.5, "rebased": 62.1 },
-    "BTRW.L": { "close":  421.0, "rebased": 69.8 },
-    "TW.L":   { "close":  118.2, "rebased": 72.4 },
-    "BKG.L":  { "close": 3912.0, "rebased": 83.5 },
-    "VTY.L":  { "close":  652.0, "rebased": 70.9 }
+    "PSN.L":  { "close": 1124.6, "rebased": 55.9 },
+    "BTRW.L": { "close":  359.7, "rebased": 59.6 },
+    "TW.L":   { "close":   95.7, "rebased": 58.6 },
+    "BKG.L":  { "close": 3600.0, "rebased": 76.9 },
+    "VTY.L":  { "close":  610.8, "rebased": 66.4 }
   },
-  "housebuilder_idx": { "value": 71.7, "unit": "index" },
+  "housebuilder_idx": { "value": 63.5, "unit": "index" },
   "source_url": "https://www.londonstockexchange.com/indices/ftse-350-household-goods-home-construction"
 }

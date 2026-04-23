@@ -27,6 +27,10 @@ const {
 const canonical = canonicalPath
   ? new URL(canonicalPath, Astro.site ?? "https://tightropetracker.uk").toString()
   : Astro.url.toString();
+
+const ogImageUrl = ogImage.startsWith("/og/")
+  ? `https://og.tightropetracker.uk${ogImage}`
+  : new URL(ogImage, Astro.site ?? "https://tightropetracker.uk").toString();
 ---
 <!doctype html>
 <html lang="en">
@@ -42,10 +46,10 @@ const canonical = canonicalPath
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={new URL(ogImage, Astro.site ?? "https://tightropetracker.uk").toString()} />
+    <meta property="og:image" content={ogImageUrl} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@tightropetracker" />
-    <meta name="twitter:image" content={new URL(ogImage, Astro.site ?? "https://tightropetracker.uk").toString()} />
+    <meta name="twitter:image" content={ogImageUrl} />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

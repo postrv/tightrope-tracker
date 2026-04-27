@@ -1,0 +1,861 @@
+---
+/**
+ * Interactive "what-if" simulator. Server-side it renders a fully-functional
+ * HTML skeleton populated with the live snapshot's values; client-side a
+ * small vanilla-TS module wires the sliders, hash state, scenarios, and
+ * live recompute. No UI framework is involved -- the work fits comfortably
+ * in plain DOM APIs.
+ */
+import type { ScoreSnapshot } from "@tightrope/shared";
+import { PILLARS, PILLAR_ORDER, BANDS } from "@tightrope/shared";
+import TightropeWalker from "../TightropeWalker.astro";
+import { LEVERS, liveValuesFromSnapshot } from "~/lib/whatIf.js";
+
+interface Props {
+  snapshot: ScoreSnapshot;
+}
+
+const { snapshot } = Astro.props;
+const liveValues = liveValuesFromSnapshot(snapshot);
+const headline = snapshot.headline;
+const headlineRounded = Math.round(headline.value);
+const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
+---
+<section
+  class="explore-root"
+  data-explore-root
+  aria-label="What-if scenario explorer"
+>
+  <div class="container">
+    <header class="explore-head">
+      <span class="eyebrow">Scenario simulator · {LEVERS.length} levers</span>
+      <h1>what if&hellip;<span class="lfg-u">?</span></h1>
+      <p class="lede">
+        Move the sliders to see how the headline score, pillar mix and band
+        respond. Each lever is a real headline driver from the live methodology.
+        Share your scenario with the link at the bottom.
+      </p>
+
+      <div class="scenario-row" role="toolbar" aria-label="Pre-baked scenarios">
+        <button type="button" data-scenario="live">Live now</button>
+        <button type="button" data-scenario="spring2025">Spring 2025 crunch</button>
+        <button type="button" data-scenario="conflict">Conflict shock (Apr 2026)</button>
+        <button type="button" data-scenario="recovery">Recovery</button>
+        <button type="button" class="reset" data-action="reset">Reset to live</button>
+      </div>
+    </header>
+
+    <div class="explore-grid">
+      <div class="panel slider-panel" aria-labelledby="slider-heading">
+        <h2 id="slider-heading" class="panel-title">Drivers</h2>
+        <ul class="lever-list">
+          {LEVERS.map((lever) => {
+            const live = liveValues[lever.key];
+            return (
+              <li class="lever" data-lever={lever.key}>
+                <div class="lever-head">
+                  <label for={`lever-${lever.key}`} class="lever-label">
+                    {lever.label}
+                  </label>
+                  <span class="lever-value" data-lever-display>{lever.format(live)}</span>
+                </div>
+                <div class="lever-controls">
+                  <input
+                    id={`lever-${lever.key}`}
+                    type="range"
+                    min={lever.min}
+                    max={lever.max}
+                    step={lever.step}
+                    value={live}
+                    data-lever-range
+                    aria-valuemin={lever.min}
+                    aria-valuemax={lever.max}
+                    aria-valuenow={live}
+                    aria-valuetext={lever.format(live)}
+                    aria-describedby={`lever-${lever.key}-meta`}
+                  />
+                  <input
+                    type="number"
+                    min={lever.min}
+                    max={lever.max}
+                    step={lever.step}
+                    value={live}
+                    data-lever-number
+                    aria-label={`${lever.label} numeric input`}
+                  />
+                </div>
+                <div class="lever-meta" id={`lever-${lever.key}-meta`}>
+                  <span class="range-note">
+                    {lever.format(lever.min)} &mdash; {lever.format(lever.max)}
+                  </span>
+                  <button
+                    type="button"
+                    class="reset-live"
+                    data-lever-reset-live
+                    data-live-value={live}
+                  >
+                    live: {lever.format(live)}
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <p class="methodology-note">
+          Each lever maps linearly across its visible range &mdash; a deliberate
+          simplification of the live empirical-CDF methodology, which depends
+          on a per-indicator historical baseline that this in-browser tool
+          does not load. Other indicators in each pillar stay at their live
+          values; the headline still uses the production weighted-geometric-mean
+          aggregation. <a href="/methodology">Read the full methodology &rarr;</a>
+        </p>
+      </div>
+
+      <div class="panel readout-panel" aria-labelledby="readout-heading">
+        <h2 id="readout-heading" class="panel-title">Scenario score</h2>
+        <div class="readout-card" data-readout-card style={`--band-colour: var(${initialBand.colourToken});`}>
+          <div class="readout-score">
+            <div class="score-num" aria-live="polite">
+              <span class="score-value" data-headline-value>{headlineRounded}</span><span class="sub">/100</span>
+            </div>
+            <div class="score-meta">
+              <span class="band-pill" data-band-pill style={`color: var(${initialBand.colourToken}); border-color: var(${initialBand.colourToken}); background: color-mix(in srgb, var(${initialBand.colourToken}) 12%, transparent);`}>{initialBand.label}</span>
+              <span class="band-label" data-band-label>{initialBand.editorialLabel}</span>
+            </div>
+          </div>
+          <div class="readout-walker" data-readout-walker>
+            <TightropeWalker score={headlineRounded} animate={false} />
+          </div>
+        </div>
+
+        <ul class="pillar-tiles" aria-label="Pillar scores">
+          {PILLAR_ORDER.map((id) => {
+            const p = snapshot.pillars[id];
+            const valueRounded = Math.round(p.value);
+            const def = PILLARS[id];
+            return (
+              <li class="pillar-tile" data-pillar={id}>
+                <span class="pillar-tile-label">{def.shortTitle}</span>
+                <span class="pillar-tile-value" data-pillar-value>{valueRounded}</span>
+                <span class="pillar-tile-delta" data-pillar-delta>0.0 vs live</span>
+                <span class="pillar-tile-weight">weight {Math.round(def.weight * 100)}%</span>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div class="dominant-row">
+          <span class="dominant-label">Dominant pillar:</span>
+          <span data-dominant-pillar>{PILLARS[headline.dominantPillar].title}</span>
+        </div>
+
+        <div class="share-row">
+          <button type="button" class="share-btn" data-action="share">Copy share link</button>
+          <span class="share-status" data-share-status role="status" aria-live="polite"></span>
+        </div>
+
+        <p class="methodology-foot">
+          <a href="#methodology">Methodology footer</a> &middot; <a href="/methodology">Full methodology</a>
+        </p>
+      </div>
+    </div>
+
+    <footer id="methodology" class="explore-foot">
+      <p>
+        <strong>How it works.</strong> The headline score above is recomputed
+        in your browser using the same weighted-geometric-mean aggregation as
+        the live homepage. Each slider linearly remaps an indicator's visible
+        range to the 0&ndash;100 pressure score. Other indicators in the same
+        pillar stay at their live values, so a single lever's effect is
+        bounded by its in-pillar weight. Untouched pillars are returned
+        verbatim from the live snapshot. The 1d/30d/YTD deltas reset to zero
+        once you move a slider &mdash; they compare to live history, which
+        a hypothetical scenario isn't.
+      </p>
+    </footer>
+  </div>
+</section>
+
+<!-- Initial state for the client island -->
+<script
+  type="application/json"
+  data-explore-config
+  set:html={JSON.stringify({
+    live: liveValues,
+    pillars: Object.fromEntries(PILLAR_ORDER.map((id) => [id, snapshot.pillars[id].value])),
+    snapshot,
+  })}
+></script>
+
+<style>
+  .explore-root {
+    padding: 56px 0 80px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .explore-head { max-width: 760px; }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--ink-2);
+    text-transform: uppercase;
+  }
+  h1 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(36px, 4.5vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 18px 0 16px;
+  }
+  .lede {
+    color: var(--ink-1);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0 0 24px;
+    max-width: 580px;
+  }
+
+  .scenario-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 36px;
+  }
+  .scenario-row button {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    background: var(--bg-1);
+    color: var(--ink-1);
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: border-color 120ms, background 120ms, color 120ms;
+  }
+  .scenario-row button:hover,
+  .scenario-row button:focus-visible {
+    border-color: var(--accent);
+    color: var(--ink-0);
+    outline: none;
+  }
+  .scenario-row button[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    border-color: var(--accent);
+    color: var(--ink-0);
+  }
+  .scenario-row .reset { margin-left: auto; }
+
+  .explore-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (max-width: 920px) {
+    .explore-grid { grid-template-columns: 1fr; gap: 24px; }
+  }
+
+  .panel {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-1);
+    padding: 28px 28px 24px;
+  }
+  .panel-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    margin: 0 0 18px;
+  }
+
+  .lever-list { list-style: none; padding: 0; margin: 0 0 22px; display: flex; flex-direction: column; gap: 22px; }
+  .lever-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+  .lever-label {
+    font-family: var(--font-sans);
+    font-size: 14.5px;
+    color: var(--ink-0);
+    font-weight: 500;
+  }
+  .lever-value {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--ink-0);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lever-controls {
+    display: grid;
+    grid-template-columns: 1fr 96px;
+    gap: 12px;
+    align-items: center;
+  }
+  .lever-controls input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent, #FE5500);
+  }
+  .lever-controls input[type="range"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+  .lever-controls input[type="number"] {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--bg-0);
+    color: var(--ink-0);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    width: 100%;
+  }
+  .lever-controls input[type="number"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-color: var(--accent);
+  }
+
+  .lever-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    letter-spacing: 0.04em;
+  }
+  .reset-live {
+    background: none;
+    border: 0;
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+  }
+  .reset-live:hover, .reset-live:focus-visible {
+    color: var(--accent);
+    outline: none;
+  }
+
+  .methodology-note {
+    margin: 0;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+  .methodology-note a { color: var(--accent); }
+
+  /* ---- READOUT ---- */
+  .readout-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 18px;
+    align-items: center;
+    padding: 22px 24px;
+    background: var(--bg-0);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .readout-card::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--band-colour, var(--band-acute));
+    transition: background 240ms;
+  }
+  .score-num {
+    font-family: var(--font-mono);
+    font-size: 64px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--ink-0);
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-num .sub { font-size: 18px; color: var(--ink-2); font-weight: 400; }
+  .score-meta { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .band-pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    align-self: flex-start;
+    border: 1px solid;
+    padding: 4px 9px;
+    border-radius: 999px;
+    transition: color 240ms, background 240ms, border-color 240ms;
+  }
+  .band-label {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink-1);
+  }
+  .readout-walker { width: 160px; max-width: 160px; }
+  @media (max-width: 540px) {
+    .readout-card { grid-template-columns: 1fr; }
+    .readout-walker { width: 140px; margin: 0 auto; }
+  }
+
+  .pillar-tiles {
+    list-style: none;
+    padding: 0;
+    margin: 22px 0 18px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 600px) {
+    .pillar-tiles { grid-template-columns: repeat(2, 1fr); }
+  }
+  .pillar-tile {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: var(--bg-0);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .pillar-tile-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--ink-2);
+    text-transform: uppercase;
+  }
+  .pillar-tile-value {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    color: var(--ink-0);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.05;
+  }
+  .pillar-tile-delta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .pillar-tile-delta.up { color: var(--band-acute); }
+  .pillar-tile-delta.dn { color: var(--band-slack); }
+  .pillar-tile-weight {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-2);
+    margin-top: 2px;
+  }
+
+  .dominant-row {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    margin-bottom: 16px;
+  }
+  .dominant-row .dominant-label { letter-spacing: 0.08em; text-transform: uppercase; margin-right: 8px; }
+
+  .share-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .share-btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border: 1px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--ink-0);
+    border-radius: 999px;
+    padding: 7px 16px;
+    cursor: pointer;
+  }
+  .share-btn:hover, .share-btn:focus-visible {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    outline: none;
+  }
+  .share-status {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+
+  .methodology-foot {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .methodology-foot a { color: var(--ink-2); text-decoration: underline; }
+
+  .explore-foot {
+    margin-top: 36px;
+    padding: 20px 22px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--accent) 4%, transparent);
+    color: var(--ink-1);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .explore-foot strong { color: var(--ink-0); font-weight: 500; }
+</style>
+
+<script>
+  import {
+    LEVERS,
+    type LeverKey,
+    formatScenarioHash,
+    parseScenarioHash,
+    recomputeFromOverrides,
+    clamp as clampValue,
+  } from "~/lib/whatIf.js";
+  import { BANDS, PILLARS, PILLAR_ORDER, type ScoreSnapshot, type PillarId } from "@tightrope/shared";
+
+  interface ConfigPayload {
+    live: Record<LeverKey, number>;
+    pillars: Record<PillarId, number>;
+    snapshot: ScoreSnapshot;
+  }
+
+  type ScenarioName = "live" | "spring2025" | "conflict" | "recovery";
+
+  const SCENARIOS: Record<ScenarioName, Partial<Record<LeverKey, number>>> = {
+    live: {},
+    spring2025: { headroom: 9.9, gilt30y: 5.6 },
+    conflict: { headroom: 15.0, gilt30y: 5.65, housing: 46 },
+    recovery: { headroom: 28.0, gilt30y: 4.5, pay: 1.5 },
+  };
+
+  const root = document.querySelector<HTMLElement>("[data-explore-root]");
+  const configEl = document.querySelector<HTMLScriptElement>("[data-explore-config]");
+  if (root && configEl?.textContent) {
+    bootstrap(root, configEl.textContent);
+  }
+
+  function bootstrap(root: HTMLElement, configText: string): void {
+  const config = JSON.parse(configText) as ConfigPayload;
+  const live = config.live;
+  const livePillarValues = config.pillars;
+  const snapshot = config.snapshot;
+
+  const leverByKey = new Map(LEVERS.map((l) => [l.key, l]));
+
+  type ControlSet = {
+    range: HTMLInputElement;
+    number: HTMLInputElement;
+    display: HTMLElement | null;
+    resetLive: HTMLButtonElement | null;
+  };
+  const controls = new Map<LeverKey, ControlSet>();
+  for (const lever of LEVERS) {
+    const li = root.querySelector<HTMLElement>(`[data-lever="${lever.key}"]`);
+    if (!li) continue;
+    const range = li.querySelector<HTMLInputElement>("[data-lever-range]");
+    const number = li.querySelector<HTMLInputElement>("[data-lever-number]");
+    if (!range || !number) continue;
+    const display = li.querySelector<HTMLElement>("[data-lever-display]");
+    const resetLive = li.querySelector<HTMLButtonElement>("[data-lever-reset-live]");
+    controls.set(lever.key, { range, number, display, resetLive });
+  }
+
+  // Working set of slider values, mirrored on the DOM controls.
+  const values: Record<LeverKey, number> = { ...live };
+
+  // Apply parsed hash overrides, if any.
+  const initialOverrides = parseScenarioHash(window.location.hash);
+  for (const lever of LEVERS) {
+    const v = initialOverrides[lever.key];
+    if (v !== undefined && Number.isFinite(v)) {
+      values[lever.key] = clampValue(v, lever.min, lever.max);
+    }
+  }
+  syncControlsFromValues();
+
+  // Initial recompute -- if the URL had overrides this updates the readout;
+  // otherwise the SSR'd values are already correct but a fresh recompute
+  // costs nothing and proves the round-trip is byte-equal.
+  scheduleRecompute();
+
+  // ----- Event wiring -------------------------------------------------------
+
+  for (const [key, control] of controls) {
+    const lever = leverByKey.get(key)!;
+    control.range.addEventListener("input", () => {
+      const v = clampValue(parseFloat(control.range.value), lever.min, lever.max);
+      values[key] = v;
+      control.number.value = formatNumberInput(v, lever.step);
+      updateLeverDisplay(key, v);
+      writeHashAndRecompute();
+    });
+    control.number.addEventListener("input", () => {
+      const raw = parseFloat(control.number.value);
+      if (!Number.isFinite(raw)) return; // wait for a complete number
+      const v = clampValue(raw, lever.min, lever.max);
+      values[key] = v;
+      control.range.value = String(v);
+      updateLeverDisplay(key, v);
+      writeHashAndRecompute();
+    });
+    control.number.addEventListener("change", () => {
+      // Snap back into range on blur in case the user typed nonsense.
+      const v = clampValue(parseFloat(control.number.value), lever.min, lever.max);
+      values[key] = v;
+      control.range.value = String(v);
+      control.number.value = formatNumberInput(v, lever.step);
+      updateLeverDisplay(key, v);
+      writeHashAndRecompute();
+    });
+    control.resetLive?.addEventListener("click", () => {
+      values[key] = live[key];
+      control.range.value = String(live[key]);
+      control.number.value = formatNumberInput(live[key], lever.step);
+      updateLeverDisplay(key, live[key]);
+      writeHashAndRecompute();
+    });
+  }
+
+  for (const btn of root.querySelectorAll<HTMLButtonElement>("[data-scenario]")) {
+    btn.addEventListener("click", () => {
+      const name = btn.dataset.scenario as ScenarioName;
+      applyScenario(name);
+      markScenarioActive(name);
+    });
+  }
+
+  const resetBtn = root.querySelector<HTMLButtonElement>("[data-action='reset']");
+  resetBtn?.addEventListener("click", () => {
+    applyScenario("live");
+    markScenarioActive("live");
+  });
+
+  const shareBtn = root.querySelector<HTMLButtonElement>("[data-action='share']");
+  shareBtn?.addEventListener("click", () => {
+    handleShare();
+  });
+
+  window.addEventListener("hashchange", () => {
+    const ov = parseScenarioHash(window.location.hash);
+    let dirty = false;
+    for (const lever of LEVERS) {
+      const v = ov[lever.key];
+      const target = v !== undefined && Number.isFinite(v) ? clampValue(v, lever.min, lever.max) : live[lever.key];
+      if (values[lever.key] !== target) {
+        values[lever.key] = target;
+        dirty = true;
+      }
+    }
+    if (dirty) {
+      syncControlsFromValues();
+      scheduleRecompute();
+    }
+  });
+
+  // ----- Scenario + share ---------------------------------------------------
+
+  function applyScenario(name: ScenarioName): void {
+    const overrides = SCENARIOS[name];
+    for (const lever of LEVERS) {
+      values[lever.key] = overrides[lever.key] !== undefined && Number.isFinite(overrides[lever.key])
+        ? clampValue(overrides[lever.key]!, lever.min, lever.max)
+        : live[lever.key];
+    }
+    syncControlsFromValues();
+    writeHashAndRecompute();
+  }
+
+  function markScenarioActive(name: ScenarioName): void {
+    for (const btn of root!.querySelectorAll<HTMLButtonElement>("[data-scenario]")) {
+      btn.setAttribute("aria-pressed", btn.dataset.scenario === name ? "true" : "false");
+    }
+  }
+
+  async function handleShare(): Promise<void> {
+    const status = root!.querySelector<HTMLElement>("[data-share-status]");
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      if (status) {
+        status.textContent = "Link copied.";
+        window.setTimeout(() => { status.textContent = ""; }, 2400);
+      }
+    } catch {
+      // Fallback: select-and-copy via a transient textarea.
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      ta.setAttribute("aria-hidden", "true");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch { /* ignore */ }
+      document.body.removeChild(ta);
+      if (status) {
+        status.textContent = "Link copied.";
+        window.setTimeout(() => { status.textContent = ""; }, 2400);
+      }
+    }
+  }
+
+  // ----- Recompute pipeline -------------------------------------------------
+
+  let pendingRaf = 0;
+  function scheduleRecompute(): void {
+    if (pendingRaf) return;
+    pendingRaf = requestAnimationFrame(() => {
+      pendingRaf = 0;
+      doRecompute();
+    });
+  }
+  function writeHashAndRecompute(): void {
+    writeHash();
+    scheduleRecompute();
+  }
+
+  function writeHash(): void {
+    const overrides = collectOverrides();
+    if (Object.keys(overrides).length === 0) {
+      // No deviations from live -- clear the hash so the URL stays clean.
+      const url = window.location.pathname + window.location.search;
+      history.replaceState(null, "", url);
+      return;
+    }
+    // Use the full values record so the formatter emits every key in
+    // canonical order, then strip keys that are at-live (within rounding)
+    // to keep shared links short and meaningful.
+    const fullValues: Record<LeverKey, number> = { ...values };
+    const formatted = formatScenarioHash(fullValues);
+    history.replaceState(null, "", `#${formatted}`);
+  }
+
+  function collectOverrides(): Partial<Record<LeverKey, number>> {
+    const out: Partial<Record<LeverKey, number>> = {};
+    for (const lever of LEVERS) {
+      const v = values[lever.key];
+      if (Math.abs(v - live[lever.key]) < lever.step / 2) continue;
+      out[lever.key] = v;
+    }
+    return out;
+  }
+
+  function doRecompute(): void {
+    const overrides = collectOverrides();
+    const newSnap = recomputeFromOverrides(snapshot, overrides);
+    paintHeadline(newSnap);
+    paintPillars(newSnap);
+  }
+
+  function paintHeadline(s: ScoreSnapshot): void {
+    const headlineEl = root!.querySelector<HTMLElement>("[data-headline-value]");
+    if (headlineEl) {
+      headlineEl.textContent = String(Math.round(s.headline.value));
+    }
+    const card = root!.querySelector<HTMLElement>("[data-readout-card]");
+    const band = BANDS.find((b) => b.id === s.headline.band) ?? BANDS[0];
+    if (card) {
+      card.style.setProperty("--band-colour", `var(${band.colourToken})`);
+    }
+    const pill = root!.querySelector<HTMLElement>("[data-band-pill]");
+    if (pill) {
+      pill.textContent = band.label;
+      pill.style.color = `var(${band.colourToken})`;
+      pill.style.borderColor = `var(${band.colourToken})`;
+      pill.style.background = `color-mix(in srgb, var(${band.colourToken}) 12%, transparent)`;
+    }
+    const bandLabel = root!.querySelector<HTMLElement>("[data-band-label]");
+    if (bandLabel) bandLabel.textContent = band.editorialLabel;
+    const dominant = root!.querySelector<HTMLElement>("[data-dominant-pillar]");
+    if (dominant) dominant.textContent = PILLARS[s.headline.dominantPillar].title;
+
+    // Update the rope-walker's data attribute and re-run its sway calc
+    // by rotating the silhouette in place. The walker component renders
+    // its silhouette inline as SVG so we can manipulate the rotation
+    // attribute directly for instant feedback.
+    const walkerHost = root!.querySelector<HTMLElement>(".tightrope-walker");
+    if (walkerHost) {
+      const score = Math.max(0, Math.min(100, s.headline.value));
+      const MAX_SWAY = 30;
+      const targetAmp = MAX_SWAY * Math.pow(score / 100, 1.4);
+      const restAngle = targetAmp * 0.55;
+      walkerHost.dataset.score = String(Math.round(score));
+      walkerHost.dataset.amp = targetAmp.toFixed(3);
+      const walker = walkerHost.querySelector<SVGGElement>(".walker");
+      walker?.setAttribute("transform", `translate(300, 430) rotate(${restAngle.toFixed(2)})`);
+      // Recolour the stability arc zones so they reflect the new score.
+      const amberLit = targetAmp > 9;
+      const redLit = targetAmp > 18;
+      const reds = walkerHost.querySelectorAll<SVGPathElement>(".stability-arc path[fill='#C84B3C']");
+      const ambers = walkerHost.querySelectorAll<SVGPathElement>(".stability-arc path[fill='#EE9944']");
+      for (const r of reds) r.setAttribute("opacity", String(redLit ? 0.5 : 0.12));
+      for (const a of ambers) a.setAttribute("opacity", String(amberLit ? 0.48 : 0.14));
+      const label = walkerHost.querySelector<SVGTextElement>(".ui-layer text");
+      if (label) label.textContent = `INSTABILITY · ${Math.round(score)}/100`;
+    }
+  }
+
+  function paintPillars(s: ScoreSnapshot): void {
+    for (const id of PILLAR_ORDER) {
+      const tile = root!.querySelector<HTMLElement>(`[data-pillar="${id}"]`);
+      if (!tile) continue;
+      const valueEl = tile.querySelector<HTMLElement>("[data-pillar-value]");
+      const deltaEl = tile.querySelector<HTMLElement>("[data-pillar-delta]");
+      const value = Math.round(s.pillars[id].value);
+      if (valueEl) valueEl.textContent = String(value);
+      const delta = Number((s.pillars[id].value - livePillarValues[id]).toFixed(1));
+      if (deltaEl) {
+        deltaEl.textContent = `${delta > 0 ? "+" : ""}${delta.toFixed(1)} vs live`;
+        deltaEl.classList.remove("up", "dn", "flat");
+        deltaEl.classList.add(Math.abs(delta) < 0.05 ? "flat" : delta > 0 ? "up" : "dn");
+      }
+    }
+  }
+
+  // ----- Helpers ------------------------------------------------------------
+
+  function syncControlsFromValues(): void {
+    for (const [key, control] of controls) {
+      const lever = leverByKey.get(key)!;
+      control.range.value = String(values[key]);
+      control.range.setAttribute("aria-valuenow", String(values[key]));
+      control.range.setAttribute("aria-valuetext", lever.format(values[key]));
+      control.number.value = formatNumberInput(values[key], lever.step);
+      updateLeverDisplay(key, values[key]);
+    }
+  }
+
+  function updateLeverDisplay(key: LeverKey, value: number): void {
+    const control = controls.get(key);
+    if (!control?.display) return;
+    const lever = leverByKey.get(key);
+    if (!lever) return;
+    control.display.textContent = lever.format(value);
+    control.range.setAttribute("aria-valuenow", String(value));
+    control.range.setAttribute("aria-valuetext", lever.format(value));
+  }
+
+  function formatNumberInput(value: number, step: number): string {
+    const decimals = stepDecimals(step);
+    return value.toFixed(decimals);
+  }
+
+  function stepDecimals(step: number): number {
+    if (!Number.isFinite(step) || step <= 0) return 0;
+    const log = Math.log10(step);
+    if (log >= 0) return 0;
+    return Math.min(4, Math.ceil(-log));
+  }
+  } // end bootstrap
+</script>

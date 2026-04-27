@@ -1,0 +1,35 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import TopNav from "~/components/TopNav.astro";
+import SiteFooter from "~/components/SiteFooter.astro";
+import ExploreIsland from "~/components/explore/ExploreIsland.astro";
+import { loadSnapshot } from "~/lib/page-data.js";
+
+const snapshot = await loadSnapshot(Astro.locals);
+const isStale = Boolean(snapshot.headline.stale);
+
+// Embed mode strips the chrome -- mirrors the apps/web/src/pages/embed/* convention
+// of keeping the same data path but rendering inside a transparent body so the
+// island can be iframed into a third-party page.
+const embed = Astro.url.searchParams.get("embed") === "1";
+---
+{embed ? (
+  <BaseLayout title="Tightrope Tracker — explore" embed>
+    <main id="main">
+      <ExploreIsland snapshot={snapshot} />
+    </main>
+  </BaseLayout>
+) : (
+  <BaseLayout title="Tightrope Tracker — explore the score">
+    <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} stale={isStale} compact />
+    <main id="main">
+      <ExploreIsland snapshot={snapshot} />
+    </main>
+    <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={isStale} />
+  </BaseLayout>
+)}
+
+<style is:global is:inline>
+  /* Embed mode: the BaseLayout sets a transparent body via the embed prop;
+     drop any extra spacing so the island sits flush in an iframe. */
+</style>

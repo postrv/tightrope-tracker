@@ -2,6 +2,7 @@
 import type { PillarScore } from "@tightrope/shared";
 import { OBR_TARGET_YEAR_LABEL } from "@tightrope/shared";
 import { signedDelta, trendDescriptor } from "~/lib/format.js";
+import { yFor, Y_AXIS_TICKS, IFS_CUSHION_BN, IFS_CUSHION_Y } from "~/lib/fiscalChart.js";
 import IllustrativeBadge from "./IllustrativeBadge.astro";
 import IndicatorTooltip from "./IndicatorTooltip.astro";
 
@@ -43,13 +44,6 @@ const rounds: Round[] = ordered.slice(-4).map((v, i, arr) => ({
   x: xs[Math.max(0, xs.length - arr.length) + i] ?? xs[i] ?? 110,
   highlight: i === arr.length - 1,
 }));
-
-// map £bn to y in viewbox [0..240]; £10bn -> y=200; £40bn -> y=40.
-function yFor(bn: number): number {
-  const max = 40, min = 0;
-  const t = (bn - min) / (max - min);
-  return 220 - t * 180;
-}
 
 const chartHasData = rounds.length >= 2;
 ---
@@ -101,16 +95,10 @@ const chartHasData = rounds.length >= 2;
               </linearGradient>
             </defs>
             <g stroke="var(--border-soft)" stroke-width="1">
-              <line x1="40" y1="40" x2="580" y2="40"/>
-              <line x1="40" y1="100" x2="580" y2="100"/>
-              <line x1="40" y1="160" x2="580" y2="160"/>
-              <line x1="40" y1="220" x2="580" y2="220"/>
+              {Y_AXIS_TICKS.map((t) => <line x1="40" y1={t.gridY} x2="580" y2={t.gridY}/>)}
             </g>
             <g font-family="IBM Plex Mono" font-size="10" fill="var(--ink-2)">
-              <text x="32" y="44" text-anchor="end">40</text>
-              <text x="32" y="104" text-anchor="end">30</text>
-              <text x="32" y="164" text-anchor="end">20</text>
-              <text x="32" y="224" text-anchor="end">10</text>
+              {Y_AXIS_TICKS.map((t) => <text x="32" y={t.labelY} text-anchor="end">{t.value}</text>)}
             </g>
             <g font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)">
               {rounds.map((r) => <text x={r.x - 30} y={234}>{r.label}</text>)}
@@ -141,8 +129,8 @@ const chartHasData = rounds.length >= 2;
               </g>
             ))}
 
-            <line x1="40" y1="200" x2="580" y2="200" stroke="var(--band-critical)" stroke-width="1" stroke-dasharray="3 4" opacity="0.6"/>
-            <text x="574" y="196" text-anchor="end" font-family="IBM Plex Mono" font-size="9.5" fill="var(--band-critical)" opacity="0.85">IFS prudent cushion · £10bn</text>
+            <line x1="40" y1={IFS_CUSHION_Y} x2="580" y2={IFS_CUSHION_Y} stroke="var(--band-critical)" stroke-width="1" stroke-dasharray="3 4" opacity="0.6"/>
+            <text x="574" y={IFS_CUSHION_Y - 4} text-anchor="end" font-family="IBM Plex Mono" font-size="9.5" fill="var(--band-critical)" opacity="0.85">IFS prudent cushion · £{IFS_CUSHION_BN}bn</text>
           </svg>
         ) : (
           <p class="hint" style="font-style: italic; color: var(--ink-2); padding: 32px 0;">Awaiting at least two OBR vintages from the live feed before the comparison chart renders.</p>

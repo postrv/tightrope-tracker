@@ -391,11 +391,13 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     maxStaleMs: STALE_ONS_LMS_MS,
   },
   mortgage_2y_fix: {
-    id: "mortgage_2y_fix", pillar: "labour", label: "Average 2y fixed mortgage rate", shortLabel: "2y fix",
-    unit: "%", weight: 0.12, risingIsBad: true, sourceId: "moneyfacts",
-    description: "UK average 2-year fixed-rate residential mortgage — Moneyfacts overall all-LTV monthly headline average.", formatDisplay: fmtPct(2),
+    id: "mortgage_2y_fix", pillar: "labour", label: "Effective 2y fix mortgage rate", shortLabel: "2y fix",
+    unit: "%", weight: 0.12, risingIsBad: true, sourceId: "boe_mortgage_rates",
+    description: "BoE IADB IUMBV34: monthly effective rate on new fixed-rate 2-year mortgages to households at 75% LTV. The canonical economist's reference (interest income ÷ balance, not advertised front-book rate).",
+    formatDisplay: fmtPct(2),
     provenance: "live",
-    maxStaleMs: STALE_DAILY_MS,
+    // BoE IUMBV34 prints monthly with ~3-week lag — match the RTI window.
+    maxStaleMs: STALE_RTI_MONTHLY_MS,
   },
   dd_failure_rate: {
     id: "dd_failure_rate", pillar: "labour", label: "Direct-debit failure rate", shortLabel: "DD failures",

@@ -84,13 +84,23 @@ describe("maxStaleMsForIndicator", () => {
       "gilt_10y", "gilt_30y", "breakeven_5y",
       "gbp_usd", "gbp_twi",
       "ilg_share", "issuance_long_share",
-      "mortgage_2y_fix", "housebuilder_idx",
+      "housebuilder_idx",
     ];
     for (const id of dailyIds) {
       const ms = INDICATORS[id]!.maxStaleMs;
       expect(ms, `${id} too loose`).toBeLessThanOrEqual(MAX_DAILY_WINDOW_MS);
       expect(ms, `${id} too tight`).toBeGreaterThanOrEqual(MIN_DAILY_WINDOW_MS);
     }
+  });
+
+  it("mortgage_2y_fix uses the BoE monthly window now that the source is IUMBV34", () => {
+    // The series moved from Moneyfacts (advertised, monthly press release)
+    // to BoE IADB IUMBV34 (effective new-business, monthly). The freshness
+    // window is now ONS-monthly-equivalent (60 days), matching the RTI
+    // monthly cadence. If anyone moves it back to a daily window, the BoE
+    // monthly print will trip the staleness banner the day after it lands.
+    expect(INDICATORS.mortgage_2y_fix!.maxStaleMs).toBe(60 * DAY_MS);
+    expect(INDICATORS.mortgage_2y_fix!.sourceId).toBe("boe_mortgage_rates");
   });
 });
 

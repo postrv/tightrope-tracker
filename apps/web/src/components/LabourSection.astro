@@ -1,7 +1,13 @@
 ---
 import type { PillarScore } from "@tightrope/shared";
 import { signedDelta, trendDescriptor } from "~/lib/format.js";
-import { mortgageDelta, formatExtra } from "~/lib/mortgage.js";
+import {
+  mortgageDelta,
+  formatExtra,
+  MORTGAGE_BUDGET_BASELINE_PCT,
+  MORTGAGE_BUDGET_BASELINE_LABEL,
+} from "~/lib/mortgage.js";
+import { shortDate } from "~/lib/format.js";
 import IllustrativeBadge from "./IllustrativeBadge.astro";
 
 interface Props {
@@ -10,10 +16,16 @@ interface Props {
 
 const { pillar } = Astro.props;
 
-// Editorial baseline (rate at last Budget) and current rate.
-const baselineRate = 5.18;
-const currentRate = 5.84;
-const m = mortgageDelta(baselineRate, currentRate, 250_000, 25);
+// Mortgage card: pull the live mortgage_2y_fix indicator from the labour
+// pillar's contributions so the headline £/month figure reflects the
+// latest Moneyfacts (or BoE IADB) reading rather than a hardcoded literal.
+// Falls back to the editorial baseline only if D1 hasn't yet ingested a
+// live observation; the cold-cache case shows "no change" rather than a
+// fabricated number.
+const mortgageContrib = pillar.contributions.find((c) => c.indicatorId === "mortgage_2y_fix");
+const currentRate = mortgageContrib?.rawValue ?? MORTGAGE_BUDGET_BASELINE_PCT;
+const m = mortgageDelta(MORTGAGE_BUDGET_BASELINE_PCT, currentRate, 250_000, 25);
+const mortgageObservedAt = mortgageContrib?.observedAt;
 
 // Dual-axis inactivity chart data: quarterly 2019-2026.
 // [label, rate %, health-related m]
@@ -159,14 +171,14 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
         <div class="card-head">
           <h3>Mortgage translator</h3>
           <IllustrativeBadge
-            sourceSummary="Arithmetic worked from the live 2-year fixed rate (indicator `mortgage_2y_fix`, Moneyfacts). The £250k / 25-year worked example is illustrative — change the two rates in apps/web/src/lib/mortgage.js to reproduce."
+            sourceSummary={`Live indicator: mortgage_2y_fix (Moneyfacts average 2-year fix at 75% LTV). Baseline ${MORTGAGE_BUDGET_BASELINE_PCT.toFixed(2)}% is the rate at the ${MORTGAGE_BUDGET_BASELINE_LABEL}. £250k / 25-year is the worked example.`}
             sourceUrl="https://www.moneyfactscompare.co.uk/mortgages/"
           />
         </div>
         <p class="hint">What the 2-year fixed-rate move means on a £250,000, 25-year repayment mortgage.</p>
         <div class="mortgage-big">{formatExtra(m.extraPerMonth)}<span class="mortgage-sub"> / month</span></div>
-        <p class="mortgage-caption">Extra vs. the rate at the last Budget ({m.baselineRate.toFixed(2)}% → {m.currentRate.toFixed(2)}%). Payment: £{m.currentPayment.toLocaleString("en-GB")} vs. £{m.baselinePayment.toLocaleString("en-GB")}.</p>
-        <p class="mortgage-note">This is the line you will see quoted in the press. The rate series is Moneyfacts' reported average 2-year fix at 75% LTV.</p>
+        <p class="mortgage-caption">Extra vs. the rate at the {MORTGAGE_BUDGET_BASELINE_LABEL} ({m.baselineRate.toFixed(2)}% → {m.currentRate.toFixed(2)}%). Payment: £{m.currentPayment.toLocaleString("en-GB")} vs. £{m.baselinePayment.toLocaleString("en-GB")}.</p>
+        <p class="mortgage-note">This is the line you will see quoted in the press. The rate series is Moneyfacts' reported average 2-year fix at 75% LTV{mortgageObservedAt ? ` · latest reading ${shortDate(mortgageObservedAt)}` : ""}.</p>
       </div>
 
       <div class="chart-card">

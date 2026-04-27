@@ -5,6 +5,16 @@
  * Uses a standard amortising-mortgage formula over a 25-year term. The result
  * is the delta of monthly payments in whole pounds, rounded.
  */
+
+/**
+ * Editorial baseline: the average 2-year fix at the time of the Spring 2024
+ * Budget, used to anchor the "since last Budget" mortgage delta. Source:
+ * Moneyfacts press release archive, week of 6 March 2024. Update on the next
+ * fiscal event that resets the comparator.
+ */
+export const MORTGAGE_BUDGET_BASELINE_PCT = 5.18;
+export const MORTGAGE_BUDGET_BASELINE_LABEL = "Spring 2024 Budget";
+
 export interface MortgageDelta {
   baselineRate: number;
   currentRate: number;

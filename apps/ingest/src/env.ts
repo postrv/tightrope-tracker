@@ -24,4 +24,6 @@ export interface Env {
   TWELVE_DATA_KEY?: string;
   /** EODHD API key for daily housebuilder EOD close prices. */
   EODHD_API_KEY?: string;
+  /** EIA Open Data v2 API key for daily Brent crude spot prices. */
+  EIA_API_KEY?: string;
 }

@@ -7,7 +7,14 @@ export interface Gilt30yProps {
   updatedAt: string;
 }
 
-/** 20-year gilt yield card. Critical variant — same styling as the headline when stressed. */
+/**
+ * 20-year nominal gilt yield card. Critical variant.
+ *
+ * The caption is deliberately stripped of editorial claims like "fresh
+ * multi-decade high" or peer-country comparisons — those are point-in-time
+ * statements that drift faster than the card refreshes. The number itself,
+ * sourced from BoE IADB, carries the message.
+ */
 export function Gilt30yCard(props: Gilt30yProps): JsxNode {
   const { yieldPct, updatedAt } = props;
   return (
@@ -15,13 +22,13 @@ export function Gilt30yCard(props: Gilt30yProps): JsxNode {
       variant="critical"
       eyebrow="Tightrope Tracker · Market"
       meta={formatDate(updatedAt)}
-      source="Source · DMO · Bank of England"
-      footerRight="Intraday close"
+      source="Source · Bank of England IADB"
+      footerRight="Daily close"
     >
       <div style={{ display: "flex", flexDirection: "column" }}>
         <BigStat value={yieldPct.toFixed(2)} unit="%" tint={TOKENS.bandCritical} />
         <Caption>
-          20-year UK gilt yield — a fresh multi-decade high. UK long-end borrowing costs now above both Italy and Greece, despite lower debt-to-GDP.
+          20-year UK nominal gilt yield. The long-end read on UK borrowing costs.
         </Caption>
       </div>
     </CardShell>

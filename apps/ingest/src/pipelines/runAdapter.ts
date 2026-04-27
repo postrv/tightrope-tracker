@@ -20,6 +20,7 @@ export async function runAdapter(env: Env, adapter: DataSourceAdapter): Promise<
     secrets: {
       TWELVE_DATA_KEY: env.TWELVE_DATA_KEY,
       EODHD_API_KEY: env.EODHD_API_KEY,
+      EIA_API_KEY: env.EIA_API_KEY,
     },
   };
   try {

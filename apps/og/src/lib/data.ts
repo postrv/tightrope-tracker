@@ -28,23 +28,47 @@ function isFresh(snapshot: ScoreSnapshot): boolean {
   return Date.now() - ts < KV_SNAPSHOT_MAX_AGE_MS;
 }
 
+export interface CardIndicatorReading {
+  value: number;
+  observedAt: string;
+}
+
 export interface CardIndicators {
-  gilt30y: number | null;
+  gilt30y: CardIndicatorReading | null;
+  /** Latest OBR-forecast cb_headroom value in GBP billions. */
+  cbHeadroom: CardIndicatorReading | null;
+  /** Latest mortgage_2y_fix percentage (Moneyfacts adapter or live BoE IADB). */
+  mortgage2y: CardIndicatorReading | null;
+  /** Latest economic-inactivity rate, 16-64, percent (ONS LMS). */
+  inactivityRate: CardIndicatorReading | null;
+  /** Latest housing_trajectory value (net additional dwellings, latest MHCLG release). */
+  housingTrajectory: CardIndicatorReading | null;
+}
+
+const LIVE_FILTER = `(payload_hash IS NULL OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%'))`;
+
+async function latestLive(env: Env, indicatorId: string): Promise<CardIndicatorReading | null> {
+  // MAX(ingested_at) over live-only rows. Same selector as api/ingest so an
+  // editorial fixture with an earlier observed_at can't lock the OG card
+  // onto a stale value.
+  const row = await env.DB.prepare(
+    `SELECT value, observed_at FROM indicator_observations
+     WHERE indicator_id = ?1 AND ${LIVE_FILTER}
+     ORDER BY ingested_at DESC LIMIT 1`,
+  ).bind(indicatorId).first<{ value: number; observed_at: string }>();
+  if (!row) return null;
+  return { value: row.value, observedAt: row.observed_at };
 }
 
 export async function loadCardIndicators(env: Env): Promise<CardIndicators> {
-  // Latest *live* gilt_30y reading. Same selector logic as the API and
-  // ingest layers: pick by MAX(ingested_at) over rows whose payload_hash
-  // is neither 'hist:*' nor 'seed*' so an editorial fixture with an
-  // earlier observed_at can't lock the OG card onto a stale value.
-  const row = await env.DB.prepare(
-    `SELECT value FROM indicator_observations
-     WHERE indicator_id = 'gilt_30y'
-       AND (payload_hash IS NULL
-            OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%'))
-     ORDER BY ingested_at DESC LIMIT 1`,
-  ).first<{ value: number }>();
-  return { gilt30y: row?.value ?? null };
+  const [gilt30y, cbHeadroom, mortgage2y, inactivityRate, housingTrajectory] = await Promise.all([
+    latestLive(env, "gilt_30y"),
+    latestLive(env, "cb_headroom"),
+    latestLive(env, "mortgage_2y_fix"),
+    latestLive(env, "inactivity_rate"),
+    latestLive(env, "housing_trajectory"),
+  ]);
+  return { gilt30y, cbHeadroom, mortgage2y, inactivityRate, housingTrajectory };
 }
 
 async function buildFromD1(env: Env): Promise<ScoreSnapshot> {

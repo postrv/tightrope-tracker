@@ -428,18 +428,25 @@ export interface HeadroomVintage {
 /**
  * Return the most recent OBR cb_headroom vintages from indicator_observations,
  * latest first. The Hero uses [0] as the live forecast and [1] (if present)
- * as the prior-vintage baseline to compute "↓ £X.Xbn since prior vintage".
+ * as the prior-vintage baseline; the FiscalSection plots [0..N-1] as the
+ * forecast-headroom-by-vintage trendline.
  *
- * Live-only filter: hist:* and seed* rows are excluded so the head value
- * is always the most recent live observation written by the obrEfo adapter.
+ * Filter rationale: `hist:%` rows are NOT excluded. For most live indicators
+ * (gilts, FX, etc.) `hist:` marks synthetic carry-forward backfill and is
+ * appropriately filtered, but OBR EFO is fixture-only — every cb_headroom
+ * row is an authentic point-in-time forecast vintage, regardless of whether
+ * it was written by the historical-backfill path (`hist:*`) or the daily
+ * `fetch()` head-of-list path (live sha). Excluding `hist:*` here was the
+ * cause of the Pillar 2 detail chart silently rendering its empty-state
+ * hint despite the vintage trail being present in the database. `seed%`
+ * rows remain excluded so dev placeholders never bleed in.
  */
 export async function getHeadroomVintages(env: Env, limit = 4): Promise<HeadroomVintage[]> {
   const res = await env.DB
     .prepare(
       `SELECT value, observed_at FROM indicator_observations
        WHERE indicator_id = 'cb_headroom'
-         AND (payload_hash IS NULL
-              OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%'))
+         AND (payload_hash IS NULL OR payload_hash NOT LIKE 'seed%')
        ORDER BY observed_at DESC
        LIMIT ?1`,
     )

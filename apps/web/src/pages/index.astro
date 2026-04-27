@@ -2,6 +2,7 @@
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import TopNav from "~/components/TopNav.astro";
 import Hero from "~/components/Hero.astro";
+import HeadlineChartSection from "~/components/HeadlineChartSection.astro";
 import PillarStrip from "~/components/PillarStrip.astro";
 import TodayStrip from "~/components/TodayStrip.astro";
 import MarketSection from "~/components/MarketSection.astro";
@@ -15,7 +16,7 @@ import SiteFooter from "~/components/SiteFooter.astro";
 import { loadHomepageData } from "~/lib/page-data.js";
 
 const data = await loadHomepageData(Astro.locals);
-const { snapshot, movements, delivery, timeline, empty } = data;
+const { snapshot, movements, delivery, timeline, history, empty } = data;
 const isStale = Boolean(snapshot.headline.stale);
 // Figure out which pillars specifically are stale so the banner can name them
 // instead of making the reader hunt across the page.
@@ -52,6 +53,7 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
     ) : null}
 
     <Hero headline={snapshot.headline} />
+    <HeadlineChartSection history={history} events={timeline} />
     <PillarStrip pillars={snapshot.pillars} />
     <TodayStrip movements={movements} />
     <MarketSection pillar={snapshot.pillars.market} movements={movements} />

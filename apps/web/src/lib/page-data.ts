@@ -1,5 +1,6 @@
 import type {
   ScoreSnapshot,
+  ScoreHistory,
   TodayMovement,
   PillarId,
   PillarScore,
@@ -11,6 +12,7 @@ import type { TimelineEvent } from "@tightrope/shared/timeline";
 
 import {
   getLatestSnapshot,
+  getHistory,
   getTodayMovements,
   getDeliveryCommitments,
   getTimelineEvents,
@@ -23,6 +25,8 @@ export interface HomepageData {
   movements: TodayMovement[];
   delivery: DeliveryCommitment[];
   timeline: TimelineEvent[];
+  /** 90-day headline + pillar history, used by HeadlineChartSection. */
+  history: ScoreHistory;
   empty: boolean;
 }
 
@@ -37,14 +41,22 @@ export async function loadHomepageData(astroLocals: App.Locals): Promise<Homepag
   }
 
   try {
-    const [snapshot, movements, delivery, timeline] = await Promise.all([
+    const [snapshot, movements, delivery, timeline, history] = await Promise.all([
       getLatestSnapshot(env).catch(() => emptySnapshot()),
       getTodayMovements(env).catch(() => [] as TodayMovement[]),
       getDeliveryCommitments(env).catch(() => [] as DeliveryCommitment[]),
-      getTimelineEvents(env, 20).catch(() => [] as TimelineEvent[]),
+      // Pull a wider timeline window for the chart annotations than the
+      // homepage's editorial timeline (which is capped at 20). Markers
+      // outside the 90-day chart window are dropped by mapEventsToChart.
+      getTimelineEvents(env, 80).catch(() => [] as TimelineEvent[]),
+      // 90-day history reads KV first (with a 30-min freshness gate),
+      // falling through to D1 on miss / stale. Defensive: any failure
+      // returns an empty history so the chart shows its empty-state
+      // rather than crashing the page render.
+      getHistory(env, 90).catch(() => emptyHistory()),
     ]);
     const empty = snapshot.headline.value === 0 && movements.length === 0;
-    return { snapshot, movements, delivery, timeline, empty };
+    return { snapshot, movements, delivery, timeline, history, empty };
   } catch {
     return { ...emptyFallback(), empty: true };
   }
@@ -106,7 +118,39 @@ function emptyFallback(): Omit<HomepageData, "empty"> {
     movements: [],
     delivery: [],
     timeline: [],
+    history: emptyHistory(),
   };
+}
+
+/**
+ * Empty ScoreHistory used as a default when KV/D1 are unavailable or the
+ * fetch fails. Returning a typed-but-empty history lets downstream
+ * components (the chart) render their own empty-state without needing
+ * to special-case undefined.
+ */
+export function emptyHistory(): ScoreHistory {
+  return { points: [], rangeDays: 90, schemaVersion: 1 };
+}
+
+/**
+ * Load score history for an explicit window. Used by the long-composite
+ * page (/composite) where the URL governs the range. Defensive: any
+ * failure resolves to an empty history of the requested width so the
+ * page still renders.
+ */
+export async function loadHistory(astroLocals: App.Locals, days: number): Promise<ScoreHistory> {
+  const env = astroLocals.runtime?.env;
+  if (!env || !env.DB) return { points: [], rangeDays: clampDays(days), schemaVersion: 1 };
+  try {
+    return await getHistory(env, days);
+  } catch {
+    return { points: [], rangeDays: clampDays(days), schemaVersion: 1 };
+  }
+}
+
+function clampDays(days: number): number {
+  if (!Number.isFinite(days)) return 90;
+  return Math.max(1, Math.min(365, Math.floor(days)));
 }
 
 function emptySnapshot(): ScoreSnapshot {

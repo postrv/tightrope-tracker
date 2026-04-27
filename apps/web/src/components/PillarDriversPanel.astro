@@ -1,0 +1,209 @@
+---
+/**
+ * Pillar drivers panel for the long-composite (`/composite`) page.
+ *
+ * Renders one card per pillar showing the current value, its band, the
+ * 7-day and 30-day deltas, and a one-sentence editorial naming the
+ * dominant indicator (highest weight × |zScore|). The intent is the
+ * "why is the score where it is" view — not the live ticker, just a
+ * quick read of which inputs are doing the work.
+ *
+ * Visual language matches PillarStrip but with more detail per card.
+ */
+import type { ScoreSnapshot, IndicatorContribution } from "@tightrope/shared";
+import { BANDS, INDICATORS, PILLAR_ORDER, PILLARS } from "@tightrope/shared";
+import { signedDelta, trendArrow, trendClass, formatIndicator } from "~/lib/format.js";
+
+interface Props {
+  snapshot: ScoreSnapshot;
+}
+
+const { snapshot } = Astro.props;
+
+function bandColour(bandId: string): string {
+  const b = BANDS.find((x) => x.id === bandId);
+  return b ? `var(${b.colourToken})` : "var(--accent)";
+}
+
+function bandLabel(bandId: string): string {
+  return BANDS.find((x) => x.id === bandId)?.label ?? "Steady";
+}
+
+/**
+ * Pick the indicator most responsible for the pillar's current state:
+ * the contribution with the highest |zScore| × weight. The KV-backed
+ * snapshot path populates real z-scores; the D1-fallback path zeroes
+ * them, so we tolerate that and fall back to the highest-weighted
+ * indicator as a sensible substitute.
+ */
+function dominantContribution(contributions: readonly IndicatorContribution[]): IndicatorContribution | null {
+  if (contributions.length === 0) return null;
+  let best: IndicatorContribution | null = null;
+  let bestScore = -1;
+  for (const c of contributions) {
+    const score = c.weight * Math.abs(c.zScore);
+    if (score > bestScore) {
+      bestScore = score;
+      best = c;
+    }
+  }
+  // If every contribution had a zero zScore (D1-fallback), tie-break by
+  // weight so a stable indicator still surfaces.
+  if (best && bestScore === 0) {
+    let weightBest = best;
+    let weightMax = best.weight;
+    for (const c of contributions) {
+      if (c.weight > weightMax) {
+        weightMax = c.weight;
+        weightBest = c;
+      }
+    }
+    return weightBest;
+  }
+  return best;
+}
+
+interface Driver {
+  label: string;
+  /** Already-formatted display string from the indicator's formatDisplay. */
+  raw: string;
+}
+function describeDriver(c: IndicatorContribution): Driver {
+  const def = INDICATORS[c.indicatorId];
+  // formatIndicator delegates to the indicator's own formatDisplay, which
+  // already bakes in the unit (e.g. "4.32%" or "70 bp"). We don't append
+  // the unit again here — doing so doubled it visibly in the live UI.
+  return {
+    label: def?.label ?? c.indicatorId,
+    raw: formatIndicator(c.indicatorId, c.rawValue),
+  };
+}
+---
+<section class="drivers" aria-labelledby="drivers-title">
+  <div class="drivers-head">
+    <span class="eyebrow">Drivers</span>
+    <h2 id="drivers-title">key drivers, by pillar</h2>
+    <p class="lede">Each card names the indicator currently doing the heaviest lifting inside its pillar.</p>
+  </div>
+
+  <div class="drivers-grid">
+    {PILLAR_ORDER.map((id) => {
+      const p = snapshot.pillars[id];
+      const def = PILLARS[id];
+      const colour = bandColour(p.band);
+      const driver = dominantContribution(p.contributions);
+      const driverInfo = driver ? describeDriver(driver) : null;
+      return (
+        <article class="driver-card" data-pillar={id} aria-labelledby={`driver-${id}-title`}>
+          <header>
+            <span class="weight">{Math.round(def.weight * 100)}%</span>
+            <h3 id={`driver-${id}-title`}>{def.title}</h3>
+          </header>
+
+          <div class="driver-row">
+            <span class="value">{Math.round(p.value)}</span>
+            <span class="band" style={`color: ${colour}; border-color: ${colour};`}>{bandLabel(p.band)}</span>
+            {p.stale ? <span class="stale-chip" title="Last reading is past the freshness window — value is a carry-forward.">stale</span> : null}
+          </div>
+
+          <ul class="deltas" aria-label={`${def.shortTitle} deltas`}>
+            <li>
+              <span class="delta-label">7d</span>
+              <span class={`delta ${trendClass(p.delta7d)}`}>{trendArrow(p.delta7d)} {signedDelta(p.delta7d, 1)}</span>
+            </li>
+            <li>
+              <span class="delta-label">30d</span>
+              <span class={`delta ${trendClass(p.delta30d)}`}>{trendArrow(p.delta30d)} {signedDelta(p.delta30d, 1)}</span>
+            </li>
+          </ul>
+
+          {driverInfo ? (
+            <p class="driver-line">
+              Driven by <strong>{driverInfo.label}</strong>: {driverInfo.raw}.
+            </p>
+          ) : (
+            <p class="driver-line subtle">No live indicator readings yet — drivers populate after the first ingestion run.</p>
+          )}
+        </article>
+      );
+    })}
+  </div>
+</section>
+
+<style>
+.drivers { padding: 56px 0 64px; }
+.drivers-head { margin-bottom: 28px; }
+.drivers-head h2 {
+  font-family: var(--font-serif); font-weight: 600; font-size: clamp(26px, 3vw, 32px);
+  letter-spacing: -0.02em; line-height: 1.05;
+  margin: 14px 0 8px; text-transform: lowercase;
+}
+.drivers-head .lede { color: var(--ink-2); font-size: 13.5px; margin: 0; max-width: 540px; }
+
+.drivers-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.driver-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  display: flex; flex-direction: column; gap: 12px;
+  position: relative;
+}
+.driver-card header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.driver-card h3 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--ink-0);
+}
+.driver-card .weight {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.driver-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.driver-row .value {
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--ink-0);
+  font-variant-numeric: tabular-nums;
+}
+.driver-row .band {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  border: 1px solid; border-radius: 999px; padding: 3px 9px; align-self: flex-start;
+}
+.stale-chip {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px;
+  border: 1px dashed var(--ink-2); color: var(--ink-2);
+}
+.deltas {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; gap: 18px;
+  font-family: var(--font-mono); font-size: 12px;
+}
+.deltas .delta-label {
+  display: inline-block; margin-right: 6px;
+  color: var(--ink-3); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px;
+}
+.deltas .delta.up { color: var(--band-acute); }
+.deltas .delta.dn { color: var(--band-slack); }
+.deltas .delta.flat { color: var(--ink-2); }
+.driver-line { margin: 0; color: var(--ink-1); font-size: 13.5px; line-height: 1.5; }
+.driver-line strong { color: var(--ink-0); font-weight: 600; }
+.driver-line.subtle { color: var(--ink-2); font-style: italic; }
+
+@media (max-width: 800px) {
+  .drivers-grid { grid-template-columns: 1fr; }
+}
+</style>

@@ -1,6 +1,8 @@
 import type {
   PillarId,
   ScoreSnapshot,
+  ScoreHistory,
+  ScoreHistoryPoint,
   PillarScore,
   HeadlineScore,
   IndicatorContribution,
@@ -468,4 +470,101 @@ export async function getCorrections(env: Env): Promise<{
     correctedValue: r.corrected_value,
     reason: r.reason,
   }));
+}
+
+// --- score history --------------------------------------------------------
+//
+// 90 days of headline + pillar scores, downsampled to one row per UTC day.
+// Mirrors apps/api/src/lib/db.ts:buildHistoryFromD1 in shape (the API and
+// the web app must produce identical history for a given `days` value),
+// but we add a KV-first read path here keyed at `score:history:90d` —
+// the recompute pipeline writes that key every 5 minutes, so most page
+// loads avoid the four D1 queries entirely. The freshness gate matches
+// the API's gate (30 minutes) so we don't render stale history when
+// upstream ingestion has failed.
+
+/** KV history is only trusted if its newest point is at most this old. */
+const KV_HISTORY_MAX_AGE_MS = 30 * 60_000;
+
+/**
+ * Build a ScoreHistory for the homepage chart.
+ *
+ * Reads `score:history:90d` from KV first when `days === 90` (the homepage
+ * default); falls through to D1 if the cache is empty, malformed, or stale.
+ * For other windows we go straight to D1 — the homepage only ever asks for
+ * 90, but the long-composite page wants 30 / 365 / all.
+ */
+export async function getHistory(env: Env, days: number): Promise<ScoreHistory> {
+  const clampedDays = Math.max(1, Math.min(365, Math.floor(days)));
+  if (clampedDays === 90) {
+    const cached = await safeKvHistory(env);
+    if (cached) return cached;
+  }
+  return buildHistoryFromD1(env, clampedDays);
+}
+
+async function safeKvHistory(env: Env): Promise<ScoreHistory | null> {
+  try {
+    const cached = await env.KV.get<ScoreHistory>("score:history:90d", "json");
+    if (!cached || cached.schemaVersion !== 1) return null;
+    if (!historyIsFresh(cached)) return null;
+    return cached;
+  } catch {
+    // KV transient errors should never break the page; let D1 take over.
+    return null;
+  }
+}
+
+function historyIsFresh(history: ScoreHistory): boolean {
+  const last = history.points[history.points.length - 1];
+  if (!last) return false;
+  const ts = Date.parse(last.timestamp);
+  if (!Number.isFinite(ts)) return false;
+  return Date.now() - ts < KV_HISTORY_MAX_AGE_MS;
+}
+
+interface PillarSeriesRow {
+  id: PillarId;
+  observed_at: string;
+  value: number;
+}
+
+/**
+ * Read history directly from D1. Identical contract to the API's
+ * buildHistoryFromD1 — same SQL shape, same downsampling, same return
+ * type. We keep them as parallel implementations rather than importing
+ * across app boundaries; the contract is "same rows, same shapes",
+ * verified by tests on both sides.
+ */
+export async function buildHistoryFromD1(env: Env, days: number): Promise<ScoreHistory> {
+  const clampedDays = Math.max(1, Math.min(365, Math.floor(days)));
+
+  const [headlineRows, pillarRows] = await Promise.all([
+    env.DB.prepare(
+      `SELECT observed_at, value FROM headline_scores
+       WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
+       ORDER BY observed_at ASC`,
+    ).bind(clampedDays).all<{ observed_at: string; value: number }>(),
+    env.DB.prepare(
+      `SELECT pillar_id AS id, observed_at, value FROM pillar_scores
+       WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
+       ORDER BY observed_at ASC`,
+    ).bind(clampedDays).all<PillarSeriesRow>(),
+  ]);
+
+  const pillarsByTs = new Map<string, Partial<Record<PillarId, number>>>();
+  for (const r of pillarRows.results) {
+    const bucket = pillarsByTs.get(r.observed_at) ?? {};
+    bucket[r.id] = r.value;
+    pillarsByTs.set(r.observed_at, bucket);
+  }
+
+  const points: ScoreHistoryPoint[] = headlineRows.results.map((r) => {
+    const pbucket = pillarsByTs.get(r.observed_at) ?? {};
+    const pillars = {} as Record<PillarId, number>;
+    for (const p of PILLAR_ORDER) pillars[p] = pbucket[p] ?? 0;
+    return { timestamp: r.observed_at as Iso8601, headline: r.value, pillars };
+  });
+
+  return { points, rangeDays: clampedDays, schemaVersion: 1 };
 }

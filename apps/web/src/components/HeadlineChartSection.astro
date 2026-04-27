@@ -1,0 +1,116 @@
+---
+/**
+ * Section wrapper for the homepage's annotated headline chart.
+ *
+ * Sits between the hero and the pillar strip. Provides the eyebrow + h2
+ * header, the chart, a category legend, and a CTA that takes readers to
+ * the long-composite view at /composite. The component is purely
+ * presentational — it doesn't fetch data, it just composes
+ * AnnotatedHeadlineChart with the right props and chrome.
+ */
+import type { ScoreHistory } from "@tightrope/shared";
+import type { TimelineEvent } from "@tightrope/shared/timeline";
+import AnnotatedHeadlineChart from "./charts/AnnotatedHeadlineChart.astro";
+
+interface Props {
+  history: ScoreHistory;
+  events: readonly TimelineEvent[];
+}
+
+const { history, events } = Astro.props;
+
+// Legend rows mirror the colours used by AnnotatedHeadlineChart for each
+// TimelineCategory. Kept here so the legend reads as a contract with the
+// chart — adding a category requires updating both files.
+const LEGEND: { label: string; cssVar: string }[] = [
+  { label: "Fiscal", cssVar: "var(--band-acute)" },
+  { label: "Monetary / Market", cssVar: "var(--band-strain)" },
+  { label: "Geopolitical", cssVar: "var(--ink-0)" },
+  { label: "Policy / Delivery", cssVar: "var(--accent)" },
+];
+
+const hasData = history.points.length > 0;
+const rangeDays = history.rangeDays;
+---
+<section class="section headline-chart" aria-labelledby="headline-chart-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">The long view</span>
+        <h2 class="sec-title" id="headline-chart-title" style="margin-top: 14px;">how the score has moved</h2>
+        <p class="section-sub">
+          {rangeDays}-day headline score with the events that drove it. Hover or
+          tab through the markers for context — every event is pinned to its primary source.
+        </p>
+      </div>
+    </div>
+
+    {hasData ? (
+      <div class="chart-wrap">
+        <AnnotatedHeadlineChart history={history} events={events} />
+      </div>
+    ) : (
+      <p class="empty">The 90-day chart populates after the first ingestion run completes. Refresh in a few minutes.</p>
+    )}
+
+    <div class="legend" role="list" aria-label="Event marker colours">
+      {LEGEND.map((item) => (
+        <span class="legend-item" role="listitem">
+          <span class="dot" style={`background: ${item.cssVar};`} aria-hidden="true"></span>
+          {item.label}
+        </span>
+      ))}
+    </div>
+
+    <div class="cta-row">
+      <a class="btn" href="/composite">See the long view & key drivers →</a>
+    </div>
+
+    <p class="meta">
+      Methodology and source provenance: <a href="/methodology">read more</a>.
+    </p>
+  </div>
+</section>
+
+<style>
+.headline-chart { padding: 56px 0 64px; border-bottom: 1px solid var(--border-soft); }
+.chart-wrap {
+  background: var(--bg-1);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 24px 24px 8px;
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+.empty {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-2);
+  padding: 40px 0;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 18px;
+}
+.legend {
+  display: flex; flex-wrap: wrap; gap: 18px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--ink-2);
+  margin: 0 0 24px;
+}
+.legend-item { display: inline-flex; align-items: center; gap: 8px; }
+.legend .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; border: 1px solid var(--border); }
+
+.cta-row { margin-top: 6px; }
+.cta-row .btn { display: inline-block; }
+
+.meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); margin: 14px 0 0; letter-spacing: 0.04em; }
+.meta a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; }
+.meta a:hover { color: var(--accent-dim); }
+
+@media (max-width: 600px) {
+  .chart-wrap { padding: 14px 8px 4px; }
+  .legend { gap: 12px; font-size: 10.5px; }
+  .cta-row .btn { display: block; text-align: center; }
+}
+</style>

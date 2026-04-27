@@ -1,0 +1,90 @@
+---
+/**
+ * Range toggle pills for the long-composite chart page.
+ *
+ * Server-rendered links that swap the `?range=` query parameter without
+ * any client JS. The active link gets `aria-current="page"` and a styled
+ * highlight; the rest are normal anchors so navigation works without
+ * JavaScript and is keyboard-reachable by default.
+ */
+
+export type RangeOption = 30 | 90 | 365 | "all";
+
+interface Props {
+  current: RangeOption;
+  /** Path to which the `?range=` query gets appended. Defaults to /composite. */
+  basePath?: string;
+}
+
+interface Choice {
+  value: RangeOption;
+  label: string;
+  hint: string;
+}
+
+const CHOICES: readonly Choice[] = [
+  { value: 30, label: "30d", hint: "Last 30 days" },
+  { value: 90, label: "90d", hint: "Last 90 days" },
+  { value: 365, label: "1y", hint: "Last 365 days" },
+  { value: "all", label: "All", hint: "All available history" },
+];
+
+const { current, basePath = "/composite" } = Astro.props;
+
+function hrefFor(value: RangeOption): string {
+  return `${basePath}?range=${value}`;
+}
+---
+<nav class="range-toggle" role="navigation" aria-label="Time range">
+  <ul>
+    {CHOICES.map((choice) => {
+      const isActive = choice.value === current;
+      return (
+        <li>
+          <a
+            href={hrefFor(choice.value)}
+            class={`range-link${isActive ? " is-active" : ""}`}
+            data-range={String(choice.value)}
+            aria-label={choice.hint}
+            aria-current={isActive ? "page" : undefined}
+          >{choice.label}</a>
+        </li>
+      );
+    })}
+  </ul>
+</nav>
+
+<style>
+.range-toggle ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  gap: 4px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+}
+.range-toggle li { margin: 0; }
+.range-link {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.range-link:hover { color: var(--ink-0); }
+.range-link.is-active {
+  background: var(--accent);
+  color: var(--bg-0);
+}
+.range-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+</style>

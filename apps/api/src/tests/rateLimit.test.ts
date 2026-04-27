@@ -68,14 +68,25 @@ describe("clientIp", () => {
     });
     expect(clientIp(req)).toBe("1.2.3.4");
   });
-  it("ignores attacker-controlled x-forwarded-for / x-real-ip", () => {
+
+  it("ignores attacker-controlled x-forwarded-for / x-real-ip (returns null)", () => {
     const req = new Request("https://x", {
       headers: { "x-forwarded-for": "2.2.2.2, 3.3.3.3", "x-real-ip": "4.4.4.4" },
     });
-    expect(clientIp(req)).toBe("unknown");
+    expect(clientIp(req)).toBe(null);
   });
-  it("defaults to 'unknown'", () => {
-    const req = new Request("https://x");
-    expect(clientIp(req)).toBe("unknown");
+
+  it("returns null (NOT 'unknown') when the header is missing — fail-open contract", () => {
+    // SEC-9: the previous "unknown" sentinel collapsed every header-less
+    // caller into a shared KV bucket, which would self-DoS legitimate
+    // traffic the moment the header went missing (debug bypass, internal
+    // worker fetch). null means "we cannot identify this request" — the
+    // caller skips rate-limit enforcement and emits a metric.
+    expect(clientIp(new Request("https://x"))).toBe(null);
+  });
+
+  it("returns null for an empty cf-connecting-ip header", () => {
+    const req = new Request("https://x", { headers: { "cf-connecting-ip": "" } });
+    expect(clientIp(req)).toBe(null);
   });
 });

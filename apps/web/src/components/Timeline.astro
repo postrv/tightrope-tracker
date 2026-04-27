@@ -1,6 +1,7 @@
 ---
 import type { TimelineEvent } from "@tightrope/shared/timeline";
 import { longDate } from "~/lib/format.js";
+import { safeHref } from "~/lib/safeHref.js";
 
 interface Props {
   events: TimelineEvent[];
@@ -25,13 +26,15 @@ const todayIso = new Date().toISOString().slice(0, 10);
       <div class="timeline">
         {events.map((e) => {
           const isToday = e.date.slice(0, 10) === todayIso;
+          // SEC-6: e.sourceUrl is operator-curated in D1. Allowlist http(s).
+          const href = safeHref(e.sourceUrl);
           return (
             <div class="tl-item">
               <span class="date">{longDate(e.date)}{isToday ? " · Today" : ""}</span>
               <h4>{e.title}</h4>
               <p>{e.summary}</p>
-              {e.sourceUrl ? (
-                <a href={e.sourceUrl} class="src" rel="noopener" target="_blank">{e.sourceLabel} ↗</a>
+              {href ? (
+                <a href={href} class="src" rel="noopener" target="_blank">{e.sourceLabel} ↗</a>
               ) : (
                 <span class="src">{e.sourceLabel}</span>
               )}

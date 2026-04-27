@@ -13,6 +13,7 @@ incident emerges.
 5. Rotating `ADMIN_TOKEN`
 6. Known issue: OG worker `CompileError` on Cloudflare
 7. Fixture-refresh playbook (hand-curated data sources)
+8. Cloudflare dashboard hardening checklist (SEC-2 & SEC-4)
 
 ---
 
@@ -256,6 +257,159 @@ page's "Last successful ingestion" table will also surface the failure.
 Because the audit now distinguishes `success` (content changed) from
 `unchanged` (payload byte-identical), a fixture being polled against an
 unchanged upstream will show `unchanged`, not a false `success`.
+
+---
+
+## 8. Cloudflare dashboard hardening checklist (SEC-2 & SEC-4)
+
+The code-side security hardening is done in the repo (SEC-1, SEC-3, SEC-5
+through SEC-14 — see commit history); the items below are dashboard-only
+configuration that can't be expressed in `wrangler.toml`. Run the list once,
+then re-verify before any expected traffic spike (TV airtime, press
+coverage, social-network virality). Each step lists the exact UI path and
+the value to set.
+
+### SEC-2: rate-limit `/admin/*` (defence-in-depth on top of `ADMIN_TOKEN`)
+
+Path: **Cloudflare dashboard → tightropetracker.uk zone → Security → WAF → Rate-limiting rules → Create rule**
+
+Rule body:
+
+| Field        | Value                                                            |
+|--------------|------------------------------------------------------------------|
+| Rule name    | `admin-endpoints-rate-limit`                                     |
+| Match        | `(http.host eq "ingest.tightropetracker.uk" and http.request.uri.path matches "^/admin/")` |
+| Characteristics | IP source address                                             |
+| Period       | 1 minute                                                         |
+| Threshold    | 30 requests                                                      |
+| Action       | Block — duration 10 minutes                                      |
+| Response     | Default (429)                                                    |
+
+Note: this layers on top of the per-IP exponential backoff in
+`apps/ingest/src/lib/adminBackoff.ts` (SEC-13). The WAF rule absorbs
+volumetric probing before it ever reaches the worker; the in-worker
+backoff handles slow-and-low patterns where the WAF threshold isn't
+reached.
+
+### SEC-4: pre-spike Cloudflare configuration
+
+Run the steps below in order. Each step lists the dashboard path and the
+expected end state.
+
+**1. Cache rule on the homepage** — absorb the bulk of read traffic at the edge.
+
+Path: **Caching → Cache Rules → Create rule**
+
+| Field      | Value                                                  |
+|------------|--------------------------------------------------------|
+| Rule name  | `homepage-edge-cache`                                  |
+| Match      | `http.host eq "tightropetracker.uk" and http.request.uri.path eq "/"` |
+| Cache eligibility | Eligible for cache                              |
+| Edge TTL   | 60 seconds (override origin)                           |
+| Browser TTL | Respect existing headers                              |
+
+**2. Rate-limit `/api/v1/score/history`** — the heaviest API endpoint.
+
+Path: **Security → WAF → Rate-limiting rules → Create rule**
+
+| Field       | Value                                                |
+|-------------|------------------------------------------------------|
+| Rule name   | `api-history-rate-limit`                             |
+| Match       | `http.host eq "api.tightropetracker.uk" and http.request.uri.path eq "/api/v1/score/history"` |
+| Period      | 10 seconds                                           |
+| Threshold   | 20 requests                                          |
+| Action      | Managed challenge — duration 1 minute                |
+
+**3. Rate-limit `og.tightropetracker.uk/og/*`** — defence-in-depth on top of the in-worker rate-limit (`apps/og/src/lib/rateLimit.ts`).
+
+Path: **Security → WAF → Rate-limiting rules → Create rule**
+
+| Field       | Value                                                |
+|-------------|------------------------------------------------------|
+| Rule name   | `og-card-rate-limit`                                 |
+| Match       | `http.host eq "og.tightropetracker.uk" and starts_with(http.request.uri.path, "/og/")` |
+| Period      | 1 minute                                             |
+| Threshold   | 200 requests                                         |
+| Action      | Block — duration 5 minutes                           |
+
+**4. Bot Fight Mode → OFF (for all tightropetracker.uk hosts)**
+
+Path: **Security → Bots → Bot Fight Mode**
+
+Set **OFF**. Bot Fight Mode interferes with legitimate social-network
+preview crawlers (Slackbot, X/Twitter, Facebook External Hit, Discord,
+LinkedInBot) which ARE the audience for the OG cards. Cache + rate
+limits do the work without false positives on share previews.
+
+**5. DDoS sensitivity → Low**
+
+Path: **Security → DDoS → Settings**
+
+For a small civic site that legitimately receives traffic spikes from
+TV / press, "High" sensitivity over-triggers on benign bursts and
+challenges real users. "Low" still mitigates volumetric attacks but
+gives more headroom before challenges fire. Re-evaluate post-spike.
+
+**6. Tiered Cache → Smart Tiered Caching**
+
+Path: **Caching → Tiered Cache → Smart Tiered Caching = ON**
+
+Reduces origin (Pages function / Workers) hit rate during traffic
+bursts by routing edge-PoP requests through a regional Tier-1 cache.
+No cost change on the Free / Pro plans; large hit-rate improvement.
+
+**7. Browser Cache TTL on `/_astro/*` (immutable hashed assets)**
+
+Path: **Caching → Cache Rules → Create rule**
+
+| Field      | Value                                              |
+|------------|----------------------------------------------------|
+| Rule name  | `astro-immutable-assets`                           |
+| Match      | `starts_with(http.request.uri.path, "/_astro/")`   |
+| Edge TTL   | 1 year                                             |
+| Browser TTL | 1 year                                            |
+| Headers    | Add response header `Cache-Control: public, max-age=31536000, immutable` |
+
+Astro generates content-hashed filenames for everything under `/_astro/`,
+so `immutable` is safe — a content change yields a new path.
+
+**8. Always Online**
+
+Path: **Caching → Configuration → Always Online = ON**
+
+If Pages / origin Workers degrade during the spike, Always Online
+serves the last successful cached version of each page. Avoids a
+hard-fail headline visible at the worst possible moment.
+
+**9. HTTP/3 (QUIC) → ON**
+
+Path: **Network → HTTP/3 (with QUIC) = ON**
+
+Reduces connection-setup latency on mobile networks, which are over-
+represented in TV-driven traffic. No downside.
+
+**10. Verify after configuration**
+
+```bash
+# Hit the homepage from a clean curl to confirm Cache-Control is set:
+curl -sI https://tightropetracker.uk/ | grep -iE 'cf-cache-status|cache-control'
+
+# Trigger the OG rate limit (should 429 after ~200/min):
+for i in {1..210}; do curl -sI https://og.tightropetracker.uk/og/headline-score.png?$i &; done; wait
+
+# Check WAF events arrived:
+# Cloudflare dashboard → Security → Events
+```
+
+### Post-spike checklist
+
+After the burst subsides:
+
+- DDoS sensitivity → back to Medium / High
+- Bot Fight Mode → optionally re-enable if abuse uptick observed
+- Review Security → Events for false-positive challenges
+- Confirm `Cache-Control: immutable` on `/_astro/*` is still in place
+  (Cache Rules occasionally need re-anchoring after a Pages redeploy)
 
 ---
 

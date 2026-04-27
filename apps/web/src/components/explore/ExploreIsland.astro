@@ -23,6 +23,7 @@ import { PILLARS, PILLAR_ORDER, BANDS } from "@tightrope/shared";
 import TightropeWalker from "../TightropeWalker.astro";
 import IndicatorTooltip from "../IndicatorTooltip.astro";
 import { LEVERS, liveValuesFromSnapshot } from "~/lib/whatIf.js";
+import { safeJsonForScriptTag } from "~/lib/safeJson.js";
 
 interface Props {
   snapshot: ScoreSnapshot;
@@ -269,11 +270,18 @@ const partialEcdf = ecdfTotal > 0 && ecdfTotal < LEVERS.length;
   </div>
 </section>
 
-<!-- Initial state for the client island -->
+<!--
+  Initial state for the client island. SEC-5: the payload includes
+  operator-curated strings from D1 (indicator notes etc.); plain
+  JSON.stringify into set:html would let a string containing '</script>'
+  terminate this tag and DOM-XSS the page. `safeJsonForScriptTag` escapes
+  HTML-sensitive characters to their `\uXXXX` JSON escapes — JSON.parse
+  recovers the original bytes.
+-->
 <script
   type="application/json"
   data-explore-config
-  set:html={JSON.stringify({
+  set:html={safeJsonForScriptTag({
     live: liveValues,
     pillars: Object.fromEntries(PILLAR_ORDER.map((id) => [id, snapshot.pillars[id].value])),
     snapshot,

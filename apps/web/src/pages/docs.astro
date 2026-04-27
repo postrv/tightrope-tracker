@@ -80,10 +80,11 @@ const scalarConfig = {
       <script
         id="api-reference"
         is:inline
+        nonce={Astro.locals.cspNonce}
         data-url="/openapi.json"
         data-configuration={JSON.stringify(scalarConfig)}
       ></script>
-      <script is:inline defer src="/vendor/scalar.js"></script>
+      <script is:inline nonce={Astro.locals.cspNonce} defer src="/vendor/scalar.js"></script>
       <noscript>
         <div class="noscript-fallback container">
           <p>

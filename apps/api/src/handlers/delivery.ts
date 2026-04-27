@@ -24,7 +24,8 @@ export async function handleDelivery(
     if (commitments.length === 0) return notSeeded();
     return json(commitments);
   } catch (err) {
+    // SEC-8: opaque INTERNAL discriminator only.
     console.error("delivery load failed", err);
-    return json({ error: "failed to load delivery commitments", code: "DB_ERROR" }, 500);
+    return json({ error: "failed to load delivery commitments", code: "INTERNAL" }, 500);
   }
 }

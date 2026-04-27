@@ -11,6 +11,14 @@
  *   GET /og/pillar/:pillarId.png
  *
  * Every response is a 1200×630 PNG with a long edge cache.
+ *
+ * Defence-in-depth (SEC-1; see `lib/handler.ts` + tests for the full flow):
+ *   1. Cache API normalisation strips the query string before key lookup,
+ *      so `?nonce=$RANDOM` cannot bust the edge cache and force fresh
+ *      WASM renders.
+ *   2. KV-backed per-IP rate limit (60/min) trips on the cache-miss path.
+ *   3. wrangler.toml [limits] cpu_ms cap kills any single render that runs
+ *      away (Satori layout pathology, resvg infinite loop).
  */
 import type { PillarId } from "@tightrope/shared";
 import { OBR_LATEST_VINTAGE_LABEL, OBR_TARGET_YEAR_LABEL, PILLAR_ORDER } from "@tightrope/shared";
@@ -25,6 +33,7 @@ import { MortgagePressureCard } from "./templates/mortgage-pressure.js";
 import { Gilt30yCard } from "./templates/gilt-30y-high.js";
 import { DeliveryHousingCard } from "./templates/delivery-housing.js";
 import { PillarCard } from "./templates/pillar.js";
+import { handleOgRequest, type OgRouter } from "./lib/handler.js";
 
 function notFound(): Response {
   return new Response("not found", {
@@ -33,43 +42,29 @@ function notFound(): Response {
   });
 }
 
-function preflight(): Response {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Max-Age": "86400",
-    },
-  });
-}
+const router: OgRouter = async ({ url, env }) => {
+  try {
+    return await dispatch(url, env);
+  } catch (err) {
+    if (err instanceof OgRenderTimeoutError) {
+      console.error("og render timed out", url.pathname);
+      return renderTimeoutResponse();
+    }
+    console.error("og render failed", err);
+    return new Response("render failed", {
+      status: 500,
+      headers: { "Content-Type": "text/plain", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+};
 
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
-    if (req.method === "OPTIONS") return preflight();
-    if (req.method !== "GET") {
-      return new Response("method not allowed", { status: 405, headers: { Allow: "GET, OPTIONS" } });
-    }
-
-    const url = new URL(req.url);
-    try {
-      return await route(url, env);
-    } catch (err) {
-      if (err instanceof OgRenderTimeoutError) {
-        console.error("og render timed out", url.pathname);
-        return renderTimeoutResponse();
-      }
-      console.error("og render failed", err);
-      return new Response("render failed", {
-        status: 500,
-        headers: { "Content-Type": "text/plain", "Access-Control-Allow-Origin": "*" },
-      });
-    }
+  async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    return handleOgRequest(req, env, ctx, router, { cache: caches.default });
   },
 };
 
-async function route(url: URL, env: Env): Promise<Response> {
+async function dispatch(url: URL, env: Env): Promise<Response> {
   const p = url.pathname;
 
   // Match /og/pillar/:id.png first; generic routes below.

@@ -81,9 +81,10 @@ export async function handleMethodologyBaselines(
     );
     return json(payload);
   } catch (err) {
+    // SEC-8: opaque INTERNAL discriminator only.
     console.error("methodology baselines failed", err);
     return json(
-      { error: "failed to load methodology baselines", code: "DB_ERROR" },
+      { error: "failed to load methodology baselines", code: "INTERNAL" },
       500,
     );
   }

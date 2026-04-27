@@ -34,17 +34,24 @@ export default {
     if (req.method === "OPTIONS") return preflight();
 
     // Rate limit all non-OPTIONS requests. We skip /health so uptime monitors
-    // don't burn budget.
+    // don't burn budget. SEC-9: when cf-connecting-ip is absent (header-less
+    // path, internal fetch) we fail-open with a logged warning — collapsing
+    // every header-less caller into a shared "unknown" bucket would self-DoS
+    // legitimate traffic instead of providing any real protection.
     const url = new URL(req.url);
     if (url.pathname !== "/api/v1/health") {
       const ip = clientIp(req);
-      const rl = await enforceRateLimit(env, ip).catch(() => null);
-      if (rl && !rl.allowed) {
-        return json({ error: "rate limit exceeded", code: "RATE_LIMITED" }, 429, {
-          "Retry-After": String(Math.max(1, Math.ceil((rl.resetAt - Date.now()) / 1000))),
-          "X-RateLimit-Limit": String(rl.limit),
-          "X-RateLimit-Remaining": "0",
-        });
+      if (ip !== null) {
+        const rl = await enforceRateLimit(env, ip).catch(() => null);
+        if (rl && !rl.allowed) {
+          return json({ error: "rate limit exceeded", code: "RATE_LIMITED" }, 429, {
+            "Retry-After": String(Math.max(1, Math.ceil((rl.resetAt - Date.now()) / 1000))),
+            "X-RateLimit-Limit": String(rl.limit),
+            "X-RateLimit-Remaining": "0",
+          });
+        }
+      } else {
+        console.warn("api rate-limit skipped: cf-connecting-ip missing", url.pathname);
       }
     }
 

@@ -1,5 +1,6 @@
 import type { Env } from "./env.js";
 import { timingSafeEqual } from "./admin.js";
+import { adminAuthGate } from "./lib/adminBackoff.js";
 
 /**
  * `POST /admin/correction` — write one row to the public corrections log.
@@ -23,10 +24,11 @@ export async function handleCorrectionCreate(req: Request, env: Env): Promise<Re
   if (!expected) {
     return json({ error: "ADMIN_TOKEN not configured" }, 503);
   }
-  const provided = req.headers.get("x-admin-token");
-  if (!provided || !timingSafeEqual(provided, expected)) {
-    return json({ error: "unauthorised" }, 401);
-  }
+  // SEC-13: per-IP exponential backoff on failed auth (see admin.ts).
+  const auth = await adminAuthGate(env, req, {
+    verifyToken: (provided) => provided !== null && timingSafeEqual(provided, expected),
+  });
+  if (!auth.ok) return auth.response;
 
   let payload: unknown;
   try {

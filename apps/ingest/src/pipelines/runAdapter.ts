@@ -3,6 +3,7 @@ import type { Env } from "../env.js";
 import { closeAuditFailure, closeAuditSuccess, openAudit } from "../lib/audit.js";
 import { writeObservations } from "../lib/observations.js";
 import { combineHashes } from "../lib/hash.js";
+import { sanitizeForLog } from "../lib/sanitize.js";
 
 /**
  * Run a single adapter end-to-end:
@@ -55,7 +56,8 @@ export async function runAdapterSafe(env: Env, adapter: DataSourceAdapter): Prom
   try {
     return await runAdapter(env, adapter);
   } catch (err) {
-    console.warn(`runAdapterSafe: ${adapter.id} failed -- ${(err as Error)?.message ?? String(err)}`);
+    // SEC-14: err.message often quotes upstream response text. Sanitise.
+    console.warn(`runAdapterSafe: ${adapter.id} failed -- ${sanitizeForLog((err as Error)?.message ?? String(err))}`);
     return null;
   }
 }

@@ -30,7 +30,9 @@ export async function handleHealth(req: Request, env: Env): Promise<Response> {
   } catch (err) {
     // Health should not 500 if the audit table is unreachable — return an
     // explicitly degraded signal so operators can wire it into uptime checks.
+    // SEC-8: drop the DB_ERROR discriminator. `ok: false` is the actionable
+    // signal for monitors; the specific failure source is in server logs.
     console.error("health audit fetch failed", err);
-    return json({ ok: false, updatedAt, ingestionLastSuccess: {}, code: "DB_ERROR" }, 503);
+    return json({ ok: false, updatedAt, ingestionLastSuccess: {}, code: "INTERNAL" }, 503);
   }
 }

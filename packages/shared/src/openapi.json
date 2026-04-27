@@ -275,7 +275,7 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" },
-                "example": { "error": "failed to load methodology baselines", "code": "DB_ERROR" }
+                "example": { "error": "failed to load methodology baselines", "code": "INTERNAL" }
               }
             }
           }
@@ -331,12 +331,12 @@
         "content": {
           "application/json": {
             "schema": { "$ref": "#/components/schemas/Error" },
-            "example": { "error": "failed to load score snapshot", "code": "DB_ERROR" }
+            "example": { "error": "failed to load score snapshot", "code": "INTERNAL" }
           }
         }
       },
       "NotSeeded": {
-        "description": "The underlying data hasn't been ingested yet. Distinct from `DB_ERROR` — the database is up; there is simply no data to return. Note the response body uses `message` rather than `error`.",
+        "description": "The underlying data hasn't been ingested yet. Distinct from a 500 `INTERNAL` failure — the database is up; there is simply no data to return. Note the response body uses `message` rather than `error`.",
         "content": {
           "application/json": {
             "schema": { "$ref": "#/components/schemas/NotSeededError" },
@@ -594,7 +594,7 @@
           "ok": { "type": "boolean", "const": false },
           "updatedAt": { "$ref": "#/components/schemas/Iso8601" },
           "ingestionLastSuccess": { "type": "object", "description": "Empty object when the audit table is unreachable." },
-          "code": { "type": "string", "const": "DB_ERROR" }
+          "code": { "type": "string", "const": "INTERNAL" }
         }
       },
       "MethodologyBaselines": {
@@ -648,7 +648,6 @@
               "BAD_POSTCODE",
               "RATE_LIMITED",
               "NOT_SEEDED",
-              "DB_ERROR",
               "UPSTREAM_ERROR",
               "INTERNAL"
             ],

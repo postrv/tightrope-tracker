@@ -229,6 +229,16 @@ export async function buildHistoryFromD1(env: Env, days: number): Promise<ScoreH
   // the full GE-2024-to-today range once backfilled.
   const clampedDays = Math.max(1, Math.min(800, Math.floor(days)));
 
+  // SEC-7: precompute the cutoff as a single ISO timestamp and bind it once.
+  // The previous shape (`'-' || ?1 || ' days'`) was safe in practice because
+  // `clampedDays` is integer-bounded above, but it concatenates a bound value
+  // back into SQL syntax — a fragile pattern that any future caller routing
+  // around the clamp could exploit. A bound ISO string carries no SQL
+  // semantics whatsoever, so the shape simply cannot smuggle anything.
+  // observed_at is stored as ISO 8601 ("YYYY-MM-DDTHH:MM:SS.sssZ"), so a
+  // strict lexicographic compare against the same format is byte-exact.
+  const cutoffISO = new Date(Date.now() - clampedDays * 86_400_000).toISOString();
+
   // Downsample to one row per UTC day (latest per day wins). The recompute
   // pipeline writes a fresh headline_scores row every 5 minutes, so on any
   // given day the table holds 200-300 rows. Without this aggregation the
@@ -242,21 +252,21 @@ export async function buildHistoryFromD1(env: Env, days: number): Promise<ScoreH
        JOIN (
          SELECT substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
          FROM headline_scores
-         WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
+         WHERE observed_at >= ?1
          GROUP BY substr(observed_at, 1, 10)
        ) m ON h.observed_at = m.ts
        ORDER BY h.observed_at ASC`,
-    ).bind(clampedDays).all<{ observed_at: string; value: number }>(),
+    ).bind(cutoffISO).all<{ observed_at: string; value: number }>(),
     env.DB.prepare(
       `SELECT p.pillar_id AS id, p.observed_at, p.value FROM pillar_scores p
        JOIN (
          SELECT pillar_id, substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
          FROM pillar_scores
-         WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
+         WHERE observed_at >= ?1
          GROUP BY pillar_id, substr(observed_at, 1, 10)
        ) m ON p.pillar_id = m.pillar_id AND p.observed_at = m.ts
        ORDER BY p.observed_at ASC`,
-    ).bind(clampedDays).all<PillarSeriesRow>(),
+    ).bind(cutoffISO).all<PillarSeriesRow>(),
   ]);
 
   // Index pillar rows by timestamp.

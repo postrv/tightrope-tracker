@@ -1,5 +1,6 @@
 import type { Env } from "./env.js";
 import { timingSafeEqual } from "./admin.js";
+import { adminAuthGate } from "./lib/adminBackoff.js";
 
 /**
  * GET /admin/health — per-adapter ingestion health, protected by ADMIN_TOKEN.
@@ -32,10 +33,11 @@ export async function handleAdminHealth(req: Request, env: Env): Promise<Respons
   }
   const expected = env.ADMIN_TOKEN;
   if (!expected) return json({ error: "ADMIN_TOKEN not configured" }, 503);
-  const provided = req.headers.get("x-admin-token");
-  if (!provided || !timingSafeEqual(provided, expected)) {
-    return json({ error: "unauthorised" }, 401);
-  }
+  // SEC-13: per-IP exponential backoff on failed auth (see admin.ts).
+  const auth = await adminAuthGate(env, req, {
+    verifyToken: (provided) => provided !== null && timingSafeEqual(provided, expected),
+  });
+  if (!auth.ok) return auth.response;
 
   const [latestAttempts, lastSuccesses] = await Promise.all([
     env.DB

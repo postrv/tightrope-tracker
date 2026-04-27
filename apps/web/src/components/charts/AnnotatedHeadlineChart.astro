@@ -19,6 +19,7 @@ import type { TimelineEvent, TimelineCategory } from "@tightrope/shared/timeline
 import { BANDS, bandFor, PILLAR_ORDER, PILLARS } from "@tightrope/shared";
 import { pathFromSeries, shortDate } from "~/lib/format.js";
 import { mapEventsToChart } from "~/lib/chartAnnotations.js";
+import { safeHref } from "~/lib/safeHref.js";
 
 interface Props {
   history: ScoreHistory;
@@ -434,11 +435,13 @@ const idScope = `chart-${width}x${height}`;
           <div class="tooltip-title">{a.event.title}</div>
           <div class="tooltip-summary">{summary}</div>
           <div class="tooltip-source">
-            Source: {a.event.sourceUrl ? (
-              <a href={a.event.sourceUrl} target="_blank" rel="noopener">{a.event.sourceLabel} ↗</a>
-            ) : (
-              <span>{a.event.sourceLabel}</span>
-            )}
+            {/* SEC-6: a.event.sourceUrl is operator-curated in D1. Allowlist http(s). */}
+            Source: {(() => {
+              const href = safeHref(a.event.sourceUrl);
+              return href
+                ? <a href={href} target="_blank" rel="noopener">{a.event.sourceLabel} ↗</a>
+                : <span>{a.event.sourceLabel}</span>;
+            })()}
           </div>
         </div>
       );

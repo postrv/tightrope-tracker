@@ -67,12 +67,28 @@ const ogImageUrl = ogImage.startsWith("/og/")
     <link rel="apple-touch-icon" href="/favicon.png" />
     <meta name="theme-color" content="#EBE3D0" />
 
+    {/*
+      SEC-12: Plausible script self-hosted under /vendor/plausible.js.
+      Their CDN rotates aggressively, so a Subresource-Integrity hash
+      pinned against `plausible.io/js/script.js` would break analytics
+      every few weeks; self-hosting eliminates that maintenance burden,
+      removes a third-party origin from `script-src`, and lets the
+      browser cache it alongside the rest of the page bundle. Events
+      still POST to plausible.io via the `data-api` attribute, allowed
+      by `connect-src https://plausible.io`. To refresh the bundled
+      script when Plausible ships an upgrade:
+        curl -sLO https://plausible.io/js/script.js
+        mv script.js apps/web/public/vendor/plausible.js
+      Bundled version: Plausible v33 (data-v inside the script body).
+    */}
     {embed ? null : (
       <script
         defer
         is:inline
+        nonce={Astro.locals.cspNonce}
         data-domain="tightropetracker.uk"
-        src="https://plausible.io/js/script.js"
+        data-api="https://plausible.io/api/event"
+        src="/vendor/plausible.js"
       ></script>
     )}
   </head>
@@ -82,7 +98,7 @@ const ogImageUrl = ogImage.startsWith("/og/")
   </body>
 </html>
 
-<script is:inline>
+<script is:inline nonce={Astro.locals.cspNonce}>
   // Default to LFG light/cream; allow user override to dark via localStorage.
   try {
     const pref = localStorage.getItem("tightrope-theme");

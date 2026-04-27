@@ -13,7 +13,7 @@
  * Every response is a 1200×630 PNG with a long edge cache.
  */
 import type { PillarId } from "@tightrope/shared";
-import { PILLAR_ORDER } from "@tightrope/shared";
+import { OBR_LATEST_VINTAGE_LABEL, OBR_TARGET_YEAR_LABEL, PILLAR_ORDER } from "@tightrope/shared";
 import { loadFonts } from "./lib/fonts.js";
 import { loadSnapshot, loadCardIndicators } from "./lib/data.js";
 import { OgRenderTimeoutError, pngResponse, renderPng, renderTimeoutResponse } from "./lib/render.js";
@@ -99,35 +99,49 @@ async function renderHeadline(env: Env): Promise<Response> {
 }
 
 async function renderFiscalHeadroom(env: Env): Promise<Response> {
-  const snapshot = await loadSnapshot(env);
-  const fonts = await loadFonts(env);
-  // Illustrative default — real number is editorially curated (AGENT_CONTRACTS.md)
-  // and will be wired to an indicator observation as the ingest worker matures.
+  const [snapshot, indicators, fonts] = await Promise.all([
+    loadSnapshot(env), loadCardIndicators(env), loadFonts(env),
+  ]);
+  // OBR forecast for the stability-rule target year. Read from the latest
+  // cb_headroom observation in D1 (written by the obrEfo adapter). If D1
+  // is empty (cold cache), fall back to the seed value rather than emitting
+  // a card with "£0bn"; the seed matches the OBR Spring Forecast 2026 head.
+  const valueGbpBn = indicators.cbHeadroom?.value ?? 23.6;
+  // Stamp the card with the OBR vintage observed_at, not the recompute
+  // heartbeat — readers care about when OBR last revised the figure.
+  const vintageAt = indicators.cbHeadroom?.observedAt ?? snapshot.headline.updatedAt;
   const png = await renderPng(
-    FiscalHeadroomCard({ valueGbpBn: 23.6, updatedAt: snapshot.headline.updatedAt }),
-    { width: CARD_W, height: CARD_H, fonts },
-  );
-  return pngResponse(png);
-}
-
-async function renderInactivity(env: Env): Promise<Response> {
-  const snapshot = await loadSnapshot(env);
-  const fonts = await loadFonts(env);
-  const png = await renderPng(
-    InactivityCard({
-      valueMillions: 9.00,
-      ratePercent: 20.7,
-      above2019Thousands: 800,
-      updatedAt: snapshot.headline.updatedAt,
-      window: "Nov 2025 → Jan 2026",
+    FiscalHeadroomCard({
+      valueGbpBn,
+      updatedAt: vintageAt,
+      targetYearLabel: OBR_TARGET_YEAR_LABEL,
+      vintageLabel: OBR_LATEST_VINTAGE_LABEL,
     }),
     { width: CARD_W, height: CARD_H, fonts },
   );
   return pngResponse(png);
 }
 
+async function renderInactivity(env: Env): Promise<Response> {
+  const [snapshot, indicators, fonts] = await Promise.all([
+    loadSnapshot(env), loadCardIndicators(env), loadFonts(env),
+  ]);
+  const reading = indicators.inactivityRate;
+  const ratePercent = reading?.value ?? 21.0;
+  const updatedAt = reading?.observedAt ?? snapshot.headline.updatedAt;
+  const png = await renderPng(
+    InactivityCard({ ratePercent, updatedAt }),
+    { width: CARD_W, height: CARD_H, fonts },
+  );
+  return pngResponse(png);
+}
+
+/**
+ * Editorial baseline: average 2y fix at the time of the Spring 2024 Budget
+ * (Moneyfacts press archive, week of 6 March 2024). Stable comparator —
+ * update on the next fiscal event that resets the "since last Budget" frame.
+ */
 const MORTGAGE_BASELINE_PCT = 5.18;
-const MORTGAGE_CURRENT_PCT = 5.84;
 
 function mortgageExtra(baselinePct: number, currentPct: number, principal = 250_000, termYears = 25): number {
   const monthly = (p: number, r: number, n: number) => {
@@ -139,16 +153,20 @@ function mortgageExtra(baselinePct: number, currentPct: number, principal = 250_
 }
 
 async function renderMortgage(env: Env): Promise<Response> {
-  const snapshot = await loadSnapshot(env);
-  const fonts = await loadFonts(env);
-  const extra = mortgageExtra(MORTGAGE_BASELINE_PCT, MORTGAGE_CURRENT_PCT);
-  const spreadBp = Math.round((MORTGAGE_CURRENT_PCT - MORTGAGE_BASELINE_PCT) * 100);
+  const [snapshot, indicators, fonts] = await Promise.all([
+    loadSnapshot(env), loadCardIndicators(env), loadFonts(env),
+  ]);
+  const reading = indicators.mortgage2y;
+  const currentPct = reading?.value ?? MORTGAGE_BASELINE_PCT;
+  const updatedAt = reading?.observedAt ?? snapshot.headline.updatedAt;
+  const extra = mortgageExtra(MORTGAGE_BASELINE_PCT, currentPct);
+  const spreadBp = Math.round((currentPct - MORTGAGE_BASELINE_PCT) * 100);
   const png = await renderPng(
     MortgagePressureCard({
       extraPerMonth: extra,
-      twoYearFixPct: MORTGAGE_CURRENT_PCT,
+      twoYearFixPct: currentPct,
       spreadBp,
-      updatedAt: snapshot.headline.updatedAt,
+      updatedAt,
     }),
     { width: CARD_W, height: CARD_H, fonts },
   );
@@ -159,18 +177,41 @@ async function renderGilt30y(env: Env): Promise<Response> {
   const [snapshot, indicators, fonts] = await Promise.all([
     loadSnapshot(env), loadCardIndicators(env), loadFonts(env),
   ]);
+  const reading = indicators.gilt30y;
+  const yieldPct = reading?.value ?? 5.73;
+  const updatedAt = reading?.observedAt ?? snapshot.headline.updatedAt;
   const png = await renderPng(
-    Gilt30yCard({ yieldPct: indicators.gilt30y ?? 5.73, updatedAt: snapshot.headline.updatedAt }),
+    Gilt30yCard({ yieldPct, updatedAt }),
     { width: CARD_W, height: CARD_H, fonts },
   );
   return pngResponse(png);
 }
 
+/**
+ * Government's housing pledge — 1.5m homes over five years = 305k/year by
+ * FY 2030/31. Stable comparator (a political target). The OBR trajectory
+ * baseline used inside `housing_trajectory` is 300k; we display against
+ * the 305k pledge for editorial salience but feed the bar from the live
+ * trajectory percentage so readers see the live progress.
+ */
+const HOUSING_TARGET_THOUSANDS = 305;
+
 async function renderDeliveryHousing(env: Env): Promise<Response> {
-  const snapshot = await loadSnapshot(env);
-  const fonts = await loadFonts(env);
+  const [snapshot, indicators, fonts] = await Promise.all([
+    loadSnapshot(env), loadCardIndicators(env), loadFonts(env),
+  ]);
+  const reading = indicators.housingTrajectory;
+  // housing_trajectory = annualised completions ÷ 300k * 100 (see fixture
+  // _comment for the formula). To recover annualised completions in
+  // thousands: rawValue / 100 * 300.
+  const currentThousands = reading ? Math.round((reading.value / 100) * 300) : 147;
+  const updatedAt = reading?.observedAt ?? snapshot.headline.updatedAt;
   const png = await renderPng(
-    DeliveryHousingCard({ currentThousands: 221, targetThousands: 305, updatedAt: snapshot.headline.updatedAt }),
+    DeliveryHousingCard({
+      currentThousands,
+      targetThousands: HOUSING_TARGET_THOUSANDS,
+      updatedAt,
+    }),
     { width: CARD_W, height: CARD_H, fonts },
   );
   return pngResponse(png);

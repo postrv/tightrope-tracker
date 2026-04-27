@@ -1,9 +1,9 @@
 ---
-import type { ScoreSnapshot, TodayMovement } from "@tightrope/shared";
+import type { ScoreSnapshot, TodayMovement, IndicatorContribution, PillarId } from "@tightrope/shared";
 import type { DeliveryCommitment } from "@tightrope/shared/delivery";
-import { BANDS } from "@tightrope/shared";
+import { BANDS, OBR_LATEST_VINTAGE_LABEL, OBR_TARGET_YEAR_LABEL } from "@tightrope/shared";
 import { shortDate } from "~/lib/format.js";
-import { mortgageDelta, formatExtra } from "~/lib/mortgage.js";
+import { mortgageDelta, formatExtra, MORTGAGE_BUDGET_BASELINE_PCT } from "~/lib/mortgage.js";
 
 interface Props {
   snapshot: ScoreSnapshot;
@@ -17,66 +17,91 @@ const band = BANDS.find((b) => b.id === snapshot.headline.band) ?? BANDS[0];
 const scoreRounded = Math.round(snapshot.headline.value);
 const today = shortDate(snapshot.headline.updatedAt);
 
-const gilt30 = movements.find((m) => m.indicatorId === "gilt_30y");
-const mort = mortgageDelta(5.18, 5.84);
-const housing = delivery.find((d) => d.id === "housing_305k");
+function findContrib(snap: ScoreSnapshot, pillar: PillarId, indicatorId: string): IndicatorContribution | undefined {
+  return snap.pillars[pillar]?.contributions.find((c) => c.indicatorId === indicatorId);
+}
 
-const cards = [
+// Live readings (or undefined if the snapshot is missing them — we hide the
+// card rather than render a stale literal).
+const cbHeadroom = findContrib(snapshot, "fiscal", "cb_headroom");
+const inactivity = findContrib(snapshot, "labour", "inactivity_rate");
+const mortgage = findContrib(snapshot, "labour", "mortgage_2y_fix");
+const housingContrib = findContrib(snapshot, "delivery", "housing_trajectory");
+const gilt30 = movements.find((m) => m.indicatorId === "gilt_30y");
+const housingDelivery = delivery.find((d) => d.id === "housing_305k");
+
+const mortRates = mortgage
+  ? mortgageDelta(MORTGAGE_BUDGET_BASELINE_PCT, mortgage.rawValue)
+  : null;
+
+interface Card {
+  id: string;
+  variant: string;
+  brand: string;
+  stat: string;
+  label: string;
+  foot: [string, string];
+  ogPath: string;
+}
+
+const allCards: (Card | null)[] = [
   {
     id: "headline-score",
     variant: "critical",
     brand: "Tightrope Tracker · Headline",
     stat: `${scoreRounded} / 100`,
-    label: `Tightrope Score — \u201C${band.label}.\u201D ${band.editorialLabel}.`,
+    label: `Tightrope Score — “${band.label}.” ${band.editorialLabel}.`,
     foot: ["tightropetracker.uk", today],
     ogPath: "/og/headline-score.png",
   },
-  {
+  cbHeadroom ? {
     id: "fiscal-headroom",
     variant: "accent",
-    brand: "Tightrope Tracker · Fiscal",
-    stat: "£23.6bn",
-    label: "Current-budget headroom. The IFS puts the odds of holding it at roughly 1-in-5.",
-    foot: ["Source · OBR, IFS", today],
+    brand: `Tightrope Tracker · Fiscal · ${OBR_TARGET_YEAR_LABEL} forecast`,
+    stat: `£${cbHeadroom.rawValue.toFixed(1)}bn`,
+    label: `OBR forecast headroom against the stability rule at the ${OBR_TARGET_YEAR_LABEL} target year.`,
+    foot: [`Source · OBR ${OBR_LATEST_VINTAGE_LABEL}`, shortDate(cbHeadroom.observedAt)],
     ogPath: "/og/fiscal-headroom.png",
-  },
-  {
+  } : null,
+  inactivity ? {
     id: "inactivity",
     variant: "",
     brand: "Tightrope Tracker · Labour",
-    stat: "9.0m",
-    label: "People economically inactive. 20.7% of 16–64s. 800k above 2019.",
-    foot: ["Source · ONS LMS", today],
+    stat: `${inactivity.rawValue.toFixed(1)}%`,
+    label: "Economic-inactivity rate, 16–64 (latest ONS Labour Market Statistics print).",
+    foot: ["Source · ONS LMS", shortDate(inactivity.observedAt)],
     ogPath: "/og/inactivity-9m.png",
-  },
-  {
+  } : null,
+  gilt30 ? {
     id: "gilt-30y",
     variant: "",
     brand: "Tightrope Tracker · Market",
-    stat: gilt30 ? gilt30.displayValue : "5.73%",
-    label: "20-year gilt yield. A fresh multi-decade high. UK borrowing costs above Italy and Greece.",
-    foot: ["Source · DMO, BoE", today],
+    stat: gilt30.displayValue,
+    label: "20-year nominal gilt yield. The long-end read on UK borrowing costs.",
+    foot: ["Source · BoE IADB", shortDate(gilt30.observedAt)],
     ogPath: "/og/gilt-30y-high.png",
-  },
-  {
+  } : null,
+  mortRates ? {
     id: "mortgage",
     variant: "accent",
     brand: "Tightrope Tracker · Households",
-    stat: formatExtra(mort.extraPerMonth),
-    label: `A month, on a £250k mortgage, since the last Budget. 2y fix now ${mort.currentRate.toFixed(2)}%.`,
-    foot: ["Source · Moneyfacts", today],
+    stat: formatExtra(mortRates.extraPerMonth),
+    label: `A month, on a £250k 25-year mortgage, vs the rate at the Spring 2024 Budget. 2y fix now ${mortRates.currentRate.toFixed(2)}%.`,
+    foot: ["Source · Moneyfacts (live)", shortDate(mortgage!.observedAt)],
     ogPath: "/og/mortgage-pressure.png",
-  },
-  {
+  } : null,
+  housingContrib ? {
     id: "housing",
     variant: "",
     brand: "Tightrope Tracker · Delivery",
-    stat: housing ? "221k" : "—",
-    label: "Net housing additions last year. Target: 305k by 2030/31. Slipping.",
-    foot: ["Source · MHCLG", today],
+    stat: housingDelivery ? `${Math.round(housingContrib.rawValue).toLocaleString("en-GB")}` : "—",
+    label: "Net additional dwellings (latest MHCLG release). Government target: 305k a year by 2030/31.",
+    foot: ["Source · MHCLG", shortDate(housingContrib.observedAt)],
     ogPath: "/og/delivery-housing.png",
-  },
+  } : null,
 ];
+
+const cards = allCards.filter((c): c is Card => c !== null);
 ---
 <section class="section" id="share" aria-labelledby="share-title">
   <div class="container">

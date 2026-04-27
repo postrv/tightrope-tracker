@@ -3,34 +3,31 @@ import type { JsxNode } from "../jsx/jsx-runtime.js";
 import { BigStat, CardShell, Caption, formatDate } from "./components.js";
 
 export interface InactivityCardProps {
-  /** Inactive people, in millions (e.g. 9.00). */
-  valueMillions: number;
-  /** Inactivity rate percent (e.g. 20.7). */
+  /** Inactivity rate percent of 16-64 population (e.g. 20.7), from ONS LMS. */
   ratePercent: number;
-  /** Headroom above 2019 baseline in thousands (e.g. 800). */
-  above2019Thousands: number;
+  /** ISO timestamp of the latest LMS observation. */
   updatedAt: string;
-  /** Reporting window label (e.g. "Nov 2025 → Jan 2026"). */
-  window: string;
 }
 
-/** Labour card (`inactivity-9m.png`). Sober variant, no tint. */
+/**
+ * Labour card (`inactivity-9m.png`). Displays the live ONS Labour Market
+ * Survey inactivity rate with no editorial claims about peer countries or
+ * baselines — those drift, the rate doesn't.
+ */
 export function InactivityCard(props: InactivityCardProps): JsxNode {
-  const valueStr = props.valueMillions.toFixed(2);
   const rateStr = props.ratePercent.toFixed(1);
-  const aboveStr = Math.round(props.above2019Thousands).toLocaleString("en-GB");
   return (
     <CardShell
       variant="sober"
       eyebrow="Tightrope Tracker · Labour"
       meta={formatDate(props.updatedAt)}
       source="Source · ONS Labour Market Survey"
-      footerRight={props.window}
+      footerRight="Latest LMS print"
     >
       <div style={{ display: "flex", flexDirection: "column" }}>
-        <BigStat value={valueStr} unit="m" />
+        <BigStat value={rateStr} unit="%" />
         <Caption>
-          People economically inactive. {rateStr}% of 16–64s. Still {aboveStr},000 above the 2019 baseline — the only G7 country where this is true.
+          Economic-inactivity rate, 16–64. The share of working-age people neither in work nor looking for work.
         </Caption>
       </div>
     </CardShell>

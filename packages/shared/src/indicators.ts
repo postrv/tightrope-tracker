@@ -147,6 +147,22 @@ export interface IndicatorDefinition {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
+ * OBR forecast horizon metadata. The Office for Budget Responsibility's
+ * stability-rule headroom is a *forecast* for a target fiscal year, not a
+ * current outturn — the target shifts at each Budget / Spring Forecast as
+ * the five-year-ahead window rolls forward. Surfaces showing cb_headroom
+ * MUST cite this label so a reader doesn't mistake the figure for a
+ * real-time number. Update on the day OBR publishes a new EFO that rolls
+ * the target year (typically the Spring Forecast immediately after a
+ * fiscal year transition).
+ *
+ * As of OBR Spring Forecast 2026 (published 2026-03-03), the stability-
+ * rule target year is FY 2029/30.
+ */
+export const OBR_TARGET_YEAR_LABEL = "FY 2029/30";
+export const OBR_LATEST_VINTAGE_LABEL = "Spring Forecast 2026";
+
+/**
  * Per-cadence freshness windows used by `IndicatorDefinition.maxStaleMs`.
  *
  * These are not arbitrary: each answers "how old can the latest observation
@@ -267,16 +283,18 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
 
   // Fiscal (30%)
   cb_headroom: {
-    id: "cb_headroom", pillar: "fiscal", label: "Current-budget headroom", shortLabel: "CB headroom",
+    id: "cb_headroom", pillar: "fiscal", label: "Current-budget headroom (forecast)", shortLabel: "CB headroom",
     unit: "GBPbn", weight: 0.35, risingIsBad: false, sourceId: "obr_efo",
-    description: "Surplus against the stability rule at the target year.", formatDisplay: fmtGbpBn,
+    description: `OBR forecast: surplus against the stability rule at the ${OBR_TARGET_YEAR_LABEL} target year. Updated on each OBR EFO (twice-yearly).`,
+    formatDisplay: fmtGbpBn,
     provenance: "fixture",
     maxStaleMs: STALE_OBR_SEMIANNUAL_MS,
   },
   psnfl_trajectory: {
-    id: "psnfl_trajectory", pillar: "fiscal", label: "PSNFL trajectory deviation", shortLabel: "PSNFL dev",
+    id: "psnfl_trajectory", pillar: "fiscal", label: "PSNFL trajectory deviation (forecast)", shortLabel: "PSNFL dev",
     unit: "pp", weight: 0.15, risingIsBad: true, sourceId: "obr_efo",
-    description: "Deviation of PSNFL path from OBR baseline, percentage points of GDP.", formatDisplay: fmtPct(2),
+    description: "OBR forecast: deviation of PSNFL path from OBR baseline, percentage points of GDP.",
+    formatDisplay: fmtPct(2),
     provenance: "fixture",
     maxStaleMs: STALE_OBR_SEMIANNUAL_MS,
   },

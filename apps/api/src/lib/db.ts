@@ -224,18 +224,38 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
 }
 
 export async function buildHistoryFromD1(env: Env, days: number): Promise<ScoreHistory> {
-  const clampedDays = Math.max(1, Math.min(365, Math.floor(days)));
+  // Cap matches the API days param (apps/api/src/handlers/score.ts) and the
+  // ingest backfill cap so a /api/v1/score/history?days=800 request can serve
+  // the full GE-2024-to-today range once backfilled.
+  const clampedDays = Math.max(1, Math.min(800, Math.floor(days)));
 
+  // Downsample to one row per UTC day (latest per day wins). The recompute
+  // pipeline writes a fresh headline_scores row every 5 minutes, so on any
+  // given day the table holds 200-300 rows. Without this aggregation the
+  // chart shows hundreds of duplicate today-points clobbering older days,
+  // and the 90-day cache slice (last 90 chronological rows) collapses to
+  // ~7.5 hours of intraday recompute. Mirrors buildSnapshotFromD1's
+  // sparkline downsample query.
   const [headlineRows, pillarRows] = await Promise.all([
     env.DB.prepare(
-      `SELECT observed_at, value FROM headline_scores
-       WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
-       ORDER BY observed_at ASC`,
+      `SELECT h.observed_at, h.value FROM headline_scores h
+       JOIN (
+         SELECT substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
+         FROM headline_scores
+         WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
+         GROUP BY substr(observed_at, 1, 10)
+       ) m ON h.observed_at = m.ts
+       ORDER BY h.observed_at ASC`,
     ).bind(clampedDays).all<{ observed_at: string; value: number }>(),
     env.DB.prepare(
-      `SELECT pillar_id AS id, observed_at, value FROM pillar_scores
-       WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
-       ORDER BY observed_at ASC`,
+      `SELECT p.pillar_id AS id, p.observed_at, p.value FROM pillar_scores p
+       JOIN (
+         SELECT pillar_id, substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
+         FROM pillar_scores
+         WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
+         GROUP BY pillar_id, substr(observed_at, 1, 10)
+       ) m ON p.pillar_id = m.pillar_id AND p.observed_at = m.ts
+       ORDER BY p.observed_at ASC`,
     ).bind(clampedDays).all<PillarSeriesRow>(),
   ]);
 

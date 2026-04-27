@@ -565,7 +565,7 @@ const idScope = `chart-${width}x${height}`;
 }
 </style>
 
-<script>
+<script is:inline nonce={Astro.locals.cspNonce}>
 /**
  * Tooltip pinning: when a marker receives focus or hover, mark the
  * matching tooltip active. CSS handles the visibility transition.
@@ -577,16 +577,11 @@ const idScope = `chart-${width}x${height}`;
  * tooltip layer directly via tab order.
  */
 (() => {
-  const charts = document.querySelectorAll<HTMLElement>(".annotated-chart");
+  const charts = document.querySelectorAll(".annotated-chart");
   for (const chart of charts) {
-    const markers = chart.querySelectorAll<SVGGElement>(".marker[aria-label]");
-    const tooltips = chart.querySelectorAll<HTMLElement>(".tooltip[data-event-id]");
-    const byId = new Map<string, HTMLElement>();
-    tooltips.forEach((t) => {
-      const id = t.dataset.eventId;
-      if (id) byId.set(id, t);
-    });
-    function activate(idx: number, on: boolean) {
+    const markers = chart.querySelectorAll(".marker[aria-label]");
+    const tooltips = chart.querySelectorAll(".tooltip[data-event-id]");
+    function activate(idx, on) {
       const marker = markers[idx];
       if (!marker) return;
       // We co-locate marker order with tooltip order in the DOM, so we
@@ -601,11 +596,6 @@ const idScope = `chart-${width}x${height}`;
       marker.addEventListener("focus", () => activate(idx, true));
       marker.addEventListener("blur", () => activate(idx, false));
     });
-    // Suppress an unused-variable warning under strict TS — `byId` reads as
-    // dead code since we ended up indexing tooltips by ordinal. Keeping
-    // the map populated above makes the intent clear if a future change
-    // wants to switch to event-id matching.
-    void byId;
   }
 })();
 </script>

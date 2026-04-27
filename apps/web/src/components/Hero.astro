@@ -294,12 +294,12 @@ function headroomDateLabel(iso: string): string {
 }
 </style>
 
-<script>
+<script is:inline nonce={Astro.locals.cspNonce}>
 (() => {
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-  const el = document.querySelector<HTMLElement>(".composite-card .score-num");
+  const el = document.querySelector(".composite-card .score-num");
   if (!el) return;
-  const valueEl = el.querySelector<HTMLElement>(".score-value");
+  const valueEl = el.querySelector(".score-value");
   if (!valueEl) return;
   const target = Number(el.dataset.target ?? valueEl.textContent ?? "0");
   if (!Number.isFinite(target)) return;
@@ -308,10 +308,10 @@ function headroomDateLabel(iso: string): string {
   const dur = 900;
   const t0 = performance.now();
   valueEl.textContent = "0";
-  function frame(t: number) {
+  function frame(t) {
     const p = Math.min(1, (t - t0) / dur);
     const eased = 1 - Math.pow(1 - p, 3);
-    valueEl!.textContent = String(Math.round(target * eased));
+    valueEl.textContent = String(Math.round(target * eased));
     if (p < 1) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

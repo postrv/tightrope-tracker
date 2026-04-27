@@ -217,16 +217,16 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
 }
 </style>
 
-<script>
+<script is:inline nonce={Astro.locals.cspNonce}>
 (() => {
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
   const fineHover = window.matchMedia?.("(hover: hover) and (pointer: fine)").matches ?? false;
 
-  const all = document.querySelectorAll<HTMLElement>('.tightrope-walker[data-animate="true"]');
+  const all = document.querySelectorAll('.tightrope-walker[data-animate="true"]');
   all.forEach((viz) => {
     const ampDeg = Number(viz.dataset.amp ?? "0");
     const speedMult = Number(viz.dataset.speed ?? "1");
-    const walker = viz.querySelector<SVGGElement>(".walker");
+    const walker = viz.querySelector(".walker");
     if (!walker) return;
 
     if (reduce) {
@@ -266,7 +266,7 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
     const t0 = performance.now();
     const settleDur = 1100;
 
-    function frame(t: number) {
+    function frame(t) {
       const elapsed = t - t0;
       const settle = Math.min(1, elapsed / settleDur);
       const eased = 1 - Math.pow(1 - settle, 3);
@@ -276,7 +276,7 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
         Math.sin(sweptT * w2 + phi2) * 0.55 +
         Math.sin(sweptT * w3 + phi3) * 0.25;
       const angle = (wave / norm) * ampDeg * eased;
-      walker!.setAttribute("transform", `translate(300, 430) rotate(${angle.toFixed(2)})`);
+      walker.setAttribute("transform", `translate(300, 430) rotate(${angle.toFixed(2)})`);
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);

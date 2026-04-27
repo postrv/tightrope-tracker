@@ -120,21 +120,21 @@ const recomputeChip = formatChip(updatedAt);
   );
 })()}
 
-<script>
+<script is:inline nonce={Astro.locals.cspNonce}>
 (() => {
-  const btn = document.querySelector<HTMLButtonElement>("[data-nav-toggle]");
+  const btn = document.querySelector("[data-nav-toggle]");
   const panel = document.getElementById("mobile-nav-panel");
   if (!btn || !panel) return;
-  function setOpen(open: boolean) {
-    btn!.setAttribute("aria-expanded", String(open));
-    if (open) panel!.removeAttribute("hidden");
-    else panel!.setAttribute("hidden", "");
-    btn!.classList.toggle("open", open);
+  function setOpen(open) {
+    btn.setAttribute("aria-expanded", String(open));
+    if (open) panel.removeAttribute("hidden");
+    else panel.setAttribute("hidden", "");
+    btn.classList.toggle("open", open);
   }
   btn.addEventListener("click", () => {
     setOpen(btn.getAttribute("aria-expanded") !== "true");
   });
-  panel.querySelectorAll<HTMLAnchorElement>("[data-nav-link]").forEach((a) => {
+  panel.querySelectorAll("[data-nav-link]").forEach((a) => {
     a.addEventListener("click", () => setOpen(false));
   });
   document.addEventListener("keydown", (e) => {

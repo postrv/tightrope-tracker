@@ -18,11 +18,18 @@ export async function updateTodayMovements(env: Env): Promise<TodayMovement[]> {
   const movements: TodayMovement[] = [];
 
   for (const id of marketIds) {
+    // Live rows only (`payload_hash` not 'hist:*' or 'seed*'), ordered
+    // by ingested_at DESC so a fixture whose observed_at moves backwards
+    // doesn't pin the homepage to a stale row. NULL payload_hash is
+    // treated as live for legacy compatibility. Reversed below for the
+    // sparkline's oldest-first convention.
     const rows = await env.DB
       .prepare(
         `SELECT value, observed_at FROM indicator_observations
          WHERE indicator_id = ?
-         ORDER BY observed_at DESC
+           AND (payload_hash IS NULL
+                OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%'))
+         ORDER BY ingested_at DESC
          LIMIT ?`,
       )
       .bind(id, SPARKLINE_POINTS)

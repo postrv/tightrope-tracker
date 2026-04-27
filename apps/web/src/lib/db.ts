@@ -111,18 +111,26 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       `SELECT source_id, MAX(started_at) AS last_success
        FROM ingestion_audit WHERE status IN ('success', 'unchanged') GROUP BY source_id`,
     ).all<{ source_id: string; last_success: string }>(),
-    // Latest observation per indicator, for lightweight per-pillar
-    // contributions in this D1-fallback path. The recompute+KV snapshot
-    // carries full z-score contributions; here we surface raw value +
-    // observedAt + sourceId so a stale-banner consumer can name the
-    // specific indicator that froze.
+    // Latest *live* observation per indicator. Pick by MAX(ingested_at)
+    // — not MAX(observed_at) — so a fixture whose observed_at moves
+    // backwards (e.g. an OBR EFO update with an earlier publication
+    // date) does not lock the API onto the stale row. Exclude
+    // historical-backfill rows (`hist:*`) and seed rows (`seed*`)
+    // so a recently-run backfill cannot mis-select as "live". See
+    // apps/api/src/tests/snapshot-fixture-supersede.test.ts for
+    // the regression cases.
     db.prepare(
       `SELECT o.indicator_id, o.value, o.observed_at, o.source_id
        FROM indicator_observations o
        JOIN (
-         SELECT indicator_id, MAX(observed_at) AS ts
-         FROM indicator_observations GROUP BY indicator_id
-       ) m ON o.indicator_id = m.indicator_id AND o.observed_at = m.ts`,
+         SELECT indicator_id, MAX(ingested_at) AS ts
+         FROM indicator_observations
+         WHERE payload_hash IS NULL
+            OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%')
+         GROUP BY indicator_id
+       ) m ON o.indicator_id = m.indicator_id AND o.ingested_at = m.ts
+         AND (o.payload_hash IS NULL
+              OR (o.payload_hash NOT LIKE 'hist:%' AND o.payload_hash NOT LIKE 'seed%'))`,
     ).all<{ indicator_id: string; value: number; observed_at: string; source_id: string }>(),
   ]);
 

@@ -102,18 +102,31 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       `SELECT source_id, MAX(started_at) AS last_success
        FROM ingestion_audit WHERE status IN ('success', 'unchanged') GROUP BY source_id`,
     ).all<{ source_id: string; last_success: string }>(),
-    // Latest observation per indicator, for lightweight per-pillar
-    // contributions in the D1-fallback path. The recompute+KV snapshot
-    // includes full z-score contributions; here we surface just enough
-    // (raw value, observedAt, sourceId) so a stale-banner consumer can
-    // name the specific indicator that froze.
+    // Latest *live* observation per indicator. We pick by MAX(ingested_at)
+    // — not MAX(observed_at) — so the row most recently written by an
+    // adapter wins, even if an editorial fixture has moved its
+    // `observed_at` backwards (e.g. an OBR EFO update where the
+    // publication date is earlier than the previously-shipped fixture's
+    // synthetic date). MAX(observed_at) locks onto the stale row;
+    // MAX(ingested_at) tracks the current state.
+    //
+    // We also exclude historical-backfill rows (payload_hash 'hist:*')
+    // and seed rows (payload_hash 'seed*') so a recently-run backfill
+    // or seed re-import cannot be mis-selected as the live value. Live
+    // adapters write a sha256 hash (no prefix); the NULL fallback
+    // covers any pre-payload_hash rows.
     db.prepare(
       `SELECT o.indicator_id, o.value, o.observed_at, o.source_id
        FROM indicator_observations o
        JOIN (
-         SELECT indicator_id, MAX(observed_at) AS ts
-         FROM indicator_observations GROUP BY indicator_id
-       ) m ON o.indicator_id = m.indicator_id AND o.observed_at = m.ts`,
+         SELECT indicator_id, MAX(ingested_at) AS ts
+         FROM indicator_observations
+         WHERE payload_hash IS NULL
+            OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%')
+         GROUP BY indicator_id
+       ) m ON o.indicator_id = m.indicator_id AND o.ingested_at = m.ts
+         AND (o.payload_hash IS NULL
+              OR (o.payload_hash NOT LIKE 'hist:%' AND o.payload_hash NOT LIKE 'seed%'))`,
     ).all<{ indicator_id: string; value: number; observed_at: string; source_id: string }>(),
   ]);
 

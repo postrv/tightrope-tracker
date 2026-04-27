@@ -9,6 +9,38 @@ export interface LatestAttemptRow {
 }
 
 /**
+ * Source IDs that historically appear in `ingestion_audit` but are no
+ * longer wired into any active pipeline. They legitimately have stale
+ * `last_success` timestamps because nothing is polling them; surfacing
+ * those in the public health/source-health endpoints would be misleading
+ * (operators would chase a "failure" that's actually intentional retirement).
+ *
+ * To retire a source: add its id here and stop registering its adapter
+ * in apps/ingest/src/pipelines. Do **not** delete the historical audit
+ * rows — they carry forensic value if the retirement is ever revisited.
+ *
+ *  - `boe_sonia`: SONIA-12m proxy was superseded by direct gilt yields;
+ *     the adapter is registered (registry side-effect) but not wired
+ *     into the market pipeline.
+ *  - `ice_gas`:   front-month NBP gas proxy is no longer part of the
+ *     market pillar's published indicator set.
+ *  - `lseg_housebuilders`: editorial fixture replaced by the live
+ *     `eodhd_housebuilders` adapter in the fiscal pipeline.
+ *  - `twelve_data_housebuilders`: deprecated; Twelve Data free tier
+ *     dropped LSE equity coverage. EODHD is the live successor.
+ */
+export const INACTIVE_INGEST_SOURCES: ReadonlySet<string> = new Set([
+  "boe_sonia",
+  "ice_gas",
+  "lseg_housebuilders",
+  "twelve_data_housebuilders",
+]);
+
+export function isActiveIngestSource(sourceId: string): boolean {
+  return !INACTIVE_INGEST_SOURCES.has(sourceId);
+}
+
+/**
  * Derive the list of sources whose latest ingestion attempt did not succeed.
  *
  * Input shapes are deliberately close to what the D1 queries return, so both
@@ -40,6 +72,9 @@ export function computeSourceHealth(
     // fixture. Backfill health is surfaced via /admin/health; keep the
     // public banner focused on the live polling lane.
     if (row.sourceId.endsWith(":historical")) continue;
+    // Suppress retired adapters whose audit rows linger from before they
+    // were unwired. See INACTIVE_INGEST_SOURCES for the canonical list.
+    if (INACTIVE_INGEST_SOURCES.has(row.sourceId)) continue;
     const status = row.status === "partial" ? "partial" : "failure";
     const entry: SourceHealthEntry = {
       sourceId: row.sourceId,

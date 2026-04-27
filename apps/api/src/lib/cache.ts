@@ -14,17 +14,28 @@ export async function kvPutJson<T>(env: Env, key: string, value: T): Promise<voi
 }
 
 /**
- * Read-through cache: try KV first; on miss, call loader, write-back, return.
- * The loader is only awaited if the cache missed.
+ * Read-through cache: try KV first; on miss (or stale, when an `isFresh`
+ * predicate is supplied and rejects the cached value), call `loader`,
+ * write-back, return. The loader is only awaited if the cache missed
+ * or was rejected as stale.
+ *
+ * `isFresh` lets callers distinguish "data exists but is too old to
+ * trust" from "no data at all". Use it for derived caches whose
+ * upstream (KV, recompute) may pause for longer than the KV TTL —
+ * without the predicate, the consumer would serve six-hour-stale
+ * values until the TTL expired.
  */
 export async function readThrough<T>(
   env: Env,
   key: string,
   loader: () => Promise<T>,
   ctx?: ExecutionContext,
+  isFresh?: (cached: T) => boolean,
 ): Promise<T> {
   const cached = await kvGetJson<T>(env, key);
-  if (cached !== null && cached !== undefined) return cached;
+  if (cached !== null && cached !== undefined && (isFresh === undefined || isFresh(cached))) {
+    return cached;
+  }
   const fresh = await loader();
   // Fire-and-forget write-back. Use waitUntil if we have a context so the
   // request doesn't block on the KV write.

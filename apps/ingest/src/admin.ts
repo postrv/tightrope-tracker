@@ -161,6 +161,34 @@ export async function handleAdminRun(req: Request, env: Env, url: URL): Promise<
           ...(dryRun ? { note: "Dry run. Re-invoke with &confirm=yes to actually delete." } : {}),
         });
       }
+      case "purge-cache": {
+        // Bust every public-facing KV key so the next consumer rebuilds
+        // from D1. Operator escape hatch for after editorial changes
+        // (delivery commitments, timeline events, corrections) where
+        // the read-through caches lack a freshness predicate.
+        // Idempotent: KV.delete on a missing key is a no-op. Per-key
+        // failures are reported separately so a single transient outage
+        // doesn't fail the whole purge.
+        const keys = [
+          "score:latest",
+          "score:history:90d",
+          "delivery:latest",
+          "timeline:latest",
+          "movements:today",
+        ] as const;
+        const purged: string[] = [];
+        const failed: string[] = [];
+        for (const k of keys) {
+          try {
+            await env.KV.delete(k);
+            purged.push(k);
+          } catch (err) {
+            console.warn(`purge-cache: KV.delete('${k}') failed: ${(err as Error)?.message ?? String(err)}`);
+            failed.push(k);
+          }
+        }
+        return json({ ok: true, source, purged, ...(failed.length > 0 ? { failed } : {}) });
+      }
       default:
         return json({ error: `unknown source '${source}'` }, 400);
     }

@@ -27,12 +27,15 @@ export const DELIVERY_COMMITMENTS_SEED: readonly DeliveryCommitmentSeed[] = [
     id: "housing_305k",
     name: "Net housing additions toward 305k/year by 2030/31",
     department: "MHCLG",
-    latest: "221,400 (FY24/25), next print June 2026",
-    target: "OBR path: 305k by 2030",
+    // Two measures, side by side. The live indicator uses (1); (2) is the
+    // annual NAD print readers will see in news. Both are vs the same
+    // 305k-by-2030/31 OBR path. Migration 0009 keeps prod in sync.
+    latest: "Live indicator: Q4 2025 completions × 4 = 146,880 vs 300k OBR working assumption (49%). Annual NAD FY24/25: 221,400 vs 305k Labour target (73%).",
+    target: "OBR path: 305k by 2030/31",
     status: "slipping",
     sourceUrl: "https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building",
     sourceLabel: "MHCLG live tables",
-    notes: "Figures from MHCLG Live Tables 211 (net additions) and 123 (planning decisions). The OBR trajectory to 305k per year is in the March EFO supplementary tables.",
+    notes: "Two complementary measures of housing delivery. (1) The live indicator uses 'Completions, seasonally adjusted' from the MHCLG Housing supply quarterly release — a quarterly cadence we annualise (×4) and compare against the 300,000-per-year OBR working assumption documented in the EFO supplementary tables. (2) The annual headline figure is 'Net additional dwellings' from MHCLG Live Tables 211, a broader measure that includes change-of-use and conversions, published once a year (FY24/25 was 221,400). The 305k-by-2030/31 path target is the Labour government's headline pledge; OBR's 300k working assumption is what the live indicator benchmarks against to keep continuity with pre-Labour trajectory analysis. Showing both because they tell the same story at different sampling rates and at slightly different scope.",
     sortOrder: 10,
   },
   {

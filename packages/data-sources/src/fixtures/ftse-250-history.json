@@ -1,0 +1,2301 @@
+{
+  "_comment": "FTSE 250 index daily official close (16:30 London time). Source: Yahoo Finance (^FTMC) chart API. Trading days only.",
+  "methodology": {
+    "primary_source": "https://query1.finance.yahoo.com/v8/finance/chart/%5EFTMC?interval=1d",
+    "indicator": "FTSE 250 (^FTMC) \u2014 daily close as reported by Yahoo Finance",
+    "release_cadence": "daily (LSE trading days, Mon-Fri excluding UK bank holidays)",
+    "extraction_notes": "Pulled v8 chart JSON for ^FTMC at daily granularity covering 2024-07-04 to 2026-04-24. Yahoo's response excludes weekends and LSE holidays. Closes rounded to nearest integer to match the live fixture style. Timestamps fixed at 16:30 UTC year-round to mirror packages/data-sources/src/fixtures/ftse-250.json. KNOWN ANCHOR DRIFT: Yahoo's 2026-04-23 close is 22765, while the live fixture (sourced from the LSEG closing-level page) records 22984 \u2014 a ~0.96% gap that recurs across the most recent weeks (Yahoo runs ~150-220 points light vs LSEG end-of-auction prints in late April 2026). For trend / percentile work this is immaterial; for absolute headline comparison the live LSEG fixture remains authoritative for the latest single value."
+  },
+  "points": [
+    {
+      "observed_at": "2024-07-04T16:30:00Z",
+      "value": 20610,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-05T16:30:00Z",
+      "value": 20787,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-08T16:30:00Z",
+      "value": 20798,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-09T16:30:00Z",
+      "value": 20645,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-10T16:30:00Z",
+      "value": 20928,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-11T16:30:00Z",
+      "value": 21189,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-12T16:30:00Z",
+      "value": 21203,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-15T16:30:00Z",
+      "value": 21190,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-16T16:30:00Z",
+      "value": 21214,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-17T16:30:00Z",
+      "value": 21093,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-18T16:30:00Z",
+      "value": 21234,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-19T16:30:00Z",
+      "value": 21068,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-22T16:30:00Z",
+      "value": 21139,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-23T16:30:00Z",
+      "value": 21092,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-24T16:30:00Z",
+      "value": 20951,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-25T16:30:00Z",
+      "value": 20884,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-26T16:30:00Z",
+      "value": 21356,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-29T16:30:00Z",
+      "value": 21252,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-30T16:30:00Z",
+      "value": 21432,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-07-31T16:30:00Z",
+      "value": 21601,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-01T16:30:00Z",
+      "value": 21459,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-02T16:30:00Z",
+      "value": 20826,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-05T16:30:00Z",
+      "value": 20237,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-06T16:30:00Z",
+      "value": 20368,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-07T16:30:00Z",
+      "value": 20576,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-08T16:30:00Z",
+      "value": 20509,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-09T16:30:00Z",
+      "value": 20625,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-12T16:30:00Z",
+      "value": 20677,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-13T16:30:00Z",
+      "value": 20744,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-14T16:30:00Z",
+      "value": 20952,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-15T16:30:00Z",
+      "value": 21094,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-16T16:30:00Z",
+      "value": 21049,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-19T16:30:00Z",
+      "value": 21158,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-20T16:30:00Z",
+      "value": 20986,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-21T16:30:00Z",
+      "value": 21187,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-22T16:30:00Z",
+      "value": 21105,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-23T16:30:00Z",
+      "value": 21190,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-27T16:30:00Z",
+      "value": 21162,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-28T16:30:00Z",
+      "value": 21067,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-29T16:30:00Z",
+      "value": 21031,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-08-30T16:30:00Z",
+      "value": 21086,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-02T16:30:00Z",
+      "value": 20980,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-03T16:30:00Z",
+      "value": 20809,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-04T16:30:00Z",
+      "value": 20809,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-05T16:30:00Z",
+      "value": 20762,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-06T16:30:00Z",
+      "value": 20494,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-09T16:30:00Z",
+      "value": 20651,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-10T16:30:00Z",
+      "value": 20656,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-11T16:30:00Z",
+      "value": 20537,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-12T16:30:00Z",
+      "value": 20696,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-13T16:30:00Z",
+      "value": 20895,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-16T16:30:00Z",
+      "value": 20930,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-17T16:30:00Z",
+      "value": 20945,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-18T16:30:00Z",
+      "value": 20835,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-19T16:30:00Z",
+      "value": 21163,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-20T16:30:00Z",
+      "value": 20832,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-23T16:30:00Z",
+      "value": 20845,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-24T16:30:00Z",
+      "value": 20770,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-25T16:30:00Z",
+      "value": 20755,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-26T16:30:00Z",
+      "value": 21010,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-27T16:30:00Z",
+      "value": 21241,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-09-30T16:30:00Z",
+      "value": 21053,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-01T16:30:00Z",
+      "value": 20915,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-02T16:30:00Z",
+      "value": 20784,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-03T16:30:00Z",
+      "value": 20740,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-04T16:30:00Z",
+      "value": 20900,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-07T16:30:00Z",
+      "value": 20853,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-08T16:30:00Z",
+      "value": 20631,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-09T16:30:00Z",
+      "value": 20822,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-10T16:30:00Z",
+      "value": 20708,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-11T16:30:00Z",
+      "value": 20765,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-14T16:30:00Z",
+      "value": 20817,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-15T16:30:00Z",
+      "value": 20794,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-16T16:30:00Z",
+      "value": 20980,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-17T16:30:00Z",
+      "value": 21101,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-18T16:30:00Z",
+      "value": 21150,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-21T16:30:00Z",
+      "value": 20907,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-22T16:30:00Z",
+      "value": 20950,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-23T16:30:00Z",
+      "value": 20830,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-24T16:30:00Z",
+      "value": 20791,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-25T16:30:00Z",
+      "value": 20820,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-28T16:30:00Z",
+      "value": 20835,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-29T16:30:00Z",
+      "value": 20623,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-30T16:30:00Z",
+      "value": 20694,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-10-31T16:30:00Z",
+      "value": 20389,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-01T16:30:00Z",
+      "value": 20480,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-04T16:30:00Z",
+      "value": 20461,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-05T16:30:00Z",
+      "value": 20370,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-06T16:30:00Z",
+      "value": 20447,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-07T16:30:00Z",
+      "value": 20635,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-08T16:30:00Z",
+      "value": 20518,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-11T16:30:00Z",
+      "value": 20724,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-12T16:30:00Z",
+      "value": 20428,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-13T16:30:00Z",
+      "value": 20359,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-14T16:30:00Z",
+      "value": 20523,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-15T16:30:00Z",
+      "value": 20477,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-18T16:30:00Z",
+      "value": 20395,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-19T16:30:00Z",
+      "value": 20428,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-20T16:30:00Z",
+      "value": 20245,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-21T16:30:00Z",
+      "value": 20350,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-22T16:30:00Z",
+      "value": 20582,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-25T16:30:00Z",
+      "value": 20749,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-26T16:30:00Z",
+      "value": 20569,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-27T16:30:00Z",
+      "value": 20602,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-28T16:30:00Z",
+      "value": 20763,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-11-29T16:30:00Z",
+      "value": 20772,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-02T16:30:00Z",
+      "value": 20769,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-03T16:30:00Z",
+      "value": 20893,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-04T16:30:00Z",
+      "value": 21005,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-05T16:30:00Z",
+      "value": 21001,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-06T16:30:00Z",
+      "value": 21059,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-09T16:30:00Z",
+      "value": 21049,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-10T16:30:00Z",
+      "value": 20974,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-11T16:30:00Z",
+      "value": 20974,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-12T16:30:00Z",
+      "value": 20949,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-13T16:30:00Z",
+      "value": 20889,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-16T16:30:00Z",
+      "value": 20813,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-17T16:30:00Z",
+      "value": 20543,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-18T16:30:00Z",
+      "value": 20602,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-19T16:30:00Z",
+      "value": 20399,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-20T16:30:00Z",
+      "value": 20451,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-23T16:30:00Z",
+      "value": 20419,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-24T16:30:00Z",
+      "value": 20572,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-27T16:30:00Z",
+      "value": 20489,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-30T16:30:00Z",
+      "value": 20405,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2024-12-31T16:30:00Z",
+      "value": 20623,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-02T16:30:00Z",
+      "value": 20640,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-03T16:30:00Z",
+      "value": 20591,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-06T16:30:00Z",
+      "value": 20613,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-07T16:30:00Z",
+      "value": 20350,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-08T16:30:00Z",
+      "value": 19952,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-09T16:30:00Z",
+      "value": 20005,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-10T16:30:00Z",
+      "value": 19734,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-13T16:30:00Z",
+      "value": 19718,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-14T16:30:00Z",
+      "value": 19766,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-15T16:30:00Z",
+      "value": 20334,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-16T16:30:00Z",
+      "value": 20528,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-17T16:30:00Z",
+      "value": 20597,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-20T16:30:00Z",
+      "value": 20487,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-21T16:30:00Z",
+      "value": 20596,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-22T16:30:00Z",
+      "value": 20580,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-23T16:30:00Z",
+      "value": 20520,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-24T16:30:00Z",
+      "value": 20518,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-27T16:30:00Z",
+      "value": 20370,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-28T16:30:00Z",
+      "value": 20588,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-29T16:30:00Z",
+      "value": 20560,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-30T16:30:00Z",
+      "value": 20805,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-01-31T16:30:00Z",
+      "value": 20950,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-03T16:30:00Z",
+      "value": 20712,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-04T16:30:00Z",
+      "value": 20653,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-05T16:30:00Z",
+      "value": 20763,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-06T16:30:00Z",
+      "value": 20973,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-07T16:30:00Z",
+      "value": 20808,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-10T16:30:00Z",
+      "value": 20986,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-11T16:30:00Z",
+      "value": 20920,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-12T16:30:00Z",
+      "value": 20880,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-13T16:30:00Z",
+      "value": 20916,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-14T16:30:00Z",
+      "value": 20913,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-17T16:30:00Z",
+      "value": 20939,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-18T16:30:00Z",
+      "value": 20882,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-19T16:30:00Z",
+      "value": 20708,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-20T16:30:00Z",
+      "value": 20613,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-21T16:30:00Z",
+      "value": 20614,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-24T16:30:00Z",
+      "value": 20484,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-25T16:30:00Z",
+      "value": 20448,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-26T16:30:00Z",
+      "value": 20596,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-27T16:30:00Z",
+      "value": 20415,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-02-28T16:30:00Z",
+      "value": 20326,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-03T16:30:00Z",
+      "value": 20382,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-04T16:30:00Z",
+      "value": 19950,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-05T16:30:00Z",
+      "value": 20128,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-06T16:30:00Z",
+      "value": 20159,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-07T16:30:00Z",
+      "value": 20129,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-10T16:30:00Z",
+      "value": 19875,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-11T16:30:00Z",
+      "value": 19770,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-12T16:30:00Z",
+      "value": 19886,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-13T16:30:00Z",
+      "value": 19689,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-14T16:30:00Z",
+      "value": 19996,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-17T16:30:00Z",
+      "value": 20028,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-18T16:30:00Z",
+      "value": 20098,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-19T16:30:00Z",
+      "value": 20122,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-20T16:30:00Z",
+      "value": 20098,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-21T16:30:00Z",
+      "value": 19912,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-24T16:30:00Z",
+      "value": 19922,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-25T16:30:00Z",
+      "value": 19981,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-26T16:30:00Z",
+      "value": 20039,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-27T16:30:00Z",
+      "value": 19915,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-28T16:30:00Z",
+      "value": 19865,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-03-31T16:30:00Z",
+      "value": 19476,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-01T16:30:00Z",
+      "value": 19591,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-02T16:30:00Z",
+      "value": 19650,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-03T16:30:00Z",
+      "value": 19210,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-04T16:30:00Z",
+      "value": 18365,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-07T16:30:00Z",
+      "value": 17765,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-08T16:30:00Z",
+      "value": 18349,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-09T16:30:00Z",
+      "value": 17891,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-10T16:30:00Z",
+      "value": 18517,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-11T16:30:00Z",
+      "value": 18515,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-14T16:30:00Z",
+      "value": 18978,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-15T16:30:00Z",
+      "value": 19268,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-16T16:30:00Z",
+      "value": 19266,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-17T16:30:00Z",
+      "value": 19250,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-22T16:30:00Z",
+      "value": 19238,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-23T16:30:00Z",
+      "value": 19483,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-24T16:30:00Z",
+      "value": 19504,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-25T16:30:00Z",
+      "value": 19610,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-28T16:30:00Z",
+      "value": 19733,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-29T16:30:00Z",
+      "value": 19810,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-04-30T16:30:00Z",
+      "value": 19885,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-01T16:30:00Z",
+      "value": 20135,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-02T16:30:00Z",
+      "value": 20240,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-06T16:30:00Z",
+      "value": 20352,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-07T16:30:00Z",
+      "value": 20337,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-08T16:30:00Z",
+      "value": 20457,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-09T16:30:00Z",
+      "value": 20504,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-12T16:30:00Z",
+      "value": 20627,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-13T16:30:00Z",
+      "value": 20760,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-14T16:30:00Z",
+      "value": 20820,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-15T16:30:00Z",
+      "value": 20845,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-16T16:30:00Z",
+      "value": 20972,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-19T16:30:00Z",
+      "value": 20961,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-20T16:30:00Z",
+      "value": 21096,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-21T16:30:00Z",
+      "value": 20950,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-22T16:30:00Z",
+      "value": 20800,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-23T16:30:00Z",
+      "value": 20709,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-27T16:30:00Z",
+      "value": 20939,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-28T16:30:00Z",
+      "value": 20946,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-29T16:30:00Z",
+      "value": 20998,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-05-30T16:30:00Z",
+      "value": 21028,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-02T16:30:00Z",
+      "value": 21029,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-03T16:30:00Z",
+      "value": 21018,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-04T16:30:00Z",
+      "value": 21119,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-05T16:30:00Z",
+      "value": 21069,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-06T16:30:00Z",
+      "value": 21157,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-09T16:30:00Z",
+      "value": 21286,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-10T16:30:00Z",
+      "value": 21390,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-11T16:30:00Z",
+      "value": 21428,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-12T16:30:00Z",
+      "value": 21387,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-13T16:30:00Z",
+      "value": 21173,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-16T16:30:00Z",
+      "value": 21284,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-17T16:30:00Z",
+      "value": 21237,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-18T16:30:00Z",
+      "value": 21290,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-19T16:30:00Z",
+      "value": 21074,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-20T16:30:00Z",
+      "value": 21148,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-23T16:30:00Z",
+      "value": 21121,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-24T16:30:00Z",
+      "value": 21326,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-25T16:30:00Z",
+      "value": 21298,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-26T16:30:00Z",
+      "value": 21475,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-27T16:30:00Z",
+      "value": 21716,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-06-30T16:30:00Z",
+      "value": 21626,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-01T16:30:00Z",
+      "value": 21743,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-02T16:30:00Z",
+      "value": 21452,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-03T16:30:00Z",
+      "value": 21703,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-04T16:30:00Z",
+      "value": 21557,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-07T16:30:00Z",
+      "value": 21538,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-08T16:30:00Z",
+      "value": 21582,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-09T16:30:00Z",
+      "value": 21568,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-10T16:30:00Z",
+      "value": 21695,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-11T16:30:00Z",
+      "value": 21613,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-14T16:30:00Z",
+      "value": 21725,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-15T16:30:00Z",
+      "value": 21690,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-16T16:30:00Z",
+      "value": 21602,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-17T16:30:00Z",
+      "value": 21766,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-18T16:30:00Z",
+      "value": 21898,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-21T16:30:00Z",
+      "value": 22012,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-22T16:30:00Z",
+      "value": 21934,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-23T16:30:00Z",
+      "value": 22014,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-24T16:30:00Z",
+      "value": 22155,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-25T16:30:00Z",
+      "value": 22118,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-28T16:30:00Z",
+      "value": 21952,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-29T16:30:00Z",
+      "value": 21793,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-30T16:30:00Z",
+      "value": 21777,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-07-31T16:30:00Z",
+      "value": 21963,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-01T16:30:00Z",
+      "value": 21699,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-04T16:30:00Z",
+      "value": 21860,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-05T16:30:00Z",
+      "value": 21902,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-06T16:30:00Z",
+      "value": 21926,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-07T16:30:00Z",
+      "value": 21938,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-08T16:30:00Z",
+      "value": 21959,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-11T16:30:00Z",
+      "value": 21890,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-12T16:30:00Z",
+      "value": 21843,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-13T16:30:00Z",
+      "value": 21852,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-14T16:30:00Z",
+      "value": 21802,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-15T16:30:00Z",
+      "value": 21758,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-18T16:30:00Z",
+      "value": 21750,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-19T16:30:00Z",
+      "value": 21833,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-20T16:30:00Z",
+      "value": 21886,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-21T16:30:00Z",
+      "value": 21818,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-22T16:30:00Z",
+      "value": 22077,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-26T16:30:00Z",
+      "value": 21861,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-27T16:30:00Z",
+      "value": 21805,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-28T16:30:00Z",
+      "value": 21744,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-08-29T16:30:00Z",
+      "value": 21606,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-01T16:30:00Z",
+      "value": 21634,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-02T16:30:00Z",
+      "value": 21163,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-03T16:30:00Z",
+      "value": 21313,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-04T16:30:00Z",
+      "value": 21475,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-05T16:30:00Z",
+      "value": 21576,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-08T16:30:00Z",
+      "value": 21684,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-09T16:30:00Z",
+      "value": 21597,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-10T16:30:00Z",
+      "value": 21534,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-11T16:30:00Z",
+      "value": 21694,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-12T16:30:00Z",
+      "value": 21625,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-15T16:30:00Z",
+      "value": 21647,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-16T16:30:00Z",
+      "value": 21492,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-17T16:30:00Z",
+      "value": 21620,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-18T16:30:00Z",
+      "value": 21726,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-19T16:30:00Z",
+      "value": 21590,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-22T16:30:00Z",
+      "value": 21597,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-23T16:30:00Z",
+      "value": 21695,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-24T16:30:00Z",
+      "value": 21690,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-25T16:30:00Z",
+      "value": 21588,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-26T16:30:00Z",
+      "value": 21682,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-29T16:30:00Z",
+      "value": 21866,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-09-30T16:30:00Z",
+      "value": 22016,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-01T16:30:00Z",
+      "value": 22050,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-02T16:30:00Z",
+      "value": 22047,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-03T16:30:00Z",
+      "value": 22198,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-06T16:30:00Z",
+      "value": 22100,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-07T16:30:00Z",
+      "value": 22003,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-08T16:30:00Z",
+      "value": 22042,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-09T16:30:00Z",
+      "value": 22053,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-10T16:30:00Z",
+      "value": 21802,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-13T16:30:00Z",
+      "value": 22064,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-14T16:30:00Z",
+      "value": 22028,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-15T16:30:00Z",
+      "value": 22021,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-16T16:30:00Z",
+      "value": 21991,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-17T16:30:00Z",
+      "value": 21783,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-20T16:30:00Z",
+      "value": 21868,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-21T16:30:00Z",
+      "value": 21908,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-22T16:30:00Z",
+      "value": 22230,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-23T16:30:00Z",
+      "value": 22361,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-24T16:30:00Z",
+      "value": 22529,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-27T16:30:00Z",
+      "value": 22512,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-28T16:30:00Z",
+      "value": 22484,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-29T16:30:00Z",
+      "value": 22448,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-30T16:30:00Z",
+      "value": 22276,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-10-31T16:30:00Z",
+      "value": 22171,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-03T16:30:00Z",
+      "value": 22109,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-04T16:30:00Z",
+      "value": 21996,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-05T16:30:00Z",
+      "value": 22094,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-06T16:30:00Z",
+      "value": 21905,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-07T16:30:00Z",
+      "value": 21773,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-10T16:30:00Z",
+      "value": 21968,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-11T16:30:00Z",
+      "value": 22150,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-12T16:30:00Z",
+      "value": 22135,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-13T16:30:00Z",
+      "value": 21996,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-14T16:30:00Z",
+      "value": 21820,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-17T16:30:00Z",
+      "value": 21688,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-18T16:30:00Z",
+      "value": 21425,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-19T16:30:00Z",
+      "value": 21412,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-20T16:30:00Z",
+      "value": 21384,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-21T16:30:00Z",
+      "value": 21363,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-24T16:30:00Z",
+      "value": 21412,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-25T16:30:00Z",
+      "value": 21617,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-26T16:30:00Z",
+      "value": 21886,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-27T16:30:00Z",
+      "value": 22092,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-11-28T16:30:00Z",
+      "value": 22165,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-01T16:30:00Z",
+      "value": 22021,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-02T16:30:00Z",
+      "value": 21982,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-03T16:30:00Z",
+      "value": 22002,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-04T16:30:00Z",
+      "value": 22071,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-05T16:30:00Z",
+      "value": 22064,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-08T16:30:00Z",
+      "value": 21921,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-09T16:30:00Z",
+      "value": 21909,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-10T16:30:00Z",
+      "value": 21831,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-11T16:30:00Z",
+      "value": 21852,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-12T16:30:00Z",
+      "value": 21877,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-15T16:30:00Z",
+      "value": 22049,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-16T16:30:00Z",
+      "value": 22041,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-17T16:30:00Z",
+      "value": 22165,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-18T16:30:00Z",
+      "value": 22326,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-19T16:30:00Z",
+      "value": 22313,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-22T16:30:00Z",
+      "value": 22343,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-23T16:30:00Z",
+      "value": 22350,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-24T16:30:00Z",
+      "value": 22314,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-29T16:30:00Z",
+      "value": 22408,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-30T16:30:00Z",
+      "value": 22558,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2025-12-31T16:30:00Z",
+      "value": 22470,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-02T16:30:00Z",
+      "value": 22409,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-05T16:30:00Z",
+      "value": 22594,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-06T16:30:00Z",
+      "value": 22792,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-07T16:30:00Z",
+      "value": 22881,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-08T16:30:00Z",
+      "value": 22892,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-09T16:30:00Z",
+      "value": 23037,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-12T16:30:00Z",
+      "value": 23037,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-13T16:30:00Z",
+      "value": 22932,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-14T16:30:00Z",
+      "value": 22957,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-15T16:30:00Z",
+      "value": 23280,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-16T16:30:00Z",
+      "value": 23311,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-19T16:30:00Z",
+      "value": 23112,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-20T16:30:00Z",
+      "value": 22958,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-21T16:30:00Z",
+      "value": 23071,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-22T16:30:00Z",
+      "value": 23371,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-23T16:30:00Z",
+      "value": 23318,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-26T16:30:00Z",
+      "value": 23352,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-27T16:30:00Z",
+      "value": 23404,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-28T16:30:00Z",
+      "value": 23391,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-29T16:30:00Z",
+      "value": 23268,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-01-30T16:30:00Z",
+      "value": 23253,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-02T16:30:00Z",
+      "value": 23426,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-03T16:30:00Z",
+      "value": 23290,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-04T16:30:00Z",
+      "value": 23333,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-05T16:30:00Z",
+      "value": 23103,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-06T16:30:00Z",
+      "value": 23208,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-09T16:30:00Z",
+      "value": 23340,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-10T16:30:00Z",
+      "value": 23469,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-11T16:30:00Z",
+      "value": 23416,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-12T16:30:00Z",
+      "value": 23305,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-13T16:30:00Z",
+      "value": 23427,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-16T16:30:00Z",
+      "value": 23376,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-17T16:30:00Z",
+      "value": 23556,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-18T16:30:00Z",
+      "value": 23686,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-19T16:30:00Z",
+      "value": 23574,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-20T16:30:00Z",
+      "value": 23752,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-23T16:30:00Z",
+      "value": 23547,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-24T16:30:00Z",
+      "value": 23501,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-25T16:30:00Z",
+      "value": 23637,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-26T16:30:00Z",
+      "value": 23719,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-02-27T16:30:00Z",
+      "value": 23757,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-02T16:30:00Z",
+      "value": 23424,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-03T16:30:00Z",
+      "value": 22694,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-04T16:30:00Z",
+      "value": 22897,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-05T16:30:00Z",
+      "value": 22700,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-06T16:30:00Z",
+      "value": 22501,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-09T16:30:00Z",
+      "value": 22098,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-10T16:30:00Z",
+      "value": 22492,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-11T16:30:00Z",
+      "value": 22381,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-12T16:30:00Z",
+      "value": 22169,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-13T16:30:00Z",
+      "value": 22071,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-16T16:30:00Z",
+      "value": 22022,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-17T16:30:00Z",
+      "value": 22187,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-18T16:30:00Z",
+      "value": 22081,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-19T16:30:00Z",
+      "value": 21560,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-20T16:30:00Z",
+      "value": 21342,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-23T16:30:00Z",
+      "value": 21247,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-24T16:30:00Z",
+      "value": 21136,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-25T16:30:00Z",
+      "value": 21476,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-26T16:30:00Z",
+      "value": 21296,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-27T16:30:00Z",
+      "value": 20965,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-30T16:30:00Z",
+      "value": 20954,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-03-31T16:30:00Z",
+      "value": 21204,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-01T16:30:00Z",
+      "value": 21688,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-02T16:30:00Z",
+      "value": 21642,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-07T16:30:00Z",
+      "value": 21556,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-08T16:30:00Z",
+      "value": 22435,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-09T16:30:00Z",
+      "value": 22206,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-10T16:30:00Z",
+      "value": 22351,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-13T16:30:00Z",
+      "value": 22277,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-14T16:30:00Z",
+      "value": 22724,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-15T16:30:00Z",
+      "value": 22666,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-16T16:30:00Z",
+      "value": 22780,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-17T16:30:00Z",
+      "value": 23206,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-20T16:30:00Z",
+      "value": 22940,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-21T16:30:00Z",
+      "value": 22972,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-22T16:30:00Z",
+      "value": 22972,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-23T16:30:00Z",
+      "value": 22764,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-04-24T16:30:00Z",
+      "value": 22583,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    }
+  ]
+}

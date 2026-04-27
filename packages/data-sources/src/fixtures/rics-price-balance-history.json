@@ -1,0 +1,158 @@
+{
+  "_comment": "RICS UK Residential Market Survey — aggregate net house price balance, headline national figure (England & Wales). One observation per monthly release. Values are integers in the range -100 to +100.",
+  "methodology": {
+    "primary_source": "https://www.rics.org/news-insights/market-surveys/uk-residential-market-survey",
+    "indicator": "Aggregate net house-price balance (%), national headline, monthly. % of surveyors reporting a rise in house prices over the past 3 months minus % reporting a fall.",
+    "release_cadence": "monthly, second Thursday of the following month",
+    "extraction_notes": "Each value is the headline aggregate net house price balance quoted in the contemporaneous RICS UK Residential Market Survey PDF for that month. Verified directly from the official RICS PDFs (linked per row) for Jul-2024, Aug-2024, Oct-2024, Dec-2024, Feb-2025, Mar-2025, Apr-2025, May-2025, Jun-2025, Jul-2025, Aug-2025, Sep-2025, Oct-2025, Nov-2025, Dec-2025, and Mar-2026. Sep-2024 and Nov-2024 (whose contemporaneous PDFs were not directly retrievable) are taken from the immediately following month's PDF retrospective reference and cross-checked against the MQL5 calendar mirror of the official series (https://www.mql5.com/en/economic-calendar/united-kingdom/rics-house-price-balance) and Trading Economics (https://tradingeconomics.com/united-kingdom/rics-house-price-balance). Jan-2025 (+22) and Jan-2026 (-10) are the released initial readings (Jan-2026 confirmed by Mar-2026 PDF: 'previous two iterations… -14% and -10%'). Feb-2026 (-14) reflects the value cited in the Mar-2026 PDF (initial release was -12 per Trading Economics; revised to -14 in the Mar-2026 RICS PDF and used here as the authoritative figure). Note one cross-check discrepancy: third-party calendar mirrors (MQL5) list Apr-2025 as -39, which conflicts with the official Apr-2025 RICS PDF figure of -3 (the -39 in third-party feeds appears to confuse the 'house prices' headline with another series); the official PDF value (-3) is used."
+  },
+  "points": [
+    {
+      "observed_at": "2024-07-31T00:00:00Z",
+      "value": -19,
+      "release": "RICS UK Residential Market Survey — July 2024",
+      "published": "2024-08-08",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/July-2024-RICS-UK-Residential-Market-Survey.pdf"
+    },
+    {
+      "observed_at": "2024-08-31T00:00:00Z",
+      "value": 1,
+      "release": "RICS UK Residential Market Survey — August 2024",
+      "published": "2024-09-12",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/August-2024_UK-Residential-Market-Survey.pdf"
+    },
+    {
+      "observed_at": "2024-09-30T00:00:00Z",
+      "value": 11,
+      "release": "RICS UK Residential Market Survey — September 2024",
+      "published": "2024-10-10",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/October-2024_UK-Residential-Market-Survey.pdf"
+    },
+    {
+      "observed_at": "2024-10-31T00:00:00Z",
+      "value": 16,
+      "release": "RICS UK Residential Market Survey — October 2024",
+      "published": "2024-11-14",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/October-2024_UK-Residential-Market-Survey.pdf"
+    },
+    {
+      "observed_at": "2024-11-30T00:00:00Z",
+      "value": 25,
+      "release": "RICS UK Residential Market Survey — November 2024",
+      "published": "2024-12-12",
+      "url": "https://tradingeconomics.com/united-kingdom/rics-house-price-balance"
+    },
+    {
+      "observed_at": "2024-12-31T00:00:00Z",
+      "value": 28,
+      "release": "RICS UK Residential Market Survey — December 2024",
+      "published": "2025-01-09",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/December_2024_RICS_UK_Residential_Market_Survey.pdf"
+    },
+    {
+      "observed_at": "2025-01-31T00:00:00Z",
+      "value": 22,
+      "release": "RICS UK Residential Market Survey — January 2025",
+      "published": "2025-02-13",
+      "url": "https://tradingeconomics.com/united-kingdom/rics-house-price-balance"
+    },
+    {
+      "observed_at": "2025-02-28T00:00:00Z",
+      "value": 11,
+      "release": "RICS UK Residential Market Survey — February 2025",
+      "published": "2025-03-13",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/2_WEB_February_2025_RICS_UK_Residential_Market_Survey_tp.pdf"
+    },
+    {
+      "observed_at": "2025-03-31T00:00:00Z",
+      "value": 2,
+      "release": "RICS UK Residential Market Survey — March 2025",
+      "published": "2025-04-10",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/March_2025_RICS_UK_Residential_Market_Survey.pdf"
+    },
+    {
+      "observed_at": "2025-04-30T00:00:00Z",
+      "value": -3,
+      "release": "RICS UK Residential Market Survey — April 2025",
+      "published": "2025-05-08",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/web-april-2025-rics-uk-residential-market-survey-tp.pdf"
+    },
+    {
+      "observed_at": "2025-05-31T00:00:00Z",
+      "value": -8,
+      "release": "RICS UK Residential Market Survey — May 2025",
+      "published": "2025-06-12",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/5_WEB_May_2025_RICS_UK_Residential_Market_Survey_tp.pdf"
+    },
+    {
+      "observed_at": "2025-06-30T00:00:00Z",
+      "value": -7,
+      "release": "RICS UK Residential Market Survey — June 2025",
+      "published": "2025-07-10",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/WEB-June-2025-RICS-UK-Residential-Market-Survey-tp.pdf"
+    },
+    {
+      "observed_at": "2025-07-31T00:00:00Z",
+      "value": -13,
+      "release": "RICS UK Residential Market Survey — July 2025",
+      "published": "2025-08-14",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/WEB_July_2025_RICS_UK_Residential_Market_Survey_tp.pdf"
+    },
+    {
+      "observed_at": "2025-08-31T00:00:00Z",
+      "value": -19,
+      "release": "RICS UK Residential Market Survey — August 2025",
+      "published": "2025-09-11",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/8_WEB_August_2025_RICS_UK_Residential_Market_Survey_tp.pdf"
+    },
+    {
+      "observed_at": "2025-09-30T00:00:00Z",
+      "value": -15,
+      "release": "RICS UK Residential Market Survey — September 2025",
+      "published": "2025-10-09",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/Residential-Market-Survey-September-2025.pdf"
+    },
+    {
+      "observed_at": "2025-10-31T00:00:00Z",
+      "value": -19,
+      "release": "RICS UK Residential Market Survey — October 2025",
+      "published": "2025-11-13",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/RICS-UK-Residential-Market-Survey-October-2025.pdf"
+    },
+    {
+      "observed_at": "2025-11-30T00:00:00Z",
+      "value": -16,
+      "release": "RICS UK Residential Market Survey — November 2025",
+      "published": "2025-12-11",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/UK-Residential-Market-Survey-November-2025.pdf"
+    },
+    {
+      "observed_at": "2025-12-31T00:00:00Z",
+      "value": -14,
+      "release": "RICS UK Residential Market Survey — December 2025",
+      "published": "2026-01-08",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey-december-2025.pdf"
+    },
+    {
+      "observed_at": "2026-01-31T00:00:00Z",
+      "value": -10,
+      "release": "RICS UK Residential Market Survey — January 2026",
+      "published": "2026-02-12",
+      "url": "https://tradingeconomics.com/united-kingdom/rics-house-price-balance"
+    },
+    {
+      "observed_at": "2026-02-28T00:00:00Z",
+      "value": -14,
+      "release": "RICS UK Residential Market Survey — February 2026",
+      "published": "2026-03-12",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/UK-Residential-Market-Survey-March-2026.pdf"
+    },
+    {
+      "observed_at": "2026-03-31T00:00:00Z",
+      "value": -23,
+      "release": "RICS UK Residential Market Survey — March 2026",
+      "published": "2026-04-09",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/uk-residential-market-survey/UK-Residential-Market-Survey-March-2026.pdf"
+    }
+  ]
+}

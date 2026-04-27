@@ -30,17 +30,25 @@ type FixtureSpec = {
   skipReason?: string;
 };
 
+const HIST_SKIP = "historical backfill dataset (per-point observed_at); freshness governed by the live fixture";
 const MANIFEST: FixtureSpec[] = [
   { file: "brent.json", maxAgeDays: 60 },
+  { file: "brent-history.json", maxAgeDays: Infinity, skipReason: HIST_SKIP },
+  { file: "consumer-confidence-history.json", maxAgeDays: Infinity, skipReason: HIST_SKIP },
+  { file: "dd-failure-rate-history.json", maxAgeDays: Infinity, skipReason: HIST_SKIP },
   { file: "delivery-milestones.json", maxAgeDays: 120 },
   { file: "ftse-250.json", maxAgeDays: 14 },
+  { file: "ftse-250-history.json", maxAgeDays: Infinity, skipReason: HIST_SKIP },
   { file: "growth-sentiment.json", maxAgeDays: 60 },
   { file: "housebuilders.json", maxAgeDays: 14 },
   { file: "housing-history.json", maxAgeDays: Infinity, skipReason: "historical backfill dataset with no single observed_at" },
   { file: "housing.json", maxAgeDays: 180 },
   { file: "mortgage.json", maxAgeDays: 60 },
+  { file: "mortgage-history.json", maxAgeDays: Infinity, skipReason: HIST_SKIP },
   { file: "obr-efo.json", maxAgeDays: 210 },
   { file: "ons-rti.json", maxAgeDays: 60 },
+  { file: "rics-price-balance-history.json", maxAgeDays: Infinity, skipReason: HIST_SKIP },
+  { file: "services-pmi-history.json", maxAgeDays: Infinity, skipReason: HIST_SKIP },
 ];
 
 function loadFixture(file: string): Record<string, unknown> {
@@ -58,15 +66,22 @@ describe("fixture freshness (build-time guard)", () => {
     // test will fail until someone adds it to MANIFEST explicitly.
     const known = [
       "brent.json",
+      "brent-history.json",
+      "consumer-confidence-history.json",
+      "dd-failure-rate-history.json",
       "delivery-milestones.json",
       "ftse-250.json",
+      "ftse-250-history.json",
       "growth-sentiment.json",
       "housebuilders.json",
       "housing-history.json",
       "housing.json",
       "mortgage.json",
+      "mortgage-history.json",
       "obr-efo.json",
       "ons-rti.json",
+      "rics-price-balance-history.json",
+      "services-pmi-history.json",
     ];
     for (const file of known) {
       expect(declared, `MANIFEST missing entry for ${file}`).toContain(file);

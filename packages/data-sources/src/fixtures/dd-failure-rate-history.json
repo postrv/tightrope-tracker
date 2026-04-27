@@ -1,0 +1,158 @@
+{
+  "_comment": "UK direct debit failure rate — share of direct debits returned unpaid due to insufficient funds. Sourced from ONS 'Monthly Direct Debit failure rate and average transaction amount' dataset (Pay.UK / Vocalink data, ONS calculations). Series used: Table 1, 'DD Failure Rates Total NSA' (all categories, non-seasonally adjusted, total).",
+  "methodology": {
+    "primary_source": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount",
+    "indicator": "BACS-administered direct debit failure rate, monthly, % of total direct debit transactions, total all categories, non-seasonally adjusted (NSA)",
+    "release_cadence": "monthly dataset release accompanying the ONS 'Economic activity and social change in the UK, real-time indicators' bulletin (typically published mid-month, reporting data through ~6 weeks earlier)",
+    "extraction_notes": "All 21 monthly values extracted directly from sheet '1.DD Failure Rates Total NSA' of the ONS xlsx published 23 April 2026 (data coverage Jan 2021 – Mar 2026, file: directdebittransactionsandfailuresdataset230426.xlsx). Source values are decimal fractions (e.g. 0.0214 = 2.14%); rounded to one decimal in this fixture. The xlsx is republished each month with revisions, so the latest edition is the canonical source for the entire historical series — each point's URL therefore points to the dataset landing page rather than the specific edition in which the month first appeared. The 'release' / 'published' fields identify the bulletin release in which each month was first reported. ANCHOR DISCREPANCY: the live fixture packages/data-sources/src/fixtures/ons-rti.json reports 1.8% for April 2026 (observed 2026-04-10), but the ONS Total NSA series shows 2.41% for March 2026 (the most recent month available as of the 23 April 2026 release; April 2026 data is not yet published). The 1.8% figure does not correspond to any month in the Total NSA series for the period covered here — closest matches are sub-categories such as Mortgages (~0.85–1.2%) or Water (~1.0–1.2%), neither of which is the headline figure. Recommend reconciling the live fixture against this authoritative series before launch."
+  },
+  "points": [
+    {
+      "observed_at": "2024-07-31T00:00:00Z",
+      "value": 2.1,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2024 edition, v8) accompanying real-time indicators bulletin, 19 September 2024",
+      "published": "2024-09-19",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2024-08-31T00:00:00Z",
+      "value": 2.2,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2024 edition, v9) accompanying real-time indicators bulletin, 17 October 2024",
+      "published": "2024-10-17",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2024-09-30T00:00:00Z",
+      "value": 2.1,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2024 edition, v10) accompanying real-time indicators bulletin, 14 November 2024",
+      "published": "2024-11-14",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2024-10-31T00:00:00Z",
+      "value": 2.1,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2024 edition, v11) accompanying real-time indicators bulletin, 12 December 2024",
+      "published": "2024-12-12",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2024-11-30T00:00:00Z",
+      "value": 2.1,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v1) accompanying real-time indicators bulletin, 23 January 2025",
+      "published": "2025-01-23",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2024-12-31T00:00:00Z",
+      "value": 2.2,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v2) accompanying real-time indicators bulletin, 20 February 2025",
+      "published": "2025-02-20",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-01-31T00:00:00Z",
+      "value": 2.4,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v3) accompanying real-time indicators bulletin, 13 March 2025",
+      "published": "2025-03-13",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-02-28T00:00:00Z",
+      "value": 2.2,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v4) accompanying real-time indicators bulletin, 17 April 2025",
+      "published": "2025-04-17",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-03-31T00:00:00Z",
+      "value": 2.2,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v5) accompanying real-time indicators bulletin, 15 May 2025",
+      "published": "2025-05-15",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-04-30T00:00:00Z",
+      "value": 2.2,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v6) accompanying real-time indicators bulletin, 12 June 2025",
+      "published": "2025-06-12",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-05-31T00:00:00Z",
+      "value": 2.2,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v7) accompanying real-time indicators bulletin, 17 July 2025",
+      "published": "2025-07-17",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-06-30T00:00:00Z",
+      "value": 2.2,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v8) accompanying real-time indicators bulletin, 14 August 2025",
+      "published": "2025-08-14",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-07-31T00:00:00Z",
+      "value": 2.3,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v9) accompanying real-time indicators bulletin, 11 September 2025",
+      "published": "2025-09-11",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-08-31T00:00:00Z",
+      "value": 2.3,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v10) accompanying real-time indicators bulletin, 9 October 2025",
+      "published": "2025-10-09",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-09-30T00:00:00Z",
+      "value": 2.3,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v11) accompanying real-time indicators bulletin, 13 November 2025",
+      "published": "2025-11-13",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-10-31T00:00:00Z",
+      "value": 2.3,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2025 edition, v12) accompanying real-time indicators bulletin, 18 December 2025",
+      "published": "2025-12-18",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-11-30T00:00:00Z",
+      "value": 2.2,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition, v1) accompanying real-time indicators bulletin, 22 January 2026",
+      "published": "2026-01-22",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2025-12-31T00:00:00Z",
+      "value": 2.4,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition, v2) accompanying real-time indicators bulletin, 12 February 2026",
+      "published": "2026-02-12",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2026-01-31T00:00:00Z",
+      "value": 2.6,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition, v3) accompanying real-time indicators bulletin, 12 March 2026",
+      "published": "2026-03-12",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2026-02-28T00:00:00Z",
+      "value": 2.4,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition, v4) accompanying real-time indicators bulletin, 23 April 2026",
+      "published": "2026-04-23",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2026-03-31T00:00:00Z",
+      "value": 2.4,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition, v4) accompanying real-time indicators bulletin, 23 April 2026",
+      "published": "2026-04-23",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    }
+  ]
+}

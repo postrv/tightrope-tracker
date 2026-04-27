@@ -19,6 +19,7 @@
  *       on each RTI release.
  */
 import rtiFixture from "../fixtures/ons-rti.json" with { type: "json" };
+import ddHistory from "../fixtures/dd-failure-rate-history.json" with { type: "json" };
 import type {
   AdapterResult,
   DataSourceAdapter,
@@ -40,6 +41,15 @@ interface RtiFixture {
   observed_at: string;
   dd_failure_rate: { value: number };
   source_url: string;
+}
+
+interface DdHistoryPoint {
+  observed_at: string;
+  value: number;
+}
+
+interface DdHistoryFixture {
+  points: readonly DdHistoryPoint[];
 }
 
 export const onsRtiAdapter: DataSourceAdapter = {
@@ -80,19 +90,20 @@ export const onsRtiAdapter: DataSourceAdapter = {
     return { observations, sourceUrl: payrollUrl, fetchedAt: new Date().toISOString() };
   },
   async fetchHistorical(fetchImpl, opts): Promise<HistoricalFetchResult> {
-    // Only PAYE payroll has a public ONS historical series; dd_failure_rate
-    // remains fixture-driven in the live path.
+    // Two historical sources: payroll_mom comes from the live ONS
+    // timeseries; dd_failure_rate comes from the curated monthly history
+    // fixture (sourced from the ONS xlsx Total NSA series).
     const observations: RawObservation[] = [];
     const { fromMs, toMs } = rangeUtcBounds(opts);
     const payrollUrl = await resolveOnsDataUrl(fetchImpl, SOURCE_ID, PAYROLL.cdid, PAYROLL.dataset);
     const res = await fetchOrThrow(fetchImpl, SOURCE_ID, payrollUrl, { headers: { accept: "application/json" } });
     const body = await res.text();
     const series = parseOnsMonthlySeries(body, SOURCE_ID, payrollUrl);
-    let skippedOutOfRange = 0;
+    let payrollSkippedOutOfRange = 0;
     for (const point of series) {
       const ms = Date.parse(point.observedAt);
       if (!Number.isFinite(ms)) continue;
-      if (ms < fromMs || ms > toMs) { skippedOutOfRange++; continue; }
+      if (ms < fromMs || ms > toMs) { payrollSkippedOutOfRange++; continue; }
       observations.push({
         indicatorId: "payroll_mom",
         value: point.value,
@@ -102,8 +113,33 @@ export const onsRtiAdapter: DataSourceAdapter = {
         ...(point.releasedAt ? { releasedAt: point.releasedAt } : {}),
       });
     }
-    const notes: string[] = ["dd_failure_rate is fixture-only; not emitted in historical mode"];
-    if (skippedOutOfRange > 0) notes.push(`${skippedOutOfRange} months outside requested range`);
+
+    const ddData = ddHistory as unknown as DdHistoryFixture;
+    let ddSkippedOutOfRange = 0;
+    for (const point of ddData.points) {
+      const ms = Date.parse(point.observed_at);
+      if (!Number.isFinite(ms)) continue;
+      if (ms < fromMs || ms > toMs) { ddSkippedOutOfRange++; continue; }
+      if (typeof point.value !== "number" || !Number.isFinite(point.value)) continue;
+      observations.push({
+        indicatorId: "dd_failure_rate",
+        value: point.value,
+        observedAt: point.observed_at,
+        sourceId: SOURCE_ID,
+        payloadHash: await historicalPayloadHash("dd_failure_rate", point.observed_at, point.value),
+      });
+    }
+
+    observations.sort((a, b) =>
+      a.observedAt < b.observedAt ? -1
+      : a.observedAt > b.observedAt ? 1
+      : a.indicatorId < b.indicatorId ? -1
+      : a.indicatorId > b.indicatorId ? 1 : 0,
+    );
+
+    const notes: string[] = [];
+    if (payrollSkippedOutOfRange > 0) notes.push(`${payrollSkippedOutOfRange} payroll months outside requested range`);
+    if (ddSkippedOutOfRange > 0) notes.push(`${ddSkippedOutOfRange} dd_failure_rate months outside requested range`);
     return buildHistoricalResult(observations, payrollUrl, notes);
   },
 };

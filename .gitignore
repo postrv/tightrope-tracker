@@ -60,6 +60,8 @@ wrangler.toml.bak
 .archive/
 PHASE*_PLAN.md
 PHASE*_NOTES.md
+AUDIT_*.md
+*_FINDINGS.md
 
 # local sandbox / firewall config (per-machine; not for source control)
 .sanctum/

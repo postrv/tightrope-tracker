@@ -170,10 +170,10 @@ describe("loadHomepageData history wiring", () => {
 });
 
 describe("loadHistory with explicit range", () => {
-  it("clamps invalid days down to a 1..365 window when KV/D1 are missing", async () => {
+  it("clamps invalid days down to a 1..800 window when KV/D1 are missing", async () => {
     const result = await loadHistory({} as App.Locals, 999);
     expect(result.points).toEqual([]);
-    expect(result.rangeDays).toBe(365);
+    expect(result.rangeDays).toBe(800);
   });
 
   it("returns empty history with the requested rangeDays when D1 throws", async () => {

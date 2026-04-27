@@ -1,0 +1,163 @@
+---
+/**
+ * Long-composite (`/composite`) view.
+ *
+ * Server-renders a tall annotated headline chart with a range toggle
+ * (?range=30|90|365|all) and a pillar-drivers panel. Honours the
+ * `?embed=1` flag to drop site chrome — same pattern as
+ * apps/web/src/pages/embed/* — so the page can be iframed.
+ *
+ * Defensive: missing or invalid range parameters fall back to 90 days.
+ */
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import TopNav from "~/components/TopNav.astro";
+import SiteFooter from "~/components/SiteFooter.astro";
+import AnnotatedHeadlineChart from "~/components/charts/AnnotatedHeadlineChart.astro";
+import RangeToggle from "~/components/RangeToggle.astro";
+import PillarDriversPanel from "~/components/PillarDriversPanel.astro";
+import {
+  loadHistory,
+  loadSnapshot,
+  loadHomepageData,
+} from "~/lib/page-data.js";
+import type { RangeOption } from "~/components/RangeToggle.astro";
+
+// --- range parsing --------------------------------------------------------
+// "all" maps to the maximum window the API serves (365). The historical
+// archive past 365 days lives in R2 and isn't part of this view.
+const url = new URL(Astro.request.url);
+const rawRange = url.searchParams.get("range") ?? "90";
+const embed = url.searchParams.get("embed") === "1";
+
+function parseRange(raw: string): { option: RangeOption; days: number } {
+  if (raw === "all") return { option: "all", days: 365 };
+  const n = Number.parseInt(raw, 10);
+  if (n === 30) return { option: 30, days: 30 };
+  if (n === 90) return { option: 90, days: 90 };
+  if (n === 365) return { option: 365, days: 365 };
+  // Unknown range value falls back to the homepage default.
+  return { option: 90, days: 90 };
+}
+const { option: rangeOption, days } = parseRange(rawRange);
+
+// Fetch in parallel: history for the chart, snapshot for the drivers
+// panel, and the timeline window the chart annotates. The homepage data
+// helper is convenient for the timeline + snapshot — drivers don't need
+// movements / delivery rows so we pull those out with a discard.
+const [history, snapshot, page] = await Promise.all([
+  loadHistory(Astro.locals, days),
+  loadSnapshot(Astro.locals),
+  loadHomepageData(Astro.locals),
+]);
+const { timeline } = page;
+
+const isStale = Boolean(snapshot.headline.stale);
+const isEmpty = history.points.length === 0;
+const labelByOption: Record<RangeOption, string> = {
+  30: "Last 30 days",
+  90: "Last 90 days",
+  365: "Last year",
+  all: "All available history",
+};
+const rangeLabel = labelByOption[rangeOption];
+const canonicalPath = `/composite?range=${rangeOption}`;
+---
+<BaseLayout
+  title={`Tightrope Tracker — long view (${rangeLabel.toLowerCase()})`}
+  description="Long-composite view: how the UK's Tightrope Score has moved, with the events and pillar drivers behind it."
+  canonicalPath={canonicalPath}
+  embed={embed}
+>
+  {embed ? null : (
+    <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} stale={isStale} />
+  )}
+
+  <main id="main" class={embed ? "embed-main" : "container composite-main"}>
+    <header class="composite-head">
+      <div>
+        <span class="eyebrow">Long view</span>
+        <h1 class="composite-title">{rangeLabel.toLowerCase()}</h1>
+        <p class="composite-sub">
+          Headline Tightrope Score over the selected range, annotated with the events that moved it. Below, the four pillars name their dominant indicators today.
+        </p>
+      </div>
+      <RangeToggle current={rangeOption} />
+    </header>
+
+    {isEmpty ? (
+      <p class="empty">History for this window hasn't populated yet — recompute writes a new history snapshot every five minutes. Refresh shortly, or pick a shorter range.</p>
+    ) : (
+      <div class="chart-wrap">
+        <AnnotatedHeadlineChart history={history} events={timeline} height={420} showPillars={false} />
+      </div>
+    )}
+
+    <PillarDriversPanel snapshot={snapshot} />
+
+    <p class="meta">
+      Methodology and source provenance: <a href="/methodology">read more</a>. Want this view embeddable? Append <code>?embed=1</code> to the URL.
+    </p>
+  </main>
+
+  {embed ? null : (
+    <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={isStale} />
+  )}
+</BaseLayout>
+
+<style is:global>
+.embed-main {
+  padding: 14px 18px;
+  background: var(--bg-0);
+}
+</style>
+
+<style>
+.composite-main { padding-top: 32px; padding-bottom: 64px; }
+.composite-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.composite-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: clamp(36px, 5vw, 56px);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 14px 0 12px;
+  text-transform: lowercase;
+}
+.composite-sub { color: var(--ink-1); font-size: 15px; max-width: 640px; margin: 0; line-height: 1.55; }
+.chart-wrap {
+  background: var(--bg-1);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 24px 24px 8px;
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+.empty {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-2);
+  padding: 60px 0;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 32px;
+}
+.meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); margin: 24px 0 0; letter-spacing: 0.04em; }
+.meta code {
+  font-family: var(--font-mono); font-size: 11px;
+  background: var(--bg-2); padding: 2px 6px; border-radius: 4px;
+}
+.meta a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; }
+.meta a:hover { color: var(--accent-dim); }
+
+@media (max-width: 800px) {
+  .composite-head { grid-template-columns: 1fr; }
+  .chart-wrap { padding: 14px 8px 4px; }
+}
+</style>

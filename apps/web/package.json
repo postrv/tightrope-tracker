@@ -11,7 +11,8 @@
     "deploy": "pnpm build && wrangler pages deploy ./dist --project-name=tightrope-tracker --branch=main",
     "astro": "astro",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
@@ -26,6 +27,7 @@
     "@scalar/api-reference": "1.52.3",
     "@types/node": "^22.10.0",
     "happy-dom": "^15.11.7",
-    "vitest": "^2.1.9"
+    "linkedom": "^0.18.5",
+    "vitest": "^3.0.0"
   }
 }

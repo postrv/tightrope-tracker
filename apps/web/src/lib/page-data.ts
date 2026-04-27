@@ -184,7 +184,9 @@ export async function loadHistory(astroLocals: App.Locals, days: number): Promis
 
 function clampDays(days: number): number {
   if (!Number.isFinite(days)) return 90;
-  return Math.max(1, Math.min(365, Math.floor(days)));
+  // Cap matches apps/api/src/handlers/score.ts and the ingest backfill cap so
+  // the long-composite page can serve the full GE-2024-to-today range.
+  return Math.max(1, Math.min(800, Math.floor(days)));
 }
 
 function emptySnapshot(): ScoreSnapshot {

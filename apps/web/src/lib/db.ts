@@ -527,7 +527,7 @@ const KV_HISTORY_MAX_AGE_MS = 30 * 60_000;
  * 90, but the long-composite page wants 30 / 365 / all.
  */
 export async function getHistory(env: Env, days: number): Promise<ScoreHistory> {
-  const clampedDays = Math.max(1, Math.min(365, Math.floor(days)));
+  const clampedDays = Math.max(1, Math.min(800, Math.floor(days)));
   if (clampedDays === 90) {
     const cached = await safeKvHistory(env);
     if (cached) return cached;
@@ -653,18 +653,34 @@ export async function buildBaselineSummariesFromD1(env: Env): Promise<Methodolog
  * verified by tests on both sides.
  */
 export async function buildHistoryFromD1(env: Env, days: number): Promise<ScoreHistory> {
-  const clampedDays = Math.max(1, Math.min(365, Math.floor(days)));
+  // Cap matches apps/api/src/handlers/score.ts and the ingest backfill cap so
+  // the long-composite page can serve the full GE-2024-to-today range.
+  const clampedDays = Math.max(1, Math.min(800, Math.floor(days)));
 
+  // Downsample to one row per UTC day (latest per day wins). The recompute
+  // pipeline writes hundreds of rows per day to headline_scores; without
+  // this aggregation the chart shows today repeated and older days hidden.
+  // Mirrors the equivalent SQL-side downsample in apps/api/src/lib/db.ts.
   const [headlineRows, pillarRows] = await Promise.all([
     env.DB.prepare(
-      `SELECT observed_at, value FROM headline_scores
-       WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
-       ORDER BY observed_at ASC`,
+      `SELECT h.observed_at, h.value FROM headline_scores h
+       JOIN (
+         SELECT substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
+         FROM headline_scores
+         WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
+         GROUP BY substr(observed_at, 1, 10)
+       ) m ON h.observed_at = m.ts
+       ORDER BY h.observed_at ASC`,
     ).bind(clampedDays).all<{ observed_at: string; value: number }>(),
     env.DB.prepare(
-      `SELECT pillar_id AS id, observed_at, value FROM pillar_scores
-       WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
-       ORDER BY observed_at ASC`,
+      `SELECT p.pillar_id AS id, p.observed_at, p.value FROM pillar_scores p
+       JOIN (
+         SELECT pillar_id, substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
+         FROM pillar_scores
+         WHERE observed_at >= datetime('now', '-' || ?1 || ' days')
+         GROUP BY pillar_id, substr(observed_at, 1, 10)
+       ) m ON p.pillar_id = m.pillar_id AND p.observed_at = m.ts
+       ORDER BY p.observed_at ASC`,
     ).bind(clampedDays).all<PillarSeriesRow>(),
   ]);
 

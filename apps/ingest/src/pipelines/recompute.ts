@@ -344,11 +344,19 @@ function buildHistory(
   headline: { observed_at: string; value: number }[],
   pillarHist: Record<PillarId, { observed_at: string; value: number }[]>,
 ): ScoreHistory {
+  // Downsample headline to one row per UTC day (latest per day wins). Without
+  // this, the recompute writes ~300 rows per day to headline_scores and the
+  // chart's slice(-90) below collapses to ~7.5 hours of today's intraday
+  // recomputes, hiding 89 days of real history. Mirrors the SQL-side
+  // GROUP BY substr(observed_at, 1, 10) used in apps/api/src/lib/db.ts and
+  // apps/web/src/lib/db.ts when reading history live from D1.
+  const headlineDaily = downsampleLatestPerDayKeepTs(headline);
+
   // Align pillar values to each headline timestamp using last-known values.
   const points: ScoreHistoryPoint[] = [];
   const cursors: Record<PillarId, number> = { market: 0, fiscal: 0, labour: 0, delivery: 0 };
   const last: Record<PillarId, number> = { market: 0, fiscal: 0, labour: 0, delivery: 0 };
-  for (const h of headline) {
+  for (const h of headlineDaily) {
     const ts = h.observed_at;
     for (const p of PILLAR_ORDER) {
       const arr = pillarHist[p];
@@ -364,4 +372,21 @@ function buildHistory(
     });
   }
   return { points: points.slice(-90), rangeDays: 90, schemaVersion: 1 };
+}
+
+/**
+ * Like `downsampleLatestPerDay` (which returns just the values for sparklines),
+ * but keeps each day's latest row intact so the caller can use `observed_at`
+ * to align other series (pillar history) to the same per-day cadence.
+ */
+function downsampleLatestPerDayKeepTs(
+  series: readonly { observed_at: string; value: number }[],
+): { observed_at: string; value: number }[] {
+  const latestByDay = new Map<string, { observed_at: string; value: number }>();
+  for (const row of series) {
+    const day = row.observed_at.slice(0, 10);
+    const prev = latestByDay.get(day);
+    if (!prev || row.observed_at > prev.observed_at) latestByDay.set(day, row);
+  }
+  return [...latestByDay.keys()].sort().map((d) => latestByDay.get(d)!);
 }

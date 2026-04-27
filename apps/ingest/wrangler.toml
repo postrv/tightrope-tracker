@@ -3,6 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
+# SEC-3: top-level bindings point at PRODUCTION D1 / KV / R2 / DLQ queue.
+# Local dev uses miniflare and never touches them. `--remote` and
+# `wrangler deploy` do — use `--env preview` (block at the bottom) for
+# any remote-bound work so writes go to the preview-isolated resources.
+
 # Scheduled data ingestion + score recompute. Exposed at
 # ingest.tightropetracker.uk solely for the /admin/run and /__healthz
 # endpoints. /admin/run is guarded by a shared ADMIN_TOKEN and requires
@@ -63,3 +68,44 @@ mode = "smart"
 
 [limits]
 cpu_ms = 30000
+
+# --- Preview environment (SEC-3) -----------------------------------------
+# Run with `--env preview` for any remote-bound dev/deploy. Provision via:
+#   wrangler d1 create        tightrope_db_preview
+#   wrangler kv:namespace create KV --env preview
+#   wrangler r2 bucket create  tightrope-archive-preview
+#   wrangler queues create     tightrope-ingest-dlq-preview
+# then paste IDs below. Unfilled placeholders cause wrangler to error
+# (intended fail-safe).
+
+[env.preview]
+name = "tightrope-ingest-preview"
+# No cron triggers in preview — accidental scheduled writes against the
+# production fiscal sources would still be wrong even with isolated D1.
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "tightrope_db_preview"
+database_id = "REPLACE_WITH_PREVIEW_D1_ID"
+migrations_dir = "../../db/migrations"
+
+[[env.preview.kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_PREVIEW_KV_ID"
+
+[[env.preview.r2_buckets]]
+binding = "ARCHIVE"
+bucket_name = "tightrope-archive-preview"
+
+[[env.preview.queues.producers]]
+binding = "DLQ"
+queue = "tightrope-ingest-dlq-preview"
+
+[[env.preview.queues.consumers]]
+queue = "tightrope-ingest-dlq-preview"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3

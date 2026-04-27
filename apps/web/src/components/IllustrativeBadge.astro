@@ -10,6 +10,8 @@
  * but with a chart-level label and a tooltip that names the specific
  * source rows the numbers come from.
  */
+import { safeHref } from "~/lib/safeHref.js";
+
 interface Props {
   /** Short hover-text naming the primary source of the chart's figures. */
   sourceSummary: string;
@@ -20,6 +22,10 @@ interface Props {
 }
 
 const { sourceSummary, sourceUrl, label = "Editorial" } = Astro.props;
+// SEC-6: most callers pass static literals (FiscalSection / LabourSection)
+// but applying the allowlist makes the contract uniform and removes any
+// future risk of a derived value reaching this prop.
+const safeSrc = safeHref(sourceUrl);
 ---
 <span
   class="illustrative-badge"
@@ -27,8 +33,8 @@ const { sourceSummary, sourceUrl, label = "Editorial" } = Astro.props;
   aria-label={`Illustrative chart: ${sourceSummary}`}
 >
   {label}
-  {sourceUrl ? (
-    <a href={sourceUrl} rel="noopener" target="_blank" class="illustrative-link" aria-label="Open primary source">↗</a>
+  {safeSrc ? (
+    <a href={safeSrc} rel="noopener" target="_blank" class="illustrative-link" aria-label="Open primary source">↗</a>
   ) : null}
 </span>
 

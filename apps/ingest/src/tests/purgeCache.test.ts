@@ -19,16 +19,39 @@ import { handleAdminRun } from "../admin.js";
 import type { Env } from "../env.js";
 
 interface KvStub {
+  get: (key: string) => Promise<string | null>;
+  put: (key: string, value: string, opts?: { expirationTtl?: number }) => Promise<void>;
   delete: (key: string) => Promise<void>;
+}
+
+function makeKvStubWithBackoff(deletes: string[]): KvStub {
+  // SEC-13: adminAuthGate calls env.KV.get / put / delete on the
+  // `admin-backoff:<ip>` key. The stub supports all three so the
+  // pre-existing purge-cache assertions don't have to track those keys.
+  const backoffStore = new Map<string, string>();
+  return {
+    async get(key) {
+      if (key.startsWith("admin-backoff:")) return backoffStore.get(key) ?? null;
+      return null;
+    },
+    async put(key, value) {
+      if (key.startsWith("admin-backoff:")) backoffStore.set(key, value);
+    },
+    async delete(key) {
+      if (key.startsWith("admin-backoff:")) {
+        backoffStore.delete(key);
+        return;
+      }
+      deletes.push(key);
+    },
+  };
 }
 
 function makeEnv(opts: { token?: string } = {}): { env: Env; kvDeletes: string[] } {
   const kvDeletes: string[] = [];
   const env = {
     ADMIN_TOKEN: opts.token ?? "secret-token",
-    KV: {
-      delete: async (key: string) => { kvDeletes.push(key); },
-    } as KvStub,
+    KV: makeKvStubWithBackoff(kvDeletes),
   } as unknown as Env;
   return { env, kvDeletes };
 }
@@ -93,10 +116,17 @@ describe("handleAdminRun — source=purge-cache", () => {
 
   it("swallows individual KV.delete failures so a single missing key doesn't fail the whole purge", async () => {
     const kvDeletes: string[] = [];
+    const backoffStore = new Map<string, string>();
     const env = {
       ADMIN_TOKEN: "secret-token",
       KV: {
+        get: async (key: string) =>
+          key.startsWith("admin-backoff:") ? (backoffStore.get(key) ?? null) : null,
+        put: async (key: string, value: string) => {
+          if (key.startsWith("admin-backoff:")) backoffStore.set(key, value);
+        },
         delete: async (key: string) => {
+          if (key.startsWith("admin-backoff:")) { backoffStore.delete(key); return; }
           if (key === "delivery:latest") throw new Error("simulated kv outage on this key");
           kvDeletes.push(key);
         },

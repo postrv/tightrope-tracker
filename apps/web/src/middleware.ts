@@ -1,4 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
+import { buildCsp, generateNonce } from "./lib/csp.js";
 
 /**
  * Security headers are set here rather than in `public/_headers` because
@@ -7,34 +8,21 @@ import { defineMiddleware } from "astro:middleware";
  * page on this site is SSR'd, so without this middleware the security
  * posture would silently revert to Cloudflare's defaults.
  *
- * Two variants:
+ * Two CSP variants:
  *   /embed/*  — permissive frame-ancestors so third parties can iframe us.
  *               CORP cross-origin, form-action 'none' (read-only),
  *               no X-Frame-Options.
  *   everything else — strict frame-ancestors 'self', X-Frame-Options SAMEORIGIN,
  *               COOP/CORP same-origin, form-action 'self'.
  *
+ * SEC-10: per-request nonce makes inline scripts opt-in via
+ * `<script nonce={Astro.locals.cspNonce}>`. `'unsafe-inline'` is no longer
+ * in `script-src`, so any successful HTML injection that didn't capture
+ * the per-request nonce cannot execute.
+ *
  * The shared block (HSTS, Permissions-Policy, X-Content-Type-Options,
- * Referrer-Policy) is applied to both.
+ * Referrer-Policy) is applied to both CSP variants.
  */
-
-const CSP_COMMON = [
-  "default-src 'self'",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' https://fonts.gstatic.com data:",
-  "img-src 'self' data: https:",
-  "script-src 'self' 'unsafe-inline' https://plausible.io",
-  "connect-src 'self' https://plausible.io https://tightropetracker.uk https://api.tightropetracker.uk",
-  "object-src 'none'",
-  "frame-src 'none'",
-  "worker-src 'self'",
-  "manifest-src 'self'",
-  "base-uri 'self'",
-  "upgrade-insecure-requests",
-];
-
-const CSP_MAIN = [...CSP_COMMON, "frame-ancestors 'self'", "form-action 'self'"].join("; ");
-const CSP_EMBED = [...CSP_COMMON, "frame-ancestors *", "form-action 'none'"].join("; ");
 
 const SHARED_HEADERS: Record<string, string> = {
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
@@ -45,11 +33,17 @@ const SHARED_HEADERS: Record<string, string> = {
 };
 
 export const onRequest = defineMiddleware(async (ctx, next) => {
+  // Generate the per-request CSP nonce *before* rendering so .astro
+  // templates can read it from `Astro.locals.cspNonce` and tag every
+  // inline <script>. Each request gets a fresh value.
+  const nonce = generateNonce();
+  ctx.locals.cspNonce = nonce;
+
   const res = await next();
   const isEmbed = ctx.url.pathname.startsWith("/embed/");
 
   for (const [k, v] of Object.entries(SHARED_HEADERS)) res.headers.set(k, v);
-  res.headers.set("Content-Security-Policy", isEmbed ? CSP_EMBED : CSP_MAIN);
+  res.headers.set("Content-Security-Policy", buildCsp({ nonce, isEmbed }));
 
   if (isEmbed) {
     res.headers.set("Cross-Origin-Resource-Policy", "cross-origin");

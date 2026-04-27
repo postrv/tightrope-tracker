@@ -3,6 +3,7 @@ import type { DeliveryCommitment } from "@tightrope/shared/delivery";
 import type { PillarScore } from "@tightrope/shared";
 import { DELIVERY_STATUS_LABEL } from "@tightrope/shared/delivery";
 import { signedDelta, trendDescriptor } from "~/lib/format.js";
+import { safeHref } from "~/lib/safeHref.js";
 
 interface Props {
   commitments: DeliveryCommitment[];
@@ -71,7 +72,15 @@ function statusClass(status: string): string {
             </div>
             <div class="delivery-meta" role="cell">{c.target}</div>
             <span class={`status-dot ${statusClass(c.status)}`} role="cell">{DELIVERY_STATUS_LABEL[c.status]}</span>
-            <a href={c.sourceUrl} class="delivery-src" role="cell" rel="noopener" target="_blank">{c.sourceLabel} ↗</a>
+            {(() => {
+              // SEC-6: c.sourceUrl is operator-curated in D1. Allowlist
+              // http(s) only; degrade to a plain text label if the value
+              // ever arrives non-conformant.
+              const href = safeHref(c.sourceUrl);
+              return href
+                ? <a href={href} class="delivery-src" role="cell" rel="noopener" target="_blank">{c.sourceLabel} ↗</a>
+                : <span class="delivery-src" role="cell">{c.sourceLabel}</span>;
+            })()}
           </div>
         ))}
       </div>

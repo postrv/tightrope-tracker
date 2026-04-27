@@ -3,6 +3,17 @@ main = "src/index.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
+# SEC-3: top-level bindings below point at PRODUCTION D1 / KV / R2. Local
+# development uses miniflare (`wrangler dev` without --remote) and never
+# touches them. `wrangler dev --remote` and `wrangler deploy` DO use these
+# prod bindings. To run remote-bound work safely, use the `[env.preview]`
+# environment defined further down (run with `--env preview`); it points
+# at separate preview resources that you must provision once via:
+#   wrangler d1 create        tightrope_db_preview
+#   wrangler kv:namespace create KV --env preview
+#   wrangler r2 bucket create  tightrope-archive-preview
+# then paste the resulting IDs into the [env.preview.*] sections.
+
 # Public JSON API + MP postcode lookup.
 # Mounted at api.tightropetracker.uk in production via a Workers Custom Domain
 # (auto-provisions the DNS record in the Cloudflare zone).
@@ -38,5 +49,30 @@ mode = "smart"
 [limits]
 cpu_ms = 200
 
-[[env.preview]]
-# placeholder for preview env overrides
+# --- Preview environment (SEC-3) -----------------------------------------
+# Activated by `wrangler dev --remote --env preview` or `wrangler deploy
+# --env preview`. Bindings here MUST point at separate resources from the
+# production block above; otherwise the whole point (isolation) is lost.
+# Until preview resources are provisioned the placeholder IDs below will
+# cause wrangler to error out — that is the intended fail-safe.
+
+[env.preview]
+name = "tightrope-api-preview"
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+PARLIAMENT_API_BASE = "https://members-api.parliament.uk/api"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "tightrope_db_preview"
+database_id = "REPLACE_WITH_PREVIEW_D1_ID"
+migrations_dir = "../../db/migrations"
+
+[[env.preview.kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_PREVIEW_KV_ID"
+
+[[env.preview.r2_buckets]]
+binding = "ARCHIVE"
+bucket_name = "tightrope-archive-preview"

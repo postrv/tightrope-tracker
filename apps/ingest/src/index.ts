@@ -10,6 +10,7 @@ import { ingestLabour } from "./pipelines/labour.js";
 import { ingestMarket } from "./pipelines/market.js";
 import { recomputeScores } from "./pipelines/recompute.js";
 import { updateTodayMovements } from "./pipelines/todayMovements.js";
+import { sanitizeForLog } from "./lib/sanitize.js";
 
 export default {
   /**
@@ -56,15 +57,20 @@ export default {
 export async function handleDlqBatch(batch: MessageBatch<DlqPayload>, env: Env): Promise<void> {
   for (const msg of batch.messages) {
     const body = msg.body ?? {};
+    // SEC-14: every value reaching console.error here originates from an
+    // adapter response or upstream exception. An attacker controlling an
+    // adapter could inject CR/LF / ANSI escapes to forge fake log lines.
+    // sanitizeForLog strips C0/C1 control bytes and replaces them with
+    // U+FFFD so the log shape is preserved without structural injection.
     // Never log headers, tokens, or full payloads -- only the coarse fields
     // the producer explicitly marked safe.
     console.error(
-      `ingest DLQ: id=${msg.id} attempts=${msg.attempts} source=${body.sourceId ?? "unknown"} reason=${body.reason ?? "unknown"} message=${body.message ?? ""}`,
+      `ingest DLQ: id=${sanitizeForLog(msg.id)} attempts=${msg.attempts} source=${sanitizeForLog(body.sourceId ?? "unknown")} reason=${sanitizeForLog(body.reason ?? "unknown")} message=${sanitizeForLog(body.message ?? "")}`,
     );
     try {
       await recordDlqAudit(env, msg.id, body);
     } catch (err) {
-      console.error(`ingest DLQ: audit write failed for id=${msg.id}: ${(err as Error)?.message ?? String(err)}`);
+      console.error(`ingest DLQ: audit write failed for id=${sanitizeForLog(msg.id)}: ${sanitizeForLog((err as Error)?.message ?? String(err))}`);
     }
   }
   batch.ackAll();
@@ -133,11 +139,14 @@ export async function dispatchCron(cron: string, env: Env): Promise<void> {
     default:
       // Unknown cron -- log loudly and record an audit row so the miss is
       // visible in the same surface as real ingestion failures.
-      console.error(`ingest: unknown cron pattern '${cron}'`);
+      // SEC-14: cron value comes from the platform but sanitise defensively
+      // so any future routing layer that injects user-controllable text
+      // can't smuggle log structure.
+      console.error(`ingest: unknown cron pattern '${sanitizeForLog(cron)}'`);
       try {
         await recordCronMiss(env, cron);
       } catch (err) {
-        console.error(`ingest: cron_miss audit write failed: ${(err as Error)?.message ?? String(err)}`);
+        console.error(`ingest: cron_miss audit write failed: ${sanitizeForLog((err as Error)?.message ?? String(err))}`);
       }
   }
 }
@@ -154,7 +163,9 @@ async function runStage<T>(name: string, fn: () => Promise<T>): Promise<T | null
   try {
     return await fn();
   } catch (err) {
-    console.warn(`cron stage '${name}' threw: ${(err as Error)?.message ?? String(err)}`);
+    // SEC-14: err.message can contain whatever an upstream adapter
+    // returned. Sanitise before logging.
+    console.warn(`cron stage '${name}' threw: ${sanitizeForLog((err as Error)?.message ?? String(err))}`);
     return null;
   }
 }

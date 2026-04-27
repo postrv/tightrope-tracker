@@ -1,0 +1,27 @@
+# SEC-11: keep SHA-pinned GitHub Actions current.
+#
+# Workflow files in .github/workflows/ pin every third-party action to a
+# full commit SHA (with the human-readable tag in a trailing comment), so
+# a compromised action repo cannot silently re-point its `@v4` tag and
+# inject malicious steps into our pipeline. Dependabot opens a PR whenever
+# one of those pinned SHAs has a newer release, including security
+# patches — the SHA pin and the auto-update PR are the two halves of the
+# defence.
+#
+# Reviewers: the PR diff will show "v4.2.2 → v4.2.3" in the trailing
+# comment alongside the SHA change. Inspect the upstream release notes
+# before merging; this file is the only thing keeping our supply chain
+# on the latest published versions.
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(actions)"
+    labels:
+      - "dependencies"
+      - "github-actions"

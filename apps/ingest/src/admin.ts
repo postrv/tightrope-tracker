@@ -1,5 +1,6 @@
 import { getAdapter, listAdapters } from "@tightrope/data-sources";
 import type { Env } from "./env.js";
+import { adminAuthGate } from "./lib/adminBackoff.js";
 import { backfillHistoricalScores } from "./pipelines/backfill.js";
 import { backfillObservations, type BackfillObservationsResult } from "./pipelines/backfillObservations.js";
 import { ingestDelivery } from "./pipelines/delivery.js";
@@ -56,10 +57,14 @@ export async function handleAdminRun(req: Request, env: Env, url: URL): Promise<
   if (!expected) {
     return json({ error: "ADMIN_TOKEN not configured" }, 503);
   }
-  const provided = req.headers.get("x-admin-token");
-  if (!provided || !timingSafeEqual(provided, expected)) {
-    return json({ error: "unauthorised" }, 401);
-  }
+  // SEC-13: per-IP exponential backoff on failed auth, layered on top of the
+  // constant-time token check. Online brute-force was already infeasible
+  // against a 32-byte secret; the backoff adds observability and protects
+  // against accidental tight-loop probing by a misconfigured client.
+  const auth = await adminAuthGate(env, req, {
+    verifyToken: (provided) => provided !== null && timingSafeEqual(provided, expected),
+  });
+  if (!auth.ok) return auth.response;
   const source = url.searchParams.get("source");
   if (!source) return json({ error: "missing ?source=" }, 400);
 

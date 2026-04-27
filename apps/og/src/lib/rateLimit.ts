@@ -1,12 +1,15 @@
 /**
- * Simple KV-backed sliding-window rate limiter.
+ * KV-backed sliding-window rate limiter for the OG worker.
  *
- * 120 req / 60s / IP. Good enough for a civic data API — Cloudflare's WAF is
- * the real defence; this just stops accidental loops and trivial scraping.
+ * 60 req / 60s / IP — tighter than the public API (120/min) because share-card
+ * endpoints are not human-driven. A real social-network crawler hits each
+ * card once; anything above this rate is either a misbehaving client or
+ * adversarial traffic.
  *
- * Keyed on `rate:<ip>:<minuteBucket>` so two overlapping windows are tracked
- * implicitly: the previous minute and the current minute. We return
- * `{ allowed, remaining, resetAt }` for the caller to emit rate headers.
+ * This is defence-in-depth on top of the Cloudflare Cache API normalisation
+ * (see `cacheKey.ts`): cache hits never reach this code, so a healthy
+ * cache-hit rate keeps KV writes negligible and the limit only bites on the
+ * cache-miss path that actually consumes WASM render time.
  */
 
 export interface RateLimitResult {
@@ -21,7 +24,7 @@ export interface RateLimitOptions {
   windowSeconds: number;
 }
 
-const DEFAULTS: RateLimitOptions = { limit: 120, windowSeconds: 60 };
+const DEFAULTS: RateLimitOptions = { limit: 60, windowSeconds: 60 };
 
 export async function enforceRateLimit(
   env: Env,
@@ -31,13 +34,11 @@ export async function enforceRateLimit(
 ): Promise<RateLimitResult> {
   const { limit, windowSeconds } = opts;
   const bucket = Math.floor(now / (windowSeconds * 1000));
-  const key = `rate:${ip}:${bucket}`;
+  const key = `og-rate:${ip}:${bucket}`;
   const resetAt = (bucket + 1) * windowSeconds * 1000;
 
   const current = parseInt((await env.KV.get(key)) ?? "0", 10);
   const next = current + 1;
-  // KV TTL must be >=60; windowSeconds * 2 gives us headroom for the sliding
-  // second-bucket read if we extend later.
   const ttl = Math.max(60, windowSeconds * 2);
   await env.KV.put(key, String(next), { expirationTtl: ttl });
 
@@ -46,10 +47,7 @@ export async function enforceRateLimit(
   return { allowed, remaining, resetAt, limit };
 }
 
-/**
- * Pure logic extracted for unit tests. Given prior count + options, decide
- * whether a new request is allowed and how many remain.
- */
+/** Pure decision function exposed for unit tests. */
 export function decide(
   priorCount: number,
   opts: RateLimitOptions = DEFAULTS,
@@ -65,17 +63,15 @@ export function decide(
  * Returns the verified client IP from Cloudflare, or null if the header is
  * absent or empty.
  *
- * SEC-9: returning a literal "unknown" sentinel previously put every
- * header-less caller into the same KV bucket, which would rate-limit
- * legitimate traffic *collectively* whenever cf-connecting-ip went missing
- * (debug bypass, internal fetch, future routing change). Returning null
- * means "we can't identify the caller" — callers fail-open with a logged
- * warning so the unexpected condition is observable rather than DoS-ing
- * legitimate users.
+ * Returning null is deliberate (SEC-9): the previous "unknown" sentinel put
+ * every header-less caller into the same KV bucket, which would rate-limit
+ * legitimate traffic *collectively* if cf-connecting-ip were ever missing
+ * (e.g. a bypass route, an internal worker-to-worker fetch). Callers should
+ * treat null as "cannot rate-limit this request" and let it through, while
+ * emitting a metric so unexpected header loss is visible.
  *
  * Only `cf-connecting-ip` is trusted: x-forwarded-for / x-real-ip are
  * client-controlled and would let an attacker rotate IPs to bypass the cap.
- * Local dev (wrangler dev) always receives CF-Connecting-IP = 127.0.0.1.
  */
 export function clientIp(req: Request): string | null {
   const v = req.headers.get("cf-connecting-ip");

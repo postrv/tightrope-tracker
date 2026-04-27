@@ -15,7 +15,14 @@ import { openapiSpec } from "@tightrope/shared/openapi";
 import { router } from "../index.js";
 import { handleOpenapi } from "../handlers/openapi.js";
 
-/** Known error codes emitted by the worker. If you add one, document it. */
+/**
+ * Known error codes emitted by the worker. If you add one, document it.
+ *
+ * SEC-8: `DB_ERROR` was removed deliberately. It distinguished a DB-source
+ * failure from any other internal failure to a probing client, which leaks
+ * infra topology. All 500-class catch paths now report the opaque `INTERNAL`
+ * code; server-side logs retain full fidelity.
+ */
 const EXPECTED_ERROR_CODES: readonly string[] = [
   "NOT_FOUND",
   "METHOD_NOT_ALLOWED",
@@ -24,7 +31,6 @@ const EXPECTED_ERROR_CODES: readonly string[] = [
   "BAD_POSTCODE",
   "RATE_LIMITED",
   "NOT_SEEDED",
-  "DB_ERROR",
   "UPSTREAM_ERROR",
   "INTERNAL",
 ];

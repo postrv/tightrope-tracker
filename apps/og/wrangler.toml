@@ -36,3 +36,36 @@ enabled = true
 
 [placement]
 mode = "smart"
+
+# SEC-1: hard CPU cap. A single PNG render is ~200-500ms wall time but
+# typically 30-50ms CPU; a runaway Satori layout or resvg pathology must not
+# burn unbounded CPU. 50ms is the Workers Bundled default; codifying it here
+# means the limit is reviewed alongside other config and documents intent.
+[limits]
+cpu_ms = 50
+
+# --- Preview environment (SEC-3) -----------------------------------------
+# Top-level bindings point at PROD. Use `--env preview` for any remote-bound
+# dev so writes go to isolated preview resources. Provision via:
+#   wrangler d1 create        tightrope_db_preview
+#   wrangler kv:namespace create KV --env preview
+# (FONTS R2 is read-only and safe to share with prod.)
+
+[env.preview]
+name = "tightrope-og-preview"
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "tightrope_db_preview"
+database_id = "REPLACE_WITH_PREVIEW_D1_ID"
+
+[[env.preview.kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_PREVIEW_KV_ID"
+
+[[env.preview.r2_buckets]]
+binding = "FONTS"
+bucket_name = "tightrope-og-fonts"

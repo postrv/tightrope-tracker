@@ -35,9 +35,18 @@ function makeEnv(opts: {
     },
     first: async () => null,
   });
+  // SEC-13: adminAuthGate touches KV for admin-backoff:* keys. Provide a
+  // minimal in-memory KV stub so the tests don't have to track them.
+  const backoffStore = new Map<string, string>();
+  const kv = {
+    async get(k: string) { return k.startsWith("admin-backoff:") ? (backoffStore.get(k) ?? null) : null; },
+    async put(k: string, v: string) { if (k.startsWith("admin-backoff:")) backoffStore.set(k, v); },
+    async delete(k: string) { if (k.startsWith("admin-backoff:")) backoffStore.delete(k); },
+  };
   const env = {
     DB: { prepare: (sql: string) => makeStatement(sql) },
     ADMIN_TOKEN: opts.token ?? "test-token",
+    KV: kv,
   } as unknown as Env;
   return { env, inserts };
 }

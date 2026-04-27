@@ -66,5 +66,11 @@ PHASE*_NOTES.md
 
 # vendored third-party JS copied from node_modules at build time
 # (see apps/web/scripts/copy-scalar.mjs). Source of truth is package.json.
-apps/web/public/vendor/
+# Use a glob inside the directory rather than the directory itself so git
+# can descend in and honour the negation below.
+apps/web/public/vendor/*
+# SEC-12: Plausible script is deliberately self-hosted and version-pinned
+# (their CDN rotates aggressively — see BaseLayout.astro for the refresh
+# procedure). This single file is the *source* of truth, not derived.
+!apps/web/public/vendor/plausible.js
 /ADMIN.md

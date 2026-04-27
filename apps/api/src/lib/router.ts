@@ -127,8 +127,8 @@ export function json(
 
 /**
  * 503 NOT_SEEDED -- returned by handlers when the snapshot looks like an
- * empty-seed placeholder rather than real data. Distinct from DB_ERROR:
- * this means ingestion has not yet run, not that the DB is broken.
+ * empty-seed placeholder rather than real data. Distinct from a 500
+ * `INTERNAL`: this means ingestion has not yet run, not that the DB is broken.
  */
 export function notSeeded(): Response {
   return json(

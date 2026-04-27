@@ -83,8 +83,12 @@ export async function handleScore(
     if (looksUnseeded(snapshot)) return notSeeded();
     return json(snapshot);
   } catch (err) {
+    // SEC-8: collapse to opaque INTERNAL — DB_ERROR vs network errors
+    // distinguished the source of failure to a probing attacker. Server-side
+    // log fidelity is preserved via console.error; the public response is
+    // intentionally indistinguishable across catch paths.
     console.error("score snapshot failed", err);
-    return json({ error: "failed to load score snapshot", code: "DB_ERROR" }, 500);
+    return json({ error: "failed to load score snapshot", code: "INTERNAL" }, 500);
   }
 }
 
@@ -133,8 +137,9 @@ export async function handleScoreHistory(
     }
     return json(history);
   } catch (err) {
+    // SEC-8: see snapshot handler for rationale.
     console.error("score history failed", err);
-    return json({ error: "failed to load score history", code: "DB_ERROR" }, 500);
+    return json({ error: "failed to load score history", code: "INTERNAL" }, 500);
   }
 }
 

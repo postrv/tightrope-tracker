@@ -11,4 +11,15 @@ declare global {
     FONTS: R2Bucket | undefined;
     ENVIRONMENT: "production" | "preview" | "development";
   }
+
+  /**
+   * Cloudflare's Cache API extends the standard `CacheStorage` with a
+   * pre-opened `default` cache (the same one the edge HTTP cache uses).
+   * lib.dom declares `CacheStorage` without it, and workers-types declares
+   * its own version — but with both libs loaded, the DOM one wins. Merge
+   * the property in here so `caches.default` is type-safe in this worker.
+   */
+  interface CacheStorage {
+    readonly default: Cache;
+  }
 }

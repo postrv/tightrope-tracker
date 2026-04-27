@@ -110,7 +110,7 @@ const embedSnippets = {
   </div>
 </section>
 
-<script is:inline define:vars={{ defaultLetter, apiBase }}>
+<script is:inline nonce={Astro.locals.cspNonce} define:vars={{ defaultLetter, apiBase }}>
 (() => {
   const form = document.querySelector('form.mp-form');
   const result = document.querySelector('[data-mp-result]');

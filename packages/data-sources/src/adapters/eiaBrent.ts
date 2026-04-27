@@ -20,9 +20,14 @@ import type { AdapterResult, DataSourceAdapter } from "../types.js";
 import { registerAdapter } from "../registry.js";
 import { AdapterError } from "../lib/errors.js";
 import { sha256Hex } from "../lib/hash.js";
+import { assertFixtureFresh } from "../lib/fixtureFreshness.js";
 
 const SOURCE_ID = "eia_brent";
 const FIXTURE_URL = "local:fixtures/brent.json";
+// EIA / BoE 4pm fix is editorially refreshed weekly. 14 days matches the
+// other weekly fixtures (FTSE 250, ICE gas) and gives a ~one-week grace
+// period before the guard trips.
+const MAX_FIXTURE_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 
 interface BrentFixture {
   observed_at: string;
@@ -42,6 +47,10 @@ export const eiaBrentAdapter: DataSourceAdapter = {
         message: "Brent: fixture missing brent_gbp.value",
       });
     }
+    // Without this guard a forgotten editorial refresh would silently
+    // re-emit the same value indefinitely while ingested_at advanced.
+    // Trip loudly into the audit log instead.
+    assertFixtureFresh(data.observed_at, MAX_FIXTURE_AGE_MS, SOURCE_ID, FIXTURE_URL);
     const hash = await sha256Hex(JSON.stringify(data));
     return {
       observations: [{

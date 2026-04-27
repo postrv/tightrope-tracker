@@ -28,9 +28,15 @@ import type { AdapterResult, DataSourceAdapter, RawObservation } from "../types.
 import { registerAdapter } from "../registry.js";
 import { AdapterError } from "../lib/errors.js";
 import { sha256Hex } from "../lib/hash.js";
+import { assertFixtureFresh } from "../lib/fixtureFreshness.js";
 
 const ADAPTER_ID = "growth_sentiment";
 const FIXTURE_URL = "local:fixtures/growth-sentiment.json";
+// PMI / GfK CC / RICS RMS publish monthly with reference period at end
+// of month and release date typically within the first week of the
+// following month. 40 days = monthly cadence (~30) + a 10-day grace
+// for slipped press releases before we want a loud audit failure.
+const MAX_FIXTURE_AGE_MS = 40 * 24 * 60 * 60 * 1000;
 
 interface GrowthSentimentFixture {
   observed_at: string;
@@ -58,6 +64,9 @@ export const growthSentimentAdapter: DataSourceAdapter = {
         message: "growth sentiment: fixture malformed",
       });
     }
+    // Trip loudly on a forgotten editorial refresh rather than re-emit
+    // last month's headline indefinitely.
+    assertFixtureFresh(data.observed_at, MAX_FIXTURE_AGE_MS, ADAPTER_ID, FIXTURE_URL);
     const hash = await sha256Hex(JSON.stringify(data));
     const observations: RawObservation[] = [];
     for (const b of BINDINGS) {

@@ -5,11 +5,27 @@ import { buildHistoryFromD1, buildSnapshotFromD1 } from "../lib/db.js";
 
 /** KV snapshot is only trusted if at most this old. Beyond, we re-read from D1. */
 const SNAPSHOT_MAX_AGE_MS = 30 * 60_000;
+/** Same threshold for the 90-day history KV slice. */
+const HISTORY_MAX_AGE_MS = 30 * 60_000;
 
 function snapshotIsFresh(snapshot: ScoreSnapshot): boolean {
   const ts = Date.parse(snapshot.headline.updatedAt);
   if (!Number.isFinite(ts)) return false;
   return Date.now() - ts < SNAPSHOT_MAX_AGE_MS;
+}
+
+/**
+ * The cached 90-day slice is fresh if its newest point is within
+ * `HISTORY_MAX_AGE_MS`. Empty/degenerate cache → not fresh, force a
+ * rebuild. Wrong schema version → not fresh.
+ */
+function historyIsFresh(history: ScoreHistory): boolean {
+  if (history.schemaVersion !== 1) return false;
+  if (history.points.length === 0) return false;
+  const last = history.points[history.points.length - 1]!.timestamp;
+  const ts = Date.parse(last);
+  if (!Number.isFinite(ts)) return false;
+  return Date.now() - ts < HISTORY_MAX_AGE_MS;
 }
 
 /**
@@ -75,13 +91,17 @@ export async function handleScoreHistory(
 
   try {
     // 90d is the only bucket we cache in KV (per AGENT_CONTRACTS.md). Other
-    // ranges go direct to D1; they are comparatively rare.
+    // ranges go direct to D1; they are comparatively rare. The freshness
+    // predicate guards against serving a six-hour-old slice that survived
+    // a recompute outage — without it the consumer would believe the
+    // dashboard had stopped moving.
     if (days === 90) {
       const history = await readThrough<ScoreHistory>(
         env,
         "score:history:90d",
         () => buildHistoryFromD1(env, 90),
         ctx,
+        historyIsFresh,
       );
       return json(history);
     }

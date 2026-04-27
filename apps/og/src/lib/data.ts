@@ -6,10 +6,26 @@
 import type { PillarId, ScoreSnapshot, PillarScore, HeadlineScore, Iso8601 } from "@tightrope/shared";
 import { PILLAR_ORDER, PILLARS, bandFor } from "@tightrope/shared";
 
+/**
+ * KV snapshot is only trusted if at most this old. The api and web
+ * workers use the same threshold; without it OG cards would render an
+ * out-of-date headline number for up to 6 hours (the KV TTL) when
+ * recompute pauses or breaks. 30 minutes is conservative — recompute
+ * runs on a 5-minute cron, so a 30-min-old snapshot already means six
+ * consecutive failed cycles.
+ */
+const KV_SNAPSHOT_MAX_AGE_MS = 30 * 60_000;
+
 export async function loadSnapshot(env: Env): Promise<ScoreSnapshot> {
   const cached = await env.KV.get<ScoreSnapshot>("score:latest", "json");
-  if (cached && cached.schemaVersion === 1) return cached;
+  if (cached && cached.schemaVersion === 1 && isFresh(cached)) return cached;
   return buildFromD1(env);
+}
+
+function isFresh(snapshot: ScoreSnapshot): boolean {
+  const ts = Date.parse(snapshot.headline.updatedAt);
+  if (!Number.isFinite(ts)) return false;
+  return Date.now() - ts < KV_SNAPSHOT_MAX_AGE_MS;
 }
 
 export interface CardIndicators {
@@ -17,8 +33,16 @@ export interface CardIndicators {
 }
 
 export async function loadCardIndicators(env: Env): Promise<CardIndicators> {
+  // Latest *live* gilt_30y reading. Same selector logic as the API and
+  // ingest layers: pick by MAX(ingested_at) over rows whose payload_hash
+  // is neither 'hist:*' nor 'seed*' so an editorial fixture with an
+  // earlier observed_at can't lock the OG card onto a stale value.
   const row = await env.DB.prepare(
-    "SELECT value FROM indicator_observations WHERE indicator_id = 'gilt_30y' ORDER BY observed_at DESC LIMIT 1",
+    `SELECT value FROM indicator_observations
+     WHERE indicator_id = 'gilt_30y'
+       AND (payload_hash IS NULL
+            OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%'))
+     ORDER BY ingested_at DESC LIMIT 1`,
   ).first<{ value: number }>();
   return { gilt30y: row?.value ?? null };
 }

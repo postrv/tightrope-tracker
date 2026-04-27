@@ -1,7 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import fixture from "../fixtures/growth-sentiment.json" with { type: "json" };
 import { growthSentimentAdapter } from "./growthSentiment.js";
 
 describe("growthSentimentAdapter", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("emits three observations with distinct indicator-specific sourceIds", async () => {
     const result = await growthSentimentAdapter.fetch(globalThis.fetch);
     expect(result.observations.length).toBeGreaterThanOrEqual(3);
@@ -33,5 +38,23 @@ describe("growthSentimentAdapter", () => {
     // All three share the same payload hash because they come from one fixture.
     expect(pmi.payloadHash).toBe(conf.payloadHash);
     expect(conf.payloadHash).toBe(rics.payloadHash);
+  });
+
+  it("throws AdapterError when the fixture has rotted past the 40-day freshness window", async () => {
+    const observedMs = Date.parse((fixture as { observed_at: string }).observed_at);
+    expect(Number.isFinite(observedMs), "fixture has parseable observed_at").toBe(true);
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(observedMs + 60 * 24 * 60 * 60 * 1000)); // 60 days later
+
+    await expect(growthSentimentAdapter.fetch(globalThis.fetch)).rejects.toThrow(/stale/i);
+  });
+
+  it("emits cleanly the day after the fixture publishes", async () => {
+    const observedMs = Date.parse((fixture as { observed_at: string }).observed_at);
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(observedMs + 24 * 60 * 60 * 1000));
+
+    const result = await growthSentimentAdapter.fetch(globalThis.fetch);
+    expect(result.observations.length).toBeGreaterThanOrEqual(3);
   });
 });

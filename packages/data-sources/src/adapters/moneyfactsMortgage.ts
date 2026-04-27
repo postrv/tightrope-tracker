@@ -13,9 +13,14 @@ import type { AdapterResult, DataSourceAdapter } from "../types.js";
 import { registerAdapter } from "../registry.js";
 import { AdapterError } from "../lib/errors.js";
 import { sha256Hex } from "../lib/hash.js";
+import { assertFixtureFresh } from "../lib/fixtureFreshness.js";
 
 const SOURCE_ID = "moneyfacts";
 const FIXTURE_URL = "local:fixtures/mortgage.json";
+// Moneyfacts publishes monthly press releases. 45 days = monthly cadence
+// (~30) + 15 days slack — averages can be published a fortnight after
+// month-end. Past that window a forgotten refresh is genuinely stale.
+const MAX_FIXTURE_AGE_MS = 45 * 24 * 60 * 60 * 1000;
 
 interface MortgageFixture {
   observed_at: string;
@@ -35,6 +40,9 @@ export const moneyfactsMortgageAdapter: DataSourceAdapter = {
         message: "Moneyfacts: fixture missing mortgage_2y_fix.value",
       });
     }
+    // Trip loudly on a stale fixture — every five-minute cron would
+    // otherwise silently re-emit last month's average rate.
+    assertFixtureFresh(data.observed_at, MAX_FIXTURE_AGE_MS, SOURCE_ID, FIXTURE_URL);
     const hash = await sha256Hex(JSON.stringify(data));
     return {
       observations: [{

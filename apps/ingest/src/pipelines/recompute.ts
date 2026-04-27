@@ -21,8 +21,10 @@ import {
 import type { Env } from "../env.js";
 import {
   downsampleLatestPerDay,
+  filterStaleLiveRows,
   readBaselineObservations,
   readHeadlineHistory,
+  readLatestLiveObservations,
   readPillarHistory,
   readRecentObservations,
   valueAtLeastAgo,
@@ -35,21 +37,34 @@ const KV_TTL_6H = 60 * 60 * 6;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
-  const [baseline, recent, headlineHist, pillarHist] = await Promise.all([
+  const [baselineRaw, recentRaw, headlineHist, pillarHist, latestLive] = await Promise.all([
     readBaselineObservations(env.DB),
     readRecentObservations(env.DB, 365),
     readHeadlineHistory(env.DB, 365),
     readPillarHistory(env.DB, 90),
+    readLatestLiveObservations(env.DB),
   ]);
-  if (recent.length === 0) return null;
+  if (recentRaw.length === 0) return null;
 
-  // Group recent and baseline observations by indicator.
+  // Apply the same stale-live filter to both windows. This drops live rows
+  // that have been superseded by a more recently-ingested row for the
+  // same (indicator_id, source_id), keeping all hist:/seed rows. Without
+  // this, an editorial fixture whose `observed_at` moved backwards leaves
+  // the daily-pillar-sparkline picking the stale row when scanning by
+  // `observed_at <= cutoff`. See packages/data-sources fixture audit notes.
+  const recent = filterStaleLiveRows(recentRaw);
+  const baseline = filterStaleLiveRows(baselineRaw);
+
+  // `latestByIndicator` is sourced from a dedicated MAX(ingested_at) query
+  // that excludes hist:/seed rows. This is the only correct selector for
+  // "what is the live value right now" — see
+  // apps/api/src/tests/snapshot-fixture-supersede.test.ts for the
+  // regression cases that motivated it.
   const latestByIndicator = new Map<string, { value: number; observedAt: string }>();
-  const baselineByIndicator = new Map<string, number[]>();
-  for (const row of recent) {
-    // Walk ascending; the final write wins.
+  for (const row of latestLive) {
     latestByIndicator.set(row.indicator_id, { value: row.value, observedAt: row.observed_at });
   }
+  const baselineByIndicator = new Map<string, number[]>();
   for (const row of baseline) {
     const arr = baselineByIndicator.get(row.indicator_id) ?? [];
     arr.push(row.value);

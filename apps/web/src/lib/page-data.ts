@@ -19,6 +19,8 @@ import {
   getCorrections,
   getLastIngestionAudit,
   getBaselineSummaries,
+  getHeadroomVintages,
+  type HeadroomVintage,
   type MethodologyBaselinesPayload,
 } from "./db.js";
 
@@ -29,6 +31,12 @@ export interface HomepageData {
   timeline: TimelineEvent[];
   /** 90-day headline + pillar history, used by HeadlineChartSection. */
   history: ScoreHistory;
+  /**
+   * The last few OBR cb_headroom vintages, latest first. Hero uses [0] for
+   * the live forecast and [1] (if present) as prior-vintage baseline so the
+   * dual-display can render "↓ £14.0bn since the previous EFO".
+   */
+  headroomVintages: HeadroomVintage[];
   empty: boolean;
 }
 
@@ -43,7 +51,7 @@ export async function loadHomepageData(astroLocals: App.Locals): Promise<Homepag
   }
 
   try {
-    const [snapshot, movements, delivery, timeline, history] = await Promise.all([
+    const [snapshot, movements, delivery, timeline, history, headroomVintages] = await Promise.all([
       getLatestSnapshot(env).catch(() => emptySnapshot()),
       getTodayMovements(env).catch(() => [] as TodayMovement[]),
       getDeliveryCommitments(env).catch(() => [] as DeliveryCommitment[]),
@@ -56,9 +64,13 @@ export async function loadHomepageData(astroLocals: App.Locals): Promise<Homepag
       // returns an empty history so the chart shows its empty-state
       // rather than crashing the page render.
       getHistory(env, 90).catch(() => emptyHistory()),
+      // OBR forecast vintages (sparse — twice yearly). Used by Hero to
+      // pair the composite with a £Bn headroom counter and a prior-
+      // vintage delta.
+      getHeadroomVintages(env, 4).catch(() => [] as HeadroomVintage[]),
     ]);
     const empty = snapshot.headline.value === 0 && movements.length === 0;
-    return { snapshot, movements, delivery, timeline, history, empty };
+    return { snapshot, movements, delivery, timeline, history, headroomVintages, empty };
   } catch {
     return { ...emptyFallback(), empty: true };
   }
@@ -153,6 +165,7 @@ function emptyFallback(): Omit<HomepageData, "empty"> {
     delivery: [],
     timeline: [],
     history: emptyHistory(),
+    headroomVintages: [],
   };
 }
 

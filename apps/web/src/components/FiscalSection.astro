@@ -1,24 +1,48 @@
 ---
 import type { PillarScore } from "@tightrope/shared";
+import { OBR_TARGET_YEAR_LABEL } from "@tightrope/shared";
 import { signedDelta, trendDescriptor } from "~/lib/format.js";
 import IllustrativeBadge from "./IllustrativeBadge.astro";
 import IndicatorTooltip from "./IndicatorTooltip.astro";
 
 interface Props {
   pillar: PillarScore;
+  /**
+   * OBR cb_headroom vintages, latest first. The chart plots them oldest-
+   * first along the x axis with the latest highlighted. When zero or one
+   * vintage is present, the chart degrades to an empty-state hint (rather
+   * than rendering a misleading single-point line).
+   */
+  headroomVintages?: ReadonlyArray<{ value: number; observedAt: string }>;
 }
 
-const { pillar } = Astro.props;
+const { pillar, headroomVintages = [] } = Astro.props;
 
 interface Round { label: string; value: number; colour: string; x: number; highlight?: boolean }
-// Editorially-curated static headroom plot (OBR forecast rounds).
-// Inputs are £bn current-budget headroom across four forecast rounds.
-const rounds: Round[] = [
-  { label: "Oct '24 Bud",  value: 22.0, colour: "var(--band-steady)", x: 110 },
-  { label: "Mar '25 SF",   value: 9.9,  colour: "var(--band-acute)",  x: 230 },
-  { label: "Nov '25 Bud",  value: 22.0, colour: "var(--band-steady)", x: 350 },
-  { label: "Mar '26 SF",   value: 23.6, colour: "var(--accent)",      x: 470, highlight: true },
-];
+
+// Convert an OBR EFO publication date into a short label e.g. "Oct '24",
+// "Mar '26". Heuristic only — March = Spring Forecast, Oct/Nov = Budget,
+// but we don't tag those qualifiers in the label itself; the chart hint
+// already names the source.
+function shortVintageLabel(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const mon = d.toLocaleString("en-GB", { month: "short", timeZone: "UTC" });
+  const yr2 = String(d.getUTCFullYear()).slice(-2);
+  return `${mon} '${yr2}`;
+}
+
+// Plot the vintages oldest-first. We accept up to four; with fewer the
+// x-axis still spans 110→470 evenly so the path doesn't compress weirdly.
+const ordered = [...headroomVintages].reverse();
+const xs = [110, 230, 350, 470];
+const rounds: Round[] = ordered.slice(-4).map((v, i, arr) => ({
+  label: shortVintageLabel(v.observedAt),
+  value: v.value,
+  colour: i === arr.length - 1 ? "var(--accent)" : "var(--band-steady)",
+  x: xs[Math.max(0, xs.length - arr.length) + i] ?? xs[i] ?? 110,
+  highlight: i === arr.length - 1,
+}));
 
 // map £bn to y in viewbox [0..240]; £10bn -> y=200; £40bn -> y=40.
 function yFor(bn: number): number {
@@ -26,6 +50,8 @@ function yFor(bn: number): number {
   const t = (bn - min) / (max - min);
   return 220 - t * 180;
 }
+
+const chartHasData = rounds.length >= 2;
 ---
 <section class="section" id="fiscal" aria-labelledby="fiscal-title">
   <div class="container">
@@ -59,66 +85,79 @@ function yFor(bn: number): number {
     <div class="fiscal-grid">
       <div class="chart-card">
         <div class="card-head">
-          <h3>Current-budget headroom, 2024 → 2029/30</h3>
+          <h3>OBR forecast headroom for {OBR_TARGET_YEAR_LABEL}, by vintage</h3>
           <IllustrativeBadge
-            sourceSummary="Four published OBR forecast rounds (Oct 2024 Budget, Mar 2025 SF, Nov 2025 Budget, Mar 2026 SF). Each dot is the current-budget headroom figure from that round's public Economic and Fiscal Outlook."
+            sourceSummary="Each dot is the current-budget headroom figure from one OBR Economic and Fiscal Outlook publication, drawn straight from the live cb_headroom indicator (sourced via the obrEfo adapter). Updated automatically when a new EFO lands."
             sourceUrl="https://obr.uk/efo/"
           />
         </div>
-        <p class="hint">£ billion, surplus against the stability rule target year. Each dot is a separate OBR forecast round.</p>
-        <svg class="chart" viewBox="0 0 600 240" preserveAspectRatio="none" role="img" aria-label="Current budget headroom over OBR forecast rounds">
-          <defs>
-            <linearGradient id="headFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="var(--accent)" stop-opacity="0.22"/>
-              <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          <g stroke="var(--border-soft)" stroke-width="1">
-            <line x1="40" y1="40" x2="580" y2="40"/>
-            <line x1="40" y1="100" x2="580" y2="100"/>
-            <line x1="40" y1="160" x2="580" y2="160"/>
-            <line x1="40" y1="220" x2="580" y2="220"/>
-          </g>
-          <g font-family="IBM Plex Mono" font-size="10" fill="var(--ink-2)">
-            <text x="32" y="44" text-anchor="end">40</text>
-            <text x="32" y="104" text-anchor="end">30</text>
-            <text x="32" y="164" text-anchor="end">20</text>
-            <text x="32" y="224" text-anchor="end">10</text>
-          </g>
-          <g font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)">
-            {rounds.map((r) => <text x={r.x - 30} y={234}>{r.label}</text>)}
-          </g>
-
-          <path
-            d={`M ${rounds[0].x} ${yFor(rounds[0].value)} L ${rounds[1].x} ${yFor(rounds[1].value)} L ${rounds[2].x} ${yFor(rounds[2].value)} L ${rounds[3].x} ${yFor(rounds[3].value)} L ${rounds[3].x} 220 L ${rounds[0].x} 220 Z`}
-            fill="url(#headFill)"
-          />
-          <path
-            d={`M ${rounds[0].x} ${yFor(rounds[0].value)} L ${rounds[1].x} ${yFor(rounds[1].value)} L ${rounds[2].x} ${yFor(rounds[2].value)} L ${rounds[3].x} ${yFor(rounds[3].value)}`}
-            stroke="var(--accent)" stroke-width="1.5" fill="none" stroke-linecap="round"
-          />
-
-          {rounds.map((r) => (
-            <g>
-              <circle cx={r.x} cy={yFor(r.value)} r={r.highlight ? 4.5 : 4} fill={r.colour} />
-              <text x={r.x} y={yFor(r.value) - 12} text-anchor="middle" font-family="IBM Plex Mono" font-size={r.highlight ? 10.5 : 10} fill={r.colour} font-weight={r.highlight ? 500 : 400}>{r.value.toFixed(1)}</text>
+        <p class="hint">£ billion, surplus against the stability rule at the {OBR_TARGET_YEAR_LABEL} target year. Each dot is a separate OBR forecast round.</p>
+        {chartHasData ? (
+          <svg class="chart" viewBox="0 0 600 240" preserveAspectRatio="none" role="img" aria-label="Current budget headroom over OBR forecast rounds">
+            <defs>
+              <linearGradient id="headFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="var(--accent)" stop-opacity="0.22"/>
+                <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <g stroke="var(--border-soft)" stroke-width="1">
+              <line x1="40" y1="40" x2="580" y2="40"/>
+              <line x1="40" y1="100" x2="580" y2="100"/>
+              <line x1="40" y1="160" x2="580" y2="160"/>
+              <line x1="40" y1="220" x2="580" y2="220"/>
             </g>
-          ))}
+            <g font-family="IBM Plex Mono" font-size="10" fill="var(--ink-2)">
+              <text x="32" y="44" text-anchor="end">40</text>
+              <text x="32" y="104" text-anchor="end">30</text>
+              <text x="32" y="164" text-anchor="end">20</text>
+              <text x="32" y="224" text-anchor="end">10</text>
+            </g>
+            <g font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)">
+              {rounds.map((r) => <text x={r.x - 30} y={234}>{r.label}</text>)}
+            </g>
 
-          <line x1="40" y1="200" x2="580" y2="200" stroke="var(--band-critical)" stroke-width="1" stroke-dasharray="3 4" opacity="0.6"/>
-          <text x="574" y="196" text-anchor="end" font-family="IBM Plex Mono" font-size="9.5" fill="var(--band-critical)" opacity="0.85">IFS prudent cushion · £10bn</text>
-        </svg>
+            <path
+              d={(() => {
+                const segments = rounds.map((r) => `${r.x} ${yFor(r.value)}`);
+                const move = `M ${segments[0]}`;
+                const lines = segments.slice(1).map((s) => `L ${s}`).join(" ");
+                const close = `L ${rounds[rounds.length - 1]!.x} 220 L ${rounds[0]!.x} 220 Z`;
+                return `${move} ${lines} ${close}`;
+              })()}
+              fill="url(#headFill)"
+            />
+            <path
+              d={(() => {
+                const segments = rounds.map((r) => `${r.x} ${yFor(r.value)}`);
+                return `M ${segments[0]} ` + segments.slice(1).map((s) => `L ${s}`).join(" ");
+              })()}
+              stroke="var(--accent)" stroke-width="1.5" fill="none" stroke-linecap="round"
+            />
+
+            {rounds.map((r) => (
+              <g>
+                <circle cx={r.x} cy={yFor(r.value)} r={r.highlight ? 4.5 : 4} fill={r.colour} />
+                <text x={r.x} y={yFor(r.value) - 12} text-anchor="middle" font-family="IBM Plex Mono" font-size={r.highlight ? 10.5 : 10} fill={r.colour} font-weight={r.highlight ? 500 : 400}>{r.value.toFixed(1)}</text>
+              </g>
+            ))}
+
+            <line x1="40" y1="200" x2="580" y2="200" stroke="var(--band-critical)" stroke-width="1" stroke-dasharray="3 4" opacity="0.6"/>
+            <text x="574" y="196" text-anchor="end" font-family="IBM Plex Mono" font-size="9.5" fill="var(--band-critical)" opacity="0.85">IFS prudent cushion · £10bn</text>
+          </svg>
+        ) : (
+          <p class="hint" style="font-style: italic; color: var(--ink-2); padding: 32px 0;">Awaiting at least two OBR vintages from the live feed before the comparison chart renders.</p>
+        )}
       </div>
 
       <div class="chart-card">
         <div class="card-head">
-          <h3>The <IndicatorTooltip label="DMO" description="UK Debt Management Office — the executive agency that issues gilts (UK government bonds) on behalf of HM Treasury. Its 'gilt stack' is the planned mix of new bonds it will sell over the financial year, by maturity bucket and type." tipId="tip-dmo" /> gilt stack</h3>
+          <h3>The <IndicatorTooltip label="DMO" description="UK Debt Management Office — the executive agency that issues gilts (UK government bonds) on behalf of HM Treasury. Its 'gilt stack' is the planned mix of new bonds it will sell over the financial year, by maturity bucket and type." tipId="tip-dmo" /> gilt stack (forecast)</h3>
           <IllustrativeBadge
-            sourceSummary="DMO 2026/27 Gilt Remit (published alongside the Spring Statement). Shares recomputed from DMO's maturity-bucket totals; debt-interest figure from OBR EFO Table 3.8."
+            sourceSummary="DMO 2026/27 Gilt Remit (published alongside the Spring Statement) and OBR EFO Table 3.8 (Spring Forecast 2026). PSND/GDP and debt-interest are OBR forecasts for FY 2026/27, not outturns."
             sourceUrl="https://www.dmo.gov.uk/publications/annual-review/"
           />
         </div>
-        <p class="hint">Planned 2026/27 issuance · £252.1bn total · GDP = £2,709bn (OBR Mar 26)</p>
+        <p class="hint">Planned 2026/27 issuance · £252.1bn total · GDP = £2,709bn (OBR Spring Forecast 2026)</p>
         <table class="gilt-table">
           <thead>
             <tr><th></th><th>Nominal</th><th>% of GDP</th></tr>
@@ -131,9 +170,8 @@ function yFor(bn: number): number {
             <tr><td>Index-linked</td><td>£23.4bn</td><td>0.9%</td></tr>
           </tbody>
         </table>
-        <div class="factrow" style="margin-top: 12px;"><span class="k"><IndicatorTooltip label="PSND / GDP" description="Public-Sector Net Debt as a share of nominal GDP — the conventional headline UK debt-burden metric." tipId="tip-psnd" /></span><span class="v">93.1%</span></div>
-        <div class="factrow"><span class="k">Debt interest, FY</span><span class="v">£111.3bn</span></div>
-        <p class="hint" style="margin-top: 16px; margin-bottom: 0;">Long issuance cut back; index-linked stock still a sensitivity to inflation shocks.</p>
+        <div class="factrow" style="margin-top: 12px;"><span class="k"><IndicatorTooltip label="PSND / GDP (FY 2026/27 forecast)" description="Public-Sector Net Debt as a share of nominal GDP — the conventional headline UK debt-burden metric. Figure shown is OBR's forecast for FY 2026/27, not an outturn." tipId="tip-psnd" /></span><span class="v">93.1%</span></div>
+        <div class="factrow"><span class="k">Debt interest, FY 2026/27 (forecast)</span><span class="v">£111.3bn</span></div>
       </div>
     </div>
   </div>

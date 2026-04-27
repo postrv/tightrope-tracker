@@ -418,6 +418,39 @@ function parseSparklineSafe(raw: string, indicatorId: string): number[] {
   }
 }
 
+export interface HeadroomVintage {
+  /** GBP billions; the OBR forecast for the stability-rule target year at this vintage. */
+  value: number;
+  /** observed_at = OBR EFO publication date. */
+  observedAt: Iso8601;
+}
+
+/**
+ * Return the most recent OBR cb_headroom vintages from indicator_observations,
+ * latest first. The Hero uses [0] as the live forecast and [1] (if present)
+ * as the prior-vintage baseline to compute "↓ £X.Xbn since prior vintage".
+ *
+ * Live-only filter: hist:* and seed* rows are excluded so the head value
+ * is always the most recent live observation written by the obrEfo adapter.
+ */
+export async function getHeadroomVintages(env: Env, limit = 4): Promise<HeadroomVintage[]> {
+  const res = await env.DB
+    .prepare(
+      `SELECT value, observed_at FROM indicator_observations
+       WHERE indicator_id = 'cb_headroom'
+         AND (payload_hash IS NULL
+              OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%'))
+       ORDER BY observed_at DESC
+       LIMIT ?1`,
+    )
+    .bind(limit)
+    .all<{ value: number; observed_at: string }>();
+  return (res.results ?? []).map((r) => ({
+    value: r.value,
+    observedAt: r.observed_at as Iso8601,
+  }));
+}
+
 export async function getDeliveryCommitments(env: Env): Promise<DeliveryCommitment[]> {
   const res = await env.DB
     .prepare(

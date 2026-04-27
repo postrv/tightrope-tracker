@@ -17,7 +17,7 @@ import { loadHomepageData } from "~/lib/page-data.js";
 import { summariseFreshness } from "~/lib/freshness.js";
 
 const data = await loadHomepageData(Astro.locals);
-const { snapshot, movements, delivery, timeline, history, empty } = data;
+const { snapshot, movements, delivery, timeline, history, headroomVintages, empty } = data;
 // Stale banner triggers on quorum-failure (snapshot.headline.stale) but ALSO
 // on per-indicator staleness — a daily indicator past its 5-day window even
 // when the pillar still holds quorum. Keeping the reader honest about which
@@ -65,12 +65,12 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
       </div>
     ) : null}
 
-    <Hero headline={snapshot.headline} freshestAt={freshness.freshestAt} />
+    <Hero headline={snapshot.headline} freshestAt={freshness.freshestAt} headroomVintages={headroomVintages} />
     <HeadlineChartSection history={history} events={timeline} />
     <PillarStrip pillars={snapshot.pillars} />
     <TodayStrip movements={movements} />
     <MarketSection pillar={snapshot.pillars.market} movements={movements} />
-    <FiscalSection pillar={snapshot.pillars.fiscal} />
+    <FiscalSection pillar={snapshot.pillars.fiscal} headroomVintages={headroomVintages} />
     <LabourSection pillar={snapshot.pillars.labour} />
     <DeliverySection commitments={delivery} pillar={snapshot.pillars.delivery} />
     <Timeline events={timeline} />

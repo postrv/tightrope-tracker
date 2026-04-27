@@ -1,6 +1,6 @@
 ---
 import type { HeadlineScore } from "@tightrope/shared";
-import { bandFor, BANDS, PILLARS } from "@tightrope/shared";
+import { bandFor, BANDS, OBR_LATEST_VINTAGE_LABEL, OBR_TARGET_YEAR_LABEL, PILLARS } from "@tightrope/shared";
 import TightropeWalker from "./TightropeWalker.astro";
 import { eyebrowDate, signedDelta, trendArrow, trendClass, trendDescriptor } from "~/lib/format.js";
 
@@ -13,9 +13,19 @@ interface Props {
    * not the 5-minute recompute heartbeat.
    */
   freshestAt?: string | null;
+  /**
+   * Last few OBR cb_headroom vintages, latest first. When present, the hero
+   * renders a paired £Bn-headroom card alongside the composite, with the
+   * delta between [0] and [1] displayed as "since previous EFO". The pair
+   * exists so a TV viewer has BOTH the sophisticated composite (up = more
+   * strain) AND the intuitive £Bn anchor (down = less freedom) — most
+   * humans process "up = good", so we hand them the figure that follows
+   * intuition next to the figure that doesn't.
+   */
+  headroomVintages?: ReadonlyArray<{ value: number; observedAt: string }>;
 }
 
-const { headline, freshestAt } = Astro.props;
+const { headline, freshestAt, headroomVintages = [] } = Astro.props;
 const band = BANDS.find((b) => b.id === headline.band) ?? bandFor(headline.value);
 const bandColour = band.colourToken;
 const dominantLabel = PILLARS[headline.dominantPillar]?.title ?? "The dominant pillar";
@@ -55,6 +65,31 @@ const delta30Tip = d30Base
 const deltaYtdTip = dYtdBase
   ? `Baseline: ${shortDateLabel(d30Base ?? dYtdBase)} — history does not yet stretch back to 1 January.`
   : "Baseline: 1 January of the current year.";
+
+// Headroom card data. We require at least one vintage; the prior-vintage
+// delta is only computed when a second vintage is present. The visual
+// convention mirrors the composite card: a coloured side-bar, a big
+// number, a direction caption, and a delta row.
+const headroomCurrent = headroomVintages[0];
+const headroomPrior = headroomVintages[1];
+const headroomDelta = (headroomCurrent && headroomPrior)
+  ? Math.round((headroomCurrent.value - headroomPrior.value) * 10) / 10
+  : null;
+// "down = bad" intuition: a falling headroom means less fiscal freedom.
+// We tint the card the same critical colour as the composite when its
+// delta is negative, otherwise neutral.
+const headroomDeltaClass = headroomDelta === null
+  ? "flat"
+  : headroomDelta < 0 ? "up" /* up = worse */ : headroomDelta > 0 ? "dn" : "flat";
+const headroomDeltaArrow = headroomDelta === null
+  ? "→"
+  : headroomDelta < 0 ? "↓" : headroomDelta > 0 ? "↑" : "→";
+function headroomDateLabel(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "unknown";
+  const mon = d.toLocaleString("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
+  return mon;
+}
 ---
 <section class="hero" id="headline">
   <div class="container">
@@ -67,29 +102,61 @@ const deltaYtdTip = dYtdBase
         <h1>the UK is on a <span class="lfg-u">fiscal tightrope</span>. the more it sways, the harder it is to <span class="lfg-u lfg-u--blue">move forward</span>.</h1>
         <p class="lede">Fiscal headroom is thin. The less stable the economic picture — markets, borrowing costs, the labour force — the less freedom the government has to invest in growth. This score tracks that instability: how much the rope is swaying, and whether the government is steadying it or making it worse. Every number sourced and open.</p>
 
-        <div class="score-card" style={`--band-colour: var(${bandColour});`}>
-          <div>
-            <div class="score-num" data-target={scoreRounded} aria-label={`Tightrope Score: ${scoreRounded} out of 100`}>
-              <span class="score-value">{scoreRounded}</span><span class="sub">/100</span>
+        <div class="dual-cards">
+          <div class="score-card composite-card" style={`--band-colour: var(${bandColour});`}>
+            <div class="card-header">
+              <span class="card-label">Tightrope Score</span>
+              <span class="card-direction" title="The composite. Higher numbers = the rope is swaying more = less fiscal freedom.">↑ MORE STRAIN</span>
             </div>
-            <p class="score-direction">higher = less fiscal freedom</p>
-            <div class="delta-row" aria-label="Changes over time">
-              <span title="Baseline: one UTC day before the latest reading.">1d <span class={trendClass(delta24)}>{trendArrow(delta24)} {signedDelta(Math.abs(delta24), 1)}{trendDescriptor(delta24) ? <span class="trend-word"> {trendDescriptor(delta24)}</span> : null}</span></span>
-              {sharedFallback ? (
-                <span class="delta-since" title={`History is only ~${Math.max(0, Math.round((Date.now() - new Date(d30Base!).getTime()) / 86_400_000))} days deep; 30d and YTD would both read the same number, so only one "since ${shortDateLabel(d30Base!)}" delta is shown until the backfill catches up.`}>since {shortDateLabel(d30Base!)} <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(Math.abs(delta30), 1)}{trendDescriptor(delta30) ? <span class="trend-word"> {trendDescriptor(delta30)}</span> : null}</span></span>
-              ) : (
-                <>
-                  <span title={delta30Tip}>{delta30Label} <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(Math.abs(delta30), 1)}{trendDescriptor(delta30) ? <span class="trend-word"> {trendDescriptor(delta30)}</span> : null}</span></span>
-                  <span title={deltaYtdTip}>{deltaYtdLabel} <span class={trendClass(deltaYtd)}>{trendArrow(deltaYtd)} {signedDelta(Math.abs(deltaYtd), 1)}{trendDescriptor(deltaYtd) ? <span class="trend-word"> {trendDescriptor(deltaYtd)}</span> : null}</span></span>
-                </>
-              )}
+            <div>
+              <div class="score-num" data-target={scoreRounded} aria-label={`Tightrope Score: ${scoreRounded} out of 100`}>
+                <span class="score-value">{scoreRounded}</span><span class="sub">/100</span>
+              </div>
+              <div class="delta-row" aria-label="Composite changes over time">
+                <span title="Baseline: one UTC day before the latest reading.">1d <span class={trendClass(delta24)}>{trendArrow(delta24)} {signedDelta(Math.abs(delta24), 1)}{trendDescriptor(delta24) ? <span class="trend-word"> {trendDescriptor(delta24)}</span> : null}</span></span>
+                {sharedFallback ? (
+                  <span class="delta-since" title={`History is only ~${Math.max(0, Math.round((Date.now() - new Date(d30Base!).getTime()) / 86_400_000))} days deep; 30d and YTD would both read the same number, so only one "since ${shortDateLabel(d30Base!)}" delta is shown until the backfill catches up.`}>since {shortDateLabel(d30Base!)} <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(Math.abs(delta30), 1)}{trendDescriptor(delta30) ? <span class="trend-word"> {trendDescriptor(delta30)}</span> : null}</span></span>
+                ) : (
+                  <>
+                    <span title={delta30Tip}>{delta30Label} <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(Math.abs(delta30), 1)}{trendDescriptor(delta30) ? <span class="trend-word"> {trendDescriptor(delta30)}</span> : null}</span></span>
+                    <span title={deltaYtdTip}>{deltaYtdLabel} <span class={trendClass(deltaYtd)}>{trendArrow(deltaYtd)} {signedDelta(Math.abs(deltaYtd), 1)}{trendDescriptor(deltaYtd) ? <span class="trend-word"> {trendDescriptor(deltaYtd)}</span> : null}</span></span>
+                  </>
+                )}
+              </div>
+            </div>
+            <div class="score-meta">
+              <span class="band-pill" style={`color: var(${bandColour}); border-color: var(${bandColour}); background: color-mix(in srgb, var(${bandColour}) 12%, transparent);`}>{band.label}</span>
+              {isStale ? <span class="stale-chip" role="status" title="One or more pillars have not received fresh indicator data within the staleness window.">Stale data</span> : null}
+              <span class="band-label">{band.editorialLabel}</span>
             </div>
           </div>
-          <div class="score-meta">
-            <span class="band-pill" style={`color: var(${bandColour}); border-color: var(${bandColour}); background: color-mix(in srgb, var(${bandColour}) 12%, transparent);`}>{band.label}</span>
-            {isStale ? <span class="stale-chip" role="status" title="One or more pillars have not received fresh indicator data within the staleness window.">Stale data</span> : null}
-            <span class="band-label">{band.editorialLabel}</span>
-          </div>
+
+          {headroomCurrent ? (
+            <div class="score-card headroom-card">
+              <div class="card-header">
+                <span class="card-label">Fiscal headroom · {OBR_TARGET_YEAR_LABEL}</span>
+                <span class="card-direction" title="The OBR's forecast £-billion buffer against the stability rule for the target year. Lower numbers = less room to spend, tax less, or absorb a shock.">↓ LESS FREEDOM</span>
+              </div>
+              <div>
+                <div class="score-num" aria-label={`Forecast headroom: £${headroomCurrent.value.toFixed(1)} billion`}>
+                  <span class="score-pound">£</span><span class="score-value">{headroomCurrent.value.toFixed(1)}</span><span class="sub">bn</span>
+                </div>
+                <div class="delta-row" aria-label="Headroom changes between OBR forecasts">
+                  {headroomDelta !== null && headroomPrior ? (
+                    <span title={`Previous OBR vintage: ${headroomDateLabel(headroomPrior.observedAt)} (£${headroomPrior.value.toFixed(1)}bn).`}>
+                      since previous EFO <span class={headroomDeltaClass}>{headroomDeltaArrow} £{Math.abs(headroomDelta).toFixed(1)}bn</span>
+                    </span>
+                  ) : (
+                    <span title="Only one OBR vintage in our store yet — a delta will appear at the next EFO.">awaiting next OBR vintage</span>
+                  )}
+                </div>
+              </div>
+              <div class="score-meta">
+                <span class="band-pill headroom-pill">OBR forecast · {OBR_LATEST_VINTAGE_LABEL}</span>
+                <span class="band-label headroom-sub">Surplus against the current-budget stability rule.</span>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div class="editorial" role="note">
@@ -116,29 +183,67 @@ const deltaYtdTip = dYtdBase
 }
 .hero .lede { color: var(--ink-1); font-size: 17px; max-width: 560px; margin: 0 0 32px; line-height: 1.6; }
 
+.dual-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
 .score-card {
   background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 28px 32px;
-  display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: center;
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   position: relative;
   overflow: hidden;
 }
 .score-card::before {
   content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  background: var(--band-colour, var(--band-acute));
+  background: var(--band-colour, var(--accent));
 }
-.score-num { font-family: var(--font-mono); font-size: 88px; font-weight: 500; letter-spacing: -0.04em; line-height: 1; color: var(--ink-0); font-variant-numeric: tabular-nums; }
-.score-num .sub { font-size: 22px; color: var(--ink-2); font-weight: 400; }
-.score-direction { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ink-2); margin: 6px 0 0; text-transform: uppercase; }
-.score-meta { display: flex; flex-direction: column; gap: 6px; }
+.headroom-card::before { background: var(--accent); }
+.card-header {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.card-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.card-direction {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-1);
+  font-weight: 500;
+}
+.composite-card .card-direction { color: var(--band-colour, var(--band-acute)); }
+.headroom-card .card-direction { color: var(--accent); }
+.score-num {
+  font-family: var(--font-mono);
+  font-size: 64px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ink-0);
+  font-variant-numeric: tabular-nums;
+}
+.score-num .sub { font-size: 18px; color: var(--ink-2); font-weight: 400; margin-left: 2px; }
+.score-num .score-pound { font-size: 38px; color: var(--ink-2); font-weight: 400; margin-right: 4px; vertical-align: 8px; }
+.score-meta { display: flex; flex-direction: column; gap: 4px; margin-top: auto; }
 .band-pill {
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   align-self: flex-start;
-  padding: 5px 11px; border-radius: 999px;
+  padding: 4px 10px; border-radius: 999px;
   border: 1px solid var(--accent-dim);
 }
+.headroom-pill { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .stale-chip {
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   align-self: flex-start;
@@ -147,8 +252,9 @@ const deltaYtdTip = dYtdBase
   color: var(--ink-2);
   margin-top: 4px;
 }
-.band-label { font-family: var(--font-sans); font-size: 24px; letter-spacing: -0.01em; color: var(--ink-0); font-weight: 400; font-style: italic; margin-top: 2px; }
-.delta-row { display: flex; gap: 20px; margin-top: 10px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+.band-label { font-family: var(--font-sans); font-size: 16px; letter-spacing: -0.01em; color: var(--ink-0); font-weight: 400; font-style: italic; margin-top: 2px; }
+.headroom-sub { font-style: normal; font-size: 13px; color: var(--ink-1); }
+.delta-row { display: flex; gap: 16px; margin-top: 8px; font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-2); flex-wrap: wrap; }
 .delta-row span.up { color: var(--band-acute); }
 .delta-row span.dn { color: var(--band-slack); }
 .delta-row span.flat { color: var(--ink-2); }
@@ -170,15 +276,20 @@ const deltaYtdTip = dYtdBase
   .hero-grid { grid-template-columns: 1fr; gap: 40px; }
 }
 
+@media (max-width: 720px) {
+  .dual-cards { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 600px) {
   .hero { padding: 36px 0 40px; }
   .hero h1 { font-size: clamp(30px, 8vw, 38px); margin: 18px 0 16px; }
   .hero .lede { font-size: 15px; margin-bottom: 22px; }
-  .score-card { padding: 20px 18px; gap: 18px; grid-template-columns: 1fr; }
-  .score-num { font-size: 64px; }
-  .score-num .sub { font-size: 18px; }
-  .band-label { font-size: 22px; }
-  .delta-row { gap: 14px; font-size: 11px; }
+  .score-card { padding: 18px 18px; gap: 12px; }
+  .score-num { font-size: 56px; }
+  .score-num .sub { font-size: 16px; }
+  .score-num .score-pound { font-size: 32px; }
+  .band-label { font-size: 15px; }
+  .delta-row { gap: 12px; font-size: 11px; }
   .editorial { padding: 14px 16px; font-size: 13.5px; margin-top: 18px; }
 }
 </style>
@@ -186,7 +297,7 @@ const deltaYtdTip = dYtdBase
 <script>
 (() => {
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-  const el = document.querySelector<HTMLElement>(".score-num");
+  const el = document.querySelector<HTMLElement>(".composite-card .score-num");
   if (!el) return;
   const valueEl = el.querySelector<HTMLElement>(".score-value");
   if (!valueEl) return;

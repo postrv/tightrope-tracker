@@ -381,7 +381,12 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     description: "Average Weekly Earnings -- whole economy regular-pay index (2015=100, SA, excl. arrears). Rising means earnings are growing.",
     formatDisplay: fmtIndex(1),
     provenance: "live",
-    maxStaleMs: STALE_RTI_MONTHLY_MS,
+    // K54L is published mid-month for the data two months prior, so the
+    // freshest observation is always 50-90 days old in steady state. The
+    // earlier 60-day window meant the indicator tripped the stale banner
+    // every month between prints; widening to the LMS lag aligns the
+    // window with the upstream's actual cadence.
+    maxStaleMs: STALE_ONS_LMS_MS,
   },
   real_regular_pay: {
     id: "real_regular_pay", pillar: "labour", label: "Real regular pay growth, YoY", shortLabel: "Real pay",

@@ -43,7 +43,11 @@ describe("maxStaleMsForIndicator", () => {
 
   it("ons_lms indicators tolerate LFS / AWE reporting lag", () => {
     const lmsIds = ["inactivity_rate", "inactivity_health", "unemployment",
-                    "vacancies_per_unemployed", "real_regular_pay"];
+                    "vacancies_per_unemployed", "real_regular_pay",
+                    // payroll_mom is K54L (AWE regular-pay index) — same
+                    // upstream cadence as the LMS series above, even though
+                    // it's wired through the ons_rti adapter.
+                    "payroll_mom"];
     for (const id of lmsIds) {
       expect(INDICATORS[id]!.maxStaleMs, `${id}`).toBeGreaterThanOrEqual(LMS_LAG_MS);
     }

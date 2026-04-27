@@ -1,0 +1,165 @@
+{
+  "_comment": "Moneyfacts UK monthly headline average 2y fixed-rate residential mortgage (overall all-LTV).",
+  "methodology": {
+    "primary_source": "https://www.mortgagefinancegazette.com/ (Moneyfacts press summaries)",
+    "indicator": "Moneyfacts overall all-LTV 2y fixed average rate, beginning-of-month figure",
+    "release_cadence": "monthly + occasional mid-month updates (we use the beginning-of-month figure)",
+    "extraction_notes": "Series compiled from dated Mortgage Finance Gazette articles quoting Moneyfacts Rate Watch and Moneyfacts UK Mortgage Trends Treasury Report. Each point uses the start-of-month / earliest-week reading published in the relevant month. Notable moves: (1) Jul 2024 -> Aug 2024 fell 18bps (5.95% -> 5.77%) per MFG 02-08-2024 ('Two-year rates fell 18 basis points to 5.77% between the start of July and the start of August'); (2) Aug 2024 -> Sep 2024 fell 21bps (5.77% -> 5.56%) per MFG 09-09-2024; (3) Oct 2024 -> Dec 2024 climbed (5.40% -> 5.52%) on volatile swap rates; (4) Jan 2025 = 5.48%, falling steadily through 2025; (5) Aug 2025 first month under 5%; (6) Dec 2025 = 4.82-4.86% (lowest since Sept 2022 mini-Budget); (7) MAJOR EVENT: Iran conflict broke out 26 Feb 2026 — average 2y fix spiked from 4.83% (26 Feb 2026) to 5.10% mid-Mar (MFG 13-03-2026), 5.56% (25 Mar), 5.75% (27 Mar), 5.89% (2 Apr 2026). April 2026 figure of 5.89% represents a ~106bps month-on-month rise — auditable via MFG 02-04-2026. (8) Late April 2026 saw rates ease to 5.81% (MFG 24-04-2026) but the start-of-April reading is the headline figure used here. Cross-checked anchors against moneyfactscompare.co.uk, mortgagesolutions.co.uk and moneyfactsgroup.co.uk press archive. No interpolation; every point cites a dated Mortgage Finance Gazette permalink that quotes Moneyfacts directly."
+  },
+  "points": [
+    {
+      "observed_at": "2024-07-01T00:00:00Z",
+      "value": 5.95,
+      "release": "Moneyfacts Rate Watch — start of July 2024",
+      "published": "2024-08-02",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/five-year-fixes-biggest-movers-moneyfacts-rate-watch-02-08-2024/"
+    },
+    {
+      "observed_at": "2024-08-01T00:00:00Z",
+      "value": 5.77,
+      "release": "Moneyfacts Rate Watch — start of August 2024",
+      "published": "2024-08-02",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/five-year-fixes-biggest-movers-moneyfacts-rate-watch-02-08-2024/"
+    },
+    {
+      "observed_at": "2024-09-01T00:00:00Z",
+      "value": 5.56,
+      "release": "Moneyfacts — average fixes fall in August",
+      "published": "2024-09-09",
+      "url": "https://www.mortgagefinancegazette.com/market-news/average-fixes-fall-in-august-moneyfacts-09-09-2024/"
+    },
+    {
+      "observed_at": "2024-10-01T00:00:00Z",
+      "value": 5.40,
+      "release": "Moneyfacts — Y/Y comparison cited in MFG 13-10-2025",
+      "published": "2025-10-13",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/ave-mortgage-rates-rise-for-the-first-time-since-feb-13-10-2025/"
+    },
+    {
+      "observed_at": "2024-11-01T00:00:00Z",
+      "value": 5.39,
+      "release": "Moneyfacts Rate Watch — early November 2024",
+      "published": "2024-11-08",
+      "url": "https://www.mortgagefinancegazette.com/market-news/fixed-rate-hikes-continue-moneyfacts-08-11-2024/"
+    },
+    {
+      "observed_at": "2024-12-01T00:00:00Z",
+      "value": 5.52,
+      "release": "Moneyfacts Rate Watch — biggest monthly rise in five-year fixes since Aug 2023",
+      "published": "2024-12-09",
+      "url": "https://www.mortgagefinancegazette.com/market-commentary/biggest-monthly-rise-for-five-year-fixes-since-august-23-moneyfacts-09-12-2024/"
+    },
+    {
+      "observed_at": "2025-01-01T00:00:00Z",
+      "value": 5.48,
+      "release": "Moneyfacts Rate Watch — margin between 2- and 5-year fixes narrows",
+      "published": "2025-01-13",
+      "url": "https://www.mortgagefinancegazette.com/uncategorised/margin-between-2-and-5-year-fixes-narrows-to-2-year-low-moneyfacts-13-01-2025/"
+    },
+    {
+      "observed_at": "2025-02-01T00:00:00Z",
+      "value": 5.52,
+      "release": "Moneyfacts Rate Watch — combination of cuts and increases (end Jan / start Feb 2025)",
+      "published": "2025-01-31",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/combination-of-rate-cuts-and-increases-in-fixed-mortgage-market-this-week-31-01-2025/"
+    },
+    {
+      "observed_at": "2025-03-01T00:00:00Z",
+      "value": 5.37,
+      "release": "Moneyfacts Rate Watch — sub-4% deals emerge (early March 2025)",
+      "published": "2025-03-07",
+      "url": "https://www.mortgagefinancegazette.com/banks/average-fixes-fall-again-as-more-sub-4-deals-emerge-07-03-2025/"
+    },
+    {
+      "observed_at": "2025-04-01T00:00:00Z",
+      "value": 5.33,
+      "release": "Moneyfacts Rate Watch — fixed rate cuts and product launches (early April 2025)",
+      "published": "2025-04-04",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/fixed-rate-cuts-and-product-launches-in-busy-week-moneyfacts-04-04-2025/"
+    },
+    {
+      "observed_at": "2025-05-01T00:00:00Z",
+      "value": 5.18,
+      "release": "Moneyfacts — average two-year fix falls to lowest rate since before Truss budget",
+      "published": "2025-05-12",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/average-two-year-fix-falls-to-lowest-rate-since-before-truss-budget-moneyfacts-12-05-2025/"
+    },
+    {
+      "observed_at": "2025-06-01T00:00:00Z",
+      "value": 5.13,
+      "release": "Moneyfacts Rate Watch — average rates on hold (early June 2025)",
+      "published": "2025-06-13",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/average-rates-on-hold-for-second-week-moneyfacts-rate-watch-13-06-2025/"
+    },
+    {
+      "observed_at": "2025-07-01T00:00:00Z",
+      "value": 5.05,
+      "release": "Moneyfacts Rate Watch — averages tick down after major rate cuts",
+      "published": "2025-07-11",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/averages-tick-down-after-major-rate-cuts-moneyfacts-ratewatch-11-07-2025/"
+    },
+    {
+      "observed_at": "2025-08-01T00:00:00Z",
+      "value": 5.00,
+      "release": "Moneyfacts — two-year rate falls below five-year fix for first time since Truss mini-Budget",
+      "published": "2025-08-07",
+      "url": "https://www.mortgagefinancegazette.com/market-news/two-year-rate-falls-below-five-year-fix-for-first-time-since-truss-mini-budget-07-08-2025/"
+    },
+    {
+      "observed_at": "2025-09-01T00:00:00Z",
+      "value": 4.98,
+      "release": "Moneyfacts Rate Watch — no change in average fixed rates after lender repricing",
+      "published": "2025-09-26",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/no-change-in-average-fixed-rates-after-lender-repricing-26-09-2025/"
+    },
+    {
+      "observed_at": "2025-10-01T00:00:00Z",
+      "value": 4.98,
+      "release": "Moneyfacts Rate Watch — little change among average fixes (early October 2025)",
+      "published": "2025-10-03",
+      "url": "https://www.mortgagefinancegazette.com/market-news/little-change-among-average-fixes-from-three-weeks-ago-moneyfacts-03-10-2025/"
+    },
+    {
+      "observed_at": "2025-11-01T00:00:00Z",
+      "value": 4.92,
+      "release": "Moneyfacts Rate Watch — average fixed rates fall by 3 bps (early November 2025)",
+      "published": "2025-11-07",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/mortgage-lending-figures/average-fixed-rates-fall-by-3-bps-moneyfacts-07-11-2025/"
+    },
+    {
+      "observed_at": "2025-12-01T00:00:00Z",
+      "value": 4.86,
+      "release": "Moneyfacts Rate Watch — two-year fixed rates most popular choice",
+      "published": "2025-12-04",
+      "url": "https://www.mortgagefinancegazette.com/banks/two-year-fixed-rates-most-popular-choice-moneyfacts-04-12-2025/"
+    },
+    {
+      "observed_at": "2026-01-01T00:00:00Z",
+      "value": 4.83,
+      "release": "Moneyfacts Rate Watch — mortgage rates stay flat in the new year",
+      "published": "2026-01-02",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/mortgage-lending-figures/mortgage-rates-stay-flat-in-the-new-year-says-moneyfacts-02-01-2026/"
+    },
+    {
+      "observed_at": "2026-02-01T00:00:00Z",
+      "value": 4.85,
+      "release": "Moneyfacts Rate Watch — upward pressure on fixed rates continues (early February 2026)",
+      "published": "2026-02-06",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/mortgage-lending-figures/upward-pressure-on-fixed-rates-continues-says-moneyfacts-06-02-2026/"
+    },
+    {
+      "observed_at": "2026-03-01T00:00:00Z",
+      "value": 4.83,
+      "release": "Moneyfacts — pre-Iran-conflict reading (cited in MFG 27-03-2026)",
+      "published": "2026-03-27",
+      "url": "https://www.mortgagefinancegazette.com/banks/average-two-year-fix-hits-5-75-in-92bps-jump-since-iran-war-27-03-2026/"
+    },
+    {
+      "observed_at": "2026-04-01T00:00:00Z",
+      "value": 5.89,
+      "release": "Moneyfacts — mortgage prices keep rising (start of April 2026)",
+      "published": "2026-04-02",
+      "url": "https://www.mortgagefinancegazette.com/lending-news/mortgage-lending-figures/mortgage-prices-keep-rising-as-average-rate-hits-5-76-02-04-2026/"
+    }
+  ]
+}

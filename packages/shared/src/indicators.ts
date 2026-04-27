@@ -375,7 +375,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   mortgage_2y_fix: {
     id: "mortgage_2y_fix", pillar: "labour", label: "Average 2y fixed mortgage rate", shortLabel: "2y fix",
     unit: "%", weight: 0.12, risingIsBad: true, sourceId: "moneyfacts",
-    description: "UK average 2-year fixed-rate mortgage at 75% LTV.", formatDisplay: fmtPct(2),
+    description: "UK average 2-year fixed-rate residential mortgage — Moneyfacts overall all-LTV monthly headline average.", formatDisplay: fmtPct(2),
     provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
   },

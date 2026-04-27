@@ -99,8 +99,10 @@ export async function handleScoreHistory(
 
   const raw = url.searchParams.get("days") ?? "30";
   const days = Number.parseInt(raw, 10);
-  if (!Number.isFinite(days) || days < 1 || days > 365) {
-    return json({ error: "days must be an integer between 1 and 365", code: "BAD_QUERY" }, 400);
+  // Cap matches the ingest backfill cap (apps/ingest/src/pipelines/backfill.ts)
+  // so the chart can serve the full GE-2024-to-today range once backfilled.
+  if (!Number.isFinite(days) || days < 1 || days > 800) {
+    return json({ error: "days must be an integer between 1 and 800", code: "BAD_QUERY" }, 400);
   }
 
   try {

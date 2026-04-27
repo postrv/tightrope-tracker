@@ -14,7 +14,7 @@ describe("onsRtiAdapter.fetchHistorical", () => {
     return JSON.stringify({ months });
   }
 
-  it("emits payroll_mom per month in range and notes that dd_failure_rate is skipped", async () => {
+  it("emits payroll_mom per month in range and dd_failure_rate from the curated history fixture", async () => {
     const fetchImpl = async (input: RequestInfo | URL): Promise<Response> => {
       const url = typeof input === "string" ? input : (input as URL | Request).toString();
       if (url.includes("api.beta.ons.gov.uk")) {
@@ -30,15 +30,19 @@ describe("onsRtiAdapter.fetchHistorical", () => {
       fetchImpl as unknown as typeof globalThis.fetch,
       { from: new Date("2025-03-01T00:00:00Z"), to: new Date("2025-05-01T00:00:00Z") },
     );
-    expect(result.observations.map((o) => o.observedAt)).toEqual([
+    // Both payroll_mom (from the live ONS series) and dd_failure_rate (from
+    // dd-failure-rate-history.json) emit observations in this range. Each
+    // payroll print is dated month-start; each dd print is dated month-end.
+    const payrollDates = result.observations.filter((o) => o.indicatorId === "payroll_mom").map((o) => o.observedAt);
+    expect(payrollDates).toEqual([
       "2025-03-01T00:00:00Z",
       "2025-04-01T00:00:00Z",
       "2025-05-01T00:00:00Z",
     ]);
+    const ddDates = result.observations.filter((o) => o.indicatorId === "dd_failure_rate").map((o) => o.observedAt);
+    expect(ddDates.length).toBeGreaterThanOrEqual(2); // March + April month-ends fall in range
     for (const o of result.observations) {
-      expect(o.indicatorId).toBe("payroll_mom");
       expect(o.payloadHash).toMatch(/^hist:[0-9a-f]{64}$/);
     }
-    expect(result.notes?.[0]).toContain("dd_failure_rate");
   });
 });

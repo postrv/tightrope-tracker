@@ -1,6 +1,6 @@
 {
-  "_comment": "Moneyfacts UK monthly mortgage rate averages. Moneyfacts publishes these as press releases (no free API). Curate monthly. TODO(source): https://moneyfacts.co.uk -- investigate bulk download.",
+  "_comment": "Moneyfacts UK monthly average 2-year fixed-rate residential mortgage (overall all-LTV headline average). Moneyfacts publishes this as press releases (no free API). Curate monthly. AUDIT 2026-04-27: previous fixture carried 5.14% labelled '75% LTV' — neither matched any free public Moneyfacts headline for any month in 2026 (the 75% LTV-specific 2y average is paywalled inside Moneyfacts' Treasury Report). Corrected to the publicly-citable Moneyfacts overall all-LTV 2y fixed average for 2 April 2026 = 5.89% (Iran-conflict-driven spike; 30 March was 5.77%, eased back to 5.81% by 24 April). Indicator description in packages/shared/src/indicators.ts updated accordingly. TODO(source): swap to BoE IUMBV34 (quoted 2y 75% LTV, free) once we have a working scrape path that doesn't 403.",
   "observed_at": "2026-04-01T00:00:00Z",
-  "mortgage_2y_fix": { "value": 5.14, "unit": "%" },
-  "source_url": "https://moneyfacts.co.uk/news/mortgages/"
+  "mortgage_2y_fix": { "value": 5.89, "unit": "%" },
+  "source_url": "https://www.mortgagefinancegazette.com/lending-news/mortgage-lending-figures/mortgage-prices-keep-rising-as-average-rate-hits-5-76-02-04-2026/"
 }

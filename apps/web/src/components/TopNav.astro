@@ -4,6 +4,13 @@ import type { ScoreBand } from "@tightrope/shared";
 interface Props {
   band?: ScoreBand;
   updatedAt?: string;
+  /**
+   * ISO timestamp of the freshest indicator observation. When provided, the
+   * chip displays "Data · DD MMM HH:MM UTC" anchored to this — the value the
+   * viewer actually wants to know about. `updatedAt` (recompute heartbeat)
+   * is preserved as the title attribute for ops debugging.
+   */
+  freshestAt?: string | null;
   /** When true, the latest reading is past its staleness window -- render a
    *  "Stale" chip instead of the live "Updated HH:MM" chip. */
   stale?: boolean;
@@ -14,20 +21,33 @@ interface Props {
   compact?: boolean;
 }
 
-const { band, updatedAt, stale = false, compact = false } = Astro.props;
+const { band, updatedAt, freshestAt, stale = false, compact = false } = Astro.props;
 const dotColour = stale
   ? "var(--band-critical)"
   : band
     ? `var(--band-${band === "slack" ? "slack" : band === "steady" ? "steady" : band === "strained" ? "strain" : band === "acute" ? "acute" : "critical"})`
     : "var(--band-acute)";
 
-const hh = updatedAt
-  ? new Date(updatedAt).toISOString().substring(11, 16) + " UTC"
-  : "";
+// Display anchor: prefer the freshest indicator observation over the recompute
+// heartbeat. The recompute timestamp ticks every 5 minutes regardless of
+// whether the underlying data has moved, so showing it as "Updated HH:MM" is
+// misleading-fresh when an upstream fixture is days stale.
+const displayAt = freshestAt ?? updatedAt;
+const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function formatChip(iso: string | undefined | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const day = d.getUTCDate();
+  const mon = MONTH_SHORT[d.getUTCMonth()];
+  const hh = d.toISOString().substring(11, 16);
+  return `${day} ${mon} ${hh} UTC`;
+}
+const chipStamp = formatChip(displayAt);
 
 // Short "2h", "3d" style age string so the stale chip conveys how old the
 // last-known reading is without eating the whole nav bar.
-function ageShort(iso: string | undefined): string {
+function ageShort(iso: string | undefined | null): string {
   if (!iso) return "";
   const ms = Date.now() - Date.parse(iso);
   if (!Number.isFinite(ms) || ms < 0) return "";
@@ -36,7 +56,8 @@ function ageShort(iso: string | undefined): string {
   if (hours < 48) return `${hours}h`;
   return `${Math.floor(hours / 24)}d`;
 }
-const age = ageShort(updatedAt);
+const age = ageShort(displayAt);
+const recomputeChip = formatChip(updatedAt);
 ---
 {(() => {
   const links = compact
@@ -76,14 +97,14 @@ const age = ageShort(updatedAt);
           class={`live-chip${stale ? " stale" : ""}`}
           aria-live="polite"
           title={stale
-            ? `Last fresh reading ${hh}`
-            : "Auto-ingest: scheduled adapters run from five-minutely (BoE rates) to daily (most ONS / OBR proxies). Not real-time; the stamp shown is the last successful ingest."}
+            ? `Last fresh reading ${chipStamp}. Recompute heartbeat ${recomputeChip}.`
+            : `Stamp = freshest indicator observation. Recompute heartbeat ${recomputeChip}. Auto-ingest cadences range from five-minutely (BoE rates) to monthly (ONS prints).`}
         >
           <span class="dot" style={`background: ${dotColour}; --pulse: ${dotColour};`}></span>
           {stale
-            ? `Stale · last fresh ${age || hh}`
-            : hh
-              ? `Auto · Updated ${hh}`
+            ? `Stale · last fresh ${age || chipStamp}`
+            : chipStamp
+              ? `Data · ${chipStamp}`
               : "Auto · Awaiting first ingestion"}
         </span>
         <button class="hamburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav-panel" data-nav-toggle>

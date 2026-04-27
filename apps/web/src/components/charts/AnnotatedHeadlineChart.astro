@@ -38,13 +38,25 @@ const {
 } = Astro.props;
 
 // --- layout constants -----------------------------------------------------
-// Padding leaves room for left axis labels (0..100) and bottom date ticks.
+// Padding leaves room for left axis labels (0..100), bottom date ticks, and
+// two rows of permanent event labels above + two rows below the plot. The
+// extra top/bottom space is what lets dense Budget-clustered events stagger
+// across multiple lanes instead of piling up in two parity rows.
 const padL = 44;
 const padR = 16;
-const padT = 16;
-const padB = 32;
+const padT = 30;
+const padB = 48;
 const plotW = width - padL - padR;
 const plotH = height - padT - padB;
+// Per-lane y-anchors for the four-row label layout. Two lanes sit in padT,
+// two in padB. Each holds one label per chart-x-position before spilling to
+// the next lane.
+const LABEL_LANES = [
+  { y: padT - 18, above: true },   // above row 0 — closest to plot
+  { y: padT - 4,  above: true },   // above row 1 — closer to top
+  { y: padT + plotH + 14, above: false }, // below row 0
+  { y: padT + plotH + 28, above: false }, // below row 1 (above date ticks)
+] as const;
 
 // --- band-tinted background regions and y-axis ticks ----------------------
 // We anchor the y-axis to the canonical band boundaries (0, 20, 40, 60, 80, 100)
@@ -131,11 +143,91 @@ function abbreviateEventTitle(title: string): string {
   // the head clause, then trim to a hard cap so a label never blows the
   // chart width on mobile.
   const head = title.split(/[,:—–-]/, 1)[0]!.trim();
-  return head.length > 22 ? `${head.slice(0, 21)}…` : head;
+  return head.length > 18 ? `${head.slice(0, 17)}…` : head;
 }
 const majorAnnotations = annotations.filter((a) =>
   LABEL_CATEGORIES.has(a.event.category),
 );
+
+// --- label collision-resolving placement ----------------------------------
+// The previous algorithm staggered labels above/below by index parity, which
+// piles up two adjacent fiscal events on the same line whenever they happen
+// to share parity (e.g. a Budget plus the OBR commentary on the same week).
+// Pack into 4 lanes greedily by xRatio, dropping any label that doesn't fit
+// — the marker dot remains, so the event is still readable on hover, but the
+// chart never collapses into stacked overlapping text.
+const LABEL_CHAR_WIDTH = 6.2; // ~10.5px monospace, conservative
+const LABEL_GAP_PX = 6;
+
+interface PlacedLabel {
+  annotation: typeof majorAnnotations[number];
+  cx: number;
+  cy: number;
+  labelX: number;
+  labelY: number;
+  anchor: "start" | "middle" | "end";
+  above: boolean;
+  text: string;
+}
+
+function placeLabels(
+  inputs: readonly typeof majorAnnotations[number][],
+): readonly PlacedLabel[] {
+  const sorted = [...inputs].sort((a, b) => a.xRatio - b.xRatio);
+  const laneRightEdge = LABEL_LANES.map(() => Number.NEGATIVE_INFINITY);
+  const out: PlacedLabel[] = [];
+  for (const a of sorted) {
+    const text = abbreviateEventTitle(a.event.title);
+    const width = text.length * LABEL_CHAR_WIDTH;
+    const cx = padL + a.xRatio * plotW;
+    const cy = yFor(a.value);
+    // Default anchor: centre. Clamp the label horizontally so it doesn't run
+    // off either edge — switch to start/end anchor when the label is right
+    // up against the plot bounds.
+    const halfWidth = width / 2;
+    let labelX = cx;
+    let anchor: "start" | "middle" | "end" = "middle";
+    const minX = padL + 4;
+    const maxX = padL + plotW - 4;
+    if (cx - halfWidth < minX) {
+      labelX = minX;
+      anchor = "start";
+    } else if (cx + halfWidth > maxX) {
+      labelX = maxX;
+      anchor = "end";
+    }
+    // Compute the horizontal extent the label will occupy given the anchor.
+    const labelLeft = anchor === "start"
+      ? labelX
+      : anchor === "end"
+        ? labelX - width
+        : labelX - halfWidth;
+    const labelRight = labelLeft + width;
+    let assignedLane = -1;
+    for (let i = 0; i < LABEL_LANES.length; i++) {
+      if (labelLeft > laneRightEdge[i]! + LABEL_GAP_PX) {
+        assignedLane = i;
+        laneRightEdge[i] = labelRight;
+        break;
+      }
+    }
+    if (assignedLane === -1) continue; // dot stays; permanent label dropped
+    const lane = LABEL_LANES[assignedLane]!;
+    out.push({
+      annotation: a,
+      cx,
+      cy,
+      labelX,
+      labelY: lane.y,
+      anchor,
+      above: lane.above,
+      text,
+    });
+  }
+  return out;
+}
+
+const placedLabels = placeLabels(majorAnnotations);
 
 // Map TimelineCategory → CSS variable. Markers stay readable on the cream
 // background and align with how the rest of the site colours each kind
@@ -279,41 +371,33 @@ const idScope = `chart-${width}x${height}`;
       );
     })}
 
-    {/* Permanent labels for major events (fiscal + geopolitical). Stagger
-        above / below the chart line by index parity so adjacent labels
-        don't collide. The dot itself stays clickable via the marker
-        group above; this label is presentation-only. */}
-    {majorAnnotations.map((a, i) => {
-      const cx = padL + a.xRatio * plotW;
-      const cy = yFor(a.value);
-      const above = i % 2 === 0;
-      const labelY = above ? Math.max(padT + 12, cy - 18) : Math.min(padT + plotH - 4, cy + 28);
-      const connectorY1 = above ? cy - 6 : cy + 6;
-      const connectorY2 = above ? labelY + 4 : labelY - 12;
-      const colour = colourFor(a.event.category);
-      const text = abbreviateEventTitle(a.event.title);
-      // Anchor: keep the text inside the plot area. Clamp the x so the
-      // label doesn't run off the right edge on the freshest event.
-      const labelX = Math.min(padL + plotW - 4, Math.max(padL + 4, cx));
-      const anchor = labelX === padL + plotW - 4 ? "end" : labelX === padL + 4 ? "start" : "middle";
+    {/* Permanent labels for major events (fiscal + geopolitical), packed
+        into four lanes (two above plot, two below) by xRatio with greedy
+        collision resolution. Labels that can't fit any lane are dropped —
+        the marker dot still renders so the event remains hover-discoverable
+        but the chart never collapses into overlapping text. */}
+    {placedLabels.map((p) => {
+      const colour = colourFor(p.annotation.event.category);
+      const connectorY1 = p.above ? p.cy - 6 : p.cy + 6;
+      const connectorY2 = p.above ? p.labelY + 4 : p.labelY - 10;
       return (
         <g class="event-label" aria-hidden="true">
           <line
-            x1={cx}
+            x1={p.cx}
             y1={connectorY1}
-            x2={cx}
+            x2={p.cx}
             y2={connectorY2}
             stroke={colour}
             stroke-width="1"
             stroke-opacity="0.7"
           />
           <text
-            x={labelX}
-            y={labelY}
-            text-anchor={anchor}
+            x={p.labelX}
+            y={p.labelY}
+            text-anchor={p.anchor}
             class="event-label-text"
             fill={colour}
-          >{text}</text>
+          >{p.text}</text>
         </g>
       );
     })}

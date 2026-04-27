@@ -6,9 +6,16 @@ import { eyebrowDate, signedDelta, trendArrow, trendClass, trendDescriptor } fro
 
 interface Props {
   headline: HeadlineScore;
+  /**
+   * ISO timestamp of the freshest indicator observation across all pillars,
+   * not the recompute time stamped on `headline.updatedAt`. Used in the
+   * eyebrow so the page-level "as of" line reflects the underlying data,
+   * not the 5-minute recompute heartbeat.
+   */
+  freshestAt?: string | null;
 }
 
-const { headline } = Astro.props;
+const { headline, freshestAt } = Astro.props;
 const band = BANDS.find((b) => b.id === headline.band) ?? bandFor(headline.value);
 const bandColour = band.colourToken;
 const dominantLabel = PILLARS[headline.dominantPillar]?.title ?? "The dominant pillar";
@@ -53,7 +60,10 @@ const deltaYtdTip = dYtdBase
   <div class="container">
     <div class="hero-grid">
       <div>
-        <span class="eyebrow">Civic data · {eyebrowDate(headline.updatedAt)}</span>
+        <span
+          class="eyebrow"
+          title={`Latest indicator observation: ${eyebrowDate(freshestAt ?? headline.updatedAt)}. Recompute heartbeat: ${eyebrowDate(headline.updatedAt)}.`}
+        >Civic data · {eyebrowDate(freshestAt ?? headline.updatedAt)}</span>
         <h1>the UK is on a <span class="lfg-u">fiscal tightrope</span>. the more it sways, the harder it is to <span class="lfg-u lfg-u--blue">move forward</span>.</h1>
         <p class="lede">Fiscal headroom is thin. The less stable the economic picture — markets, borrowing costs, the labour force — the less freedom the government has to invest in growth. This score tracks that instability: how much the rope is swaying, and whether the government is steadying it or making it worse. Every number sourced and open.</p>
 

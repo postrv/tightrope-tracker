@@ -1,6 +1,6 @@
 import type { DeliveryCommitment } from "@tightrope/shared";
 import { json, notSeeded } from "../lib/router.js";
-import { readThrough } from "../lib/cache.js";
+import { readThroughStamped } from "../lib/cache.js";
 import { getDeliveryCommitments } from "../lib/db.js";
 
 export async function handleDelivery(
@@ -13,7 +13,7 @@ export async function handleDelivery(
     return json({ error: `unknown query parameter: ${key}`, code: "BAD_QUERY" }, 400);
   }
   try {
-    const commitments = await readThrough<DeliveryCommitment[]>(
+    const commitments = await readThroughStamped<DeliveryCommitment[]>(
       env,
       "delivery:latest",
       () => getDeliveryCommitments(env),

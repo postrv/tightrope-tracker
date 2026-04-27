@@ -80,6 +80,9 @@ export async function purgeSyntheticHistory(
   await Promise.all([
     env.KV.delete("score:latest").catch(() => undefined),
     env.KV.delete("score:history:90d").catch(() => undefined),
+    env.KV.delete("delivery:latest").catch(() => undefined),
+    env.KV.delete("timeline:latest").catch(() => undefined),
+    env.KV.delete("methodology:baselines").catch(() => undefined),
   ]);
 
   return result;

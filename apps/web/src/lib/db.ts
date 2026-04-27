@@ -178,6 +178,10 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       .filter((r: PillarHistoryRow) => r.id === p)
       .map((r: PillarHistoryRow) => r.value);
     const value = latest?.value ?? 0;
+    // The pillar history SQL above downsamples to one row per UTC day, so
+    // `series.at(-7)` reaches back ~7 calendar days. Mirrors
+    // apps/api/src/lib/db.ts:144 — if either query's window changes the
+    // 7d trend would silently desync between API and SSR.
     const sevenDaysAgo = series.at(-7) ?? value;
     const delta = value - sevenDaysAgo;
     const trend: Trend = Math.abs(delta) < 0.5 ? "flat" : delta > 0 ? "up" : "down";
@@ -271,9 +275,17 @@ interface DeltaWithBaseline {
 /**
  * One-UTC-day-per-row history (as produced by the 90d headline query).
  * Returns delta = latest - row[latest_index - n]. If history is too
- * short, falls back to oldest row and surfaces its observedAt as
+ * short, falls back to oldest row as long as it's at least
+ * `MIN_FALLBACK_DAYS` old, and surfaces its observedAt as
  * baselineDate so the UI can label the number honestly.
+ *
+ * Mirrors apps/api/src/lib/db.ts deltaAgoWithFallback. Without the
+ * floor, a fresh deploy with thin history would report a 2-day-old
+ * delta as "30d" while the API correctly returns 0 — a divergence
+ * that would mislead a viewer mid-broadcast.
  */
+const MIN_FALLBACK_DAYS = 7;
+
 function deltaAgoWithDate(rows: readonly ScoreRow[], targetDays: number): DeltaWithBaseline {
   if (rows.length < 2) return { value: 0 };
   const latest = rows[rows.length - 1]!;
@@ -282,6 +294,8 @@ function deltaAgoWithDate(rows: readonly ScoreRow[], targetDays: number): DeltaW
     return { value: round1(latest.value - rows[idx]!.value) };
   }
   const oldest = rows[0]!;
+  const ageDays = (Date.now() - new Date(oldest.observed_at).getTime()) / (24 * 60 * 60 * 1000);
+  if (ageDays < MIN_FALLBACK_DAYS) return { value: 0 };
   return { value: round1(latest.value - oldest.value), baselineDate: oldest.observed_at };
 }
 
@@ -297,6 +311,9 @@ function deltaAgoYtd(rows: readonly ScoreRow[], now: Date): DeltaWithBaseline {
     }
   }
   const oldest = rows[0]!;
+  const oldestMs = new Date(oldest.observed_at).getTime();
+  const ageDays = (now.getTime() - oldestMs) / (24 * 60 * 60 * 1000);
+  if (ageDays < MIN_FALLBACK_DAYS) return { value: 0 };
   return { value: round1(latest.value - oldest.value), baselineDate: oldest.observed_at };
 }
 

@@ -321,10 +321,16 @@ export async function backfillHistoricalScores(
   }
 
   // KV caches were built against pre-backfill data — invalidate so the next
-  // read goes to D1 and reflects the newly-written history.
+  // read goes to D1 and reflects the newly-written history. We also bust the
+  // editorial keys (delivery, timeline, methodology baselines) because a
+  // backfill window may overlap dates whose editorial state has been
+  // updated since the cache was last written.
   await Promise.all([
     env.KV.delete("score:latest").catch(() => undefined),
     env.KV.delete("score:history:90d").catch(() => undefined),
+    env.KV.delete("delivery:latest").catch(() => undefined),
+    env.KV.delete("timeline:latest").catch(() => undefined),
+    env.KV.delete("methodology:baselines").catch(() => undefined),
   ]);
 
   return {

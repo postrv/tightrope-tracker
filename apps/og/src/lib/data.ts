@@ -61,6 +61,15 @@ async function buildFromD1(env: Env): Promise<ScoreSnapshot> {
     ).all<{ id: PillarId; value: number; band: string; observed_at: string }>(),
   ]);
 
+  // The cold-cache fallback stamps `stale: true` on every level when the
+  // underlying D1 row is past the same 30-min freshness window the live KV
+  // gate uses. Without it the OG renderer would happily emit a card with a
+  // five-minute-old timestamp showing zeroed deltas and an empty sparkline,
+  // misreading as "today's market is flat" rather than "data is loading".
+  const now = Date.now();
+  const headlineAgeMs = headlineRow ? now - Date.parse(headlineRow.observed_at) : Number.POSITIVE_INFINITY;
+  const isStaleFallback = !Number.isFinite(headlineAgeMs) || headlineAgeMs >= KV_SNAPSHOT_MAX_AGE_MS;
+
   const pillars = {} as Record<PillarId, PillarScore>;
   for (const p of PILLAR_ORDER) {
     const row = pillarsLatest.results.find((r) => r.id === p);
@@ -77,6 +86,7 @@ async function buildFromD1(env: Env): Promise<ScoreSnapshot> {
       trend30d: "flat",
       delta30d: 0,
       sparkline30d: [],
+      ...(isStaleFallback ? { stale: true } : {}),
     };
   }
 
@@ -91,6 +101,7 @@ async function buildFromD1(env: Env): Promise<ScoreSnapshot> {
     delta24h: 0,
     delta30d: 0,
     deltaYtd: 0,
+    ...(isStaleFallback ? { stale: true } : {}),
   };
 
   return { headline, pillars, schemaVersion: 1 };

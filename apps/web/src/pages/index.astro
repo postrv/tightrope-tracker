@@ -14,10 +14,19 @@ import ShareGrid from "~/components/ShareGrid.astro";
 import ActionSection from "~/components/ActionSection.astro";
 import SiteFooter from "~/components/SiteFooter.astro";
 import { loadHomepageData } from "~/lib/page-data.js";
+import { summariseFreshness } from "~/lib/freshness.js";
 
 const data = await loadHomepageData(Astro.locals);
 const { snapshot, movements, delivery, timeline, history, empty } = data;
-const isStale = Boolean(snapshot.headline.stale);
+// Stale banner triggers on quorum-failure (snapshot.headline.stale) but ALSO
+// on per-indicator staleness — a daily indicator past its 5-day window even
+// when the pillar still holds quorum. Keeping the reader honest about which
+// individual prints have gone cold prevents a "this number is fresh" reading
+// of a 10-day-old fixture.
+const freshness = summariseFreshness(snapshot, movements);
+const isPillarStale = Boolean(snapshot.headline.stale);
+const indicatorStaleNames = freshness.staleIndicators.map((s) => s.label);
+const isStale = isPillarStale || freshness.staleIndicators.length > 0;
 // Figure out which pillars specifically are stale so the banner can name them
 // instead of making the reader hunt across the page.
 const stalePillarLabels = Object.values(snapshot.pillars)
@@ -33,7 +42,7 @@ const failingSourceNames = failingSources.map((s) => s.name);
 const showSourceWarning = !isStale && !empty && failingSources.length > 0;
 ---
 <BaseLayout title="Tightrope Tracker — a live dashboard of UK economic constraint">
-  <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} stale={isStale} />
+  <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} freshestAt={freshness.freshestAt} stale={isStale} />
   <main id="main">
     {empty ? (
       <div class="stale-banner container" role="status">
@@ -41,7 +50,11 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
       </div>
     ) : isStale ? (
       <div class="stale-banner stale container" role="status">
-        <strong>Showing last-known values.</strong> One or more inputs haven't refreshed in their usual window ({stalePillarLabels.join(", ")}). The figures below are carry-forward readings, not live prints — we'll clear this banner automatically as fresh data arrives.
+        <strong>Showing last-known values.</strong>
+        {isPillarStale
+          ? ` One or more inputs haven't refreshed in their usual window (${stalePillarLabels.join(", ")}). `
+          : ` ${indicatorStaleNames.length} indicator${indicatorStaleNames.length === 1 ? " is" : "s are"} past their freshness window (${indicatorStaleNames.slice(0, 6).join(", ")}${indicatorStaleNames.length > 6 ? `, +${indicatorStaleNames.length - 6} more` : ""}). `}
+        The figures below are carry-forward readings, not live prints — we'll clear this banner automatically as fresh data arrives.
         {failingSources.length > 0 ? (
           <span class="source-note"> Upstream feeds affected: {failingSourceNames.join(", ")}.</span>
         ) : null}
@@ -52,7 +65,7 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
       </div>
     ) : null}
 
-    <Hero headline={snapshot.headline} />
+    <Hero headline={snapshot.headline} freshestAt={freshness.freshestAt} />
     <HeadlineChartSection history={history} events={timeline} />
     <PillarStrip pillars={snapshot.pillars} />
     <TodayStrip movements={movements} />
@@ -78,7 +91,7 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
     <ShareGrid snapshot={snapshot} movements={movements} delivery={delivery} />
     <ActionSection headline={snapshot.headline} />
   </main>
-  <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={isStale} />
+  <SiteFooter updatedAt={snapshot.headline.updatedAt} freshestAt={freshness.freshestAt} stale={isStale} />
 </BaseLayout>
 
 <style>

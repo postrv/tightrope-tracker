@@ -10,7 +10,6 @@ export { boeYieldsAdapter } from "./adapters/boeYields.js";
 export { boeFxAdapter } from "./adapters/boeFx.js";
 export { boeBreakevensAdapter } from "./adapters/boeBreakevens.js";
 export { lseHousebuildersAdapter } from "./adapters/lseHousebuilders.js";
-export { twelveDataHousebuildersAdapter } from "./adapters/twelveDataHousebuilders.js";
 export { eodhdHousebuildersAdapter } from "./adapters/eodhdHousebuilders.js";
 export { lseFtse250Adapter } from "./adapters/lseFtse250.js";
 export { deliveryMilestonesAdapter } from "./adapters/deliveryMilestones.js";

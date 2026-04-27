@@ -79,6 +79,12 @@ export const PILLAR_ORDER: readonly PillarId[] = ["market", "fiscal", "labour", 
  *
  *   "live"       — an adapter fetches the latest value from the primary
  *                  publisher on a cron (BoE, ONS, Moneyfacts...).
+ *   "live-fallback" — live by default, but the adapter has an editorial
+ *                  fixture path it falls through to when the upstream
+ *                  feed is rate-limited or transiently unavailable. The
+ *                  badge tooltip names the fixture so a reader who sees a
+ *                  flat number for several days can verify which path
+ *                  produced it.
  *   "fixture"    — the primary publisher does not expose a machine-readable
  *                  feed; the value is transcribed into a versioned JSON
  *                  fixture after each release and mirrored by the adapter.
@@ -86,7 +92,7 @@ export const PILLAR_ORDER: readonly PillarId[] = ["market", "fiscal", "labour", 
  *                  editorial judgement applied to public announcements
  *                  (delivery milestones) or has no data source wired yet.
  */
-export type IndicatorProvenance = "live" | "fixture" | "editorial";
+export type IndicatorProvenance = "live" | "live-fallback" | "fixture" | "editorial";
 
 export interface IndicatorDefinition {
   id: string;
@@ -164,7 +170,6 @@ const fmtIndex = (digits = 0) => (v: number) => v.toFixed(digits);
 const fmtGbpBn = (v: number) => `GBP ${v.toFixed(1)}bn`;
 const fmtMillions = (v: number) => `${v.toFixed(2)}m`;
 const fmtRatio = (v: number) => v.toFixed(4);
-const fmtCount = (v: number) => v.toLocaleString("en-GB");
 
 export const INDICATORS: Record<string, IndicatorDefinition> = {
   // Market (40%) -- intra-pillar weights sum to 1.00.
@@ -230,9 +235,9 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   housebuilder_idx: {
     id: "housebuilder_idx", pillar: "market", label: "UK housebuilder composite", shortLabel: "Housebuilders",
     unit: "index", weight: 0.08, risingIsBad: false, sourceId: "eodhd_housebuilders",
-    description: "Equal-weighted price index of the five largest listed UK housebuilders (rebased 100 = 2019 avg) -- leads OBR's residential investment and construction GVA lines by 3-6 months.",
+    description: "Equal-weighted price index of the five largest listed UK housebuilders (rebased 100 = 2019 avg) -- leads OBR's residential investment and construction GVA lines by 3-6 months. Pulled from EODHD's daily EOD feed; falls back to a weekly editorial fixture if the EODHD free-tier daily quota is exhausted.",
     formatDisplay: fmtIndex(1),
-    provenance: "live",
+    provenance: "live-fallback",
     maxStaleMs: STALE_DAILY_MS,
   },
   services_pmi: {
@@ -419,9 +424,9 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
   bics_rollout: {
-    id: "bics_rollout", pillar: "delivery", label: "BICS firms onboarded", shortLabel: "BICS",
-    unit: "firms", weight: 0.15, risingIsBad: false, sourceId: "desnz",
-    description: "Cumulative firms onboarded to the British Industrial Competitiveness Scheme.", formatDisplay: fmtCount,
+    id: "bics_rollout", pillar: "delivery", label: "BICS rollout vs. target", shortLabel: "BICS",
+    unit: "%", weight: 0.15, risingIsBad: false, sourceId: "desnz",
+    description: "Firms onboarded to the British Industrial Competitiveness Scheme as a percentage of its published 10,000-firm target. See the matching delivery commitment row for the target date.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
     historicalExclusionReason: "Editorial judgement against the BICS rollout plan — the cumulative-firms figure is published quarterly only; intra-quarter historical days would be fabricated.",
     provenance: "editorial",
@@ -479,16 +484,6 @@ export const SOURCES: Record<string, DataSource> = {
   lseg: {
     id: "lseg", name: "LSEG -- FTSE 250",
     homepage: "https://www.londonstockexchange.com/indices/ftse-250",
-  },
-  lseg_housebuilders: {
-    id: "lseg_housebuilders", name: "LSEG -- UK listed housebuilders (composite)",
-    homepage: "https://www.londonstockexchange.com",
-    notes: "Equal-weighted composite of Persimmon, Barratt Redrow, Taylor Wimpey, Berkeley, Vistry. No free daily bulk feed; data editorially curated from public last-close quotes. Licence: individual issuer closing prices are public domain; the composite calculation is ours.",
-  },
-  twelve_data_housebuilders: {
-    id: "twelve_data_housebuilders", name: "Twelve Data -- UK housebuilder composite (deprecated)",
-    homepage: "https://twelvedata.com",
-    notes: "Deprecated: free tier does not support LSE equities (403). Replaced by eodhd_housebuilders.",
   },
   eodhd_housebuilders: {
     id: "eodhd_housebuilders", name: "EODHD -- UK housebuilder composite (daily EOD)",

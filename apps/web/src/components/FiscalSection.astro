@@ -1,7 +1,8 @@
 ---
 import type { PillarScore } from "@tightrope/shared";
-import { signedDelta } from "~/lib/format.js";
+import { signedDelta, trendDescriptor } from "~/lib/format.js";
 import IllustrativeBadge from "./IllustrativeBadge.astro";
+import IndicatorTooltip from "./IndicatorTooltip.astro";
 
 interface Props {
   pillar: PillarScore;
@@ -43,7 +44,12 @@ function yFor(bn: number): number {
           const cls = t30 === "up" ? "up" : t30 === "down" ? "dn" : "flat";
           return (
             <span class={`pillar-score-delta ${cls}`} title="Change across the 30-day sparkline window (first to last point).">
-              {t30 === "flat" ? "flat" : `${t30 === "up" ? "▲" : "▼"} ${signedDelta(Math.abs(d30), 1)}`} / 30d
+              {t30 === "flat" ? "flat" : (
+                <>
+                  {t30 === "up" ? "▲" : "▼"} {signedDelta(Math.abs(d30), 1)}
+                  {trendDescriptor(d30) ? <span class="trend-word"> {trendDescriptor(d30)}</span> : null}
+                </>
+              )} / 30d
             </span>
           );
         })()}
@@ -106,7 +112,7 @@ function yFor(bn: number): number {
 
       <div class="chart-card">
         <div class="card-head">
-          <h3>The DMO gilt stack</h3>
+          <h3>The <IndicatorTooltip label="DMO" description="UK Debt Management Office — the executive agency that issues gilts (UK government bonds) on behalf of HM Treasury. Its 'gilt stack' is the planned mix of new bonds it will sell over the financial year, by maturity bucket and type." tipId="tip-dmo" /> gilt stack</h3>
           <IllustrativeBadge
             sourceSummary="DMO 2026/27 Gilt Remit (published alongside the Spring Statement). Shares recomputed from DMO's maturity-bucket totals; debt-interest figure from OBR EFO Table 3.8."
             sourceUrl="https://www.dmo.gov.uk/publications/annual-review/"
@@ -125,7 +131,7 @@ function yFor(bn: number): number {
             <tr><td>Index-linked</td><td>£23.4bn</td><td>0.9%</td></tr>
           </tbody>
         </table>
-        <div class="factrow" style="margin-top: 12px;"><span class="k">PSND / GDP</span><span class="v">93.1%</span></div>
+        <div class="factrow" style="margin-top: 12px;"><span class="k"><IndicatorTooltip label="PSND / GDP" description="Public-Sector Net Debt as a share of nominal GDP — the conventional headline UK debt-burden metric." tipId="tip-psnd" /></span><span class="v">93.1%</span></div>
         <div class="factrow"><span class="k">Debt interest, FY</span><span class="v">£111.3bn</span></div>
         <p class="hint" style="margin-top: 16px; margin-bottom: 0;">Long issuance cut back; index-linked stock still a sensitivity to inflation shocks.</p>
       </div>
@@ -145,6 +151,7 @@ function yFor(bn: number): number {
 .pillar-score-delta.up { color: var(--band-acute); }
 .pillar-score-delta.dn { color: var(--band-slack); }
 .pillar-score-delta.flat { color: var(--ink-2); }
+.pillar-score-delta .trend-word { font-style: italic; opacity: 0.85; }
 
 .fiscal-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; }
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 2px; }

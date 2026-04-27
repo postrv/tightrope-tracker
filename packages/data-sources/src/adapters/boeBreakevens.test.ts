@@ -21,7 +21,7 @@ describe("boeBreakevensAdapter", () => {
     const be5 = result.observations.find((o) => o.indicatorId === "breakeven_5y")!;
 
     expect(be5.value).toBeCloseTo(4.30 - 0.90, 5);
-    expect(be5.observedAt).toBe("2026-04-17T00:00:00Z");
+    expect(be5.observedAt).toBe("2026-04-17T16:00:00Z");
     expect(be5.sourceId).toBe("boe_yields");
     expect(be5.payloadHash).toMatch(/^[0-9a-f]{64}$/);
     expect(result.sourceUrl).toContain("IUDSNZC");
@@ -36,7 +36,7 @@ describe("boeBreakevensAdapter", () => {
     ].join("\n");
     const fetchImpl = async () => mockResponse(csv);
     const result = await boeBreakevensAdapter.fetch(fetchImpl as unknown as typeof globalThis.fetch);
-    expect(result.observations[0]!.observedAt).toBe("2026-04-15T00:00:00Z");
+    expect(result.observations[0]!.observedAt).toBe("2026-04-15T16:00:00Z");
     expect(result.observations).toHaveLength(1);
   });
 
@@ -85,7 +85,7 @@ describe("boeBreakevensAdapter.fetchHistorical", () => {
     expect(result.observations).toHaveLength(2);
     expect(result.notes).toEqual(["1 rows skipped (incomplete yield pair)"]);
     const dates = Array.from(new Set(result.observations.map((o) => o.observedAt))).sort();
-    expect(dates).toEqual(["2026-04-15T00:00:00Z", "2026-04-17T00:00:00Z"]);
+    expect(dates).toEqual(["2026-04-15T16:00:00Z", "2026-04-17T16:00:00Z"]);
     for (const o of result.observations) {
       expect(o.payloadHash).toMatch(/^hist:[0-9a-f]{64}$/);
     }

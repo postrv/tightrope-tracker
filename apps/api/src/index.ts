@@ -11,6 +11,7 @@ import { handleDelivery } from "./handlers/delivery.js";
 import { handleTimeline } from "./handlers/timeline.js";
 import { handleMp } from "./handlers/mp.js";
 import { handleHealth } from "./handlers/health.js";
+import { handleMethodologyBaselines } from "./handlers/methodology.js";
 import { handleOpenapi } from "./handlers/openapi.js";
 
 /**
@@ -24,6 +25,7 @@ export const router = new Router()
   .get("/api/v1/timeline", handleTimeline)
   .get("/api/v1/mp", (req, env) => handleMp(req, env))
   .get("/api/v1/health", (req, env) => handleHealth(req, env))
+  .get("/api/v1/methodology/baselines", handleMethodologyBaselines)
   .get("/api/v1/openapi.json", handleOpenapi);
 
 export default {

@@ -1,11 +1,42 @@
 {
-  "_comment": "Hand-maintained snapshot of the OBR Economic & Fiscal Outlook headline fiscal figures. Update on each OBR publication. Values are nominal GBP billions unless otherwise noted. Current entry is the March 2026 Spring Forecast (2026-03-03) — 23.6bn headroom, matching the seed timeline entry t_2026_03_03. Prior vintage was the March 2025 crunch (9.9bn). TODO(source): replace with OBR's 'headline data' CSV ingest once OBR exposes it via a stable URL.",
+  "_comment": "Hand-maintained record of OBR Economic & Fiscal Outlook headline figures, one entry per OBR publication. The adapter's live `fetch()` emits the head-of-list (newest) entry; `fetchHistorical()` emits one observation per vintage inside the requested range so backfilled days carry the right cb_headroom / psnfl_trajectory through to the next vintage. Values are nominal GBP billions for headroom and percentage points of GDP for psnfl trajectory. Update whenever OBR publishes (twice yearly + any in-year update). TODO(source): swap for OBR's headline-data CSV ingest once OBR exposes one at a stable URL.",
   "publication": "OBR EFO (hand-curated)",
-  "published": "2026-03-03",
-  "observed_at": "2026-03-03T00:00:00Z",
-  "indicators": {
-    "cb_headroom": { "value": 23.6, "unit": "GBPbn" },
-    "psnfl_trajectory": { "value": 0.1, "unit": "pp" }
-  },
-  "source_url": "https://obr.uk/efo/"
+  "vintages": [
+    {
+      "label": "Spring Forecast 2026",
+      "observed_at": "2026-03-03T00:00:00Z",
+      "indicators": {
+        "cb_headroom": { "value": 23.6, "unit": "GBPbn" },
+        "psnfl_trajectory": { "value": 0.0, "unit": "pp" }
+      },
+      "source_url": "https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/"
+    },
+    {
+      "label": "Autumn Budget 2025",
+      "observed_at": "2025-11-26T00:00:00Z",
+      "indicators": {
+        "cb_headroom": { "value": 22.0, "unit": "GBPbn" },
+        "psnfl_trajectory": { "value": 0.0, "unit": "pp" }
+      },
+      "source_url": "https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/"
+    },
+    {
+      "label": "Spring Statement 2025",
+      "observed_at": "2025-03-26T00:00:00Z",
+      "indicators": {
+        "cb_headroom": { "value": 9.9, "unit": "GBPbn" },
+        "psnfl_trajectory": { "value": 0.0, "unit": "pp" }
+      },
+      "source_url": "https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/"
+    },
+    {
+      "label": "Autumn Budget 2024",
+      "observed_at": "2024-10-30T00:00:00Z",
+      "indicators": {
+        "cb_headroom": { "value": 9.9, "unit": "GBPbn" },
+        "psnfl_trajectory": { "value": 0.0, "unit": "pp" }
+      },
+      "source_url": "https://obr.uk/efo/economic-and-fiscal-outlook-october-2024/"
+    }
+  ]
 }

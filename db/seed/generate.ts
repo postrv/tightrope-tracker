@@ -243,7 +243,7 @@ const timeline: TLRow[] = [
     sourceUrl: "https://www.bankofengland.co.uk/markets",
   },
   {
-    id: "t_2026_02_14", date: "2026-02-14",
+    id: "t_2025_12_18", date: "2025-12-18",
     title: "Planning & Infrastructure Bill receives Royal Assent",
     summary: "Landmark reform of the planning system passes both houses with cross-bench support; commencement orders expected by late spring.",
     category: "delivery", sourceLabel: "Planning & Infrastructure Act 2025",

@@ -92,8 +92,8 @@ export async function handleAdminRun(req: Request, env: Env, url: URL): Promise<
       case "backfill-scores": {
         const daysRaw = url.searchParams.get("days");
         const days = daysRaw === null ? 90 : Number.parseInt(daysRaw, 10);
-        if (!Number.isFinite(days) || days < 1 || days > 365) {
-          return json({ error: "days must be an integer 1-365" }, 400);
+        if (!Number.isFinite(days) || days < 1 || days > 800) {
+          return json({ error: "days must be an integer 1-800" }, 400);
         }
         const overwrite = url.searchParams.get("overwrite") !== "false";
         const result = await backfillHistoricalScores(env, { days, overwrite });

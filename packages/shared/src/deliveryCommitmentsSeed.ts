@@ -78,7 +78,7 @@ export const DELIVERY_COMMITMENTS_SEED: readonly DeliveryCommitmentSeed[] = [
     id: "planning_bill",
     name: "Planning and Infrastructure Bill -- Royal Assent",
     department: "Parliament",
-    latest: "Received Royal Assent 14 Feb 2026",
+    latest: "Received Royal Assent 18 Dec 2025",
     target: "Commitment delivered",
     status: "shipped",
     sourceUrl: "https://www.legislation.gov.uk/ukpga/2025/34/enacted",
@@ -95,7 +95,7 @@ export const DELIVERY_COMMITMENTS_SEED: readonly DeliveryCommitmentSeed[] = [
     status: "missed",
     sourceUrl: "https://www.gov.uk/government/organisations/department-for-work-pensions",
     sourceLabel: "DWP",
-    notes: "Inactivity-due-to-long-term-sickness numbers come from ONS Labour Force Survey (series LF2R). The policy target is set out in the DWP 'Get Britain Working' white paper; the rolling figure is against that baseline.",
+    notes: "Inactivity-due-to-long-term-sickness numbers come from ONS Labour Force Survey (series LF69, LFS: Econ. inactivity reasons: Long Term Sick: UK: 16-64). The policy target is set out in the DWP 'Get Britain Working' white paper; the rolling figure is against that baseline.",
     sortOrder: 60,
   },
   {

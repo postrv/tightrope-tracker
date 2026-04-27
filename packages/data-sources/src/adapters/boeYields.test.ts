@@ -21,7 +21,7 @@ describe("boeYieldsAdapter", () => {
     const thirty = result.observations.find((o) => o.indicatorId === "gilt_30y")!;
     expect(ten.value).toBe(4.51);
     expect(thirty.value).toBe(4.96);
-    expect(ten.observedAt).toBe("2026-04-17T00:00:00Z");
+    expect(ten.observedAt).toBe("2026-04-17T16:00:00Z");
     expect(ten.sourceId).toBe("boe_yields");
     expect(ten.payloadHash).toMatch(/^[0-9a-f]{64}$/);
     expect(thirty.payloadHash).toBe(ten.payloadHash);
@@ -38,7 +38,7 @@ describe("boeYieldsAdapter", () => {
     const fetchImpl = async () => mockResponse(csv);
     const result = await boeYieldsAdapter.fetch(fetchImpl as unknown as typeof globalThis.fetch);
     expect(result.observations).toHaveLength(2);
-    expect(result.observations[0]!.observedAt).toBe("2026-04-15T00:00:00Z");
+    expect(result.observations[0]!.observedAt).toBe("2026-04-15T16:00:00Z");
   });
 
   it("throws AdapterError on HTTP failure", async () => {
@@ -92,8 +92,8 @@ describe("boeYieldsAdapter.fetchHistorical", () => {
       { from: new Date("2026-04-15T00:00:00Z"), to: new Date("2026-04-17T00:00:00Z") },
     );
     expect(result.observations).toHaveLength(6);
-    expect(result.earliestObservedAt).toBe("2026-04-15T00:00:00Z");
-    expect(result.latestObservedAt).toBe("2026-04-17T00:00:00Z");
+    expect(result.earliestObservedAt).toBe("2026-04-15T16:00:00Z");
+    expect(result.latestObservedAt).toBe("2026-04-17T16:00:00Z");
     for (const o of result.observations) {
       expect(o.payloadHash).toMatch(/^hist:[0-9a-f]{64}$/);
     }

@@ -26,6 +26,23 @@ export function trendClass(delta: number, threshold = 0.05): "up" | "dn" | "flat
   return delta > 0 ? "up" : "dn";
 }
 
+/**
+ * Returns the plain-English semantic of a pressure-score delta — "worse",
+ * "better", or "" for sub-threshold (flat) moves.
+ *
+ * Pressure scores rise when conditions deteriorate, so a positive delta
+ * is "worse" and a negative delta is "better". This pair lives next to
+ * the arrow so red ▲ / green ▼ has explicit semantic backing — viewers
+ * default to "↑ = good" otherwise.
+ *
+ * Returns the empty string for flat deltas so callers can render
+ * `{trendDescriptor(d)}` without conditional wrappers.
+ */
+export function trendDescriptor(delta: number, threshold = 0.05): "worse" | "better" | "" {
+  if (Math.abs(delta) < threshold) return "";
+  return delta > 0 ? "worse" : "better";
+}
+
 const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

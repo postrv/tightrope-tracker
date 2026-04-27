@@ -1,0 +1,97 @@
+---
+/**
+ * Inline label with a hover/focus tooltip surfacing an indicator's description.
+ *
+ * Used to surface technical jargon (DMO, PMI, RICS, breakeven, gilts, etc.)
+ * to non-specialist viewers. The tooltip shows what the acronym/term means
+ * and what it measures. Pulls description from `INDICATORS[indicatorId]`
+ * unless an override is passed.
+ *
+ * Accessibility:
+ *   - The wrapping <span> is focusable (tabindex=0) so keyboard + screen-
+ *     reader users can surface the tooltip.
+ *   - aria-describedby pairs the visible label to the (initially-hidden)
+ *     tooltip body, so an assistive technology reading the label gets the
+ *     definition by reference rather than as an inline interruption.
+ *   - The tooltip renders into the DOM (not visibility:none), so screen
+ *     readers can resolve aria-describedby on first paint.
+ */
+import { INDICATORS } from "@tightrope/shared";
+
+interface Props {
+  /** Visible label text — usually short ("10y gilt", "5y BE"). */
+  label: string;
+  /** Indicator ID — pulls description from `INDICATORS[indicatorId].description`. */
+  indicatorId?: string;
+  /** Direct description override. Wins over indicatorId lookup. */
+  description?: string;
+  /** Stable ID for aria-describedby; auto-generated if omitted. */
+  tipId?: string;
+}
+
+const { label, indicatorId, description, tipId } = Astro.props;
+const resolved = description ?? (indicatorId ? INDICATORS[indicatorId]?.description : undefined);
+const safeId = (tipId ?? `tip-${indicatorId ?? Math.random().toString(36).slice(2, 8)}`).replace(/[^a-zA-Z0-9_-]/g, "-");
+---
+{resolved ? (
+  <span class="i-tip" tabindex="0" aria-describedby={safeId} data-indicator-id={indicatorId ?? null}>
+    <span class="i-tip-text">{label}</span>
+    <span class="i-tip-pop" id={safeId} role="tooltip">{resolved}</span>
+  </span>
+) : (
+  <span>{label}</span>
+)}
+
+<style>
+.i-tip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted var(--ink-2);
+  cursor: help;
+  outline: none;
+}
+.i-tip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.i-tip-pop {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 280px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink-1);
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 140ms ease-out, visibility 0s linear 140ms;
+  z-index: 6;
+  white-space: normal;
+}
+.i-tip:hover .i-tip-pop,
+.i-tip:focus-visible .i-tip-pop {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 140ms ease-out;
+}
+@media (max-width: 600px) {
+  .i-tip-pop {
+    max-width: min(280px, calc(100vw - 32px));
+    font-size: 12px;
+  }
+}
+</style>

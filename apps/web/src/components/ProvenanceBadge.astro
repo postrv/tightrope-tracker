@@ -25,12 +25,17 @@ const LABEL: Record<string, { full: string; short: string; title: string }> = {
     // Chip intentionally says "Auto" rather than "Live": every such
     // indicator is pulled by a scheduled adapter, but the actual cadence
     // ranges from five-minutely (some BoE feeds) to daily (most ONS /
-    // OBR proxies) to weekly (ICE gas, FTSE 250 fixtures). "Live" would
+    // OBR proxies) to weekly (FTSE 250 fixture). "Live" would
     // overclaim real-time; "Auto" is the honest framing and the tooltip
     // spells out the cadence.
     full: "Auto",
     short: "A",
-    title: "Pulled by a scheduled adapter. Cadence ranges from five-minutely (BoE feeds) to daily (most ONS / OBR proxies) to weekly (ICE gas, FTSE 250). Not real-time — the homepage's updated-at timestamp shows the last successful ingest.",
+    title: "Pulled by a scheduled adapter. Cadence ranges from five-minutely (BoE feeds) to daily (most ONS / OBR proxies). Not real-time — the homepage's updated-at timestamp shows the last successful ingest.",
+  },
+  "live-fallback": {
+    full: "Auto·F",
+    short: "A·F",
+    title: "Pulled by a scheduled adapter, but the upstream API has a quota / availability constraint and the adapter falls back to a versioned editorial fixture if the live fetch fails. The homepage's updated-at timestamp covers either path; check the indicator description for which source is currently in effect.",
   },
   fixture: {
     full: "Fixture",
@@ -68,6 +73,10 @@ const meta = prov ? LABEL[prov]! : null;
 .prov--live {
   color: var(--band-slack, #3d7a4d);
   background: rgba(61, 122, 77, 0.08);
+}
+.prov--live-fallback {
+  color: var(--accent, #fe5500);
+  background: color-mix(in srgb, var(--accent, #fe5500) 8%, transparent);
 }
 .prov--fixture {
   color: var(--ink-2, #6b6b6b);

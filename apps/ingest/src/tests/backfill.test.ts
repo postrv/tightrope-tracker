@@ -268,12 +268,16 @@ describe("backfillHistoricalScores", () => {
     }
   });
 
-  it("clamps days to [1, 365]", async () => {
+  it("clamps days to [1, 800]", async () => {
+    // 800-day cap covers the 2024 GE → today public-launch backfill.
     const { env } = makeEnv([]);
     const r1 = await backfillHistoricalScores(env, { days: 999, overwrite: true });
-    expect(r1.daysRequested).toBe(365);
+    expect(r1.daysRequested).toBe(800);
     const r2 = await backfillHistoricalScores(env, { days: 0, overwrite: true });
     expect(r2.daysRequested).toBe(1);
+    // Mid-range value passes through verbatim.
+    const r3 = await backfillHistoricalScores(env, { days: 660, overwrite: true });
+    expect(r3.daysRequested).toBe(660);
   });
 
   /**

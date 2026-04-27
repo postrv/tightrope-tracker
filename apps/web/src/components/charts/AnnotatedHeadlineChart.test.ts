@@ -162,4 +162,55 @@ describe("AnnotatedHeadlineChart", () => {
     expect(text.length).toBeLessThan(longSummary.length);
     expect(text.endsWith("…")).toBe(true);
   });
+
+  it("renders a permanent label for fiscal and geopolitical events", async () => {
+    const events: TimelineEvent[] = [
+      ev("budget", "2026-04-05T12:00:00Z", { title: "Spring Statement", category: "fiscal" }),
+      ev("conflict", "2026-04-10T12:00:00Z", { title: "Geopolitical shock", category: "geopolitical" }),
+      ev("rate", "2026-04-12T12:00:00Z", { title: "Bank Rate cut", category: "monetary" }),
+    ];
+    const doc = await render({ history: buildHistory(), events });
+    const labels = Array.from(doc.querySelectorAll("g.event-label text.event-label-text"))
+      .map((el) => el.textContent?.trim() ?? "");
+    // Both fiscal and geopolitical labels render; the monetary one does not.
+    expect(labels).toContain("Spring Statement");
+    expect(labels).toContain("Geopolitical shock");
+    expect(labels).not.toContain("Bank Rate cut");
+  });
+
+  it("abbreviates long permanent-label titles", async () => {
+    const longTitle = "Office for Budget Responsibility releases its forecast";
+    const events: TimelineEvent[] = [
+      ev("long", "2026-04-05T12:00:00Z", { title: longTitle, category: "fiscal" }),
+    ];
+    const doc = await render({ history: buildHistory(), events });
+    const labelText = doc.querySelector("g.event-label text.event-label-text")?.textContent ?? "";
+    // Abbreviated label is at most ~22 chars (with ellipsis when truncated).
+    expect(labelText.length).toBeLessThan(longTitle.length);
+    expect(labelText.length).toBeLessThanOrEqual(23);
+  });
+
+  it("splits comma-separated event titles at the first clause", async () => {
+    const events: TimelineEvent[] = [
+      ev("comma", "2026-04-05T12:00:00Z", {
+        title: "Iran conflict begins, energy shock",
+        category: "geopolitical",
+      }),
+    ];
+    const doc = await render({ history: buildHistory(), events });
+    const labelText = doc.querySelector("g.event-label text.event-label-text")?.textContent?.trim() ?? "";
+    expect(labelText).toBe("Iran conflict begins");
+  });
+
+  it("does not render labels for non-major categories", async () => {
+    const events: TimelineEvent[] = [
+      ev("rate", "2026-04-05T12:00:00Z", { category: "monetary" }),
+      ev("policy", "2026-04-08T12:00:00Z", { category: "policy" }),
+      ev("delivery", "2026-04-11T12:00:00Z", { category: "delivery" }),
+    ];
+    const doc = await render({ history: buildHistory(), events });
+    expect(doc.querySelectorAll("g.event-label").length).toBe(0);
+    // Markers and tooltips still render so the dot is hover-revealable.
+    expect(doc.querySelectorAll("g.marker").length).toBe(3);
+  });
 });

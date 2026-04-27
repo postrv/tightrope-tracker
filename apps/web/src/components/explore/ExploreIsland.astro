@@ -2,24 +2,66 @@
 /**
  * Interactive "what-if" simulator. Server-side it renders a fully-functional
  * HTML skeleton populated with the live snapshot's values; client-side a
- * small vanilla-TS module wires the sliders, hash state, scenarios, and
- * live recompute. No UI framework is involved -- the work fits comfortably
- * in plain DOM APIs.
+ * small vanilla-TS module wires the sliders, hash state, scenarios, baseline
+ * lookups and live recompute. No UI framework is involved -- the work fits
+ * comfortably in plain DOM APIs.
+ *
+ * Two normalisation modes (set in `whatIf.ts`):
+ *   1. Empirical CDF (preferred). Used when the page-data loader passed
+ *      a non-empty `baselines` map. Produces the same pressure score the
+ *      live methodology would produce for any in-domain raw value.
+ *   2. Linear fallback. Used per-indicator when a baseline summary is
+ *      missing (e.g. delivery editorials with no historical series).
+ *
+ * The page footer transparently flags which mode is in effect for each
+ * pillar so users can see when they're looking at "live methodology" vs
+ * "approximate".
  */
-import type { ScoreSnapshot } from "@tightrope/shared";
+import type { ScoreSnapshot, PillarId } from "@tightrope/shared";
+import type { BaselineSummary } from "@tightrope/methodology";
 import { PILLARS, PILLAR_ORDER, BANDS } from "@tightrope/shared";
 import TightropeWalker from "../TightropeWalker.astro";
+import IndicatorTooltip from "../IndicatorTooltip.astro";
 import { LEVERS, liveValuesFromSnapshot } from "~/lib/whatIf.js";
 
 interface Props {
   snapshot: ScoreSnapshot;
+  /** Per-indicator quantile summaries, keyed by indicator id. May be empty (cold-start). */
+  baselines: Record<string, BaselineSummary>;
 }
 
-const { snapshot } = Astro.props;
+const { snapshot, baselines } = Astro.props;
 const liveValues = liveValuesFromSnapshot(snapshot);
 const headline = snapshot.headline;
 const headlineRounded = Math.round(headline.value);
 const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
+
+// Group levers by pillar in canonical pillar order.
+const leversByPillar: Record<PillarId, typeof LEVERS[number][]> = {
+  market: [],
+  fiscal: [],
+  labour: [],
+  delivery: [],
+};
+for (const lever of LEVERS) leversByPillar[lever.pillar].push(lever);
+
+// What share of each pillar's levers have an ECDF baseline summary?
+// Drives the per-pillar mode disclosure in the footer.
+const pillarEcdfCoverage: Record<PillarId, { ecdf: number; linear: number }> = {
+  market: { ecdf: 0, linear: 0 },
+  fiscal: { ecdf: 0, linear: 0 },
+  labour: { ecdf: 0, linear: 0 },
+  delivery: { ecdf: 0, linear: 0 },
+};
+for (const lever of LEVERS) {
+  const summary = baselines[lever.indicatorId];
+  const present = summary && summary.knots.length > 0;
+  if (present) pillarEcdfCoverage[lever.pillar].ecdf++;
+  else pillarEcdfCoverage[lever.pillar].linear++;
+}
+const ecdfTotal = Object.values(pillarEcdfCoverage).reduce((a, p) => a + p.ecdf, 0);
+const allEcdf = ecdfTotal === LEVERS.length;
+const partialEcdf = ecdfTotal > 0 && ecdfTotal < LEVERS.length;
 ---
 <section
   class="explore-root"
@@ -28,86 +70,129 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
 >
   <div class="container">
     <header class="explore-head">
-      <span class="eyebrow">Scenario simulator · {LEVERS.length} levers</span>
+      <span class="eyebrow">Scenario simulator · {LEVERS.length} levers · {allEcdf ? "live ECDF methodology" : partialEcdf ? "partial ECDF coverage" : "linear approximation"}</span>
       <h1>what if&hellip;<span class="lfg-u">?</span></h1>
       <p class="lede">
-        Move the sliders to see how the headline score, pillar mix and band
-        respond. Each lever is a real headline driver from the live methodology.
+        Move the sliders to see what the headline score would read <em>if</em> these values had been observed today.
+        Each lever is a real headline driver, scored through the same empirical-CDF baseline the live score uses.
+        <strong>This is a counterfactual recomputation, not a forecast.</strong>
         Share your scenario with the link at the bottom.
       </p>
+      <noscript>
+        <p class="noscript-note">
+          The simulator needs JavaScript to drag the sliders. The figures above show today's live snapshot — visit in a JS-enabled browser to play with scenarios.
+        </p>
+      </noscript>
 
       <div class="scenario-row" role="toolbar" aria-label="Pre-baked scenarios">
-        <button type="button" data-scenario="live">Live now</button>
+        <button type="button" data-scenario="live" aria-pressed="true">Live now</button>
         <button type="button" data-scenario="spring2025">Spring 2025 crunch</button>
-        <button type="button" data-scenario="conflict">Conflict shock (Apr 2026)</button>
+        <button type="button" data-scenario="conflict">Conflict shock</button>
         <button type="button" data-scenario="recovery">Recovery</button>
+        <button type="button" data-scenario="crisis">2008-style crisis</button>
         <button type="button" class="reset" data-action="reset">Reset to live</button>
       </div>
+      <p class="scenario-blurb" data-scenario-blurb>
+        The current snapshot, untouched. Move any slider to start exploring.
+      </p>
+
+      {partialEcdf || (!allEcdf && !partialEcdf) ? (
+        <p class="fallback-banner" role="status">
+          {!allEcdf && !partialEcdf ? (
+            <>
+              <strong>Approximation in effect.</strong> No baseline data available right now — every slider falls back to a linear remap of its domain to a 0–100 pressure score. Refresh in a minute to retry the live methodology, or read the <a href="/methodology">methodology</a> for what changes when ECDF is unavailable.
+            </>
+          ) : (
+            <>
+              <strong>Partial coverage.</strong> Some sliders are running on a linear approximation rather than the live empirical CDF — look for the <code>linear</code> badge next to a slider's range note. Levers tagged <code>ECDF</code> use the live methodology; the others fall back to a linear remap of the slider domain.
+            </>
+          )}
+        </p>
+      ) : null}
     </header>
 
     <div class="explore-grid">
       <div class="panel slider-panel" aria-labelledby="slider-heading">
-        <h2 id="slider-heading" class="panel-title">Drivers</h2>
-        <ul class="lever-list">
-          {LEVERS.map((lever) => {
-            const live = liveValues[lever.key];
-            return (
-              <li class="lever" data-lever={lever.key}>
-                <div class="lever-head">
-                  <label for={`lever-${lever.key}`} class="lever-label">
-                    {lever.label}
-                  </label>
-                  <span class="lever-value" data-lever-display>{lever.format(live)}</span>
-                </div>
-                <div class="lever-controls">
-                  <input
-                    id={`lever-${lever.key}`}
-                    type="range"
-                    min={lever.min}
-                    max={lever.max}
-                    step={lever.step}
-                    value={live}
-                    data-lever-range
-                    aria-valuemin={lever.min}
-                    aria-valuemax={lever.max}
-                    aria-valuenow={live}
-                    aria-valuetext={lever.format(live)}
-                    aria-describedby={`lever-${lever.key}-meta`}
-                  />
-                  <input
-                    type="number"
-                    min={lever.min}
-                    max={lever.max}
-                    step={lever.step}
-                    value={live}
-                    data-lever-number
-                    aria-label={`${lever.label} numeric input`}
-                  />
-                </div>
-                <div class="lever-meta" id={`lever-${lever.key}-meta`}>
-                  <span class="range-note">
-                    {lever.format(lever.min)} &mdash; {lever.format(lever.max)}
-                  </span>
-                  <button
-                    type="button"
-                    class="reset-live"
-                    data-lever-reset-live
-                    data-live-value={live}
-                  >
-                    live: {lever.format(live)}
-                  </button>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        <h2 id="slider-heading" class="panel-title">Drivers — by pillar</h2>
+        {PILLAR_ORDER.map((pillarId) => {
+          const def = PILLARS[pillarId];
+          const pillarLevers = leversByPillar[pillarId];
+          if (pillarLevers.length === 0) return null;
+          return (
+            <fieldset class="pillar-group" data-pillar-group={pillarId}>
+              <legend class="pillar-group-legend">
+                <span class="pillar-group-name">{def.title}</span>
+                <span class="pillar-group-count">{pillarLevers.length} {pillarLevers.length === 1 ? "lever" : "levers"} · weight {Math.round(def.weight * 100)}%</span>
+              </legend>
+              <ul class="lever-list">
+                {pillarLevers.map((lever) => {
+                  const live = liveValues[lever.key];
+                  const hasBaseline = !!(baselines[lever.indicatorId] && baselines[lever.indicatorId]!.knots.length > 0);
+                  return (
+                    <li class="lever" data-lever={lever.key}>
+                      <div class="lever-head">
+                        <label for={`lever-${lever.key}`} class="lever-label">
+                          <IndicatorTooltip label={lever.label} indicatorId={lever.indicatorId} tipId={`tip-lever-${lever.key}`} />
+                        </label>
+                        <span class="lever-value" data-lever-display>{lever.format(live)}</span>
+                      </div>
+                      <div class="lever-controls">
+                        <input
+                          id={`lever-${lever.key}`}
+                          type="range"
+                          min={lever.min}
+                          max={lever.max}
+                          step={lever.step}
+                          value={live}
+                          data-lever-range
+                          aria-valuemin={lever.min}
+                          aria-valuemax={lever.max}
+                          aria-valuenow={live}
+                          aria-valuetext={lever.format(live)}
+                          aria-describedby={`lever-${lever.key}-meta`}
+                        />
+                        <input
+                          type="number"
+                          min={lever.min}
+                          max={lever.max}
+                          step={lever.step}
+                          value={live}
+                          data-lever-number
+                          aria-label={`${lever.label} numeric input`}
+                        />
+                      </div>
+                      <div class="lever-meta" id={`lever-${lever.key}-meta`}>
+                        <span class="range-note">
+                          {lever.format(lever.min)} &mdash; {lever.format(lever.max)}
+                        </span>
+                        <span class={`mode-badge ${hasBaseline ? "ecdf" : "linear"}`} title={hasBaseline ? "Empirical CDF — live methodology" : "Linear approximation — no baseline available"}>
+                          {hasBaseline ? "ECDF" : "linear"}
+                        </span>
+                        <button
+                          type="button"
+                          class="reset-live"
+                          data-lever-reset-live
+                          data-live-value={live}
+                        >
+                          live: {lever.format(live)}
+                        </button>
+                      </div>
+                      <div class="lever-effect" data-lever-effect aria-hidden="true">&nbsp;</div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </fieldset>
+          );
+        })}
         <p class="methodology-note">
-          Each lever maps linearly across its visible range &mdash; a deliberate
-          simplification of the live empirical-CDF methodology, which depends
-          on a per-indicator historical baseline that this in-browser tool
-          does not load. Other indicators in each pillar stay at their live
-          values; the headline still uses the production weighted-geometric-mean
-          aggregation. <a href="/methodology">Read the full methodology &rarr;</a>
+          {allEcdf ? (
+            <>Every lever is normalised through the live empirical CDF over the 2019&ndash;present baseline (excluding the 2020 COVID outlier window). Untouched indicators stay at their live values; the headline still uses the production weighted-geometric-mean aggregation. <a href="/methodology">Read the full methodology &rarr;</a></>
+          ) : partialEcdf ? (
+            <>Levers tagged ECDF use the live empirical-CDF baseline; levers tagged "linear" fall back to a linear remap of the slider range to a 0&ndash;100 pressure score (no baseline available). Untouched indicators stay at their live values; the headline still uses the production weighted-geometric-mean aggregation. <a href="/methodology">Read the full methodology &rarr;</a></>
+          ) : (
+            <>The page-data loader did not return baselines on this request, so each lever falls back to a linear remap of its slider range. Refresh in 60s to retry the API. <a href="/methodology">Read the full methodology &rarr;</a></>
+          )}
         </p>
       </div>
 
@@ -122,6 +207,10 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
               <span class="band-pill" data-band-pill style={`color: var(${initialBand.colourToken}); border-color: var(${initialBand.colourToken}); background: color-mix(in srgb, var(${initialBand.colourToken}) 12%, transparent);`}>{initialBand.label}</span>
               <span class="band-label" data-band-label>{initialBand.editorialLabel}</span>
             </div>
+            <div class="vs-live" data-vs-live aria-live="polite">
+              <span class="vs-live-arrow">&middot;</span>
+              <span class="vs-live-text">Matches live</span>
+            </div>
           </div>
           <div class="readout-walker" data-readout-walker>
             <TightropeWalker score={headlineRounded} animate={false} />
@@ -134,10 +223,14 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
             const valueRounded = Math.round(p.value);
             const def = PILLARS[id];
             return (
-              <li class="pillar-tile" data-pillar={id}>
+              <li class="pillar-tile" data-pillar={id} data-live-value={p.value.toFixed(1)}>
                 <span class="pillar-tile-label">{def.shortTitle}</span>
                 <span class="pillar-tile-value" data-pillar-value>{valueRounded}</span>
-                <span class="pillar-tile-delta" data-pillar-delta>0.0 vs live</span>
+                <div class="pillar-tile-bar" aria-hidden="true">
+                  <span class="pillar-tile-bar-live" data-pillar-bar-live style={`width: ${p.value}%;`}></span>
+                  <span class="pillar-tile-bar-scenario" data-pillar-bar-scenario style={`width: ${p.value}%;`}></span>
+                </div>
+                <span class="pillar-tile-delta" data-pillar-delta>matches live</span>
                 <span class="pillar-tile-weight">weight {Math.round(def.weight * 100)}%</span>
               </li>
             );
@@ -162,15 +255,15 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
 
     <footer id="methodology" class="explore-foot">
       <p>
-        <strong>How it works.</strong> The headline score above is recomputed
-        in your browser using the same weighted-geometric-mean aggregation as
-        the live homepage. Each slider linearly remaps an indicator's visible
-        range to the 0&ndash;100 pressure score. Other indicators in the same
-        pillar stay at their live values, so a single lever's effect is
-        bounded by its in-pillar weight. Untouched pillars are returned
-        verbatim from the live snapshot. The 1d/30d/YTD deltas reset to zero
-        once you move a slider &mdash; they compare to live history, which
-        a hypothetical scenario isn't.
+        <strong>How it works.</strong> The headline score is recomputed in your
+        browser using the same weighted-geometric-mean aggregation as the live
+        homepage. Each slider is normalised through the same empirical-CDF
+        baseline the production score uses (where available). Other indicators
+        in the same pillar stay at their live values, so a single lever's
+        effect is bounded by its in-pillar weight. Untouched pillars are
+        returned verbatim from the live snapshot. The 1d/30d/YTD deltas reset
+        to zero once you move a slider &mdash; they compare to live history,
+        which a hypothetical scenario isn't.
       </p>
     </footer>
   </div>
@@ -184,6 +277,7 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
     live: liveValues,
     pillars: Object.fromEntries(PILLAR_ORDER.map((id) => [id, snapshot.pillars[id].value])),
     snapshot,
+    baselines,
   })}
 ></script>
 
@@ -216,12 +310,22 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
     margin: 0 0 24px;
     max-width: 580px;
   }
+  .lede em { font-style: italic; color: var(--ink-0); }
+  .lede strong { font-weight: 500; color: var(--ink-0); }
+  .noscript-note {
+    margin: 0 0 24px;
+    padding: 12px 16px;
+    border-left: 2px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+    font-size: 13.5px;
+    color: var(--ink-1);
+  }
 
   .scenario-row {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 36px;
+    margin-bottom: 12px;
   }
   .scenario-row button {
     font-family: var(--font-mono);
@@ -248,6 +352,62 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
     color: var(--ink-0);
   }
   .scenario-row .reset { margin-left: auto; }
+  /* Resting state: the user is at live — reset has nothing to do. */
+  .scenario-row .reset {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  /* Active state: any override is live -- the reset is now meaningful. */
+  .scenario-row .reset.is-active {
+    opacity: 1;
+    pointer-events: auto;
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    border-color: var(--accent);
+    color: var(--ink-0);
+    font-weight: 600;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent);
+    animation: reset-pulse 2.4s ease-out infinite;
+  }
+  .scenario-row .reset.is-active::before {
+    content: "↺ ";
+    margin-right: 4px;
+  }
+  @keyframes reset-pulse {
+    0%   { box-shadow: 0 0 0 0   color-mix(in srgb, var(--accent) 50%, transparent); }
+    70%  { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent)  0%, transparent); }
+    100% { box-shadow: 0 0 0 0   color-mix(in srgb, var(--accent)  0%, transparent); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scenario-row .reset.is-active { animation: none; }
+  }
+  .scenario-blurb {
+    margin: 0 0 36px;
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--ink-1);
+    font-size: 14.5px;
+    max-width: 600px;
+  }
+
+  .fallback-banner {
+    margin: 0 0 28px;
+    padding: 12px 16px;
+    border-left: 3px solid var(--band-strain, var(--accent));
+    background: color-mix(in srgb, var(--band-strain, var(--accent)) 8%, transparent);
+    color: var(--ink-1);
+    font-size: 13.5px;
+    line-height: 1.55;
+    border-radius: 0 6px 6px 0;
+  }
+  .fallback-banner strong { color: var(--ink-0); font-weight: 600; }
+  .fallback-banner code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--ink-2) 10%, transparent);
+  }
+  .fallback-banner a { color: var(--accent); }
 
   .explore-grid {
     display: grid;
@@ -274,17 +434,46 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
     margin: 0 0 18px;
   }
 
-  .lever-list { list-style: none; padding: 0; margin: 0 0 22px; display: flex; flex-direction: column; gap: 22px; }
+  .pillar-group {
+    border: 0;
+    margin: 0 0 22px;
+    padding: 0;
+  }
+  .pillar-group-legend {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    width: 100%;
+    padding: 0 0 8px;
+    border-bottom: 1px dashed var(--border);
+    margin-bottom: 14px;
+  }
+  .pillar-group-name {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink-0);
+  }
+  .pillar-group-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    margin-left: auto;
+  }
+
+  .lever-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 18px; }
   .lever-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
   .lever-label {
     font-family: var(--font-sans);
-    font-size: 14.5px;
+    font-size: 14px;
     color: var(--ink-0);
     font-weight: 500;
   }
   .lever-value {
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: 13.5px;
     color: var(--ink-0);
     font-variant-numeric: tabular-nums;
   }
@@ -324,11 +513,28 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
     margin-top: 6px;
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--ink-2);
     letter-spacing: 0.04em;
+  }
+  .mode-badge {
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    padding: 2px 7px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+  .mode-badge.ecdf {
+    color: var(--ink-1);
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  }
+  .mode-badge.linear {
+    color: var(--ink-2);
   }
   .reset-live {
     background: none;
@@ -345,9 +551,28 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
     color: var(--accent);
     outline: none;
   }
+  /* Lit when this specific lever differs from live; clear when at live. */
+  .reset-live.is-active {
+    color: var(--accent);
+    text-decoration-style: solid;
+    font-weight: 600;
+  }
+  .reset-live.is-active::before {
+    content: "↺ ";
+  }
+  .lever-effect {
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    height: 14px;
+    transition: color 240ms;
+  }
+  .lever-effect.up { color: var(--band-acute); }
+  .lever-effect.dn { color: var(--band-slack); }
 
   .methodology-note {
-    margin: 0;
+    margin: 22px 0 0;
     padding-top: 16px;
     border-top: 1px dashed var(--border);
     font-size: 12.5px;
@@ -402,6 +627,32 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
     font-size: 17px;
     color: var(--ink-1);
   }
+  .vs-live {
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-1);
+    transition: color 200ms, border-color 200ms, background 200ms;
+  }
+  .vs-live.up {
+    color: var(--band-acute);
+    border-color: color-mix(in srgb, var(--band-acute) 60%, var(--border));
+    background: color-mix(in srgb, var(--band-acute) 10%, transparent);
+  }
+  .vs-live.dn {
+    color: var(--band-slack);
+    border-color: color-mix(in srgb, var(--band-slack) 60%, var(--border));
+    background: color-mix(in srgb, var(--band-slack) 10%, transparent);
+  }
+  .vs-live-arrow { display: inline-block; min-width: 10px; font-weight: 600; }
   .readout-walker { width: 160px; max-width: 160px; }
   @media (max-width: 540px) {
     .readout-card { grid-template-columns: 1fr; }
@@ -426,7 +677,7 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
     background: var(--bg-0);
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
   }
   .pillar-tile-label {
     font-family: var(--font-mono);
@@ -441,12 +692,63 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
     color: var(--ink-0);
     font-variant-numeric: tabular-nums;
     line-height: 1.05;
+    transition: transform 220ms ease-out, color 220ms ease-out;
+  }
+  .pillar-tile-value.pulse-up {
+    animation: pillar-pulse-up 480ms ease-out;
+  }
+  .pillar-tile-value.pulse-dn {
+    animation: pillar-pulse-dn 480ms ease-out;
+  }
+  @keyframes pillar-pulse-up {
+    0%   { transform: scale(1);    color: var(--ink-0); }
+    35%  { transform: scale(1.10); color: var(--band-acute); }
+    100% { transform: scale(1);    color: var(--ink-0); }
+  }
+  @keyframes pillar-pulse-dn {
+    0%   { transform: scale(1);    color: var(--ink-0); }
+    35%  { transform: scale(1.10); color: var(--band-slack); }
+    100% { transform: scale(1);    color: var(--ink-0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pillar-tile-value.pulse-up,
+    .pillar-tile-value.pulse-dn { animation: none; }
+  }
+  .pillar-tile-bar {
+    position: relative;
+    height: 4px;
+    background: var(--bg-1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 4px 0;
+  }
+  .pillar-tile-bar-live,
+  .pillar-tile-bar-scenario {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: 2px;
+    transition: width 240ms;
+  }
+  .pillar-tile-bar-live {
+    background: color-mix(in srgb, var(--ink-2) 30%, transparent);
+  }
+  .pillar-tile-bar-scenario {
+    background: var(--accent);
+    mix-blend-mode: screen;
   }
   .pillar-tile-delta {
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--ink-2);
     font-variant-numeric: tabular-nums;
+    transition: font-weight 120ms, font-size 120ms;
+  }
+  .pillar-tile-delta.up,
+  .pillar-tile-delta.dn {
+    font-size: 12px;
+    font-weight: 600;
   }
   .pillar-tile-delta.up { color: var(--band-acute); }
   .pillar-tile-delta.dn { color: var(--band-slack); }
@@ -454,7 +756,6 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--ink-2);
-    margin-top: 2px;
   }
 
   .dominant-row {
@@ -515,347 +816,16 @@ const initialBand = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
 </style>
 
 <script>
-  import {
-    LEVERS,
-    type LeverKey,
-    formatScenarioHash,
-    parseScenarioHash,
-    recomputeFromOverrides,
-    clamp as clampValue,
-  } from "~/lib/whatIf.js";
-  import { BANDS, PILLARS, PILLAR_ORDER, type ScoreSnapshot, type PillarId } from "@tightrope/shared";
-
-  interface ConfigPayload {
-    live: Record<LeverKey, number>;
-    pillars: Record<PillarId, number>;
-    snapshot: ScoreSnapshot;
-  }
-
-  type ScenarioName = "live" | "spring2025" | "conflict" | "recovery";
-
-  const SCENARIOS: Record<ScenarioName, Partial<Record<LeverKey, number>>> = {
-    live: {},
-    spring2025: { headroom: 9.9, gilt30y: 5.6 },
-    conflict: { headroom: 15.0, gilt30y: 5.65, housing: 46 },
-    recovery: { headroom: 28.0, gilt30y: 4.5, pay: 1.5 },
-  };
+  /**
+   * Thin wiring shim. The real bootstrap lives in `~/lib/exploreBootstrap.ts`
+   * so it can be unit-tested under happy-dom without parsing this .astro file.
+   */
+  import { bootstrapExplore, type ExploreConfig } from "~/lib/exploreBootstrap.js";
 
   const root = document.querySelector<HTMLElement>("[data-explore-root]");
   const configEl = document.querySelector<HTMLScriptElement>("[data-explore-config]");
   if (root && configEl?.textContent) {
-    bootstrap(root, configEl.textContent);
+    const config = JSON.parse(configEl.textContent) as ExploreConfig;
+    bootstrapExplore(root, config);
   }
-
-  function bootstrap(root: HTMLElement, configText: string): void {
-  const config = JSON.parse(configText) as ConfigPayload;
-  const live = config.live;
-  const livePillarValues = config.pillars;
-  const snapshot = config.snapshot;
-
-  const leverByKey = new Map(LEVERS.map((l) => [l.key, l]));
-
-  type ControlSet = {
-    range: HTMLInputElement;
-    number: HTMLInputElement;
-    display: HTMLElement | null;
-    resetLive: HTMLButtonElement | null;
-  };
-  const controls = new Map<LeverKey, ControlSet>();
-  for (const lever of LEVERS) {
-    const li = root.querySelector<HTMLElement>(`[data-lever="${lever.key}"]`);
-    if (!li) continue;
-    const range = li.querySelector<HTMLInputElement>("[data-lever-range]");
-    const number = li.querySelector<HTMLInputElement>("[data-lever-number]");
-    if (!range || !number) continue;
-    const display = li.querySelector<HTMLElement>("[data-lever-display]");
-    const resetLive = li.querySelector<HTMLButtonElement>("[data-lever-reset-live]");
-    controls.set(lever.key, { range, number, display, resetLive });
-  }
-
-  // Working set of slider values, mirrored on the DOM controls.
-  const values: Record<LeverKey, number> = { ...live };
-
-  // Apply parsed hash overrides, if any.
-  const initialOverrides = parseScenarioHash(window.location.hash);
-  for (const lever of LEVERS) {
-    const v = initialOverrides[lever.key];
-    if (v !== undefined && Number.isFinite(v)) {
-      values[lever.key] = clampValue(v, lever.min, lever.max);
-    }
-  }
-  syncControlsFromValues();
-
-  // Initial recompute -- if the URL had overrides this updates the readout;
-  // otherwise the SSR'd values are already correct but a fresh recompute
-  // costs nothing and proves the round-trip is byte-equal.
-  scheduleRecompute();
-
-  // ----- Event wiring -------------------------------------------------------
-
-  for (const [key, control] of controls) {
-    const lever = leverByKey.get(key)!;
-    control.range.addEventListener("input", () => {
-      const v = clampValue(parseFloat(control.range.value), lever.min, lever.max);
-      values[key] = v;
-      control.number.value = formatNumberInput(v, lever.step);
-      updateLeverDisplay(key, v);
-      writeHashAndRecompute();
-    });
-    control.number.addEventListener("input", () => {
-      const raw = parseFloat(control.number.value);
-      if (!Number.isFinite(raw)) return; // wait for a complete number
-      const v = clampValue(raw, lever.min, lever.max);
-      values[key] = v;
-      control.range.value = String(v);
-      updateLeverDisplay(key, v);
-      writeHashAndRecompute();
-    });
-    control.number.addEventListener("change", () => {
-      // Snap back into range on blur in case the user typed nonsense.
-      const v = clampValue(parseFloat(control.number.value), lever.min, lever.max);
-      values[key] = v;
-      control.range.value = String(v);
-      control.number.value = formatNumberInput(v, lever.step);
-      updateLeverDisplay(key, v);
-      writeHashAndRecompute();
-    });
-    control.resetLive?.addEventListener("click", () => {
-      values[key] = live[key];
-      control.range.value = String(live[key]);
-      control.number.value = formatNumberInput(live[key], lever.step);
-      updateLeverDisplay(key, live[key]);
-      writeHashAndRecompute();
-    });
-  }
-
-  for (const btn of root.querySelectorAll<HTMLButtonElement>("[data-scenario]")) {
-    btn.addEventListener("click", () => {
-      const name = btn.dataset.scenario as ScenarioName;
-      applyScenario(name);
-      markScenarioActive(name);
-    });
-  }
-
-  const resetBtn = root.querySelector<HTMLButtonElement>("[data-action='reset']");
-  resetBtn?.addEventListener("click", () => {
-    applyScenario("live");
-    markScenarioActive("live");
-  });
-
-  const shareBtn = root.querySelector<HTMLButtonElement>("[data-action='share']");
-  shareBtn?.addEventListener("click", () => {
-    handleShare();
-  });
-
-  window.addEventListener("hashchange", () => {
-    const ov = parseScenarioHash(window.location.hash);
-    let dirty = false;
-    for (const lever of LEVERS) {
-      const v = ov[lever.key];
-      const target = v !== undefined && Number.isFinite(v) ? clampValue(v, lever.min, lever.max) : live[lever.key];
-      if (values[lever.key] !== target) {
-        values[lever.key] = target;
-        dirty = true;
-      }
-    }
-    if (dirty) {
-      syncControlsFromValues();
-      scheduleRecompute();
-    }
-  });
-
-  // ----- Scenario + share ---------------------------------------------------
-
-  function applyScenario(name: ScenarioName): void {
-    const overrides = SCENARIOS[name];
-    for (const lever of LEVERS) {
-      values[lever.key] = overrides[lever.key] !== undefined && Number.isFinite(overrides[lever.key])
-        ? clampValue(overrides[lever.key]!, lever.min, lever.max)
-        : live[lever.key];
-    }
-    syncControlsFromValues();
-    writeHashAndRecompute();
-  }
-
-  function markScenarioActive(name: ScenarioName): void {
-    for (const btn of root!.querySelectorAll<HTMLButtonElement>("[data-scenario]")) {
-      btn.setAttribute("aria-pressed", btn.dataset.scenario === name ? "true" : "false");
-    }
-  }
-
-  async function handleShare(): Promise<void> {
-    const status = root!.querySelector<HTMLElement>("[data-share-status]");
-    const url = window.location.href;
-    try {
-      await navigator.clipboard.writeText(url);
-      if (status) {
-        status.textContent = "Link copied.";
-        window.setTimeout(() => { status.textContent = ""; }, 2400);
-      }
-    } catch {
-      // Fallback: select-and-copy via a transient textarea.
-      const ta = document.createElement("textarea");
-      ta.value = url;
-      ta.setAttribute("aria-hidden", "true");
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand("copy"); } catch { /* ignore */ }
-      document.body.removeChild(ta);
-      if (status) {
-        status.textContent = "Link copied.";
-        window.setTimeout(() => { status.textContent = ""; }, 2400);
-      }
-    }
-  }
-
-  // ----- Recompute pipeline -------------------------------------------------
-
-  let pendingRaf = 0;
-  function scheduleRecompute(): void {
-    if (pendingRaf) return;
-    pendingRaf = requestAnimationFrame(() => {
-      pendingRaf = 0;
-      doRecompute();
-    });
-  }
-  function writeHashAndRecompute(): void {
-    writeHash();
-    scheduleRecompute();
-  }
-
-  function writeHash(): void {
-    const overrides = collectOverrides();
-    if (Object.keys(overrides).length === 0) {
-      // No deviations from live -- clear the hash so the URL stays clean.
-      const url = window.location.pathname + window.location.search;
-      history.replaceState(null, "", url);
-      return;
-    }
-    // Use the full values record so the formatter emits every key in
-    // canonical order, then strip keys that are at-live (within rounding)
-    // to keep shared links short and meaningful.
-    const fullValues: Record<LeverKey, number> = { ...values };
-    const formatted = formatScenarioHash(fullValues);
-    history.replaceState(null, "", `#${formatted}`);
-  }
-
-  function collectOverrides(): Partial<Record<LeverKey, number>> {
-    const out: Partial<Record<LeverKey, number>> = {};
-    for (const lever of LEVERS) {
-      const v = values[lever.key];
-      if (Math.abs(v - live[lever.key]) < lever.step / 2) continue;
-      out[lever.key] = v;
-    }
-    return out;
-  }
-
-  function doRecompute(): void {
-    const overrides = collectOverrides();
-    const newSnap = recomputeFromOverrides(snapshot, overrides);
-    paintHeadline(newSnap);
-    paintPillars(newSnap);
-  }
-
-  function paintHeadline(s: ScoreSnapshot): void {
-    const headlineEl = root!.querySelector<HTMLElement>("[data-headline-value]");
-    if (headlineEl) {
-      headlineEl.textContent = String(Math.round(s.headline.value));
-    }
-    const card = root!.querySelector<HTMLElement>("[data-readout-card]");
-    const band = BANDS.find((b) => b.id === s.headline.band) ?? BANDS[0];
-    if (card) {
-      card.style.setProperty("--band-colour", `var(${band.colourToken})`);
-    }
-    const pill = root!.querySelector<HTMLElement>("[data-band-pill]");
-    if (pill) {
-      pill.textContent = band.label;
-      pill.style.color = `var(${band.colourToken})`;
-      pill.style.borderColor = `var(${band.colourToken})`;
-      pill.style.background = `color-mix(in srgb, var(${band.colourToken}) 12%, transparent)`;
-    }
-    const bandLabel = root!.querySelector<HTMLElement>("[data-band-label]");
-    if (bandLabel) bandLabel.textContent = band.editorialLabel;
-    const dominant = root!.querySelector<HTMLElement>("[data-dominant-pillar]");
-    if (dominant) dominant.textContent = PILLARS[s.headline.dominantPillar].title;
-
-    // Update the rope-walker's data attribute and re-run its sway calc
-    // by rotating the silhouette in place. The walker component renders
-    // its silhouette inline as SVG so we can manipulate the rotation
-    // attribute directly for instant feedback.
-    const walkerHost = root!.querySelector<HTMLElement>(".tightrope-walker");
-    if (walkerHost) {
-      const score = Math.max(0, Math.min(100, s.headline.value));
-      const MAX_SWAY = 30;
-      const targetAmp = MAX_SWAY * Math.pow(score / 100, 1.4);
-      const restAngle = targetAmp * 0.55;
-      walkerHost.dataset.score = String(Math.round(score));
-      walkerHost.dataset.amp = targetAmp.toFixed(3);
-      const walker = walkerHost.querySelector<SVGGElement>(".walker");
-      walker?.setAttribute("transform", `translate(300, 430) rotate(${restAngle.toFixed(2)})`);
-      // Recolour the stability arc zones so they reflect the new score.
-      const amberLit = targetAmp > 9;
-      const redLit = targetAmp > 18;
-      const reds = walkerHost.querySelectorAll<SVGPathElement>(".stability-arc path[fill='#C84B3C']");
-      const ambers = walkerHost.querySelectorAll<SVGPathElement>(".stability-arc path[fill='#EE9944']");
-      for (const r of reds) r.setAttribute("opacity", String(redLit ? 0.5 : 0.12));
-      for (const a of ambers) a.setAttribute("opacity", String(amberLit ? 0.48 : 0.14));
-      const label = walkerHost.querySelector<SVGTextElement>(".ui-layer text");
-      if (label) label.textContent = `INSTABILITY · ${Math.round(score)}/100`;
-    }
-  }
-
-  function paintPillars(s: ScoreSnapshot): void {
-    for (const id of PILLAR_ORDER) {
-      const tile = root!.querySelector<HTMLElement>(`[data-pillar="${id}"]`);
-      if (!tile) continue;
-      const valueEl = tile.querySelector<HTMLElement>("[data-pillar-value]");
-      const deltaEl = tile.querySelector<HTMLElement>("[data-pillar-delta]");
-      const value = Math.round(s.pillars[id].value);
-      if (valueEl) valueEl.textContent = String(value);
-      const delta = Number((s.pillars[id].value - livePillarValues[id]).toFixed(1));
-      if (deltaEl) {
-        deltaEl.textContent = `${delta > 0 ? "+" : ""}${delta.toFixed(1)} vs live`;
-        deltaEl.classList.remove("up", "dn", "flat");
-        deltaEl.classList.add(Math.abs(delta) < 0.05 ? "flat" : delta > 0 ? "up" : "dn");
-      }
-    }
-  }
-
-  // ----- Helpers ------------------------------------------------------------
-
-  function syncControlsFromValues(): void {
-    for (const [key, control] of controls) {
-      const lever = leverByKey.get(key)!;
-      control.range.value = String(values[key]);
-      control.range.setAttribute("aria-valuenow", String(values[key]));
-      control.range.setAttribute("aria-valuetext", lever.format(values[key]));
-      control.number.value = formatNumberInput(values[key], lever.step);
-      updateLeverDisplay(key, values[key]);
-    }
-  }
-
-  function updateLeverDisplay(key: LeverKey, value: number): void {
-    const control = controls.get(key);
-    if (!control?.display) return;
-    const lever = leverByKey.get(key);
-    if (!lever) return;
-    control.display.textContent = lever.format(value);
-    control.range.setAttribute("aria-valuenow", String(value));
-    control.range.setAttribute("aria-valuetext", lever.format(value));
-  }
-
-  function formatNumberInput(value: number, step: number): string {
-    const decimals = stepDecimals(step);
-    return value.toFixed(decimals);
-  }
-
-  function stepDecimals(step: number): number {
-    if (!Number.isFinite(step) || step <= 0) return 0;
-    const log = Math.log10(step);
-    if (log >= 0) return 0;
-    return Math.min(4, Math.ceil(-log));
-  }
-  } // end bootstrap
 </script>

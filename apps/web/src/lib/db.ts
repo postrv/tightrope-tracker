@@ -11,9 +11,20 @@ import type {
   Trend,
   Iso8601,
 } from "@tightrope/shared";
-import { INDICATORS, PILLAR_ORDER, PILLARS, bandFor, computeSourceHealth, isScoreRowStale } from "@tightrope/shared";
+import {
+  INDICATORS,
+  PILLAR_ORDER,
+  PILLARS,
+  bandFor,
+  computeSourceHealth,
+  isScoreRowStale,
+  BASELINE_START_ISO,
+  COVID_EXCLUDE_START_ISO,
+  COVID_EXCLUDE_END_ISO,
+} from "@tightrope/shared";
 import type { DeliveryCommitment, DeliveryStatus } from "@tightrope/shared/delivery";
 import type { TimelineEvent, TimelineCategory } from "@tightrope/shared/timeline";
+import { summariseBaseline, type BaselineSummary } from "@tightrope/methodology";
 
 /** Time-series row returned from `headline_scores` / `pillar_scores`. */
 interface ScoreRow {
@@ -38,7 +49,7 @@ const KV_SNAPSHOT_MAX_AGE_MS = 30 * 60_000;
  */
 export async function getLatestSnapshot(env: Env): Promise<ScoreSnapshot> {
   const cached = await env.KV.get<ScoreSnapshot>("score:latest", "json");
-  if (cached && cached.schemaVersion === 1 && isFresh(cached)) return cached;
+  if (cached && cached.schemaVersion === 1 && isFresh(cached) && hasContributions(cached)) return cached;
   const fresh = await buildSnapshotFromD1(env);
   // Best-effort re-prime so subsequent hits in the 30-minute window serve from KV.
   try {
@@ -53,6 +64,21 @@ function isFresh(snapshot: ScoreSnapshot): boolean {
   const ts = Date.parse(snapshot.headline.updatedAt);
   if (!Number.isFinite(ts)) return false;
   return Date.now() - ts < KV_SNAPSHOT_MAX_AGE_MS;
+}
+
+/**
+ * A cached snapshot written by an older recompute pipeline can have empty
+ * `contributions` arrays even when the headline + pillar values are fine.
+ * The /explore simulator depends on populated contributions to recompute,
+ * and ProvenanceBadge / source-health surfaces depend on them on the
+ * homepage. Treat the cache as cold whenever every pillar's contributions
+ * is empty so the next read rebuilds from D1.
+ */
+function hasContributions(snapshot: ScoreSnapshot): boolean {
+  for (const p of PILLAR_ORDER) {
+    if ((snapshot.pillars[p]?.contributions?.length ?? 0) > 0) return true;
+  }
+  return false;
 }
 
 export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
@@ -527,6 +553,90 @@ interface PillarSeriesRow {
   id: PillarId;
   observed_at: string;
   value: number;
+}
+
+/**
+ * Mirror of the API's MethodologyBaselines payload shape. We keep this
+ * colocated rather than importing across app boundaries so the contract
+ * is "same rows, same shapes" -- changes flag immediately via the
+ * dedicated test rather than silently after a worker deploy.
+ */
+export interface MethodologyBaselinesPayload {
+  schemaVersion: 1;
+  generatedAt: string;
+  baselineStart: string;
+  baselineEnd: string;
+  excludeStart: string;
+  excludeEnd: string;
+  baselines: Record<string, BaselineSummary>;
+}
+
+const KV_BASELINES_KEY = "methodology:baselines";
+const KV_BASELINES_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Load per-indicator baseline quantile summaries for the /explore
+ * what-if simulator. Reads through KV (24h freshness gate) and assembles
+ * fresh from D1 on miss / stale.
+ */
+export async function getBaselineSummaries(env: Env): Promise<MethodologyBaselinesPayload> {
+  try {
+    const cached = await env.KV.get<MethodologyBaselinesPayload>(KV_BASELINES_KEY, "json");
+    if (cached && cached.schemaVersion === 1 && baselinesAreFresh(cached)) {
+      return cached;
+    }
+  } catch {
+    // KV outage -- fall through to D1.
+  }
+  const fresh = await buildBaselineSummariesFromD1(env);
+  try {
+    await env.KV.put(KV_BASELINES_KEY, JSON.stringify(fresh), { expirationTtl: 60 * 60 * 6 });
+  } catch {
+    // Best-effort cache prime.
+  }
+  return fresh;
+}
+
+function baselinesAreFresh(p: MethodologyBaselinesPayload): boolean {
+  const ts = Date.parse(p.generatedAt);
+  if (!Number.isFinite(ts)) return false;
+  return Date.now() - ts < KV_BASELINES_MAX_AGE_MS;
+}
+
+export async function buildBaselineSummariesFromD1(env: Env): Promise<MethodologyBaselinesPayload> {
+  const res = await env.DB
+    .prepare(
+      `SELECT indicator_id, value
+       FROM indicator_observations
+       WHERE observed_at >= ?
+         AND NOT (observed_at >= ? AND observed_at <= ?)
+       ORDER BY indicator_id, observed_at ASC`,
+    )
+    .bind(BASELINE_START_ISO, COVID_EXCLUDE_START_ISO, COVID_EXCLUDE_END_ISO)
+    .all<{ indicator_id: string; value: number }>();
+  const rows = res.results ?? [];
+  const byIndicator = new Map<string, number[]>();
+  for (const row of rows) {
+    if (!Number.isFinite(row.value)) continue;
+    const arr = byIndicator.get(row.indicator_id) ?? [];
+    arr.push(row.value);
+    byIndicator.set(row.indicator_id, arr);
+  }
+  const baselines: Record<string, BaselineSummary> = {};
+  for (const [id, samples] of byIndicator) {
+    if (samples.length === 0) continue;
+    baselines[id] = summariseBaseline(samples);
+  }
+  const generatedAt = new Date().toISOString();
+  return {
+    schemaVersion: 1,
+    generatedAt,
+    baselineStart: BASELINE_START_ISO,
+    baselineEnd: generatedAt,
+    excludeStart: COVID_EXCLUDE_START_ISO,
+    excludeEnd: COVID_EXCLUDE_END_ISO,
+    baselines,
+  };
 }
 
 /**

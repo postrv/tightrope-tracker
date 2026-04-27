@@ -1,4 +1,5 @@
 import type { ScoreHistory, ScoreSnapshot } from "@tightrope/shared";
+import { PILLAR_ORDER } from "@tightrope/shared";
 import { json, notSeeded } from "../lib/router.js";
 import { kvGetJson, kvPutJson, readThrough } from "../lib/cache.js";
 import { buildHistoryFromD1, buildSnapshotFromD1 } from "../lib/db.js";
@@ -12,6 +13,19 @@ function snapshotIsFresh(snapshot: ScoreSnapshot): boolean {
   const ts = Date.parse(snapshot.headline.updatedAt);
   if (!Number.isFinite(ts)) return false;
   return Date.now() - ts < SNAPSHOT_MAX_AGE_MS;
+}
+
+/**
+ * A cached snapshot from an older recompute pipeline can carry empty
+ * `contributions` arrays even when the headline + pillar values are fine.
+ * The /explore simulator and source-health surfaces depend on populated
+ * contributions; treat an empty-contributions cache as cold.
+ */
+function snapshotHasContributions(snapshot: ScoreSnapshot): boolean {
+  for (const p of PILLAR_ORDER) {
+    if ((snapshot.pillars[p]?.contributions?.length ?? 0) > 0) return true;
+  }
+  return false;
 }
 
 /**
@@ -59,7 +73,7 @@ export async function handleScore(
   try {
     const cached = await kvGetJson<ScoreSnapshot>(env, "score:latest");
     let snapshot: ScoreSnapshot;
-    if (cached && cached.schemaVersion === 1 && snapshotIsFresh(cached)) {
+    if (cached && cached.schemaVersion === 1 && snapshotIsFresh(cached) && snapshotHasContributions(cached)) {
       snapshot = cached;
     } else {
       snapshot = await buildSnapshotFromD1(env);

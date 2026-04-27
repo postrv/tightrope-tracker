@@ -61,6 +61,35 @@ const sources = Object.values(SOURCES);
         <li><a href="https://www.instituteforgovernment.org.uk" rel="noopener" target="_blank">Institute for Government</a> — delivery analysis, machinery-of-government context.</li>
       </ul>
     </section>
+
+    <section class="cluster" id="licensing">
+      <h2>Licensing &amp; attribution</h2>
+      <p class="intro">Source data on this site is reproduced under the licences below. The application code is MIT-licensed; <a href="https://github.com/postrv/tightrope-tracker" rel="noopener" target="_blank">the source code is on GitHub</a>.</p>
+      <ul class="licences">
+        <li>
+          <strong>UK government data</strong> — Bank of England, Office for Budget Responsibility, Office for National Statistics, Debt Management Office, MHCLG, DESNZ, gov.uk, parliament.uk, legislation.gov.uk: Contains public-sector information licensed under the
+          <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" rel="noopener" target="_blank">Open Government Licence v3.0</a>.
+        </li>
+        <li>
+          <strong>S&amp;P Global UK Services PMI</strong> — &copy; S&amp;P Global. Indicator values are reproduced as headline figures under fair-dealing for non-commercial dashboarding; underlying detail and historical series remain S&amp;P Global property.
+        </li>
+        <li>
+          <strong>EIA Brent Spot</strong> — US Energy Information Administration, public-domain.
+        </li>
+        <li>
+          <strong>EODHD UK housebuilder composite</strong> — &copy; EOD Historical Data; reproduced under our subscriber agreement, EOD daily figures only.
+        </li>
+        <li>
+          <strong>Moneyfacts mortgage rates</strong> — &copy; Moneyfacts; aggregate market averages reproduced with attribution; underlying scraping respects robots.txt.
+        </li>
+        <li>
+          <strong>RICS Residential Market Survey</strong> — &copy; RICS; net-balance figures only, reproduced with attribution under fair-dealing for analysis.
+        </li>
+        <li>
+          <strong>GfK / NIESR Consumer Confidence Barometer</strong> — &copy; NIESR (publisher since 2024); headline index reproduced with attribution.
+        </li>
+      </ul>
+    </section>
   </main>
   <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={Boolean(snapshot.headline.stale)} />
 </BaseLayout>
@@ -90,4 +119,7 @@ const sources = Object.values(SOURCES);
 .cluster .intro { color: var(--ink-1); font-size: 14px; max-width: 640px; }
 .refs { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--ink-1); }
 .refs a { color: var(--accent); }
+.licences { list-style: disc; padding-left: 22px; margin: 16px 0 0; display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; color: var(--ink-1); line-height: 1.55; }
+.licences strong { color: var(--ink-0); font-weight: 500; }
+.licences a { color: var(--accent); }
 </style>

@@ -212,7 +212,6 @@ hit because the Auto / fresh chip lies silently.
 | `obr-efo.json` | OBR Economic & Fiscal Outlook | Twice a year (Spring/Autumn) | `packages/data-sources/src/fixtures/` | `cb_headroom`, `psnfl_trajectory` |
 | `housing-history.json` | MHCLG quarterly planning-consents series | Quarterly | same | `housing_trajectory`, `planning_consents` |
 | `delivery-milestones.json` | Hand-coded editorial read of departmental milestones | Quarterly | same | `new_towns_milestones`, `bics_rollout`, `industrial_strategy`, `smr_programme` |
-| `gas-m1.json` | ICE UK NBP front-month gas | ~Weekly (editorial) | same | `gas_m1` |
 | `ftse-250.json` | LSEG FTSE 250 close | Weekly (editorial) | same | `ftse_250` |
 
 **When to refresh**

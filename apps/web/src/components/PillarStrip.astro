@@ -2,7 +2,7 @@
 import type { PillarScore, PillarId } from "@tightrope/shared";
 import { PILLAR_ORDER, PILLARS, BANDS, liveOnlyIndicatorsForPillar, describeSparklineCoverage } from "@tightrope/shared";
 import Sparkline from "./charts/Sparkline.astro";
-import { signedDelta, trendArrow } from "~/lib/format.js";
+import { signedDelta, trendArrow, trendDescriptor } from "~/lib/format.js";
 
 interface Props {
   pillars: Record<PillarId, PillarScore>;
@@ -53,7 +53,12 @@ function pillarHref(id: PillarId): string {
             <div class="pillar-value-row">
               <span class="pillar-value">{Math.round(p.value)}</span>
               <span class={`pillar-trend ${trendCls}`} title="Change across the 30-day sparkline window (first to last point).">
-                {trend30 === "flat" ? "— flat" : `${trendArrow(delta)} ${signedDelta(Math.abs(delta), 1)}`} / 30d
+                {trend30 === "flat" ? "— flat" : (
+                  <>
+                    {trendArrow(delta)} {signedDelta(Math.abs(delta), 1)}
+                    {trendDescriptor(delta) ? <span class="trend-word"> {trendDescriptor(delta)}</span> : null}
+                  </>
+                )} / 30d
               </span>
               {p.stale ? <span class="pillar-stale" title="Fewer than a quorum of indicators have a fresh reading; value is a last-known carry.">stale</span> : null}
             </div>
@@ -137,6 +142,7 @@ function pillarHref(id: PillarId): string {
 .pillar-trend.up { color: var(--band-acute); }
 .pillar-trend.dn { color: var(--band-slack); }
 .pillar-trend.flat { color: var(--ink-2); }
+.pillar-trend .trend-word { font-style: italic; opacity: 0.85; }
 .pillar-stale {
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
   padding: 2px 7px; border-radius: 999px;

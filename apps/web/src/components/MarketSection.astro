@@ -3,7 +3,8 @@ import type { PillarScore, TodayMovement } from "@tightrope/shared";
 import { describeSparklineCoverage } from "@tightrope/shared";
 import LineChart from "./charts/LineChart.astro";
 import ProvenanceBadge from "./ProvenanceBadge.astro";
-import { signedDelta } from "~/lib/format.js";
+import IndicatorTooltip from "./IndicatorTooltip.astro";
+import { signedDelta, trendDescriptor } from "~/lib/format.js";
 
 interface Props {
   pillar: PillarScore;
@@ -43,7 +44,12 @@ const coverage = describeSparklineCoverage(sparkline);
           const cls = t30 === "up" ? "up" : t30 === "down" ? "dn" : "flat";
           return (
             <span class={`pillar-score-delta ${cls}`} title="Change across the 30-day sparkline window (first to last point).">
-              {t30 === "flat" ? "flat" : `${t30 === "up" ? "▲" : "▼"} ${signedDelta(Math.abs(d30), 1)}`} / 30d
+              {t30 === "flat" ? "flat" : (
+                <>
+                  {t30 === "up" ? "▲" : "▼"} {signedDelta(Math.abs(d30), 1)}
+                  {trendDescriptor(d30) ? <span class="trend-word"> {trendDescriptor(d30)}</span> : null}
+                </>
+              )} / 30d
             </span>
           );
         })()}
@@ -56,32 +62,32 @@ const coverage = describeSparklineCoverage(sparkline);
         <p class="hint">10y and 20y zero-coupon yields, breakeven inflation, and risk assets.</p>
         <div class="quad">
           <div class="mini">
-            <div class="mini-head"><span class="mini-label">10y gilt</span><ProvenanceBadge indicatorId="gilt_10y" compact /></div>
+            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="10y gilt" indicatorId="gilt_10y" /></span><ProvenanceBadge indicatorId="gilt_10y" compact /></div>
             <span class="mini-val">{gilt10?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${gilt10?.worsening ? "up" : "dn"}`}>{gilt10?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <div class="mini-head"><span class="mini-label">20y gilt</span><ProvenanceBadge indicatorId="gilt_30y" compact /></div>
+            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="20y gilt" indicatorId="gilt_30y" /></span><ProvenanceBadge indicatorId="gilt_30y" compact /></div>
             <span class="mini-val">{gilt30?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${gilt30?.worsening ? "up" : "dn"}`}>{gilt30?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <div class="mini-head"><span class="mini-label">5y BE</span><ProvenanceBadge indicatorId="breakeven_5y" compact /></div>
+            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="5y BE" indicatorId="breakeven_5y" /></span><ProvenanceBadge indicatorId="breakeven_5y" compact /></div>
             <span class="mini-val">{be5?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${be5?.worsening ? "up" : "dn"}`}>{be5?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <div class="mini-head"><span class="mini-label">GBP / USD</span><ProvenanceBadge indicatorId="gbp_usd" compact /></div>
+            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="GBP / USD" indicatorId="gbp_usd" /></span><ProvenanceBadge indicatorId="gbp_usd" compact /></div>
             <span class="mini-val">{gbp?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${gbp?.worsening ? "up" : "dn"}`}>{gbp?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <div class="mini-head"><span class="mini-label">FTSE 250</span><ProvenanceBadge indicatorId="ftse_250" compact /></div>
+            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="FTSE 250" indicatorId="ftse_250" /></span><ProvenanceBadge indicatorId="ftse_250" compact /></div>
             <span class="mini-val">{ftse?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${ftse?.worsening ? "up" : "dn"}`}>{ftse?.changeDisplay ?? ""}</span>
           </div>
           <div class="mini">
-            <div class="mini-head"><span class="mini-label">Brent GBP</span><ProvenanceBadge indicatorId="brent_gbp" compact /></div>
+            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="Brent GBP" indicatorId="brent_gbp" /></span><ProvenanceBadge indicatorId="brent_gbp" compact /></div>
             <span class="mini-val">{brent?.displayValue ?? "—"}</span>
             <span class={`mini-chg ${brent?.worsening ? "up" : "dn"}`}>{brent?.changeDisplay ?? ""}</span>
           </div>
@@ -135,6 +141,7 @@ const coverage = describeSparklineCoverage(sparkline);
 .pillar-score-delta.up { color: var(--band-acute); }
 .pillar-score-delta.dn { color: var(--band-slack); }
 .pillar-score-delta.flat { color: var(--ink-2); }
+.pillar-score-delta .trend-word { font-style: italic; opacity: 0.85; }
 
 .market-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px; }
 .chart-empty { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); padding: 80px 0; text-align: center; }

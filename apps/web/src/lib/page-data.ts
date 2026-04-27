@@ -18,6 +18,8 @@ import {
   getTimelineEvents,
   getCorrections,
   getLastIngestionAudit,
+  getBaselineSummaries,
+  type MethodologyBaselinesPayload,
 } from "./db.js";
 
 export interface HomepageData {
@@ -90,6 +92,38 @@ export async function loadSnapshot(astroLocals: App.Locals): Promise<ScoreSnapsh
   } catch {
     return emptySnapshot();
   }
+}
+
+/**
+ * Load per-indicator baseline summaries for the /explore simulator.
+ *
+ * Defensive: returns an empty payload when KV/D1 are unavailable so the
+ * page still renders. Consumers (ExploreIsland) fall back to a linear
+ * approximation per-indicator when its summary is missing -- the
+ * fallback is per-indicator, not global, so partial coverage degrades
+ * gracefully rather than disabling the whole simulator.
+ */
+export async function loadBaselineSummaries(astroLocals: App.Locals): Promise<MethodologyBaselinesPayload> {
+  const env = astroLocals.runtime?.env;
+  if (!env || !env.DB || !env.KV) return emptyBaselines();
+  try {
+    return await getBaselineSummaries(env);
+  } catch {
+    return emptyBaselines();
+  }
+}
+
+export function emptyBaselines(): MethodologyBaselinesPayload {
+  const now = new Date().toISOString();
+  return {
+    schemaVersion: 1,
+    generatedAt: now,
+    baselineStart: now,
+    baselineEnd: now,
+    excludeStart: now,
+    excludeEnd: now,
+    baselines: {},
+  };
 }
 
 export async function loadMovements(astroLocals: App.Locals): Promise<TodayMovement[]> {
@@ -170,11 +204,16 @@ function emptySnapshot(): ScoreSnapshot {
       sparkline30d: [],
     };
   }
+  // Stamp the placeholder updatedAt with the Unix epoch — NOT the wall clock —
+  // so a reader never sees "updated 09:32 UTC" next to score 0 during an
+  // outage. The API's `looksUnseeded` predicate explicitly checks for
+  // pre-2000 timestamps to suppress publication of placeholder data; the
+  // homepage banner renders the data-loading copy when it sees a 1970 stamp.
   const headline: HeadlineScore = {
     value: 0,
     band: bandFor(0).id,
     editorial: "Data loading — the first ingestion run has not completed yet.",
-    updatedAt: new Date().toISOString(),
+    updatedAt: "1970-01-01T00:00:00.000Z",
     delta24h: 0,
     delta30d: 0,
     deltaYtd: 0,

@@ -20,7 +20,7 @@ describe("boeFxAdapter", () => {
     const twi = result.observations.find((o) => o.indicatorId === "gbp_twi")!;
     expect(usd.value).toBe(1.271);
     expect(twi.value).toBe(78.5);
-    expect(usd.observedAt).toBe("2026-04-17T00:00:00Z");
+    expect(usd.observedAt).toBe("2026-04-17T16:00:00Z");
     expect(usd.payloadHash).toMatch(/^[0-9a-f]{64}$/);
   });
 
@@ -58,8 +58,8 @@ describe("boeFxAdapter.fetchHistorical", () => {
     for (const o of result.observations) {
       expect(o.payloadHash).toMatch(/^hist:[0-9a-f]{64}$/);
     }
-    expect(result.earliestObservedAt).toBe("2026-04-15T00:00:00Z");
-    expect(result.latestObservedAt).toBe("2026-04-17T00:00:00Z");
+    expect(result.earliestObservedAt).toBe("2026-04-15T16:00:00Z");
+    expect(result.latestObservedAt).toBe("2026-04-17T16:00:00Z");
   });
 
   it("clips to requested range", async () => {
@@ -74,8 +74,8 @@ describe("boeFxAdapter.fetchHistorical", () => {
       { from: new Date("2026-04-15T00:00:00Z"), to: new Date("2026-04-15T00:00:00Z") },
     );
     expect(result.observations.map((o) => o.observedAt)).toEqual([
-      "2026-04-15T00:00:00Z",
-      "2026-04-15T00:00:00Z",
+      "2026-04-15T16:00:00Z",
+      "2026-04-15T16:00:00Z",
     ]);
   });
 });

@@ -79,7 +79,19 @@ export function parseCsv(
   return rows;
 }
 
-/** Convert a BoE IADB date (DD Mmm YYYY) into an ISO 8601 UTC midnight. */
+/**
+ * Convert a BoE IADB date (DD Mmm YYYY) into an ISO 8601 UTC timestamp
+ * stamped at the official 4 p.m. London close-of-business time the
+ * series is fixed to. We previously stamped midnight UTC, which (a)
+ * pre-dates the actual fixing by 16 hours and (b) misled the homepage
+ * into rendering "as of HH:MM UTC = 00:00" next to a 4 p.m. London print.
+ *
+ * The BoE Statistical Database publishes daily series fixed at 16:00
+ * London (15:00 BST → 16:00 BST during DST and 16:00 GMT outside).
+ * We stamp 16:00:00Z as a defensible single-time approximation; the
+ * sub-hour DST drift is invisible at the homepage's "HH:MM" resolution
+ * and well below the BoE's own publication-lag tolerance.
+ */
 export function boeDateToIso(input: string): string {
   const months: Record<string, string> = {
     Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
@@ -93,7 +105,7 @@ export function boeDateToIso(input: string): string {
   const monAbbr = match[2]!.slice(0, 1).toUpperCase() + match[2]!.slice(1, 3).toLowerCase();
   const mm = months[monAbbr];
   if (!mm) throw new Error(`boeDateToIso: unknown month '${match[2]}'`);
-  return `${match[3]}-${mm}-${day}T00:00:00Z`;
+  return `${match[3]}-${mm}-${day}T16:00:00Z`;
 }
 
 const BOE_MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"] as const;

@@ -61,6 +61,20 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
     <LabourSection pillar={snapshot.pillars.labour} />
     <DeliverySection commitments={delivery} pillar={snapshot.pillars.delivery} />
     <Timeline events={timeline} />
+    <section class="explore-cta" aria-labelledby="explore-cta-heading">
+      <div class="container">
+        <div class="explore-cta-card">
+          <div>
+            <span class="eyebrow">interactive · 14 levers · live methodology</span>
+            <h2 id="explore-cta-heading">what if&hellip;<span class="lfg-u">?</span></h2>
+            <p>
+              Drag any of the 14 headline drivers — gilt yields, pay growth, headroom, housing — and watch the score, pillars, and band recompute through the same empirical-CDF baseline the live methodology uses. <strong>Counterfactual, not a forecast.</strong>
+            </p>
+          </div>
+          <a class="explore-cta-btn" href="/explore">Try the simulator →</a>
+        </div>
+      </div>
+    </section>
     <ShareGrid snapshot={snapshot} movements={movements} delivery={delivery} />
     <ActionSection headline={snapshot.headline} />
   </main>
@@ -68,6 +82,68 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
 </BaseLayout>
 
 <style>
+.explore-cta {
+  padding: 36px 0 16px;
+}
+.explore-cta-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 28px;
+  align-items: center;
+  padding: 28px 32px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent) 6%, var(--bg-1)) 0%,
+    var(--bg-1) 70%);
+}
+.explore-cta-card .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--ink-2);
+  text-transform: uppercase;
+}
+.explore-cta-card h2 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 12px 0 10px;
+  color: var(--ink-0);
+}
+.explore-cta-card p {
+  margin: 0;
+  color: var(--ink-1);
+  font-size: 15px;
+  line-height: 1.55;
+  max-width: 640px;
+}
+.explore-cta-card p strong { color: var(--ink-0); font-weight: 500; }
+.explore-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 12px 22px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--ink-0);
+  transition: background 200ms;
+}
+.explore-cta-btn:hover, .explore-cta-btn:focus-visible {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  outline: none;
+}
+@media (max-width: 720px) {
+  .explore-cta-card { grid-template-columns: 1fr; }
+}
+
 .stale-banner {
   margin-top: 14px;
   padding: 14px 22px;

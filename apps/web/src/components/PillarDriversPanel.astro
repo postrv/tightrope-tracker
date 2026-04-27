@@ -12,7 +12,8 @@
  */
 import type { ScoreSnapshot, IndicatorContribution } from "@tightrope/shared";
 import { BANDS, INDICATORS, PILLAR_ORDER, PILLARS } from "@tightrope/shared";
-import { signedDelta, trendArrow, trendClass, formatIndicator } from "~/lib/format.js";
+import { signedDelta, trendArrow, trendClass, trendDescriptor, formatIndicator } from "~/lib/format.js";
+import IndicatorTooltip from "./IndicatorTooltip.astro";
 
 interface Props {
   snapshot: ScoreSnapshot;
@@ -67,6 +68,7 @@ interface Driver {
   label: string;
   /** Already-formatted display string from the indicator's formatDisplay. */
   raw: string;
+  indicatorId: string;
 }
 function describeDriver(c: IndicatorContribution): Driver {
   const def = INDICATORS[c.indicatorId];
@@ -76,6 +78,7 @@ function describeDriver(c: IndicatorContribution): Driver {
   return {
     label: def?.label ?? c.indicatorId,
     raw: formatIndicator(c.indicatorId, c.rawValue),
+    indicatorId: c.indicatorId,
   };
 }
 ---
@@ -109,17 +112,17 @@ function describeDriver(c: IndicatorContribution): Driver {
           <ul class="deltas" aria-label={`${def.shortTitle} deltas`}>
             <li>
               <span class="delta-label">7d</span>
-              <span class={`delta ${trendClass(p.delta7d)}`}>{trendArrow(p.delta7d)} {signedDelta(p.delta7d, 1)}</span>
+              <span class={`delta ${trendClass(p.delta7d)}`}>{trendArrow(p.delta7d)} {signedDelta(p.delta7d, 1)}{trendDescriptor(p.delta7d) ? <span class="trend-word"> {trendDescriptor(p.delta7d)}</span> : null}</span>
             </li>
             <li>
               <span class="delta-label">30d</span>
-              <span class={`delta ${trendClass(p.delta30d)}`}>{trendArrow(p.delta30d)} {signedDelta(p.delta30d, 1)}</span>
+              <span class={`delta ${trendClass(p.delta30d)}`}>{trendArrow(p.delta30d)} {signedDelta(p.delta30d, 1)}{trendDescriptor(p.delta30d) ? <span class="trend-word"> {trendDescriptor(p.delta30d)}</span> : null}</span>
             </li>
           </ul>
 
           {driverInfo ? (
             <p class="driver-line">
-              Driven by <strong>{driverInfo.label}</strong>: {driverInfo.raw}.
+              Driven by <strong><IndicatorTooltip label={driverInfo.label} indicatorId={driverInfo.indicatorId} tipId={`tip-driver-${id}`} /></strong>: {driverInfo.raw}.
             </p>
           ) : (
             <p class="driver-line subtle">No live indicator readings yet — drivers populate after the first ingestion run.</p>
@@ -199,6 +202,7 @@ function describeDriver(c: IndicatorContribution): Driver {
 .deltas .delta.up { color: var(--band-acute); }
 .deltas .delta.dn { color: var(--band-slack); }
 .deltas .delta.flat { color: var(--ink-2); }
+.deltas .delta .trend-word { font-style: italic; opacity: 0.85; }
 .driver-line { margin: 0; color: var(--ink-1); font-size: 13.5px; line-height: 1.5; }
 .driver-line strong { color: var(--ink-0); font-weight: 600; }
 .driver-line.subtle { color: var(--ink-2); font-style: italic; }

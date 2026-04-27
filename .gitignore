@@ -57,6 +57,11 @@ wrangler.toml.bak
 
 # dev artifacts — planning docs, mockups, scratch notes, pre-implementation research
 .archive/
+PHASE*_PLAN.md
+PHASE*_NOTES.md
+
+# local sandbox / firewall config (per-machine; not for source control)
+.sanctum/
 
 # vendored third-party JS copied from node_modules at build time
 # (see apps/web/scripts/copy-scalar.mjs). Source of truth is package.json.

@@ -54,9 +54,10 @@ function ecdfPath(): string {
       <h2>How the score is built</h2>
       <ol class="ordered">
         <li><strong>Collect.</strong> Each indicator is pulled from a named public source on a defined cadence (see the table per pillar).</li>
-        <li><strong>Normalise.</strong> We compute a z-score for each indicator against a rolling baseline starting <code>{BASELINE_START_ISO.slice(0, 10)}</code>, excluding the COVID shock window <code>{COVID_EXCLUDE_START_ISO.slice(0, 10)}</code>–<code>{COVID_EXCLUDE_END_ISO.slice(0, 10)}</code>.</li>
-        <li><strong>Direct.</strong> Where a rising raw value is <em>good</em> (e.g. real pay, FTSE 250), we flip the sign before normalisation.</li>
-        <li><strong>Bound to [0, 100].</strong> We pass the z-score through an empirical cumulative distribution function (ECDF) over the same baseline. The chart below illustrates the mapping: a z of +2 maps to roughly 98, a z of 0 maps to 50.</li>
+        <li><strong>Normalise.</strong> Each indicator's current reading is mapped to its empirical percentile against an expanding baseline running from <code>{BASELINE_START_ISO.slice(0, 10)}</code> to today, excluding the COVID shock window <code>{COVID_EXCLUDE_START_ISO.slice(0, 10)}</code>–<code>{COVID_EXCLUDE_END_ISO.slice(0, 10)}</code>. The baseline includes today's reading itself; for series with hundreds of observations, this contributes &lt;1/n to the rank and is harmless. We also compute a z-score against the same baseline and surface it on the homepage tiles for context, but the score itself does <em>not</em> use the z-score as an input.
+          <br /><span class="footnote"><strong>Why this window:</strong> 2019-01-01 is the earliest date for which the four-pillar mix (gilt yields, OBR fiscal vintages, ONS LMS, MHCLG quarterly housing) is jointly available without splicing methodology breaks. The upper bound is "today" — every recompute folds today's reading back into the baseline, so the percentile mass shifts glacially as new data arrives. The 2020-Q2 exclusion drops the three-month window when GDP fell ~20% in a quarter and gilt issuance broke 9% of GDP — including those points would mean a normal-times reading like "gilt 30y at 5%" landed at the 60th percentile rather than its true ~95th, because the dispersion would be artificially fattened by a shock that has now passed. The exclusion is fixed and disclosed (versus a moving window or a "robust" trimming that would silently change the score).</span></li>
+        <li><strong>Direct.</strong> Where a rising raw value is <em>good</em> (e.g. real pay, FTSE 250), we invert the percentile (<code>p &rarr; 1 - p</code>) so every indicator yields a pressure score on the same axis: higher = more pressure.</li>
+        <li><strong>Bound to [0, 100].</strong> The (possibly inverted) percentile is multiplied by 100. The chart below illustrates the shape, but note: production uses the <em>empirical</em> CDF over each indicator's actual baseline, not a normal CDF — the shape varies per indicator (gilt yields are roughly log-normal; planning consents heavily skewed).</li>
         <li><strong>Pillar score.</strong> Weighted arithmetic mean of the pillar's indicators. Arithmetic at the pillar level means individual inputs are additive and debuggable.</li>
         <li><strong>Headline Tightrope Score.</strong> Weighted <em>geometric</em> mean of the four pillar scores. Geometric at the headline level means one pillar blowing out (e.g. a gilt shock) pulls the headline hard — the correct behaviour for a systemic-stress metric.</li>
       </ol>
@@ -92,8 +93,8 @@ function ecdfPath(): string {
       </div>
 
       <div class="ecdf-demo">
-        <h3>ECDF — the z → [0, 100] mapping</h3>
-        <svg viewBox="0 0 520 180" preserveAspectRatio="none" role="img" aria-label="ECDF mapping z-score to percentile">
+        <h3>ECDF — schematic of the percentile &rarr; [0, 100] mapping</h3>
+        <svg viewBox="0 0 520 180" preserveAspectRatio="none" role="img" aria-label="Schematic ECDF mapping value rank to percentile">
           <g stroke="var(--border-soft)" stroke-width="1">
             <line x1="40" y1="20" x2="500" y2="20"/>
             <line x1="40" y1="80" x2="500" y2="80"/>
@@ -111,7 +112,7 @@ function ecdfPath(): string {
           </g>
           <path d={ecdfPath()} stroke="var(--accent)" stroke-width="1.6" fill="none"/>
         </svg>
-        <p class="caption">Percentile of standard-normal CDF on the y-axis, z-score on the x-axis. We use the empirical (not normal) CDF in production — this figure is illustrative.</p>
+        <p class="caption">Schematic only: y-axis is the [0, 100] pressure score; x-axis is a value's rank in the baseline (illustrated here against a standard-normal shape for legibility). Production uses each indicator's <em>actual</em> empirical CDF, which varies in shape — see the per-indicator distributions in the API <code>/methodology/baselines</code> response.</p>
       </div>
     </section>
 
@@ -258,6 +259,11 @@ function ecdfPath(): string {
       <h2>Corrections, source code, snapshots</h2>
       <p>Every correction to a published number appears in the <a href="/corrections">corrections log</a>, dated, with the original and revised values and the reason. The source code for the scoring library is MIT-licensed on GitHub, and the nightly snapshot of the D1 database is committed publicly — if you believe a number on this site is wrong, you can verify it end-to-end.</p>
     </section>
+
+    <section class="block">
+      <h2>Licensing &amp; attribution</h2>
+      <p>UK public-sector data on this site (Bank of England, OBR, ONS, DMO, MHCLG, DESNZ, gov.uk, parliament.uk, legislation.gov.uk) is reproduced under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" rel="noopener" target="_blank">Open Government Licence v3.0</a>. Per-source terms — including non-OGL feeds (S&amp;P Global PMI, EODHD, Moneyfacts, RICS, GfK / NIESR) — are listed on the <a href="/sources#licensing">sources page</a>. The application code is MIT-licensed.</p>
+    </section>
   </main>
   <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={Boolean(snapshot.headline.stale)} />
 </BaseLayout>
@@ -275,6 +281,8 @@ function ecdfPath(): string {
 .ordered { padding-left: 22px; font-size: 15px; line-height: 1.7; color: var(--ink-1); }
 .ordered li { margin-bottom: 10px; }
 .ordered li strong { color: var(--ink-0); font-family: var(--font-serif); font-weight: 400; }
+.footnote { display: block; margin-top: 8px; padding: 10px 14px; border-left: 2px solid var(--border); background: color-mix(in srgb, var(--accent) 4%, transparent); font-size: 13.5px; line-height: 1.55; color: var(--ink-1); }
+.footnote strong { font-family: inherit; font-weight: 500; color: var(--ink-0); }
 .bullets { padding-left: 22px; font-size: 15px; line-height: 1.7; color: var(--ink-1); }
 
 code { font-family: var(--font-mono); font-size: 12.5px; color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); padding: 1px 6px; border-radius: 3px; }

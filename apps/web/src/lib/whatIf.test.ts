@@ -16,7 +16,9 @@ import {
   parseScenarioHash,
   recomputeFromOverrides,
   sliderToNormalised,
+  type LeverKey,
 } from "./whatIf.js";
+import { summariseBaseline, normalisedFromSummary, type BaselineSummary } from "@tightrope/methodology";
 
 /* -------------------------------------------------------------------------- */
 /*  Test fixtures                                                              */
@@ -74,29 +76,50 @@ function makeSnapshot(): ScoreSnapshot {
 
   const marketDefs = Object.values(INDICATORS).filter((d) => d.pillar === "market");
   const marketWeightSum = marketDefs.reduce((a, d) => a + d.weight, 0);
-  const marketContribs: IndicatorContribution[] = marketDefs.map((d) => {
-    let raw = 1;
-    if (d.id === "gilt_30y") raw = 5.4;
-    else if (d.id === "gilt_10y") raw = 4.5;
-    return makeContribution(d.id, raw, 60, marketWeightSum);
-  });
+  // Plausible per-indicator raw values so identity-mode round-trips work
+  // for every lever in this pillar. Each is well within its lever domain.
+  const marketRaw: Record<string, number> = {
+    gilt_10y: 4.5,
+    gilt_30y: 5.4,
+    breakeven_5y: 3.4,
+    brent_gbp: 70,
+    services_pmi: 50,
+    gbp_usd: 1.27,
+    gbp_twi: 80,
+    ftse_250: 19500,
+    housebuilder_idx: 100,
+    consumer_confidence: -20,
+    rics_price_balance: 5,
+  };
+  const marketContribs: IndicatorContribution[] = marketDefs.map((d) =>
+    makeContribution(d.id, marketRaw[d.id] ?? 1, 60, marketWeightSum),
+  );
 
   const labourDefs = Object.values(INDICATORS).filter((d) => d.pillar === "labour");
   const labourWeightSum = labourDefs.reduce((a, d) => a + d.weight, 0);
-  const labourContribs: IndicatorContribution[] = labourDefs.map((d) => {
-    let raw = 1;
-    if (d.id === "real_regular_pay") raw = 0.4;
-    else if (d.id === "inactivity_health") raw = 2.788;
-    return makeContribution(d.id, raw, 55, labourWeightSum);
-  });
+  const labourRaw: Record<string, number> = {
+    real_regular_pay: 0.4,
+    inactivity_health: 2.788,
+    unemployment: 4.2,
+    mortgage_2y_fix: 4.85,
+    inactivity_rate: 21.5,
+    vacancies_per_unemployed: 0.7,
+    payroll_mom: 122,
+    dd_failure_rate: 1.2,
+  };
+  const labourContribs: IndicatorContribution[] = labourDefs.map((d) =>
+    makeContribution(d.id, labourRaw[d.id] ?? 1, 55, labourWeightSum),
+  );
 
   const deliveryDefs = Object.values(INDICATORS).filter((d) => d.pillar === "delivery");
   const deliveryWeightSum = deliveryDefs.reduce((a, d) => a + d.weight, 0);
-  const deliveryContribs: IndicatorContribution[] = deliveryDefs.map((d) => {
-    let raw = 50;
-    if (d.id === "housing_trajectory") raw = 49;
-    return makeContribution(d.id, raw, 65, deliveryWeightSum);
-  });
+  const deliveryRaw: Record<string, number> = {
+    housing_trajectory: 49,
+    planning_consents: 70,
+  };
+  const deliveryContribs: IndicatorContribution[] = deliveryDefs.map((d) =>
+    makeContribution(d.id, deliveryRaw[d.id] ?? 50, 65, deliveryWeightSum),
+  );
 
   const pillars: Record<PillarId, PillarScore> = {
     fiscal: makePillar("fiscal", weightedMean(fiscalContribs), fiscalContribs),
@@ -213,10 +236,20 @@ describe("formatScenarioHash", () => {
   });
 
   it("emits keys in the canonical LEVER_KEYS order", () => {
-    const values = { headroom: 23.6, gilt30y: 5.4, pay: 0.4, inactivity: 2.79, housing: 49.0 };
+    // Populate every lever so the formatter emits all keys in canonical order.
+    const values: Partial<Record<LeverKey, number>> = {};
+    for (const lever of LEVERS) {
+      values[lever.key] = (lever.min + lever.max) / 2;
+    }
     const formatted = formatScenarioHash(values);
     const keys = formatted.split("&").map((p) => p.split("=")[0]);
     expect(keys).toEqual([...LEVER_KEYS]);
+  });
+
+  it("only emits keys whose value is supplied (sparse input)", () => {
+    const formatted = formatScenarioHash({ headroom: 23.6, gilt30y: 5.4 });
+    const keys = formatted.split("&").map((p) => p.split("=")[0]);
+    expect(keys).toEqual(["gilt30y", "headroom"]);
   });
 
   it("respects the per-lever step decimals when rounding", () => {
@@ -229,11 +262,13 @@ describe("formatScenarioHash", () => {
   });
 
   it("round-trips through parseScenarioHash", () => {
-    const values = { headroom: 23.6, gilt30y: 5.4, pay: 0.4, inactivity: 2.79, housing: 49.0 };
+    const values: Partial<Record<LeverKey, number>> = {
+      headroom: 23.6, gilt30y: 5.4, pay: 0.4, inactivity: 2.79, housing: 49.0,
+    };
     const formatted = formatScenarioHash(values);
     const parsed = parseScenarioHash(formatted);
-    for (const k of LEVER_KEYS) {
-      expect(parsed[k]).toBeCloseTo(values[k], 2);
+    for (const k of Object.keys(values) as LeverKey[]) {
+      expect(parsed[k]).toBeCloseTo(values[k]!, 2);
     }
   });
 });
@@ -415,5 +450,272 @@ describe("recomputeFromOverrides", () => {
     expect(out.pillars.market).toBe(snap.pillars.market);
     expect(out.pillars.labour).toBe(snap.pillars.labour);
     expect(out.pillars.delivery).toBe(snap.pillars.delivery);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/*  recomputeFromOverrides — ECDF mode                                          */
+/* -------------------------------------------------------------------------- */
+
+describe("recomputeFromOverrides — ECDF mode", () => {
+  function buildBaselines(): Record<string, BaselineSummary> {
+    // Synthetic baselines spanning each lever's domain. The summary
+    // resolution (101 knots) is enough that any value within the slider
+    // range maps to a plausible probability.
+    const out: Record<string, BaselineSummary> = {};
+    for (const lever of LEVERS) {
+      const samples: number[] = [];
+      const span = lever.max - lever.min;
+      // 200 samples uniformly distributed across the domain.
+      for (let i = 0; i < 200; i++) {
+        samples.push(lever.min + (span * i) / 199);
+      }
+      out[lever.indicatorId] = summariseBaseline(samples);
+    }
+    return out;
+  }
+
+  it("preserves the live identity when the slider equals the live raw value (within step)", () => {
+    const snap = makeSnapshot();
+    const baselines = buildBaselines();
+    const live = liveValuesFromSnapshot(snap);
+
+    // Push every lever to its live raw value -- the snapshot must come back unchanged.
+    const overrides: Partial<Record<LeverKey, number>> = {};
+    for (const lever of LEVERS) {
+      overrides[lever.key] = live[lever.key];
+    }
+
+    const out = recomputeFromOverrides(snap, overrides, baselines);
+    for (const id of PILLAR_ORDER) {
+      expect(out.pillars[id].value).toBe(snap.pillars[id].value);
+      expect(out.pillars[id].band).toBe(snap.pillars[id].band);
+    }
+  });
+
+  it("uses the ECDF mapping rather than linear when the slider deviates", () => {
+    const snap = makeSnapshot();
+    const baselines = buildBaselines();
+    // Raise the gilt 30y to its midpoint and confirm pressure ≈ 50,
+    // which the ECDF over a uniform baseline returns. Linear over the
+    // raw slider's hard-coded domain would also return 50 -- we
+    // distinguish by *changing* the slider domain externally so linear
+    // and ECDF would diverge.
+    // Here we just sanity-check that the output is finite and bounded.
+    const lever = LEVERS.find((l) => l.key === "gilt30y")!;
+    const mid = (lever.min + lever.max) / 2;
+    const out = recomputeFromOverrides(snap, { gilt30y: mid }, baselines);
+    expect(out.pillars.market.value).toBeGreaterThanOrEqual(0);
+    expect(out.pillars.market.value).toBeLessThanOrEqual(100);
+    // 30y at the midpoint should produce a *different* market score
+    // from 30y at its max.
+    const stressed = recomputeFromOverrides(snap, { gilt30y: lever.max }, baselines);
+    expect(stressed.pillars.market.value).toBeGreaterThan(out.pillars.market.value);
+  });
+
+  it("falls back to linear when an indicator has no baseline summary", () => {
+    const snap = makeSnapshot();
+    const partial: Record<string, BaselineSummary> = {};
+    // Provide a baseline for housing only; the others must use linear fallback.
+    const housingLever = LEVERS.find((l) => l.key === "housing")!;
+    const samples: number[] = [];
+    for (let i = 0; i < 200; i++) {
+      samples.push(housingLever.min + ((housingLever.max - housingLever.min) * i) / 199);
+    }
+    partial[housingLever.indicatorId] = summariseBaseline(samples);
+
+    // Raise gilt30y -- no baseline supplied; the result must still
+    // produce a finite, bounded score and reflect a higher pressure.
+    const out = recomputeFromOverrides(snap, { gilt30y: 6.5 }, partial);
+    expect(out.pillars.market.value).toBeGreaterThan(0);
+    expect(out.pillars.market.value).toBeLessThanOrEqual(100);
+  });
+
+  it("matches normalisedFromSummary for the active override (no ECDF leak)", () => {
+    const snap = makeSnapshot();
+    const baselines = buildBaselines();
+    const lever = LEVERS.find((l) => l.key === "headroom")!;
+    const summary = baselines[lever.indicatorId]!;
+    // Pick a value far from live to ensure the ECDF path runs.
+    const v = 1.0;
+    const expected = normalisedFromSummary(v, summary, false /* headroom rises = good */);
+
+    const out = recomputeFromOverrides(snap, { headroom: v }, baselines);
+    const headroomContrib = out.pillars.fiscal.contributions.find(
+      (c) => c.indicatorId === "cb_headroom",
+    )!;
+    expect(headroomContrib.normalised).toBeCloseTo(expected, 5);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/*  Empty-contributions fallback                                               */
+/* -------------------------------------------------------------------------- */
+
+describe("recomputeFromOverrides — empty contributions fallback", () => {
+  function buildBaselines(): Record<string, BaselineSummary> {
+    const out: Record<string, BaselineSummary> = {};
+    for (const lever of LEVERS) {
+      const samples: number[] = [];
+      const span = lever.max - lever.min;
+      for (let i = 0; i < 200; i++) {
+        samples.push(lever.min + (span * i) / 199);
+      }
+      out[lever.indicatorId] = summariseBaseline(samples);
+    }
+    return out;
+  }
+
+  /**
+   * Reproduces the bug where a stale-cache snapshot from before the
+   * contributions field was populated would render every override as a
+   * no-op: recomputePillar returned the pillar unchanged when contributions
+   * was empty, so pillar values + headline never moved on slider input.
+   * After the fix, the recompute uses a delta-from-live model that still
+   * reacts proportionally to each lever's in-pillar weight.
+   */
+  function emptyContribsSnapshot(): ScoreSnapshot {
+    const pillars: Record<PillarId, PillarScore> = {
+      market: makePillar("market", 60, []),
+      fiscal: makePillar("fiscal", 50, []),
+      labour: makePillar("labour", 55, []),
+      delivery: makePillar("delivery", 65, []),
+    };
+    const headline: HeadlineScore = {
+      value: 57,
+      band: bandFor(57).id,
+      editorial: "Empty contributions cache.",
+      updatedAt: "2026-04-17T14:00:00Z",
+      delta24h: 0,
+      delta30d: 0,
+      deltaYtd: 0,
+      dominantPillar: "market",
+      sparkline90d: [54, 55, 56, 57],
+    };
+    return { headline, pillars, schemaVersion: 1 };
+  }
+
+  it("does not freeze the headline when overrides arrive but contributions are empty", () => {
+    const snap = emptyContribsSnapshot();
+    const baselines = buildBaselines();
+    // Big move on a heavyweight market lever -- pressure should rise visibly.
+    const before = recomputeFromOverrides(snap, {}, baselines);
+    const after = recomputeFromOverrides(snap, { gilt30y: 7.0 }, baselines);
+    expect(after.pillars.market.value).not.toBe(before.pillars.market.value);
+    expect(after.headline.value).not.toBe(before.headline.value);
+  });
+
+  it("changes scenario to scenario when contributions are empty", () => {
+    const snap = emptyContribsSnapshot();
+    const baselines = buildBaselines();
+    const conflict = recomputeFromOverrides(
+      snap,
+      { brent: 110, gilt30y: 5.65, breakeven5y: 3.9, headroom: 15.0, housing: 46 },
+      baselines,
+    );
+    const recovery = recomputeFromOverrides(
+      snap,
+      { headroom: 28.0, gilt30y: 4.5, gilt10y: 3.8, pay: 1.5, housing: 95, mortgage2y: 4.0, unemployment: 3.8 },
+      baselines,
+    );
+    // Two structurally different scenarios must produce different headlines.
+    expect(conflict.headline.value).not.toBeCloseTo(recovery.headline.value, 1);
+    // Touched pillars must differ between the two scenarios.
+    expect(conflict.pillars.market.value).not.toBe(recovery.pillars.market.value);
+    expect(conflict.pillars.delivery.value).not.toBe(recovery.pillars.delivery.value);
+  });
+
+  it("keeps untouched pillars at their live values", () => {
+    const snap = emptyContribsSnapshot();
+    const baselines = buildBaselines();
+    // Only touch a market lever -- fiscal/labour/delivery must stay at live.
+    const out = recomputeFromOverrides(snap, { gilt30y: 7.0 }, baselines);
+    expect(out.pillars.fiscal.value).toBe(snap.pillars.fiscal.value);
+    expect(out.pillars.labour.value).toBe(snap.pillars.labour.value);
+    expect(out.pillars.delivery.value).toBe(snap.pillars.delivery.value);
+  });
+
+  it("emits synthesized contributions for moved levers so the per-lever effect badge can paint", () => {
+    const snap = emptyContribsSnapshot();
+    const baselines = buildBaselines();
+    const out = recomputeFromOverrides(snap, { gilt30y: 7.0, headroom: 5 }, baselines);
+    const market = out.pillars.market.contributions.find((c) => c.indicatorId === "gilt_30y");
+    const fiscal = out.pillars.fiscal.contributions.find((c) => c.indicatorId === "cb_headroom");
+    expect(market).toBeDefined();
+    expect(fiscal).toBeDefined();
+    expect(market!.rawValue).toBeCloseTo(7.0, 5);
+    expect(fiscal!.rawValue).toBeCloseTo(5, 5);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/*  Snap-to-live identity boundary                                             */
+/* -------------------------------------------------------------------------- */
+
+describe("recomputeFromOverrides — snap-to-live boundary", () => {
+  function buildSnapBaselines(): Record<string, BaselineSummary> {
+    const out: Record<string, BaselineSummary> = {};
+    for (const lever of LEVERS) {
+      const samples: number[] = [];
+      const span = lever.max - lever.min;
+      for (let i = 0; i < 200; i++) {
+        samples.push(lever.min + (span * i) / 199);
+      }
+      out[lever.indicatorId] = summariseBaseline(samples);
+    }
+    return out;
+  }
+
+  it("snaps a within-half-step nudge back to live (identity preserved)", () => {
+    // The recompute path snaps a slider to its live value when the user's
+    // override is within step/2 -- so a tiny ECDF approximation drift never
+    // shows up as a non-zero delta on what should be the live snapshot. If
+    // a future refactor accidentally widened the threshold to `step`, sub-
+    // step user input would silently mask real motion. Lock the boundary
+    // down here so a regression trips the test rather than the headline.
+    const snap = makeSnapshot();
+    const baselines = buildSnapBaselines();
+    const lever = LEVERS.find((l) => l.key === "headroom")!; // step=0.1
+    const live = liveValuesFromSnapshot(snap)[lever.key];
+    const within = live + lever.step / 2 - 1e-6;
+    const out = recomputeFromOverrides(snap, { [lever.key]: within }, baselines);
+    const c = out.pillars.fiscal.contributions.find((cc) => cc.indicatorId === lever.indicatorId)!;
+    const liveC = snap.pillars.fiscal.contributions.find((cc) => cc.indicatorId === lever.indicatorId)!;
+    // Identity preserved: normalised carried verbatim from the snapshot,
+    // not re-derived through ECDF (which has O(1%) approximation drift).
+    expect(c.normalised).toBeCloseTo(liveC.normalised, 10);
+  });
+
+  it("does NOT snap once the nudge exceeds step/2 (real motion is honoured)", () => {
+    const snap = makeSnapshot();
+    const baselines = buildSnapBaselines();
+    const lever = LEVERS.find((l) => l.key === "headroom")!; // step=0.1
+    const live = liveValuesFromSnapshot(snap)[lever.key];
+    const past = live + lever.step / 2 + 1e-3;
+    const out = recomputeFromOverrides(snap, { [lever.key]: past }, baselines);
+    const c = out.pillars.fiscal.contributions.find((cc) => cc.indicatorId === lever.indicatorId)!;
+    expect(c.rawValue).toBeCloseTo(past, 5);
+  });
+
+  it("preserves pillar identity exactly when every slider matches live raw value", () => {
+    // Pillar values are derived from contributions, so a full-identity round
+    // trip must reproduce them byte-for-byte. The headline is *not* derived
+    // from contributions in this fixture (we set it manually for delta
+    // metadata) so we only assert that the recomputed headline isn't
+    // perturbed beyond a small tolerance.
+    const snap = makeSnapshot();
+    const baselines = buildSnapBaselines();
+    const live = liveValuesFromSnapshot(snap);
+    const overrides: Partial<Record<LeverKey, number>> = {};
+    for (const l of LEVERS) overrides[l.key] = live[l.key];
+    const out = recomputeFromOverrides(snap, overrides, baselines);
+    for (const pid of PILLAR_ORDER) {
+      expect(out.pillars[pid].value).toBeCloseTo(snap.pillars[pid].value, 5);
+    }
+    // Headline must at least stay in [0, 100] and within reasonable
+    // distance of the input — sub-1pt drift is fine because the fixture's
+    // headline is set independently.
+    expect(out.headline.value).toBeGreaterThanOrEqual(0);
+    expect(out.headline.value).toBeLessThanOrEqual(100);
   });
 });

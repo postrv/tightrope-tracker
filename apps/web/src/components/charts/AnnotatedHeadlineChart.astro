@@ -116,6 +116,27 @@ const pillarPaths = showPillars
 // --- annotations ----------------------------------------------------------
 const annotations = mapEventsToChart(history, events);
 
+/**
+ * Permanent labels: which annotations get an always-visible name above or
+ * below the chart line. We restrict to fiscal + geopolitical events because
+ * those are the moves the public will recognise (Budgets, GE, conflict
+ * shocks). Monetary / policy / delivery still get a hover-tooltip dot.
+ *
+ * Titles are abbreviated to keep the SVG legible — the full title remains
+ * accessible via the tooltip.
+ */
+const LABEL_CATEGORIES = new Set<TimelineCategory>(["fiscal", "geopolitical"]);
+function abbreviateEventTitle(title: string): string {
+  // Conservative truncation: split on the first comma/colon/dash, keep
+  // the head clause, then trim to a hard cap so a label never blows the
+  // chart width on mobile.
+  const head = title.split(/[,:—–-]/, 1)[0]!.trim();
+  return head.length > 22 ? `${head.slice(0, 21)}…` : head;
+}
+const majorAnnotations = annotations.filter((a) =>
+  LABEL_CATEGORIES.has(a.event.category),
+);
+
 // Map TimelineCategory → CSS variable. Markers stay readable on the cream
 // background and align with how the rest of the site colours each kind
 // of event.
@@ -258,6 +279,45 @@ const idScope = `chart-${width}x${height}`;
       );
     })}
 
+    {/* Permanent labels for major events (fiscal + geopolitical). Stagger
+        above / below the chart line by index parity so adjacent labels
+        don't collide. The dot itself stays clickable via the marker
+        group above; this label is presentation-only. */}
+    {majorAnnotations.map((a, i) => {
+      const cx = padL + a.xRatio * plotW;
+      const cy = yFor(a.value);
+      const above = i % 2 === 0;
+      const labelY = above ? Math.max(padT + 12, cy - 18) : Math.min(padT + plotH - 4, cy + 28);
+      const connectorY1 = above ? cy - 6 : cy + 6;
+      const connectorY2 = above ? labelY + 4 : labelY - 12;
+      const colour = colourFor(a.event.category);
+      const text = abbreviateEventTitle(a.event.title);
+      // Anchor: keep the text inside the plot area. Clamp the x so the
+      // label doesn't run off the right edge on the freshest event.
+      const labelX = Math.min(padL + plotW - 4, Math.max(padL + 4, cx));
+      const anchor = labelX === padL + plotW - 4 ? "end" : labelX === padL + 4 ? "start" : "middle";
+      return (
+        <g class="event-label" aria-hidden="true">
+          <line
+            x1={cx}
+            y1={connectorY1}
+            x2={cx}
+            y2={connectorY2}
+            stroke={colour}
+            stroke-width="1"
+            stroke-opacity="0.7"
+          />
+          <text
+            x={labelX}
+            y={labelY}
+            text-anchor={anchor}
+            class="event-label-text"
+            fill={colour}
+          >{text}</text>
+        </g>
+      );
+    })}
+
     {/* X-axis date ticks. */}
     {dateTicks.map((t) => (
       <text
@@ -323,6 +383,21 @@ const idScope = `chart-${width}x${height}`;
 .pillar-fiscal { stroke: var(--band-acute); stroke-dasharray: 4 3; }
 .pillar-labour { stroke: var(--accent-cool); stroke-dasharray: 6 3; }
 .pillar-delivery { stroke: var(--ink-2); stroke-dasharray: 2 4; }
+
+/* Permanent event labels (fiscal + geopolitical only). Hidden on small
+   viewports so the chart stays legible — the hover-tooltip dot remains
+   accessible. */
+.event-label-text {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  user-select: none;
+}
+@media (max-width: 600px) {
+  .event-label { display: none; }
+}
 
 /* Markers — keyboard-focusable, with a soft halo on focus/hover. */
 .marker { cursor: pointer; outline: none; }

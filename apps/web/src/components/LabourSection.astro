@@ -1,6 +1,6 @@
 ---
 import type { PillarScore } from "@tightrope/shared";
-import { signedDelta } from "~/lib/format.js";
+import { signedDelta, trendDescriptor } from "~/lib/format.js";
 import { mortgageDelta, formatExtra } from "~/lib/mortgage.js";
 import IllustrativeBadge from "./IllustrativeBadge.astro";
 
@@ -61,7 +61,12 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
           const cls = t30 === "up" ? "up" : t30 === "down" ? "dn" : "flat";
           return (
             <span class={`pillar-score-delta ${cls}`} title="Change across the 30-day sparkline window (first to last point).">
-              {t30 === "flat" ? "flat" : `${t30 === "up" ? "▲" : "▼"} ${signedDelta(Math.abs(d30), 1)}`} / 30d
+              {t30 === "flat" ? "flat" : (
+                <>
+                  {t30 === "up" ? "▲" : "▼"} {signedDelta(Math.abs(d30), 1)}
+                  {trendDescriptor(d30) ? <span class="trend-word"> {trendDescriptor(d30)}</span> : null}
+                </>
+              )} / 30d
             </span>
           );
         })()}
@@ -244,6 +249,7 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
 .pillar-score-delta.up { color: var(--band-acute); }
 .pillar-score-delta.dn { color: var(--band-slack); }
 .pillar-score-delta.flat { color: var(--ink-2); }
+.pillar-score-delta .trend-word { font-style: italic; opacity: 0.85; }
 
 .labour-secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px; }
 .labour-grid { display: grid; grid-template-columns: 1fr 1.45fr; gap: 32px; }

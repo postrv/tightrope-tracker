@@ -2,7 +2,7 @@
 import type { DeliveryCommitment } from "@tightrope/shared/delivery";
 import type { PillarScore } from "@tightrope/shared";
 import { DELIVERY_STATUS_LABEL } from "@tightrope/shared/delivery";
-import { signedDelta } from "~/lib/format.js";
+import { signedDelta, trendDescriptor } from "~/lib/format.js";
 
 interface Props {
   commitments: DeliveryCommitment[];
@@ -38,7 +38,12 @@ function statusClass(status: string): string {
           const cls = t30 === "up" ? "up" : t30 === "down" ? "dn" : "flat";
           return (
             <span class={`pillar-score-delta ${cls}`} title="Change across the 30-day sparkline window (first to last point).">
-              {t30 === "flat" ? "flat" : `${t30 === "up" ? "▲" : "▼"} ${signedDelta(Math.abs(d30), 1)}`} / 30d
+              {t30 === "flat" ? "flat" : (
+                <>
+                  {t30 === "up" ? "▲" : "▼"} {signedDelta(Math.abs(d30), 1)}
+                  {trendDescriptor(d30) ? <span class="trend-word"> {trendDescriptor(d30)}</span> : null}
+                </>
+              )} / 30d
             </span>
           );
         })()}
@@ -86,6 +91,7 @@ function statusClass(status: string): string {
 .pillar-score-delta.up { color: var(--band-acute); }
 .pillar-score-delta.dn { color: var(--band-slack); }
 .pillar-score-delta.flat { color: var(--ink-2); }
+.pillar-score-delta .trend-word { font-style: italic; opacity: 0.85; }
 
 .delivery-empty {
   font-family: var(--font-mono); font-size: 12px; color: var(--ink-2);

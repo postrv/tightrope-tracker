@@ -3,7 +3,7 @@ import BaseLayout from "~/layouts/BaseLayout.astro";
 import TightropeWalker from "~/components/TightropeWalker.astro";
 import { loadSnapshot } from "~/lib/page-data.js";
 import { BANDS } from "@tightrope/shared";
-import { signedDelta, trendArrow, trendClass } from "~/lib/format.js";
+import { signedDelta, trendArrow, trendClass, trendDescriptor } from "~/lib/format.js";
 
 const snapshot = await loadSnapshot(Astro.locals);
 const h = snapshot.headline;
@@ -24,8 +24,8 @@ const delta30Label = h.delta30dBaselineDate ? `since ${shortDateLabel(h.delta30d
       <div class="num" aria-label={`Tightrope Score ${score}`}>{score}<span class="unit">/100</span></div>
       <div class="label">{band.editorialLabel}</div>
       <div class="delta" aria-label="Delta row">
-        <span>1d <span class={trendClass(h.delta24h)}>{trendArrow(h.delta24h)} {signedDelta(Math.abs(h.delta24h), 1)}</span></span>
-        <span>{delta30Label} <span class={trendClass(h.delta30d)}>{trendArrow(h.delta30d)} {signedDelta(Math.abs(h.delta30d), 1)}</span></span>
+        <span>1d <span class={trendClass(h.delta24h)}>{trendArrow(h.delta24h)} {signedDelta(Math.abs(h.delta24h), 1)}{trendDescriptor(h.delta24h) ? <span class="trend-word"> {trendDescriptor(h.delta24h)}</span> : null}</span></span>
+        <span>{delta30Label} <span class={trendClass(h.delta30d)}>{trendArrow(h.delta30d)} {signedDelta(Math.abs(h.delta30d), 1)}{trendDescriptor(h.delta30d) ? <span class="trend-word"> {trendDescriptor(h.delta30d)}</span> : null}</span></span>
       </div>
       <a class="credit" href="https://tightropetracker.uk" target="_blank" rel="noopener">tightropetracker.uk</a>
     </div>
@@ -63,6 +63,7 @@ body { background-image: none !important; }
 .delta .up { color: var(--band-acute); }
 .delta .dn { color: var(--band-slack); }
 .delta .flat { color: var(--ink-2); }
+.delta .trend-word { font-style: italic; opacity: 0.85; }
 .credit { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); margin-top: 10px; letter-spacing: 0.1em; }
 .credit:hover { color: var(--accent); }
 .rope-side { justify-self: end; max-width: 180px; width: 100%; }

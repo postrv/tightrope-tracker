@@ -31,7 +31,14 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const QUORUM_FRACTION = 0.5;
 
 export interface BackfillOptions {
-  /** How many UTC days (ending yesterday) to backfill. Clamped to [1, 365]. */
+  /** How many UTC days (ending yesterday) to backfill. Clamped to [1, 800].
+   *
+   * Cap raised from 365 → 800 to cover the public-launch backfill back to
+   * the 2024 UK general election (4 July 2024 → today is ~660 days). The
+   * walk is sequential so a single invocation must stay inside the Worker
+   * CPU budget; if a backfill of ~800 days hits the wall, the operator can
+   * still slice it by re-running with smaller `days` and `overwrite=false`
+   * to skip days already written. */
   days: number;
   /**
    * `true` (default): INSERT OR REPLACE — the backfill owns the row for the
@@ -336,7 +343,7 @@ export async function backfillHistoricalScores(
 
 function clampDays(n: number): number {
   if (!Number.isFinite(n)) return 90;
-  return Math.max(1, Math.min(365, Math.floor(n)));
+  return Math.max(1, Math.min(800, Math.floor(n)));
 }
 
 function groupByIndicator(rows: readonly ObservationRow[]): Map<string, ObservationRow[]> {

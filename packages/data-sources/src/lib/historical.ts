@@ -32,13 +32,21 @@ export function buildHistoricalResult(
 }
 
 /**
- * Return inclusive UTC-midnight millisecond bounds for a `HistoricalRange`.
+ * Return inclusive UTC-day millisecond bounds for a `HistoricalRange`.
  * Adapters use these to clip their per-row output (the upstream endpoint is
  * already range-filtered, but defensive clipping catches off-by-one bugs and
  * any future provider that returns extra rows on either side).
+ *
+ * Bounds span the full day: `fromMs` is the start of the `from` UTC day
+ * (T00:00:00Z), `toMs` is the very last millisecond of the `to` UTC day
+ * (T23:59:59.999Z). This means a row stamped intra-day (e.g. BoE close-of-
+ * business at T16:00:00Z) on the inclusive end-date is still included.
+ * Callers pass conceptual dates ("from 2026-04-15 to 2026-04-17"), not
+ * timestamps; widening the upper bound to end-of-day makes the range
+ * behave like the calendar dates the API contract advertises.
  */
 export function rangeUtcBounds(opts: { from: Date; to: Date }): { fromMs: number; toMs: number } {
   const fromMs = Date.UTC(opts.from.getUTCFullYear(), opts.from.getUTCMonth(), opts.from.getUTCDate());
-  const toMs = Date.UTC(opts.to.getUTCFullYear(), opts.to.getUTCMonth(), opts.to.getUTCDate());
+  const toMs = Date.UTC(opts.to.getUTCFullYear(), opts.to.getUTCMonth(), opts.to.getUTCDate(), 23, 59, 59, 999);
   return { fromMs, toMs };
 }

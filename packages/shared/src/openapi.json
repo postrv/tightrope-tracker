@@ -151,7 +151,7 @@
       "get": {
         "tags": ["Lookup"],
         "summary": "Look up a Member of Parliament by postcode",
-        "description": "Resolves a UK postcode to the current MP via the parliament.uk Members API. Results are cached per outward code (e.g. `SW1A`) for 7 days. Emails are not exposed by the upstream API — use the `profileUrl` to open the MP's official contact page.",
+        "description": "Resolves a UK postcode to the current MP via the parliament.uk Members API. Results are cached per outward code (e.g. `SW1A`) for 7 days. The response includes the MP's parliamentary email when the upstream contacts endpoint exposes one; otherwise the canonical `firstname.lastname.mp@parliament.uk` form is derived. Use `profileUrl` for the MP's official contact page.",
         "operationId": "getMp",
         "parameters": [
           {
@@ -250,6 +250,35 @@
           },
           "400": { "$ref": "#/components/responses/BadQuery" },
           "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/api/v1/methodology/baselines": {
+      "get": {
+        "tags": ["Methodology"],
+        "summary": "Per-indicator baseline summaries",
+        "description": "Compact quantile summaries (101 knots) of every indicator's historical baseline window (2019-present minus the 2020 COVID outlier). Designed for in-browser use by the /explore what-if simulator so it can reproduce the live methodology's empirical-CDF normalisation without shipping the full multi-thousand-sample baseline. Cached at the edge for 24 hours.",
+        "operationId": "getMethodologyBaselines",
+        "responses": {
+          "200": {
+            "description": "Baseline summary payload.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MethodologyBaselines" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadQuery" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "500": {
+            "description": "Could not assemble baselines from D1.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": { "error": "failed to load methodology baselines", "code": "DB_ERROR" }
+              }
+            }
+          }
         }
       }
     }
@@ -538,7 +567,7 @@
           "party": { "type": "string", "example": "Labour" },
           "email": {
             "type": ["string", "null"],
-            "description": "Always `null` — the parliament.uk Members API does not expose member email directly. Use `profileUrl` to open the member's official contact page."
+            "description": "Parliamentary email address for the MP. Sourced from the parliament.uk Members API contact endpoint where present (`type === \"Parliamentary\"`); when the upstream omits it, derived as `firstname.lastname.mp@parliament.uk` — the canonical form for a sitting MP. May be `null` only when neither path can resolve a value (e.g. unusual member naming)."
           },
           "constituency": { "type": "string" },
           "memberId": { "type": "integer", "description": "parliament.uk member ID." },
@@ -566,6 +595,39 @@
           "updatedAt": { "$ref": "#/components/schemas/Iso8601" },
           "ingestionLastSuccess": { "type": "object", "description": "Empty object when the audit table is unreachable." },
           "code": { "type": "string", "const": "DB_ERROR" }
+        }
+      },
+      "MethodologyBaselines": {
+        "type": "object",
+        "required": ["schemaVersion", "generatedAt", "baselineStart", "baselineEnd", "excludeStart", "excludeEnd", "baselines"],
+        "properties": {
+          "schemaVersion": { "type": "integer", "const": 1 },
+          "generatedAt": { "$ref": "#/components/schemas/Iso8601" },
+          "baselineStart": { "$ref": "#/components/schemas/Iso8601" },
+          "baselineEnd": { "$ref": "#/components/schemas/Iso8601" },
+          "excludeStart": { "$ref": "#/components/schemas/Iso8601" },
+          "excludeEnd": { "$ref": "#/components/schemas/Iso8601" },
+          "baselines": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "required": ["knots", "n"],
+              "properties": {
+                "knots": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["p", "v"],
+                    "properties": {
+                      "p": { "type": "number", "minimum": 0, "maximum": 1 },
+                      "v": { "type": "number" }
+                    }
+                  }
+                },
+                "n": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
         }
       },
       "Error": {

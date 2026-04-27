@@ -34,7 +34,6 @@ const MANIFEST: FixtureSpec[] = [
   { file: "brent.json", maxAgeDays: 60 },
   { file: "delivery-milestones.json", maxAgeDays: 120 },
   { file: "ftse-250.json", maxAgeDays: 14 },
-  { file: "gas-m1.json", maxAgeDays: 14 },
   { file: "growth-sentiment.json", maxAgeDays: 60 },
   { file: "housebuilders.json", maxAgeDays: 14 },
   { file: "housing-history.json", maxAgeDays: Infinity, skipReason: "historical backfill dataset with no single observed_at" },
@@ -61,7 +60,6 @@ describe("fixture freshness (build-time guard)", () => {
       "brent.json",
       "delivery-milestones.json",
       "ftse-250.json",
-      "gas-m1.json",
       "growth-sentiment.json",
       "housebuilders.json",
       "housing-history.json",
@@ -86,7 +84,15 @@ describe("fixture freshness (build-time guard)", () => {
 
     it(`${spec.file} observed_at is within ${spec.maxAgeDays} days`, () => {
       const data = loadFixture(spec.file);
-      const observedAt = data.observed_at;
+      // Two supported shapes:
+      //   - flat: top-level `observed_at` (e.g. brent.json, mortgage.json)
+      //   - vintages: `vintages[0].observed_at` (obr-efo.json carries one
+      //     entry per OBR publication; the head is the newest vintage and
+      //     drives the live `fetch()` path, so freshness applies to it).
+      const vintages = data.vintages as Array<{ observed_at?: string }> | undefined;
+      const observedAt = Array.isArray(vintages) && vintages.length > 0
+        ? vintages[0]!.observed_at
+        : (data.observed_at as string | undefined);
       expect(observedAt, `${spec.file} missing observed_at`).toBeTypeOf("string");
       const ts = Date.parse(observedAt as string);
       expect(Number.isFinite(ts), `${spec.file} observed_at not ISO-8601`).toBe(true);

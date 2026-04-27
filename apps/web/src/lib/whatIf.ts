@@ -1,29 +1,30 @@
 /**
  * Pure logic for the /explore "what-if" simulator.
  *
- * The methodology package's `computePillarScore` requires per-indicator
- * baseline arrays which are NOT serialised onto a `ScoreSnapshot` (we store
- * normalised + z-score, not the raw historical baseline). So we cannot
- * call `computePillarScore` again from the snapshot alone.
+ * Two modes of normalisation, one preferred and one fallback:
  *
- * What we DO have on the snapshot is each indicator's `normalised` value
- * (already a 0-100 pressure score) and its in-pillar `weight`. So the
- * recompute strategy is:
+ *   1. **ECDF** (preferred). When per-indicator baseline summaries are
+ *      passed via the `baselines` argument we run the slider's raw
+ *      value through the empirical CDF -- the same routine the live
+ *      methodology uses. The summary is a 101-knot quantile sketch
+ *      that reproduces `ecdf()` to within 1% in probability terms;
+ *      well below the 0.5pt rounding the UI applies. The result is a
+ *      faithful what-if -- moving a slider produces the score the live
+ *      methodology *would* produce for that input.
  *
- *   1. For pillars NOT touched by the slider, return them verbatim.
- *   2. For the touched pillar, replace the touched indicator's `normalised`
- *      score with a slider-derived one (linear mapping from the slider's
- *      domain to [0, 100], honouring `risingIsBad`), then weighted-mean
- *      the contributions to a new pillar value.
- *   3. Pass the four pillar values into `computeHeadlineScore` to produce
- *      a fresh headline.
+ *   2. **Linear** (fallback). When a baseline summary is missing for
+ *      an indicator (e.g. delivery editorials with `hasHistoricalSeries
+ *      = false`, or a cold-start where the API hasn't returned the
+ *      baselines payload yet), we fall back to a linear remapping of
+ *      the slider domain to [0, 100], honouring `risingIsBad`.
  *
- * This is a deliberate simplification. The live methodology uses an empirical
- * CDF over the indicator's historical baseline, which the slider's linear
- * mapping cannot reproduce without that data. The page footer states this
- * trade-off in plain English; the round-trip test below ensures the live
- * snapshot remains a fixed point of `recomputeFromOverrides` so users always
- * see the *real* score when no slider has been touched.
+ * Round-trip identity: when no overrides are supplied, the result is a
+ * structural copy of the input. When an override is supplied that
+ * exactly matches the live raw value for that indicator, the contrib's
+ * `normalised` is taken from the snapshot rather than being re-derived
+ * (which would otherwise pick up O(1%) ECDF approximation error and
+ * drift the headline by ~0.1pt). This guarantees that touching a slider
+ * back to its live position reproduces the live snapshot byte-for-byte.
  */
 
 import {
@@ -37,14 +38,40 @@ import {
   type PillarScore,
   type ScoreSnapshot,
 } from "@tightrope/shared";
-import { computeHeadlineScore } from "@tightrope/methodology";
+import {
+  computeHeadlineScore,
+  normalisedFromSummary,
+  type BaselineSummary,
+} from "@tightrope/methodology";
 
+/**
+ * Canonical lever set spanning all four pillars. Each entry is a single
+ * indicator users can drag. The size of the set was chosen to cover the
+ * primary headline drivers in proportion to pillar weight while keeping
+ * the panel scannable. Editorial-only delivery indicators (no historical
+ * series) are intentionally excluded because there is no baseline to
+ * normalise against -- they would only ever fall through to the linear
+ * approximation.
+ */
 export type LeverKey =
-  | "headroom"
+  // Market
+  | "gilt10y"
   | "gilt30y"
+  | "breakeven5y"
+  | "brent"
+  | "servicesPmi"
+  // Fiscal
+  | "headroom"
+  | "psnflDev"
+  | "borrowing"
+  // Labour
   | "pay"
   | "inactivity"
-  | "housing";
+  | "unemployment"
+  | "mortgage2y"
+  // Delivery
+  | "housing"
+  | "consents";
 
 export interface LeverDefinition {
   key: LeverKey;
@@ -64,10 +91,73 @@ export interface LeverDefinition {
 }
 
 /**
- * Five canonical headline drivers exposed in the /explore UI. Order is the
- * order they render top-to-bottom in the panel.
+ * Lever catalogue. Order is the order they render top-to-bottom within
+ * each pillar group in the UI.
  */
 export const LEVERS: readonly LeverDefinition[] = [
+  // ---------- Market ----------
+  {
+    key: "gilt10y",
+    indicatorId: "gilt_10y",
+    pillar: "market",
+    label: "10-year gilt yield",
+    shortLabel: "10y gilt",
+    unit: "%",
+    min: 0.5,
+    max: 6.5,
+    step: 0.01,
+    format: (v) => `${v.toFixed(2)}%`,
+  },
+  {
+    key: "gilt30y",
+    indicatorId: "gilt_30y",
+    pillar: "market",
+    label: "20-year gilt yield",
+    shortLabel: "20y gilt",
+    unit: "%",
+    min: 1.5,
+    max: 7.0,
+    step: 0.01,
+    format: (v) => `${v.toFixed(2)}%`,
+  },
+  {
+    key: "breakeven5y",
+    indicatorId: "breakeven_5y",
+    pillar: "market",
+    label: "5y breakeven inflation",
+    shortLabel: "5y BE",
+    unit: "%",
+    min: 1.0,
+    max: 6.0,
+    step: 0.01,
+    format: (v) => `${v.toFixed(2)}%`,
+  },
+  {
+    key: "brent",
+    indicatorId: "brent_gbp",
+    pillar: "market",
+    label: "Brent crude in GBP",
+    shortLabel: "Brent GBP",
+    unit: "GBP/bbl",
+    min: 30,
+    max: 150,
+    step: 0.5,
+    format: (v) => `GBP ${v.toFixed(1)}/bbl`,
+  },
+  {
+    key: "servicesPmi",
+    indicatorId: "services_pmi",
+    pillar: "market",
+    label: "UK Services PMI",
+    shortLabel: "Services PMI",
+    unit: "index",
+    min: 35,
+    max: 65,
+    step: 0.1,
+    format: (v) => v.toFixed(1),
+  },
+
+  // ---------- Fiscal ----------
   {
     key: "headroom",
     indicatorId: "cb_headroom",
@@ -78,20 +168,34 @@ export const LEVERS: readonly LeverDefinition[] = [
     min: 0,
     max: 50,
     step: 0.1,
-    format: (v: number) => `GBP ${v.toFixed(1)}bn`,
+    format: (v) => `GBP ${v.toFixed(1)}bn`,
   },
   {
-    key: "gilt30y",
-    indicatorId: "gilt_30y",
-    pillar: "market",
-    label: "20-year gilt yield",
-    shortLabel: "20y gilt",
-    unit: "%",
-    min: 3.5,
-    max: 6.5,
-    step: 0.01,
-    format: (v: number) => `${v.toFixed(2)}%`,
+    key: "psnflDev",
+    indicatorId: "psnfl_trajectory",
+    pillar: "fiscal",
+    label: "PSNFL trajectory deviation",
+    shortLabel: "PSNFL dev",
+    unit: "pp",
+    min: -3,
+    max: 5,
+    step: 0.05,
+    format: (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}pp`,
   },
+  {
+    key: "borrowing",
+    indicatorId: "borrowing_outturn",
+    pillar: "fiscal",
+    label: "Public-sector net borrowing (monthly)",
+    shortLabel: "PSNB",
+    unit: "GBPbn",
+    min: 0,
+    max: 50,
+    step: 0.1,
+    format: (v) => `GBP ${v.toFixed(1)}bn`,
+  },
+
+  // ---------- Labour ----------
   {
     key: "pay",
     indicatorId: "real_regular_pay",
@@ -102,7 +206,7 @@ export const LEVERS: readonly LeverDefinition[] = [
     min: -3,
     max: 5,
     step: 0.1,
-    format: (v: number) => `${v.toFixed(1)}%`,
+    format: (v) => `${v.toFixed(1)}%`,
   },
   {
     key: "inactivity",
@@ -114,8 +218,34 @@ export const LEVERS: readonly LeverDefinition[] = [
     min: 1.8,
     max: 3.5,
     step: 0.01,
-    format: (v: number) => `${v.toFixed(2)}m`,
+    format: (v) => `${v.toFixed(2)}m`,
   },
+  {
+    key: "unemployment",
+    indicatorId: "unemployment",
+    pillar: "labour",
+    label: "Unemployment rate (16+)",
+    shortLabel: "Unemployment",
+    unit: "%",
+    min: 2.5,
+    max: 9.0,
+    step: 0.05,
+    format: (v) => `${v.toFixed(1)}%`,
+  },
+  {
+    key: "mortgage2y",
+    indicatorId: "mortgage_2y_fix",
+    pillar: "labour",
+    label: "2-year fixed mortgage rate",
+    shortLabel: "2y fix",
+    unit: "%",
+    min: 1.5,
+    max: 8.0,
+    step: 0.01,
+    format: (v) => `${v.toFixed(2)}%`,
+  },
+
+  // ---------- Delivery ----------
   {
     key: "housing",
     indicatorId: "housing_trajectory",
@@ -126,7 +256,19 @@ export const LEVERS: readonly LeverDefinition[] = [
     min: 30,
     max: 110,
     step: 0.5,
-    format: (v: number) => `${v.toFixed(1)}%`,
+    format: (v) => `${v.toFixed(1)}%`,
+  },
+  {
+    key: "consents",
+    indicatorId: "planning_consents",
+    pillar: "delivery",
+    label: "Planning consents vs. baseline",
+    shortLabel: "Consents",
+    unit: "%",
+    min: 30,
+    max: 130,
+    step: 0.5,
+    format: (v) => `${v.toFixed(1)}%`,
   },
 ] as const;
 
@@ -175,19 +317,20 @@ export function parseScenarioHash(
 }
 
 /**
- * Serialise a full set of lever values to the URL hash. Keys are emitted
- * in `LEVER_KEYS` order (deterministic) and values are rounded to a
- * sensible number of decimal places per lever.
+ * Serialise lever values to the URL hash. Keys are emitted in
+ * `LEVER_KEYS` order (deterministic) and values are rounded to a
+ * sensible number of decimal places per lever. Keys whose value is
+ * missing or non-finite are skipped.
  */
 export function formatScenarioHash(
-  values: Record<LeverKey, number>,
+  values: Partial<Record<LeverKey, number>>,
 ): string {
   const parts: string[] = [];
   for (const key of LEVER_KEYS) {
     const def = LEVER_BY_KEY[key];
     const decimals = decimalsForStep(def.step);
     const raw = values[key];
-    if (!Number.isFinite(raw)) continue;
+    if (raw === undefined || !Number.isFinite(raw)) continue;
     const rounded = Number(raw.toFixed(decimals));
     parts.push(`${key}=${rounded}`);
   }
@@ -224,16 +367,33 @@ export function liveValuesFromSnapshot(
  * downstream consumers can swap reference equality. When `overrides` is
  * empty the result is a structural copy of the input (the headline +
  * pillar values are byte-identical -- verified by the round-trip test).
+ *
+ * `baselines` is optional. When supplied, indicators with a summary use
+ * the empirical-CDF normalisation; indicators without a summary, and
+ * any call that omits the argument entirely, fall back to a linear
+ * remap of the slider domain to [0, 100].
+ *
+ * Identity preservation: if a slider is set within `step / 2` of its
+ * live raw value, the contribution's `normalised` is taken from the
+ * snapshot rather than re-derived through the ECDF. This avoids the
+ * O(1%) approximation drift that would otherwise mean "putting the
+ * slider back where it was" produced a slightly different headline.
  */
 export function recomputeFromOverrides(
   snapshot: ScoreSnapshot,
   overrides: Partial<Record<LeverKey, number>>,
+  baselines?: Record<string, BaselineSummary>,
 ): ScoreSnapshot {
+  // Step 0: derive live values for every lever from the snapshot. We need
+  // them to (a) snap-to-live identity, and (b) the contributions-empty
+  // delta fallback below.
+  const liveValues = liveValuesFromSnapshot(snapshot);
+
   // Step 1: figure out which indicators have a slider-driven override and
-  // what their effective (clamped) raw value is.
+  // what their effective (clamped) raw value + normalised score are.
   const indicatorOverrides = new Map<
     string,
-    { lever: LeverDefinition; rawValue: number; normalised: number }
+    { lever: LeverDefinition; rawValue: number; normalised: number; liveNormalised: number }
   >();
   for (const lever of LEVERS) {
     const raw = overrides[lever.key];
@@ -241,18 +401,44 @@ export function recomputeFromOverrides(
     const clamped = clamp(raw, lever.min, lever.max);
     const indicatorDef = INDICATORS[lever.indicatorId];
     const risingIsBad = indicatorDef?.risingIsBad ?? true;
-    const normalised = sliderToNormalised(clamped, lever, risingIsBad);
+    const liveNormalised = normalisedForLever(liveValues[lever.key], lever, risingIsBad, baselines, snapshot);
+
+    // Prefer the snapshot's existing normalised score when the slider
+    // hasn't really moved (within rounding). Avoids ECDF approximation
+    // drift on the live identity case.
+    const existing = findContribution(snapshot, lever);
+    if (existing && Math.abs(clamped - existing.rawValue) < lever.step / 2) {
+      indicatorOverrides.set(lever.indicatorId, {
+        lever,
+        rawValue: clamped,
+        normalised: existing.normalised,
+        liveNormalised,
+      });
+      continue;
+    }
+
+    // ECDF path: requires a baseline summary for the indicator.
+    const summary = baselines?.[lever.indicatorId];
+    let normalised: number;
+    if (summary && summary.knots.length > 0) {
+      normalised = normalisedFromSummary(clamped, summary, risingIsBad);
+    } else {
+      normalised = sliderToNormalised(clamped, lever, risingIsBad);
+    }
     indicatorOverrides.set(lever.indicatorId, {
       lever,
       rawValue: clamped,
       normalised,
+      liveNormalised,
     });
   }
 
   // Step 2: rebuild each pillar. Untouched pillars are returned verbatim;
   // touched pillars have their contributions rewritten with the override's
-  // new normalised value, then re-aggregated as a weighted arithmetic mean
-  // (matching the methodology package's `computePillarScore` aggregation).
+  // new normalised value, then re-aggregated as a weighted arithmetic mean.
+  // When a pillar has no contributions at all (rare: stale-cache snapshot
+  // from before the contributions field was populated), fall back to a
+  // delta-from-live model so the simulator still reacts.
   const newPillars = {} as Record<PillarId, PillarScore>;
   const touchedPillars = new Set<PillarId>();
   for (const ov of indicatorOverrides.values()) {
@@ -265,22 +451,19 @@ export function recomputeFromOverrides(
       newPillars[pillarId] = pillar;
       continue;
     }
-    newPillars[pillarId] = recomputePillar(pillar, indicatorOverrides);
+    newPillars[pillarId] = pillar.contributions.length === 0
+      ? recomputePillarByDelta(pillar, indicatorOverrides)
+      : recomputePillar(pillar, indicatorOverrides);
   }
 
   // Step 3: recompute the headline from the four (possibly updated) pillar
-  // values via the methodology package's `computeHeadlineScore`. This
-  // preserves the geometric-mean weighting and dominant-pillar logic.
+  // values via the methodology package's `computeHeadlineScore`.
   const headline = computeHeadlineScore({
     pillars: newPillars,
     sparkline90d: snapshot.headline.sparkline90d,
     updatedAt: snapshot.headline.updatedAt,
   });
 
-  // Carry forward the original deltas + baseline-date metadata when no
-  // slider has been touched (so the round-trip test passes), or zero
-  // them out when the score has been mutated (the deltas are vs. live
-  // history, which the simulator is no longer comparable to).
   const finalHeadline = makeHeadlineWithCarriedFields(
     headline,
     snapshot.headline,
@@ -295,14 +478,16 @@ export function recomputeFromOverrides(
   };
 }
 
+function findContribution(snapshot: ScoreSnapshot, lever: LeverDefinition): IndicatorContribution | undefined {
+  return snapshot.pillars[lever.pillar]?.contributions.find(
+    (c) => c.indicatorId === lever.indicatorId,
+  );
+}
+
 /**
  * Map a slider value within `[lever.min, lever.max]` to a normalised
- * pressure score in `[0, 100]`.
- *
- * If `risingIsBad === true` (e.g. gilt yield, inactivity), max → 100. If
- * `risingIsBad === false` (e.g. headroom, real pay, housing trajectory),
- * max → 0. The mapping is linear -- intentionally simpler than the live
- * ECDF, with the trade-off documented on the page itself.
+ * pressure score in `[0, 100]` via a linear remap. Used as a fallback
+ * when no baseline summary is available for the indicator.
  */
 export function sliderToNormalised(
   value: number,
@@ -320,7 +505,7 @@ function recomputePillar(
   pillar: PillarScore,
   overrides: Map<
     string,
-    { lever: LeverDefinition; rawValue: number; normalised: number }
+    { lever: LeverDefinition; rawValue: number; normalised: number; liveNormalised: number }
   >,
 ): PillarScore {
   if (pillar.contributions.length === 0) {
@@ -355,23 +540,106 @@ function recomputePillar(
   };
 }
 
+/**
+ * Fallback recompute used when `pillar.contributions` is empty -- a defensive
+ * path for stale cached snapshots that pre-date the contributions field
+ * being populated. We can't re-aggregate from contributions, so we apply a
+ * delta-from-live model: every active override moves the pillar value by
+ * `inPillarWeight(lever) * (overrideNormalised - liveNormalised)`. Other
+ * indicators in the pillar contribute zero to the delta because they're
+ * unchanged. The result is identical to `recomputePillar` in the limit
+ * where the snapshot does carry contributions, and converges to the right
+ * answer regardless of how many sliders are moved.
+ *
+ * The synthesized contributions list contains only the moved levers so
+ * downstream (`paintLeverEffects`) can still report the per-lever delta.
+ */
+function recomputePillarByDelta(
+  pillar: PillarScore,
+  overrides: Map<
+    string,
+    { lever: LeverDefinition; rawValue: number; normalised: number; liveNormalised: number }
+  >,
+): PillarScore {
+  let delta = 0;
+  const synth: IndicatorContribution[] = [];
+  for (const ov of overrides.values()) {
+    if (ov.lever.pillar !== pillar.pillar) continue;
+    const w = inPillarWeight(ov.lever);
+    delta += w * (ov.normalised - ov.liveNormalised);
+    const def = INDICATORS[ov.lever.indicatorId];
+    synth.push({
+      indicatorId: ov.lever.indicatorId,
+      rawValue: ov.rawValue,
+      rawValueUnit: def?.unit ?? "",
+      zScore: 0,
+      normalised: ov.normalised,
+      weight: w,
+      sourceId: def?.sourceId ?? "",
+      observedAt: pillar.contributions[0]?.observedAt ?? "",
+    });
+  }
+  const newValue = roundTo(clamp(pillar.value + delta, 0, 100), 1);
+  const band = bandFor(newValue).id;
+  return {
+    ...pillar,
+    contributions: synth,
+    value: newValue,
+    band,
+  };
+}
+
+/**
+ * The lever's in-pillar weight: its indicator's headline weight divided
+ * by the sum of headline weights of every indicator in the same pillar.
+ * Mirrors how `computePillarScore` derives `contribution.weight` server-side.
+ */
+function inPillarWeight(lever: LeverDefinition): number {
+  const def = INDICATORS[lever.indicatorId];
+  if (!def) return 0;
+  let sum = 0;
+  for (const i of Object.values(INDICATORS)) {
+    if (i.pillar === lever.pillar) sum += i.weight;
+  }
+  return sum > 0 ? def.weight / sum : 0;
+}
+
+/**
+ * Compute a normalised pressure score for a lever's raw value using
+ * the same logic as the override path: prefer the snapshot's existing
+ * contribution if present (avoids ECDF approximation drift), then ECDF
+ * via the baseline summary, then linear remap of the slider domain.
+ */
+function normalisedForLever(
+  raw: number,
+  lever: LeverDefinition,
+  risingIsBad: boolean,
+  baselines: Record<string, BaselineSummary> | undefined,
+  snapshot: ScoreSnapshot,
+): number {
+  const existing = findContribution(snapshot, lever);
+  if (existing && Math.abs(raw - existing.rawValue) < lever.step / 2) {
+    return existing.normalised;
+  }
+  const summary = baselines?.[lever.indicatorId];
+  if (summary && summary.knots.length > 0) {
+    return normalisedFromSummary(raw, summary, risingIsBad);
+  }
+  return sliderToNormalised(raw, lever, risingIsBad);
+}
+
 function makeHeadlineWithCarriedFields(
   computed: HeadlineScore,
   original: HeadlineScore,
   isLive: boolean,
 ): HeadlineScore {
   if (isLive) {
-    // Round-trip: the user has not touched any slider, so we want the
-    // headline to be byte-identical to the live snapshot. The methodology
-    // engine's deltas/dominant-pillar/editorial logic only inspects
-    // pillar values + 24h/30d/YTD baselines, so we re-attach the
-    // original deltas wholesale.
+    // Round-trip: the user has not touched any slider. Pillar values are
+    // unchanged so the recomputed headline is byte-equal to live; we still
+    // re-attach the original deltas/editorial wholesale so the metadata
+    // remains identical.
     return {
       ...original,
-      // Recomputed `value`, `band`, `sparkline90d` are already byte-equal
-      // to the original because pillar values are unchanged. Take the
-      // computed result so any rounding stays consistent if the engine
-      // ever changes.
       value: computed.value,
       band: computed.band,
       sparkline90d: computed.sparkline90d,

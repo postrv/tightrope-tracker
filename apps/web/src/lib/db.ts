@@ -339,15 +339,21 @@ function buildContributionsForPillar(
   return out;
 }
 
-/** Today-movement cards for the intraday strip. */
+/**
+ * Today-movement rows feeding both the intraday strip and the per-pillar
+ * "live readings" tiles on the homepage. The strip caller slices to the
+ * top 8 movers itself; we deliberately do not LIMIT here so per-pillar
+ * components (MarketSection, etc.) can look up specific indicator IDs
+ * by name — without that, calmly-trading indicators like breakeven_5y
+ * or ftse_250 would render as "—" on a quiet day.
+ */
 export async function getTodayMovements(env: Env): Promise<TodayMovement[]> {
   const res = await env.DB
     .prepare(
       `SELECT indicator_id, label, latest_value, display_value, change, change_pct,
               change_display, direction, worsening, sparkline, gloss, observed_at
        FROM today_movements
-       ORDER BY worsening DESC, ABS(change_pct) DESC
-       LIMIT 8`,
+       ORDER BY worsening DESC, ABS(change_pct) DESC`,
     )
     .all<{
       indicator_id: string; label: string; latest_value: number; display_value: string;

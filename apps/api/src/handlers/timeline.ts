@@ -1,6 +1,6 @@
 import type { TimelineEvent } from "@tightrope/shared";
 import { json, notSeeded } from "../lib/router.js";
-import { readThrough } from "../lib/cache.js";
+import { readThroughStamped } from "../lib/cache.js";
 import { getTimelineEvents } from "../lib/db.js";
 
 const ALLOWED = new Set<string>(["limit"]);
@@ -23,7 +23,7 @@ export async function handleTimeline(
   try {
     // Only cache the default window. Custom limits go straight to D1.
     if (limit === 40) {
-      const events = await readThrough<TimelineEvent[]>(
+      const events = await readThroughStamped<TimelineEvent[]>(
         env,
         "timeline:latest",
         () => getTimelineEvents(env, 40),

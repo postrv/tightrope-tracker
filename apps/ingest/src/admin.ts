@@ -174,7 +174,7 @@ export async function handleAdminRun(req: Request, env: Env, url: URL): Promise<
           "score:history:90d",
           "delivery:latest",
           "timeline:latest",
-          "movements:today",
+          "methodology:baselines",
         ] as const;
         const purged: string[] = [];
         const failed: string[] = [];

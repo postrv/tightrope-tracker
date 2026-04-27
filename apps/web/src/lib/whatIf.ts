@@ -523,6 +523,13 @@ function recomputePillar(
     },
   );
 
+  // Weighted arithmetic mean over the contributions, mirroring
+  // `computePillarScore` in packages/methodology. Kept inline (rather than
+  // calling computePillarScore directly) because the simulator needs a fast
+  // recompute on every lever drag and `computePillarScore` rebuilds the full
+  // contribution shape from raw IndicatorReadings. If the methodology ever
+  // switches to a non-weighted-arithmetic-mean aggregator (e.g. geometric),
+  // this branch must move with it — see whatIf.test.ts pin-tests.
   let num = 0;
   let den = 0;
   for (const c of newContributions) {

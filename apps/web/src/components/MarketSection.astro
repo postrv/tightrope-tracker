@@ -4,7 +4,8 @@ import { describeSparklineCoverage } from "@tightrope/shared";
 import LineChart from "./charts/LineChart.astro";
 import ProvenanceBadge from "./ProvenanceBadge.astro";
 import IndicatorTooltip from "./IndicatorTooltip.astro";
-import { signedDelta, trendDescriptor } from "~/lib/format.js";
+import { signedDelta, trendDescriptor, shortDate } from "~/lib/format.js";
+import { ageBand, ageShort } from "~/lib/freshness.js";
 
 interface Props {
   pillar: PillarScore;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const { pillar, movements } = Astro.props;
+const now = Date.now();
 
 function findMovement(id: string): TodayMovement | undefined {
   return movements.find((m) => m.indicatorId === id);
@@ -26,6 +28,37 @@ const be5 = findMovement("breakeven_5y");
 const sparkline = (pillar.sparkline30d ?? []).filter((n) => Number.isFinite(n));
 const hasSparkline = sparkline.length >= 2;
 const coverage = describeSparklineCoverage(sparkline);
+
+/**
+ * Per-indicator freshness chip rendered into each mini-tile. Small enough
+ * not to compete with the value, but visible without hover so a 10-day-old
+ * fixture can't look like a live print.
+ */
+const chips = {
+  gilt_10y: gilt10,
+  gilt_30y: gilt30,
+  ftse_250: ftse,
+  gbp_usd: gbp,
+  brent_gbp: brent,
+  breakeven_5y: be5,
+};
+function chipMeta(id: string, m?: TodayMovement) {
+  if (!m) return null;
+  return {
+    band: ageBand(m.observedAt, id, now),
+    date: shortDate(m.observedAt),
+    age: ageShort(m.observedAt, now),
+    iso: m.observedAt,
+  };
+}
+const meta = {
+  gilt_10y: chipMeta("gilt_10y", chips.gilt_10y),
+  gilt_30y: chipMeta("gilt_30y", chips.gilt_30y),
+  ftse_250: chipMeta("ftse_250", chips.ftse_250),
+  gbp_usd: chipMeta("gbp_usd", chips.gbp_usd),
+  brent_gbp: chipMeta("brent_gbp", chips.brent_gbp),
+  breakeven_5y: chipMeta("breakeven_5y", chips.breakeven_5y),
+};
 ---
 <section class="section" id="market" aria-labelledby="market-title">
   <div class="container">
@@ -61,36 +94,30 @@ const coverage = describeSparklineCoverage(sparkline);
         <h3>Gilt curve anchors</h3>
         <p class="hint">10y and 20y zero-coupon yields, breakeven inflation, and risk assets.</p>
         <div class="quad">
-          <div class="mini">
-            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="10y gilt" indicatorId="gilt_10y" /></span><ProvenanceBadge indicatorId="gilt_10y" compact /></div>
-            <span class="mini-val">{gilt10?.displayValue ?? "—"}</span>
-            <span class={`mini-chg ${gilt10?.worsening ? "up" : "dn"}`}>{gilt10?.changeDisplay ?? ""}</span>
-          </div>
-          <div class="mini">
-            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="20y gilt" indicatorId="gilt_30y" /></span><ProvenanceBadge indicatorId="gilt_30y" compact /></div>
-            <span class="mini-val">{gilt30?.displayValue ?? "—"}</span>
-            <span class={`mini-chg ${gilt30?.worsening ? "up" : "dn"}`}>{gilt30?.changeDisplay ?? ""}</span>
-          </div>
-          <div class="mini">
-            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="5y BE" indicatorId="breakeven_5y" /></span><ProvenanceBadge indicatorId="breakeven_5y" compact /></div>
-            <span class="mini-val">{be5?.displayValue ?? "—"}</span>
-            <span class={`mini-chg ${be5?.worsening ? "up" : "dn"}`}>{be5?.changeDisplay ?? ""}</span>
-          </div>
-          <div class="mini">
-            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="GBP / USD" indicatorId="gbp_usd" /></span><ProvenanceBadge indicatorId="gbp_usd" compact /></div>
-            <span class="mini-val">{gbp?.displayValue ?? "—"}</span>
-            <span class={`mini-chg ${gbp?.worsening ? "up" : "dn"}`}>{gbp?.changeDisplay ?? ""}</span>
-          </div>
-          <div class="mini">
-            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="FTSE 250" indicatorId="ftse_250" /></span><ProvenanceBadge indicatorId="ftse_250" compact /></div>
-            <span class="mini-val">{ftse?.displayValue ?? "—"}</span>
-            <span class={`mini-chg ${ftse?.worsening ? "up" : "dn"}`}>{ftse?.changeDisplay ?? ""}</span>
-          </div>
-          <div class="mini">
-            <div class="mini-head"><span class="mini-label"><IndicatorTooltip label="Brent GBP" indicatorId="brent_gbp" /></span><ProvenanceBadge indicatorId="brent_gbp" compact /></div>
-            <span class="mini-val">{brent?.displayValue ?? "—"}</span>
-            <span class={`mini-chg ${brent?.worsening ? "up" : "dn"}`}>{brent?.changeDisplay ?? ""}</span>
-          </div>
+          {([
+            { id: "gilt_10y", label: "10y gilt", m: gilt10, chip: meta.gilt_10y },
+            { id: "gilt_30y", label: "20y gilt", m: gilt30, chip: meta.gilt_30y },
+            { id: "breakeven_5y", label: "5y BE", m: be5, chip: meta.breakeven_5y },
+            { id: "gbp_usd", label: "GBP / USD", m: gbp, chip: meta.gbp_usd },
+            { id: "ftse_250", label: "FTSE 250", m: ftse, chip: meta.ftse_250 },
+            { id: "brent_gbp", label: "Brent GBP", m: brent, chip: meta.brent_gbp },
+          ] as const).map(({ id, label, m, chip }) => (
+            <div class="mini">
+              <div class="mini-head"><span class="mini-label"><IndicatorTooltip label={label} indicatorId={id} /></span><ProvenanceBadge indicatorId={id} compact /></div>
+              <span class="mini-val">{m?.displayValue ?? "—"}</span>
+              <span class={`mini-chg ${m?.worsening ? "up" : "dn"}`}>{m?.changeDisplay ?? ""}</span>
+              {chip ? (
+                <span
+                  class={`mini-age age-${chip.band}`}
+                  title={`Observed ${chip.iso}. Cadence band: ${chip.band}.`}
+                >
+                  <span class="age-dot" aria-hidden="true"></span>
+                  <span>{chip.date}</span>
+                  {chip.band === "stale" || chip.band === "ageing" ? <span class="age-rel">· {chip.age}</span> : null}
+                </span>
+              ) : null}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -157,6 +184,22 @@ const coverage = describeSparklineCoverage(sparkline);
 .mini-chg { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); }
 .mini-chg.up { color: var(--band-acute); }
 .mini-chg.dn { color: var(--band-slack); }
+.mini-age {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em;
+  color: var(--ink-2);
+  margin-top: 2px;
+}
+.mini-age .age-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--ink-3); flex-shrink: 0;
+}
+.mini-age.age-fresh .age-dot { background: var(--band-slack); }
+.mini-age.age-ageing .age-dot { background: var(--band-strain); }
+.mini-age.age-ageing { color: var(--ink-1); }
+.mini-age.age-stale .age-dot { background: var(--band-acute); }
+.mini-age.age-stale { color: var(--band-acute); }
+.mini-age .age-rel { opacity: 0.9; }
 
 .why {
   margin-top: 32px;

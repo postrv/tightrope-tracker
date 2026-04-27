@@ -2,12 +2,15 @@
 import type { TodayMovement } from "@tightrope/shared";
 import Sparkline from "./charts/Sparkline.astro";
 import ProvenanceBadge from "./ProvenanceBadge.astro";
+import { shortDate } from "~/lib/format.js";
+import { ageBand, ageShort } from "~/lib/freshness.js";
 
 interface Props {
   movements: TodayMovement[];
 }
 
 const { movements } = Astro.props;
+const now = Date.now();
 ---
 <section class="today" id="today" aria-labelledby="today-title">
   <div class="container">
@@ -20,6 +23,8 @@ const { movements } = Astro.props;
       <div class="today-scroll">
         {movements.slice(0, 8).map((m) => {
           const colour = m.worsening ? "var(--band-acute)" : "var(--band-slack)";
+          const band = ageBand(m.observedAt, m.indicatorId, now);
+          const ageLabel = ageShort(m.observedAt, now);
           return (
             <div class="today-card" data-tip={`Observed ${m.observedAt}`}>
               <div class="label-row">
@@ -36,6 +41,15 @@ const { movements } = Astro.props;
                 ariaLabel={`${m.label} sparkline`}
               />
               <span class="gloss">{m.gloss}</span>
+              <span
+                class={`age-stamp age-${band}`}
+                title={`Indicator observation: ${m.observedAt}. Cadence band: ${band}.`}
+                aria-label={`Observed on ${shortDate(m.observedAt)}, ${band}`}
+              >
+                <span class="age-dot" aria-hidden="true"></span>
+                <span class="age-date">{shortDate(m.observedAt)}</span>
+                {band === "stale" || band === "ageing" ? <span class="age-rel">· {ageLabel} ago</span> : null}
+              </span>
             </div>
           );
         })}
@@ -84,6 +98,31 @@ const { movements } = Astro.props;
 .today-card .chg.up { color: var(--band-acute); }
 .today-card .chg.dn { color: var(--band-slack); }
 .today-card .gloss { font-size: 11px; color: var(--ink-1); line-height: 1.4; margin-top: auto; }
+
+/* Age stamp: visible date + colour-coded dot. The date is read at a glance;
+   the dot turns amber at half the indicator's freshness window and red past
+   it, so a 10-day-old daily observation can't masquerade as live. The
+   thresholds come from INDICATORS[id].maxStaleMs — fresh on a monthly fixture
+   means something different to fresh on a daily yield. */
+.age-stamp {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em;
+  color: var(--ink-2);
+  padding-top: 4px;
+  border-top: 1px solid var(--border-soft);
+}
+.age-stamp .age-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ink-3);
+  flex-shrink: 0;
+}
+.age-stamp.age-fresh .age-dot { background: var(--band-slack); }
+.age-stamp.age-ageing .age-dot { background: var(--band-strain); }
+.age-stamp.age-ageing { color: var(--ink-1); }
+.age-stamp.age-stale .age-dot { background: var(--band-acute); }
+.age-stamp.age-stale { color: var(--band-acute); }
+.age-stamp.age-unknown .age-dot { background: var(--ink-3); }
+.age-rel { color: inherit; opacity: 0.85; }
 
 @media (max-width: 920px) {
   .today-scroll { grid-template-columns: repeat(2, 1fr); }

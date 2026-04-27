@@ -2,12 +2,14 @@
  * Tests for `POST /admin/run?source=purge-cache`.
  *
  * Five KV keys back the public site: `score:latest`, `score:history:90d`,
- * `delivery:latest`, `timeline:latest`, `movements:today`. Three of them
- * (`delivery:latest`, `timeline:latest`, `movements:today`) are
- * write-on-miss with no freshness predicate, so an editorial change to
- * the underlying tables (corrections published, delivery commitments
- * updated, timeline entry inserted via the gov.uk DLQ flow) takes up
- * to 6 hours to surface unless an operator explicitly invalidates them.
+ * `delivery:latest`, `timeline:latest`, `methodology:baselines`. The
+ * editorial keys (`delivery:latest`, `timeline:latest`) and the baselines
+ * cache (`methodology:baselines`, 24h TTL) are write-on-miss without a
+ * freshness predicate, so an editorial change to the underlying tables
+ * (corrections published, delivery commitments updated, timeline entry
+ * inserted via the gov.uk DLQ flow, schema bump that invalidates a
+ * baseline distribution) takes up to 6h-24h to surface unless an
+ * operator explicitly invalidates them.
  *
  * `purge-cache` is the operator escape hatch — auth-gated, idempotent,
  * and reports which keys it deleted so the caller can confirm.
@@ -62,7 +64,7 @@ describe("handleAdminRun — source=purge-cache", () => {
       "score:history:90d",
       "delivery:latest",
       "timeline:latest",
-      "movements:today",
+      "methodology:baselines",
     ]));
     expect(new Set(kvDeletes)).toEqual(new Set(body.purged));
   });

@@ -7,7 +7,6 @@ import {
 } from "@tightrope/shared";
 import type { Env } from "../env.js";
 
-const KV_TTL_6H = 60 * 60 * 6;
 const SPARKLINE_POINTS = 14;
 
 /** Compute the homepage "what moved today" cards from the latest market-pillar observations. */
@@ -18,23 +17,35 @@ export async function updateTodayMovements(env: Env): Promise<TodayMovement[]> {
   const movements: TodayMovement[] = [];
 
   for (const id of marketIds) {
-    // Live rows only (`payload_hash` not 'hist:*' or 'seed*'), ordered
-    // by ingested_at DESC so a fixture whose observed_at moves backwards
-    // doesn't pin the homepage to a stale row. NULL payload_hash is
-    // treated as live for legacy compatibility. Reversed below for the
-    // sparkline's oldest-first convention.
+    // One row per UTC day (latest observation that day wins) over the most
+    // recent SPARKLINE_POINTS days of live data. The historical-backfill
+    // (`hist:*`) and seed (`seed*`) payload hashes are excluded so the
+    // sparkline always reflects the live feed. NULL payload_hash is treated
+    // as live for legacy rows. Without the per-day downsample a future
+    // intraday adapter (or a 5-min recompute analogue) would silently
+    // collapse the sparkline to <1 day of data — same bug class that hit
+    // the headline 90-day chart before the per-UTC-day fix landed.
     const rows = await env.DB
       .prepare(
-        `SELECT value, observed_at FROM indicator_observations
-         WHERE indicator_id = ?
-           AND (payload_hash IS NULL
-                OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%'))
-         ORDER BY ingested_at DESC
-         LIMIT ?`,
+        `SELECT o.value, o.observed_at FROM indicator_observations o
+         JOIN (
+           SELECT substr(observed_at, 1, 10) AS d, MAX(observed_at) AS ts
+           FROM indicator_observations
+           WHERE indicator_id = ?1
+             AND (payload_hash IS NULL
+                  OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%'))
+           GROUP BY d
+           ORDER BY d DESC
+           LIMIT ?2
+         ) m ON o.observed_at = m.ts
+         WHERE o.indicator_id = ?1
+           AND (o.payload_hash IS NULL
+                OR (o.payload_hash NOT LIKE 'hist:%' AND o.payload_hash NOT LIKE 'seed%'))
+         ORDER BY o.observed_at ASC`,
       )
       .bind(id, SPARKLINE_POINTS)
       .all<{ value: number; observed_at: string }>();
-    const series = (rows.results ?? []).slice().reverse();
+    const series = rows.results ?? [];
     if (series.length === 0) continue;
     const latest = series[series.length - 1]!;
     const prior = series.length > 1 ? series[series.length - 2]! : latest;
@@ -68,7 +79,6 @@ export async function updateTodayMovements(env: Env): Promise<TodayMovement[]> {
   }
 
   await persistMovements(env, movements);
-  await env.KV.put("movements:today", JSON.stringify(movements), { expirationTtl: KV_TTL_6H });
   // Silence the unused-imports linter while keeping PILLARS importable for future pillars.
   void PILLARS;
   return movements;

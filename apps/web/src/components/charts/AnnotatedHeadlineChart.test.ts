@@ -185,21 +185,23 @@ describe("AnnotatedHeadlineChart", () => {
     ];
     const doc = await render({ history: buildHistory(), events });
     const labelText = doc.querySelector("g.event-label text.event-label-text")?.textContent ?? "";
-    // Abbreviated label is at most ~22 chars (with ellipsis when truncated).
+    // Abbreviated label is at most ~18 chars (with ellipsis when truncated).
+    // Cap tightened from 22 → 18 so labels fit inside the four-lane layout
+    // without colliding with adjacent fiscal/geopolitical events.
     expect(labelText.length).toBeLessThan(longTitle.length);
-    expect(labelText.length).toBeLessThanOrEqual(23);
+    expect(labelText.length).toBeLessThanOrEqual(18);
   });
 
   it("splits comma-separated event titles at the first clause", async () => {
     const events: TimelineEvent[] = [
       ev("comma", "2026-04-05T12:00:00Z", {
-        title: "Iran conflict begins, energy shock",
+        title: "Iran shock, oil spike",
         category: "geopolitical",
       }),
     ];
     const doc = await render({ history: buildHistory(), events });
     const labelText = doc.querySelector("g.event-label text.event-label-text")?.textContent?.trim() ?? "";
-    expect(labelText).toBe("Iran conflict begins");
+    expect(labelText).toBe("Iran shock");
   });
 
   it("does not render labels for non-major categories", async () => {

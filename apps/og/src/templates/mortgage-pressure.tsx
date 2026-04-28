@@ -25,7 +25,10 @@ export interface MortgagePressureProps {
 export function MortgagePressureCard(props: MortgagePressureProps): JsxNode {
   const { extraPerMonth, twoYearFixPct, spreadBp, updatedAt, baselineLabel } = props;
   const rounded = Math.round(extraPerMonth);
-  const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "";
+  // ASCII hyphen-minus only — the Fontsource Latin subsets used by the OG
+  // worker may not cover U+2212 MINUS SIGN, which would render as tofu in the
+  // serif big stat. "-£100" reads correctly with the loaded fonts.
+  const sign = rounded > 0 ? "+" : rounded < 0 ? "-" : "";
   const amount = `${sign}£${Math.abs(rounded)}`;
   const spreadAbs = Math.abs(Math.round(spreadBp));
   const spreadDirection = spreadBp > 0 ? "above" : spreadBp < 0 ? "below" : "level with";

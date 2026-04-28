@@ -14,7 +14,9 @@ export interface PillarCardProps {
 export function PillarCard(props: PillarCardProps): JsxNode {
   const def = PILLARS[props.pillar];
   const band = BANDS.find((b) => b.id === props.score.band) ?? BANDS[2]!;
-  const trendArrow = props.score.trend7d === "up" ? "▲" : props.score.trend7d === "down" ? "▼" : "▬";
+  // ASCII trend label — see note in headline.tsx; OG worker's Latin font
+  // subsets don't cover Geometric Shapes, so Unicode arrows tofu in Satori.
+  const trendLabel = props.score.trend7d === "up" ? "UP" : props.score.trend7d === "down" ? "DOWN" : "FLAT";
   const variant = bandVariant(band.id);
   const deltaStr = props.score.delta7d > 0 ? `+${props.score.delta7d.toFixed(1)}` : props.score.delta7d.toFixed(1);
   const deltaWord = Math.abs(props.score.delta7d) < 0.05 ? "flat" : props.score.delta7d > 0 ? "better" : "worse";
@@ -25,10 +27,10 @@ export function PillarCard(props: PillarCardProps): JsxNode {
       eyebrow={`Tightrope Tracker · ${def.shortTitle}`}
       meta={formatDate(props.updatedAt)}
       source={`Weight · ${(def.weight * 100).toFixed(0)}% of the headline`}
-      footerRight={`${trendArrow} ${deltaStr} ${deltaWord} on the week`}
+      footerRight={`${trendLabel} ${deltaStr} ${deltaWord} on the week`}
     >
       <div style={{ display: "flex", flexDirection: "column" }}>
-        <BandChip label={`${trendArrow} ${band.label}`} color={band.hex} />
+        <BandChip label={`${trendLabel} · ${band.label}`} color={band.hex} />
         <BigStat value={String(Math.round(props.score.value))} unit="/100" tint={band.hex} />
         <Caption>{def.blurb}</Caption>
       </div>

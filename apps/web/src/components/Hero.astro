@@ -115,13 +115,13 @@ function headroomDateLabel(iso: string): string {
                 <span class="score-value">{scoreRounded}</span><span class="sub">/100</span>
               </div>
               <div class="delta-row" aria-label="Composite changes over time">
-                <span title="Baseline: one UTC day before the latest reading.">1d <span class={trendClass(delta24)}>{trendArrow(delta24)} {signedDelta(Math.abs(delta24), 1)}{trendDescriptor(delta24) ? <span class="trend-word"> {trendDescriptor(delta24)}</span> : null}</span></span>
+                <span title="Baseline: one UTC day before the latest reading.">1d <span class={trendClass(delta24)}>{trendArrow(delta24)} {signedDelta(delta24, 1)}{trendDescriptor(delta24) ? <span class="trend-word"> {trendDescriptor(delta24)}</span> : null}</span></span>
                 {sharedFallback ? (
-                  <span class="delta-since" title={`History is only ~${Math.max(0, Math.round((Date.now() - new Date(d30Base!).getTime()) / 86_400_000))} days deep; 30d and YTD would both read the same number, so only one "since ${shortDateLabel(d30Base!)}" delta is shown until the backfill catches up.`}>since {shortDateLabel(d30Base!)} <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(Math.abs(delta30), 1)}{trendDescriptor(delta30) ? <span class="trend-word"> {trendDescriptor(delta30)}</span> : null}</span></span>
+                  <span class="delta-since" title={`History is only ~${Math.max(0, Math.round((Date.now() - new Date(d30Base!).getTime()) / 86_400_000))} days deep; 30d and YTD would both read the same number, so only one "since ${shortDateLabel(d30Base!)}" delta is shown until the backfill catches up.`}>since {shortDateLabel(d30Base!)} <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(delta30, 1)}{trendDescriptor(delta30) ? <span class="trend-word"> {trendDescriptor(delta30)}</span> : null}</span></span>
                 ) : (
                   <>
-                    <span title={delta30Tip}>{delta30Label} <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(Math.abs(delta30), 1)}{trendDescriptor(delta30) ? <span class="trend-word"> {trendDescriptor(delta30)}</span> : null}</span></span>
-                    <span title={deltaYtdTip}>{deltaYtdLabel} <span class={trendClass(deltaYtd)}>{trendArrow(deltaYtd)} {signedDelta(Math.abs(deltaYtd), 1)}{trendDescriptor(deltaYtd) ? <span class="trend-word"> {trendDescriptor(deltaYtd)}</span> : null}</span></span>
+                    <span title={delta30Tip}>{delta30Label} <span class={trendClass(delta30)}>{trendArrow(delta30)} {signedDelta(delta30, 1)}{trendDescriptor(delta30) ? <span class="trend-word"> {trendDescriptor(delta30)}</span> : null}</span></span>
+                    <span title={deltaYtdTip}>{deltaYtdLabel} <span class={trendClass(deltaYtd)}>{trendArrow(deltaYtd)} {signedDelta(deltaYtd, 1)}{trendDescriptor(deltaYtd) ? <span class="trend-word"> {trendDescriptor(deltaYtd)}</span> : null}</span></span>
                   </>
                 )}
               </div>

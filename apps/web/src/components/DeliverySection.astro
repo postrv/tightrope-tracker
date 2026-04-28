@@ -41,7 +41,7 @@ function statusClass(status: string): string {
             <span class={`pillar-score-delta ${cls}`} title="Change across the 30-day sparkline window (first to last point).">
               {t30 === "flat" ? "flat" : (
                 <>
-                  {t30 === "up" ? "▲" : "▼"} {signedDelta(Math.abs(d30), 1)}
+                  {t30 === "up" ? "▲" : "▼"} {signedDelta(d30, 1)}
                   {trendDescriptor(d30) ? <span class="trend-word"> {trendDescriptor(d30)}</span> : null}
                 </>
               )} / 30d

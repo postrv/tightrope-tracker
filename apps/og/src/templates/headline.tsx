@@ -13,7 +13,11 @@ import { BandChip, BigStat, CardShell, Caption, TOKENS, formatDate } from "./com
  */
 export function HeadlineCard(headline: HeadlineScore): JsxNode {
   const band = BANDS.find((b) => b.id === headline.band) ?? BANDS[2]!;
-  const trendArrow = headline.delta24h > 0 ? "▲" : headline.delta24h < 0 ? "▼" : "▬";
+  // ASCII trend label — the OG fonts (Bricolage / DM Sans / Plex Mono) are Latin
+  // subsets and don't ship Geometric Shapes (U+25B2/U+25BC), so Unicode arrows
+  // render as tofu in Satori. Keep this as plain ASCII unless we register a
+  // symbol-fallback font.
+  const trendLabel = headline.delta24h > 0 ? "UP" : headline.delta24h < 0 ? "DOWN" : "FLAT";
   const dominantTitle = PILLARS[headline.dominantPillar].title;
   const editorial =
     headline.editorial ||
@@ -28,7 +32,7 @@ export function HeadlineCard(headline: HeadlineScore): JsxNode {
       footerRight="Live · geometric mean of 4 pillars"
     >
       <div style={{ display: "flex", flexDirection: "column" }}>
-        <BandChip label={`${trendArrow} ${band.label}`} color={band.hex} />
+        <BandChip label={`${trendLabel} · ${band.label}`} color={band.hex} />
         <BigStat value={String(Math.round(headline.value))} unit="/100" tint={band.hex} />
         <Caption>
           <span style={{ display: "flex", flexWrap: "wrap" }}>

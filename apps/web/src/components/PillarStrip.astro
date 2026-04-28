@@ -55,7 +55,7 @@ function pillarHref(id: PillarId): string {
               <span class={`pillar-trend ${trendCls}`} title="Change across the 30-day sparkline window (first to last point).">
                 {trend30 === "flat" ? "— flat" : (
                   <>
-                    {trendArrow(delta)} {signedDelta(Math.abs(delta), 1)}
+                    {trendArrow(delta)} {signedDelta(delta, 1)}
                     {trendDescriptor(delta) ? <span class="trend-word"> {trendDescriptor(delta)}</span> : null}
                   </>
                 )} / 30d

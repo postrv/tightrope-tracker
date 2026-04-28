@@ -75,7 +75,7 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
             <span class={`pillar-score-delta ${cls}`} title="Change across the 30-day sparkline window (first to last point).">
               {t30 === "flat" ? "flat" : (
                 <>
-                  {t30 === "up" ? "▲" : "▼"} {signedDelta(Math.abs(d30), 1)}
+                  {t30 === "up" ? "▲" : "▼"} {signedDelta(d30, 1)}
                   {trendDescriptor(d30) ? <span class="trend-word"> {trendDescriptor(d30)}</span> : null}
                 </>
               )} / 30d
@@ -185,7 +185,7 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
         <div class="card-head">
           <h3>Inactivity rate vs. health-related count</h3>
           <IllustrativeBadge
-            sourceSummary="Annual averages from ONS Labour Force Survey: inactivity rate (series LF24) and health-related economically inactive (series LF2R). One point per year."
+            sourceSummary="Annual averages from ONS Labour Force Survey: inactivity rate (series LF2S) and health-related economically inactive (series LF69, LFS: Econ. inactivity reasons: Long Term Sick: UK: 16-64). One point per year."
             sourceUrl="https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/economicinactivity"
           />
         </div>

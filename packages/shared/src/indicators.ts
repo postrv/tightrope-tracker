@@ -49,7 +49,7 @@ export const PILLARS: Record<PillarId, PillarDefinition> = {
     shortTitle: "Market",
     weight: 0.40,
     cadence: "intraday",
-    blurb: "Are markets giving the government room to move?",
+    blurb: "Are markets giving the Government room to move?",
     inverted: false,
   },
   fiscal: {

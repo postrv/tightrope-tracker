@@ -150,9 +150,16 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
   let anyPillarStale = false;
   for (const p of PILLAR_ORDER) {
     const latest = pillarsLatest.results.find((r) => r.id === p);
-    const series = pillarHistory.results.filter((r) => r.id === p).map((r) => r.value);
+    const pRows = pillarHistory.results.filter((r) => r.id === p);
+    const series = pRows.map((r) => r.value);
     const value = latest?.value ?? 0;
-    const sevenDaysAgo = series.at(-7) ?? value;
+    // Calendar-anchored 7d lookup. Index offset (`series.at(-7)`) silently
+    // drifts to 9–10 days back when one or more days are missing from the
+    // daily downsample — recompute refuses to write a row when any pillar
+    // fails quorum, so any quorum gap leaves a hole here. Anchor on the
+    // UTC day of the latest row so a missed day shifts the baseline at
+    // most by the size of the gap, not by N positions.
+    const sevenDaysAgo = pickValueDaysBefore(pRows, latest?.observed_at, 7) ?? value;
     const delta = value - sevenDaysAgo;
     const trend: Trend = Math.abs(delta) < 0.5 ? "flat" : delta > 0 ? "up" : "down";
     // 30d trend/delta spans the full pillar sparkline (first → last) so
@@ -209,7 +216,10 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     updatedAt: (headlineRow?.observed_at as Iso8601) ?? (EPOCH_ISO as Iso8601),
     dominantPillar,
     sparkline90d: hSeries,
-    delta24h: deltaAgo(hSeries, 1),
+    // Calendar-anchored: with the daily downsample, index-based offset
+    // (`series.at(-2)`) labels a 48h delta as "24h" if yesterday's
+    // recompute missed quorum. See pickValueDaysBefore.
+    delta24h: deltaCalendar(hRows, 1),
     // Mirrors the recompute fallback: if history doesn't reach back 30d, use
     // the oldest row as long as it's at least 7 days old. Converges to the
     // true 30d delta once history accumulates past 30 days. The
@@ -439,11 +449,59 @@ function renderEditorialNote(dominant: PillarId, pillars: Record<PillarId, Pilla
 
 // --- helpers ---------------------------------------------------------------
 
-function deltaAgo(series: readonly number[], n: number): number {
-  if (series.length < 2) return 0;
-  const now = series.at(-1) ?? 0;
-  const then = series.at(Math.max(0, series.length - 1 - n)) ?? now;
-  return round1(now - then);
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Return the UTC YYYY-MM-DD that is `daysBack` calendar days before `iso`.
+ * Empty string on parse failure so callers can short-circuit.
+ */
+function utcDayOffset(iso: string | undefined, daysBack: number): string {
+  if (!iso) return "";
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return "";
+  return new Date(ms - daysBack * DAY_MS).toISOString().slice(0, 10);
+}
+
+/**
+ * Calendar-anchored 1-row lookup: pick the value of the most recent row
+ * whose UTC day is on or before `latest.observed_at - daysBack`. Returns
+ * undefined when no such row exists (history doesn't reach back far enough)
+ * or when `latestIso` is missing/malformed.
+ *
+ * Mirrors the safety net for the pillar `series.at(-7)` case: if the
+ * daily-downsampled series has gaps from days where pillar quorum failed,
+ * positional indexing silently shifts the baseline by one calendar day
+ * per gap. Comparing UTC day strings keeps the lookup honest — observed_at
+ * is stored as ISO 8601 UTC, so lex compare on the date prefix is byte-exact.
+ */
+function pickValueDaysBefore(
+  rows: readonly { observed_at: string; value: number }[],
+  latestIso: string | undefined,
+  daysBack: number,
+): number | undefined {
+  const targetDay = utcDayOffset(latestIso, daysBack);
+  if (!targetDay) return undefined;
+  for (let i = rows.length - 1; i >= 0; i--) {
+    if (rows[i]!.observed_at.slice(0, 10) <= targetDay) return rows[i]!.value;
+  }
+  return undefined;
+}
+
+/**
+ * Calendar-anchored delta of `latest.value - row[N days ago].value`.
+ * Returns 0 when history doesn't reach back `targetDays` calendar days,
+ * or when there are fewer than two rows. Use `deltaAgoWithFallback`
+ * instead when callers want to fall back to the oldest available row.
+ */
+function deltaCalendar(
+  rows: readonly { observed_at: string; value: number }[],
+  targetDays: number,
+): number {
+  if (rows.length < 2) return 0;
+  const latest = rows[rows.length - 1]!;
+  const baseline = pickValueDaysBefore(rows.slice(0, -1), latest.observed_at, targetDays);
+  if (baseline === undefined) return 0;
+  return round1(latest.value - baseline);
 }
 
 export interface DeltaWithBaseline {
@@ -458,9 +516,15 @@ export interface DeltaWithBaseline {
 }
 
 /**
- * Delta over `targetDays` of one-row-per-day history. If the series doesn't
- * reach back far enough, fall back to the oldest row as long as it's at least
- * `minFallbackDays` old. Returns 0 when history is too thin to say anything.
+ * Delta over `targetDays` of one-row-per-UTC-day history. If the series
+ * doesn't reach back far enough, fall back to the oldest row as long as
+ * it's at least `minFallbackDays` old. Returns 0 when history is too
+ * thin to say anything.
+ *
+ * Calendar-anchored: positional offset (`rows[length - 1 - targetDays]`)
+ * silently drifts when the daily downsample has gaps from days where
+ * pillar quorum failed — turning "30d" into 32–35d without the UI ever
+ * knowing. We anchor on the UTC day of the latest row instead.
  */
 function deltaAgoWithFallback(
   rows: readonly { observed_at: string; value: number }[],
@@ -469,13 +533,12 @@ function deltaAgoWithFallback(
 ): DeltaWithBaseline {
   if (rows.length < 2) return { value: 0 };
   const latest = rows[rows.length - 1]!;
-  const idx = rows.length - 1 - targetDays;
-  if (idx >= 0) {
-    const baseline = rows[idx]!;
-    return { value: round1(latest.value - baseline.value) };
+  const baseline = pickValueDaysBefore(rows.slice(0, -1), latest.observed_at, targetDays);
+  if (baseline !== undefined) {
+    return { value: round1(latest.value - baseline) };
   }
   const oldest = rows[0]!;
-  const ageDays = (Date.now() - new Date(oldest.observed_at).getTime()) / (24 * 60 * 60 * 1000);
+  const ageDays = (Date.now() - new Date(oldest.observed_at).getTime()) / DAY_MS;
   if (ageDays < minFallbackDays) return { value: 0 };
   // Fallback was used — flag baselineDate so the UI knows to say
   // "since DD MMM" rather than the requested window.
@@ -491,7 +554,6 @@ function deltaAgoYtdWithFallback(
   if (rows.length < 2) return { value: 0 };
   const latest = rows[rows.length - 1]!;
   const startOfYearMs = Date.UTC(now.getUTCFullYear(), 0, 1);
-  const DAY_MS = 24 * 60 * 60 * 1000;
   // Scan backwards for the last row observed on or before 1 Jan. If we
   // find one within a week of Jan 1 it's "clean" YTD; further back is
   // also fine (Jan 1 is the target, earlier is a superset).

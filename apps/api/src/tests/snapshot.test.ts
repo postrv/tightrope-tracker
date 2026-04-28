@@ -173,4 +173,47 @@ describe("buildSnapshotFromD1", () => {
     expect(snap.pillars.labour.label).toBe("Labour");
     expect(snap.pillars.delivery.label).toBe("Delivery");
   });
+
+  it("anchors pillar 7d delta on calendar days, not array index, when the daily downsample has gaps", async () => {
+    // Build a downsampled history with three missing days (D-3, D-4, D-5)
+    // for the market pillar — the kind of hole produced when pillar quorum
+    // failed for a stretch. Latest is D, baseline-7-days-ago is D-7.
+    // With positional indexing (`series.at(-7)`), the gaps shift the
+    // baseline back to D-9 or D-10 — silently labelling the 9–10d delta
+    // as "7d" on the homepage.
+    const todayMs = Date.UTC(
+      new Date().getUTCFullYear(),
+      new Date().getUTCMonth(),
+      new Date().getUTCDate(),
+    );
+    const isoFor = (offsetDays: number) =>
+      new Date(todayMs - offsetDays * 86_400_000).toISOString();
+
+    // Market: D-7 = 50.0, D = 60.0 → calendar 7d delta = +10.
+    // Fill in non-gap days so the baseline-shift assertion is meaningful.
+    const market: PillarRow[] = [];
+    for (let d = 14; d >= 0; d--) {
+      if (d === 3 || d === 4 || d === 5) continue;
+      const value = d === 7 ? 50.0 : d === 0 ? 60.0 : 50.0 + (14 - d) * 0.5;
+      market.push({ pillar_id: "market", observed_at: isoFor(d), value, band: "strained" });
+    }
+
+    // Other pillars: dense daily coverage, latest matches D-7 so delta is 0
+    // — keeps the assertion focused on the gap-affected pillar.
+    const others: PillarRow[] = [];
+    for (const p of PILLAR_ORDER) {
+      if (p === "market") continue;
+      for (let d = 14; d >= 0; d--) {
+        others.push({ pillar_id: p, observed_at: isoFor(d), value: 50.0, band: "strained" });
+      }
+    }
+
+    const env = makeEnv({ pillarRows: [...market, ...others], headlineRows: [] });
+    const snap = await buildSnapshotFromD1(env);
+
+    // Calendar-anchored 7d: 60 - 50 = +10. Positional `series.at(-7)` over
+    // the 12-row gappy series would land on D-9 (= 50 + 5*0.5 = 52.5),
+    // giving a 7.5 delta instead. Assert the calendar value.
+    expect(snap.pillars.market.delta7d).toBe(10);
+  });
 });

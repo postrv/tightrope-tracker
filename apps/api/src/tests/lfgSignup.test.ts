@@ -53,6 +53,7 @@ function envWith(overrides: Partial<Env> = {}): Env {
     TURNSTILE_SECRET_KEY: "test-secret",
     LFG_SIGNUP_API_URL: ZAPIER,
     BREVO_LIST_NUMBER: "127",
+    BREVO_WEEKLY_LIST_NUMBER: "128",
     LFG_API_KEY: "xkeysib-test-key",
     ...overrides,
   } as unknown as Env;
@@ -192,7 +193,7 @@ describe("POST /api/v1/lfg-signup — Brevo direct path", () => {
     expect(headers.get("content-type")).toMatch(/application\/json/);
   });
 
-  it("forwards the right body shape to Brevo", async () => {
+  it("forwards the right body shape to Brevo (digest opt-in routes to weekly list)", async () => {
     const { stub, calls } = captureFetch({ siteverify: { ok: true, success: true }, upstream: { ok: true, status: 201 } });
     vi.stubGlobal("fetch", stub);
     await handleLfgSignup(
@@ -212,20 +213,38 @@ describe("POST /api/v1/lfg-signup — Brevo direct path", () => {
     expect(body).toMatchObject({
       email: "jane@example.com",      // lowercased + trimmed
       attributes: {
-        FIRSTNAME: "JaneDoe",         // newline stripped
+        FULL_NAME: "JaneDoe",         // newline stripped; form's name field maps to FULL_NAME
         POSTCODE: "EX4 4QJ",
-        SOURCE: "tightrope-mp",
-        MP_INTEREST: true,
-        WEEKLY_DIGEST: true,
       },
-      listIds: [127],                  // numeric, from BREVO_LIST_NUMBER
+      listIds: [128],                  // weekly digest list, not the general 127
       updateEnabled: true,
       emailBlacklisted: false,
       smsBlacklisted: false,
     });
+    // Attributes Brevo's workspace doesn't define are deliberately dropped.
+    // WEEKLY_DIGEST: segmentation is now by list membership.
+    // SOURCE / MP_INTEREST: not configured on the LFG Brevo list.
+    expect(body.attributes).not.toHaveProperty("WEEKLY_DIGEST");
+    expect(body.attributes).not.toHaveProperty("SOURCE");
+    expect(body.attributes).not.toHaveProperty("MP_INTEREST");
+    expect(body.attributes).not.toHaveProperty("FIRSTNAME");
   });
 
-  it("omits empty optional attributes so an existing Brevo contact's values aren't clobbered", async () => {
+  it("routes non-digest signups to the general LFG list (127)", async () => {
+    const { stub, calls } = captureFetch({ siteverify: { ok: true, success: true }, upstream: { ok: true, status: 201 } });
+    vi.stubGlobal("fetch", stub);
+    await handleLfgSignup(
+      jsonReq({ email: "jane@example.com", turnstileToken: "tok" }), // weeklyUpdates omitted → false
+      envWith(),
+    );
+    const brevo = calls.find((c) => c.url === "https://api.brevo.com/v3/contacts")!;
+    const body = JSON.parse(String(brevo.init!.body!));
+    expect(body.listIds).toEqual([127]);
+  });
+
+  it("sends an empty attributes object when no optional fields are supplied", async () => {
+    // Email-only signup: nothing to put in attributes. Brevo accepts an empty
+    // attributes object — it just creates the contact with EMAIL + CREATION DATE.
     const { stub, calls } = captureFetch({ siteverify: { ok: true, success: true }, upstream: { ok: true, status: 201 } });
     vi.stubGlobal("fetch", stub);
     await handleLfgSignup(
@@ -234,12 +253,7 @@ describe("POST /api/v1/lfg-signup — Brevo direct path", () => {
     );
     const brevo = calls.find((c) => c.url === "https://api.brevo.com/v3/contacts")!;
     const body = JSON.parse(String(brevo.init!.body!));
-    expect(body.attributes).not.toHaveProperty("FIRSTNAME");
-    expect(body.attributes).not.toHaveProperty("POSTCODE");
-    // SOURCE / MP_INTEREST / WEEKLY_DIGEST are always present (always-defined values).
-    expect(body.attributes).toHaveProperty("SOURCE");
-    expect(body.attributes).toHaveProperty("MP_INTEREST");
-    expect(body.attributes).toHaveProperty("WEEKLY_DIGEST");
+    expect(body.attributes).toEqual({});
   });
 
   it("returns 200 ok on Brevo 204 (existing contact updated)", async () => {

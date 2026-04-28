@@ -10,8 +10,13 @@
 # LFG signup ingestion endpoint. Zapier webhook fronts Brevo.
 LFG_SIGNUP_API_URL=https://hooks.zapier.com/hooks/catch/REPLACE_ME/REPLACE_ME/
 
-# Brevo list ID for Tightrope-sourced contacts (integer).
+# Brevo list ID for general Tightrope-sourced LFG signups (integer).
 BREVO_LIST_NUMBER=127
+
+# Brevo list ID for signups who opted in to the weekly AI digest (integer).
+# Distinct list rather than a contact attribute so a single Brevo campaign
+# can target the digest segment directly.
+BREVO_WEEKLY_LIST_NUMBER=128
 
 # Cloudflare Turnstile secret key (paired with PUBLIC_TURNSTILE_SITE_KEY
 # on the web side). Use the always-pass test secret 1x0000000000000000000000000000000AA

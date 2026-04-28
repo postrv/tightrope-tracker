@@ -154,18 +154,33 @@ export async function handleLfgSignup(req: Request, env: Env): Promise<Response>
  * logs (visible via `wrangler tail`) and return UPSTREAM_ERROR to the client.
  */
 async function forwardToBrevo(env: Env, c: CleanSignup): Promise<Response> {
-  const attributes: Record<string, unknown> = {
-    SOURCE: c.sourceVariant,
-    MP_INTEREST: c.mpInterest,
-    WEEKLY_DIGEST: c.weeklyUpdates,
-  };
-  if (c.firstName) attributes.FIRSTNAME = c.firstName;
+  // Brevo workspace attribute schema (per LFG ops): FULL_NAME, EMAIL, BIO,
+  // CREATION DATE, POSTCODE. EMAIL + CREATION DATE are populated by Brevo
+  // implicitly. Only required fields are name-or-email; the rest are
+  // optional and omitted when empty so existing-contact values aren't
+  // clobbered on a re-signup.
+  //
+  // The form captures a single name field (which may be a first name or a
+  // full name); we forward verbatim into FULL_NAME. Source / MP-interest
+  // discriminators aren't configured as Brevo attributes, so they're
+  // dropped from the payload — segmentation is by list membership.
+  const attributes: Record<string, unknown> = {};
+  if (c.firstName) attributes.FULL_NAME = c.firstName;
   if (c.postcode) attributes.POSTCODE = c.postcode;
+
+  // Segmentation by list, not by attribute: Brevo's boolean attribute handling
+  // was unreliable in this workspace, so digest opt-in is encoded as
+  // membership of a separate list (BREVO_WEEKLY_LIST_NUMBER, typically 128)
+  // instead of a WEEKLY_DIGEST flag. The digest worker will pull list 128;
+  // general LFG comms stay on list 127.
+  const listId = c.weeklyUpdates
+    ? Number(env.BREVO_WEEKLY_LIST_NUMBER) || 0
+    : Number(env.BREVO_LIST_NUMBER) || 0;
 
   const payload = {
     email: c.email,
     attributes,
-    listIds: [Number(env.BREVO_LIST_NUMBER) || 0],
+    listIds: [listId],
     emailBlacklisted: false,
     smsBlacklisted: false,
     updateEnabled: true,

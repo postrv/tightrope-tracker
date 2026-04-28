@@ -42,10 +42,11 @@ PARLIAMENT_API_BASE = "https://members-api.parliament.uk/api"
 
 # LFG signup proxy (POST /api/v1/lfg-signup) — secrets uploaded via
 # `wrangler secret put`, NOT stored in this file. Required:
-#   wrangler secret put LFG_SIGNUP_API_URL    # Zapier webhook fronting Brevo
-#   wrangler secret put BREVO_LIST_NUMBER     # numeric list ID (e.g. 127)
-#   wrangler secret put TURNSTILE_SECRET_KEY  # Cloudflare Turnstile secret
-#   wrangler secret put LFG_API_KEY           # Brevo direct-API key (reserved, unused today)
+#   wrangler secret put LFG_API_KEY                  # Brevo direct-API key (primary path)
+#   wrangler secret put BREVO_LIST_NUMBER            # general LFG signup list ID (e.g. 127)
+#   wrangler secret put BREVO_WEEKLY_LIST_NUMBER     # weekly digest list ID (e.g. 128)
+#   wrangler secret put TURNSTILE_SECRET_KEY         # Cloudflare Turnstile secret
+#   wrangler secret put LFG_SIGNUP_API_URL           # Zapier webhook (fallback only — leave unset to use Brevo direct)
 # For local development copy `.dev.vars.example` to `.dev.vars`.
 
 [observability]

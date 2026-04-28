@@ -11,8 +11,12 @@ declare global {
     PARLIAMENT_API_BASE: string;
     /** LFG ingestion endpoint (Zapier webhook fronting Brevo). Secret. */
     LFG_SIGNUP_API_URL: string;
-    /** Brevo list ID that Tightrope-sourced signups should land in. */
+    /** Brevo list ID for general Tightrope-sourced LFG signups (no digest opt-in). */
     BREVO_LIST_NUMBER: string;
+    /** Brevo list ID for signups who opted in to the weekly AI digest. Distinct from
+     *  BREVO_LIST_NUMBER so a single Brevo campaign can target the digest segment
+     *  directly without filtering by attribute. */
+    BREVO_WEEKLY_LIST_NUMBER: string;
     /** Cloudflare Turnstile secret key (paired with PUBLIC_TURNSTILE_SITE_KEY on the web side). Secret. */
     TURNSTILE_SECRET_KEY: string;
     /** Brevo direct-API key. Reserved for future direct integration; not used by the Zapier proxy path today. Secret. */

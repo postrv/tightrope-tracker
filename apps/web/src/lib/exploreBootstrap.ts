@@ -24,6 +24,7 @@ import {
   type PillarId,
 } from "@tightrope/shared";
 import type { BaselineSummary } from "@tightrope/methodology";
+import { walkerAnimParams } from "./walkerAnim.js";
 
 export interface ExploreConfig {
   live: Record<LeverKey, number>;
@@ -396,6 +397,19 @@ export function bootstrapExplore(
     if (dominantLabel) {
       const minPillarValue = Math.min(...PILLAR_ORDER.map((p) => s.pillars[p].value));
       dominantLabel.textContent = (minPillarValue < 60 ? "Biggest drag" : "Pillar pulling hardest") + ":";
+    }
+
+    // Push the new instability score (100 - headline) into the walker so its
+    // sway amplitude, sway speed, and stability-arc colours track the slider.
+    // The walker's rAF loop re-reads data-amp / data-speed each frame, so
+    // mutating them here is enough — no event needs to fire.
+    const walkerEl = root.querySelector<HTMLElement>(".tightrope-walker");
+    if (walkerEl) {
+      const instability = 100 - s.headline.value;
+      const params = walkerAnimParams(instability);
+      walkerEl.dataset.amp = params.ampDeg.toFixed(3);
+      walkerEl.dataset.speed = params.speedMult.toFixed(3);
+      walkerEl.dataset.score = String(Math.round(Math.max(0, Math.min(100, instability))));
     }
 
     const vs = root.querySelector<HTMLElement>("[data-vs-live]");

@@ -1,4 +1,6 @@
 ---
+import { walkerAnimParams } from "~/lib/walkerAnim.js";
+
 interface Props {
   score: number;
   /** If false, walker renders static (no sway, no parallax) at a representative lean. */
@@ -7,39 +9,21 @@ interface Props {
 
 const { score, animate = true } = Astro.props;
 const safeScore = Math.max(0, Math.min(100, score ?? 0));
-
-// Maximum lateral sway amplitude (degrees) around the rope axis. Capped well
-// below "fall" so even score 100 reads as struggling rather than fallen.
-const MAX_SWAY = 30;
-const targetAmp = MAX_SWAY * Math.pow(safeScore / 100, 1.4);
+const params = walkerAnimParams(safeScore);
 const label = Math.round(safeScore);
-
-// Stability arc behind the walker shows three zones: green ±10°, amber to ±20°,
-// red to ±30°. Each zone "lights up" once the walker's swept range reaches it,
-// so the arc reads as a colour-coded gauge of how far the walker is reaching.
-const amberLit = targetAmp > 9;
-const redLit = targetAmp > 18;
-// Opacities tuned for the warm cream backdrop: colour-coded zones need to
-// read strongly against cream without overwhelming the walker silhouette.
-const greenOpacity = 0.38;
-const amberOpacity = amberLit ? 0.48 : 0.14;
-const redOpacity = redLit ? 0.50 : 0.12;
-
-// Speed multiplier on the sway: ~1× at score 0, ~2.8× at score 100. High
-// instability reads as frantic micro-corrections; low instability stays calm.
-const speedMult = 1 + Math.pow(safeScore / 100, 1.5) * 1.8;
 
 // Static pose (used when animate=false, e.g. embed): a representative
 // mid-sway lean so the still image conveys instability instead of standing
 // perfectly vertical against an active red arc.
-const staticAngle = animate ? 0 : targetAmp * 0.55;
+const staticAngle = animate ? 0 : params.ampDeg * 0.55;
 ---
 <div
   class="tightrope-walker"
   data-animate={animate ? "true" : "false"}
   data-score={safeScore}
-  data-amp={targetAmp.toFixed(3)}
-  data-speed={speedMult.toFixed(3)}
+  data-amp={params.ampDeg.toFixed(3)}
+  data-speed={params.speedMult.toFixed(3)}
+  style={`--arc-green: ${params.greenOpacity}; --arc-amber: ${params.amberOpacity}; --arc-red: ${params.redOpacity};`}
   aria-label={`Tightrope walker, viewed from behind on a wire receding into the distance. Lateral sway amplitude reflects instability score ${label} of 100.`}
   role="img"
 >
@@ -115,11 +99,11 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
                Green core ±10°, amber to ±20°, red to ±30°. Each zone's opacity
                lifts once the walker's swept range reaches it. -->
           <g class="stability-arc">
-            <path d="M 300 430 L 230 308.76 A 140 140 0 0 1 252.12 298.45 Z" fill="#C84B3C" opacity={redOpacity}/>
-            <path d="M 300 430 L 252.12 298.45 A 140 140 0 0 1 275.69 292.13 Z" fill="#EE9944" opacity={amberOpacity}/>
-            <path d="M 300 430 L 275.69 292.13 A 140 140 0 0 1 324.31 292.13 Z" fill="#5FB27C" opacity={greenOpacity}/>
-            <path d="M 300 430 L 324.31 292.13 A 140 140 0 0 1 347.88 298.45 Z" fill="#EE9944" opacity={amberOpacity}/>
-            <path d="M 300 430 L 347.88 298.45 A 140 140 0 0 1 370 308.76 Z" fill="#C84B3C" opacity={redOpacity}/>
+            <path d="M 300 430 L 230 308.76 A 140 140 0 0 1 252.12 298.45 Z" fill="#C84B3C" style="opacity: var(--arc-red);"/>
+            <path d="M 300 430 L 252.12 298.45 A 140 140 0 0 1 275.69 292.13 Z" fill="#EE9944" style="opacity: var(--arc-amber);"/>
+            <path d="M 300 430 L 275.69 292.13 A 140 140 0 0 1 324.31 292.13 Z" fill="#5FB27C" style="opacity: var(--arc-green);"/>
+            <path d="M 300 430 L 324.31 292.13 A 140 140 0 0 1 347.88 298.45 Z" fill="#EE9944" style="opacity: var(--arc-amber);"/>
+            <path d="M 300 430 L 347.88 298.45 A 140 140 0 0 1 370 308.76 Z" fill="#C84B3C" style="opacity: var(--arc-red);"/>
             <!-- Soft outer rim for definition -->
             <path d="M 230 308.76 A 140 140 0 0 1 370 308.76" stroke="#3A3630" stroke-width="0.6" fill="none" opacity="0.45"/>
             <!-- Vertical reference line at 0° (stable) -->
@@ -222,21 +206,20 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
   const fineHover = window.matchMedia?.("(hover: hover) and (pointer: fine)").matches ?? false;
 
+  // Stability-arc thresholds: kept in sync with apps/web/src/lib/walkerAnim.ts.
+  // Re-read each frame so a runtime amp change (e.g. /explore slider mutating
+  // data-amp) recolours the arc without a script restart.
+  const ARC_AMBER_THRESHOLD = 9;
+  const ARC_RED_THRESHOLD = 18;
+  const ARC_AMBER_LIT = "0.48";
+  const ARC_AMBER_DARK = "0.14";
+  const ARC_RED_LIT = "0.5";
+  const ARC_RED_DARK = "0.12";
+
   const all = document.querySelectorAll('.tightrope-walker[data-animate="true"]');
   all.forEach((viz) => {
-    const ampDeg = Number(viz.dataset.amp ?? "0");
-    const speedMult = Number(viz.dataset.speed ?? "1");
     const walker = viz.querySelector(".walker");
     if (!walker) return;
-
-    if (reduce) {
-      // Reduced motion: hold the walker at a representative static lean
-      // proportional to the swept amplitude, so the colour-coded arc still
-      // makes sense without any motion.
-      const restAngle = ampDeg * 0.55;
-      walker.setAttribute("transform", `translate(300, 430) rotate(${restAngle.toFixed(2)})`);
-      return;
-    }
 
     if (fineHover) {
       let pendingMx = 0, pendingMy = 0, queued = false;
@@ -263,18 +246,48 @@ const staticAngle = animate ? 0 : targetAmp * 0.55;
     const phi2 = 1.7;
     const phi3 = 0.5;
     const norm = 1 + 0.55 + 0.25;
-    const t0 = performance.now();
     const settleDur = 1100;
 
+    // Phase accumulators. Speed changes only affect future increments, so a
+    // slider that doubles speedMult mid-frame doesn't cause a wave-phase jump.
+    const t0 = performance.now();
+    let lastT = t0;
+    let phase1 = 0, phase2 = phi2, phase3 = phi3;
+
     function frame(t) {
+      const dt = t - lastT;
+      lastT = t;
       const elapsed = t - t0;
       const settle = Math.min(1, elapsed / settleDur);
       const eased = 1 - Math.pow(1 - settle, 3);
-      const sweptT = elapsed * speedMult;
+
+      // Re-read each frame so /explore slider updates flow through without
+      // restarting the loop.
+      const ampDeg = Number(viz.dataset.amp ?? "0");
+      const speedMult = Number(viz.dataset.speed ?? "1");
+
+      // Stability-arc colour zones track current amp.
+      viz.style.setProperty("--arc-amber", ampDeg > ARC_AMBER_THRESHOLD ? ARC_AMBER_LIT : ARC_AMBER_DARK);
+      viz.style.setProperty("--arc-red", ampDeg > ARC_RED_THRESHOLD ? ARC_RED_LIT : ARC_RED_DARK);
+
+      if (reduce) {
+        // Reduced-motion: hold a representative static lean derived from amp.
+        // Recomputed each frame so slider changes still update the pose, but
+        // no oscillation.
+        const restAngle = ampDeg * 0.55;
+        walker.setAttribute("transform", `translate(300, 430) rotate(${restAngle.toFixed(2)})`);
+        requestAnimationFrame(frame);
+        return;
+      }
+
+      phase1 += w1 * speedMult * dt;
+      phase2 += w2 * speedMult * dt;
+      phase3 += w3 * speedMult * dt;
+
       const wave =
-        Math.sin(sweptT * w1) +
-        Math.sin(sweptT * w2 + phi2) * 0.55 +
-        Math.sin(sweptT * w3 + phi3) * 0.25;
+        Math.sin(phase1) +
+        Math.sin(phase2) * 0.55 +
+        Math.sin(phase3) * 0.25;
       const angle = (wave / norm) * ampDeg * eased;
       walker.setAttribute("transform", `translate(300, 430) rotate(${angle.toFixed(2)})`);
       requestAnimationFrame(frame);

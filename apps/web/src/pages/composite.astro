@@ -136,7 +136,10 @@ const canonicalPath = `/composite?range=${rangeOption}`;
   border-radius: var(--radius-lg);
   padding: 24px 24px 8px;
   margin-bottom: 32px;
-  overflow: hidden;
+  /* See HeadlineChartSection: tooltip clamping needs the wrap to allow
+     overflow so the box-shadow / outer edge isn't clipped during the
+     horizontal nudge. */
+  overflow: visible;
 }
 .empty {
   font-family: var(--font-mono);

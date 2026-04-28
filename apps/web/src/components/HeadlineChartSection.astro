@@ -53,6 +53,14 @@ const rangeDays = history.rangeDays;
       <p class="empty">The 90-day chart populates after the first ingestion run completes. Refresh in a few minutes.</p>
     )}
 
+    {/* Phone-only interaction hint. Permanent labels disappear below 600px
+        because viewBox-scaled SVG text would render at ~4px CSS — this
+        line tells touch readers the dots are tappable so they don't think
+        the chart is read-only. */}
+    {hasData ? (
+      <p class="touch-hint" aria-hidden="true">Tap any dot for context.</p>
+    ) : null}
+
     <div class="legend" role="list" aria-label="Event marker colours">
       {LEGEND.map((item) => (
         <span class="legend-item" role="listitem">
@@ -80,7 +88,20 @@ const rangeDays = history.rangeDays;
   border-radius: var(--radius-lg);
   padding: 24px 24px 8px;
   margin-bottom: 18px;
-  overflow: hidden;
+  /* `overflow: visible` so the chart's absolute-positioned tooltips can
+     extend slightly outside the wrap on narrow viewports — the JS shim
+     clamps them back inside the chart bounds, but the wrap's rounded
+     border was clipping the box-shadow / outer edge during the clamp. */
+  overflow: visible;
+}
+.touch-hint {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-2);
+  letter-spacing: 0.04em;
+  margin: 0 0 14px;
+  text-align: center;
 }
 .empty {
   font-family: var(--font-mono);
@@ -112,5 +133,6 @@ const rangeDays = history.rangeDays;
   .chart-wrap { padding: 14px 8px 4px; }
   .legend { gap: 12px; font-size: 10.5px; }
   .cta-row .btn { display: block; text-align: center; }
+  .touch-hint { display: block; }
 }
 </style>

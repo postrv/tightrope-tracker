@@ -15,13 +15,15 @@ Every figure on the site links back to its source — BoE IADB, ONS, OBR, DMO, M
 
 ## Scoring model
 
-1. Raw inputs z-scored against a 2019-present rolling baseline (2020 Q2 excluded for COVID distortion).
-2. Direction-flipped where lower = worse (real pay, FTSE 250, payroll growth, etc.).
-3. Bounded to `[0, 100]` via ECDF.
+1. Raw inputs are ranked against a 2019-present empirical baseline (2020 Q2 excluded for COVID distortion). Z-scores are still computed and displayed for context, but they are not the score input.
+2. The empirical percentile is direction-adjusted: for rising-bad inputs (gilt yields, borrowing, inactivity) the score is `1 - p`; for rising-good inputs (real pay, fiscal headroom, delivery progress) the score is `p`.
+3. The adjusted percentile is bounded to `[0, 100]`, where **higher means more room to move** and **lower means conditions are worse**.
 4. Each **pillar score** is a weighted arithmetic mean of its indicators (transparent to debug).
 5. The **headline score** is a **weighted geometric mean** of the four pillars — Market 40%, Fiscal 30%, Labour 20%, Delivery 10%.
 
-Geometric mean at the headline level is deliberate: one pillar blowing out pulls the headline hard. That is the correct behaviour for systemic stress — a problem you can't paper over with strength elsewhere.
+Geometric mean at the headline level is deliberate: one weak pillar pulls the headline down hard. That is the correct behaviour for a tightrope metric — a failing support cannot be papered over by strength elsewhere.
+
+Score schema v2, introduced on 2026-04-28, converted the published score from a pressure-oriented axis to this high-good axis so the public number matches ordinary reader intuition: falling score = worsening conditions.
 
 ## Repository layout
 

@@ -65,8 +65,8 @@
             "name": "days",
             "in": "query",
             "required": false,
-            "description": "Window length in days (inclusive of today). Minimum 1, maximum 365.",
-            "schema": { "type": "integer", "minimum": 1, "maximum": 365, "default": 30 },
+            "description": "Window length in days (inclusive of today). Minimum 1, maximum 800.",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 800, "default": 30 },
             "example": 30
           }
         ],
@@ -365,7 +365,7 @@
       "ScoreBand": {
         "type": "string",
         "enum": ["slack", "steady", "strained", "acute", "critical"],
-        "description": "Qualitative band for a score in [0,100]. Thresholds: slack 0–20, steady 20–40, strained 40–60, acute 60–80, critical 80–100."
+        "description": "Qualitative band for a score in [0,100]. Since schema v2, lower scores are worse. Thresholds: critical 0–20, acute 20–40, strained 40–60, steady 60–80, slack 80–100."
       },
       "DeliveryStatus": {
         "type": "string",
@@ -378,7 +378,7 @@
       },
       "IndicatorContribution": {
         "type": "object",
-        "description": "One indicator's contribution to its pillar score.\n\nNote: on a cache miss, `zScore` and `normalised` may be returned as `0` placeholders until the full snapshot is rebuilt. `rawValue`, `observedAt`, `sourceId`, and `weight` are always authoritative.",
+        "description": "One indicator's contribution to its pillar score. `normalised` uses the public score direction: 0 = critical / badly off track, 100 = on track / room to move. Higher is better.\n\nNote: on a cache miss, `zScore` and `normalised` may be approximate placeholders until the full snapshot is rebuilt. `rawValue`, `observedAt`, `sourceId`, and `weight` are always authoritative.",
         "required": ["indicatorId", "rawValue", "rawValueUnit", "zScore", "normalised", "weight", "sourceId", "observedAt"],
         "properties": {
           "indicatorId": { "type": "string", "example": "gilt_10y" },
@@ -397,7 +397,7 @@
         "properties": {
           "pillar": { "$ref": "#/components/schemas/PillarId" },
           "label": { "type": "string", "description": "Human-readable short title.", "example": "Market" },
-          "value": { "type": "number", "minimum": 0, "maximum": 100, "description": "0 = no pressure / on track, 100 = maximum stress / badly off track." },
+          "value": { "type": "number", "minimum": 0, "maximum": 100, "description": "0 = critical / badly off track, 100 = on track / room to move. Higher is better." },
           "band": { "$ref": "#/components/schemas/ScoreBand" },
           "weight": { "type": "number", "minimum": 0, "maximum": 1, "description": "Headline weight (Market 0.40, Fiscal 0.30, Labour 0.20, Delivery 0.10)." },
           "contributions": {
@@ -424,7 +424,7 @@
         "type": "object",
         "required": ["value", "band", "editorial", "updatedAt", "delta24h", "delta30d", "deltaYtd", "dominantPillar", "sparkline90d"],
         "properties": {
-          "value": { "type": "number", "minimum": 0, "maximum": 100 },
+          "value": { "type": "number", "minimum": 0, "maximum": 100, "description": "0 = critical / badly off track, 100 = on track / room to move. Higher is better." },
           "band": { "$ref": "#/components/schemas/ScoreBand" },
           "editorial": { "type": "string", "description": "Editorial one-liner chosen to match the current band." },
           "updatedAt": { "$ref": "#/components/schemas/Iso8601" },
@@ -444,7 +444,7 @@
           },
           "dominantPillar": {
             "$ref": "#/components/schemas/PillarId",
-            "description": "The pillar contributing the most to current pressure."
+            "description": "The weighted pillar shortfall contributing the largest drag to the current score."
           },
           "sparkline90d": {
             "type": "array",
@@ -472,7 +472,7 @@
       },
       "ScoreSnapshot": {
         "type": "object",
-        "required": ["headline", "pillars", "schemaVersion"],
+        "required": ["headline", "pillars", "scoreDirection", "schemaVersion"],
         "properties": {
           "headline": { "$ref": "#/components/schemas/HeadlineScore" },
           "pillars": {
@@ -491,7 +491,8 @@
             "description": "Sources whose latest ingestion attempt did not succeed. Absent or empty when every source is healthy.",
             "items": { "$ref": "#/components/schemas/SourceHealthEntry" }
           },
-          "schemaVersion": { "type": "integer", "const": 1 }
+          "scoreDirection": { "type": "string", "const": "higher_is_better", "description": "Public score polarity: 100 = room to move / on track, 0 = critical / badly off track. A falling value means conditions are worsening." },
+          "schemaVersion": { "type": "integer", "const": 2 }
         }
       },
       "ScoreHistoryPoint": {
@@ -514,7 +515,7 @@
       },
       "ScoreHistory": {
         "type": "object",
-        "required": ["points", "rangeDays", "schemaVersion"],
+        "required": ["points", "rangeDays", "scoreDirection", "schemaVersion"],
         "properties": {
           "points": {
             "type": "array",
@@ -523,10 +524,11 @@
           "rangeDays": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 365,
+            "maximum": 800,
             "description": "Maximum range returned. Older data is available in the site's historical archives."
           },
-          "schemaVersion": { "type": "integer", "const": 1 }
+          "scoreDirection": { "type": "string", "const": "higher_is_better", "description": "Public score polarity for every value in this series." },
+          "schemaVersion": { "type": "integer", "const": 2 }
         }
       },
       "DeliveryCommitment": {

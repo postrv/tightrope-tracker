@@ -16,7 +16,7 @@ export interface FiscalHeadroomProps {
 }
 
 /**
- * Fiscal Constraint share card (`fiscal-headroom.png`).
+ * Fiscal Room share card (`fiscal-headroom.png`).
  *
  * The headline number is an OBR forecast for the stability-rule target year
  * (currently FY 2029/30) — not a real-time outturn. The eyebrow, caption,

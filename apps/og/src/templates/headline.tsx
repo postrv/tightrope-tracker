@@ -17,7 +17,7 @@ export function HeadlineCard(headline: HeadlineScore): JsxNode {
   const dominantTitle = PILLARS[headline.dominantPillar].title;
   const editorial =
     headline.editorial ||
-    `${dominantTitle} is the dominant pillar.`;
+    `${dominantTitle} is the biggest drag.`;
 
   return (
     <CardShell

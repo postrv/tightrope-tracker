@@ -52,7 +52,7 @@ const chartHasData = rounds.length >= 2;
     <div class="section-head">
       <div>
         <span class="eyebrow">Pillar 2 · 30%</span>
-        <h2 class="sec-title" id="fiscal-title" style="margin-top: 14px;">Fiscal constraint</h2>
+        <h2 class="sec-title" id="fiscal-title" style="margin-top: 14px;">Fiscal room</h2>
         <p class="section-sub">How much room the Chancellor actually has against her own stability rule, and how that has moved between forecast rounds.</p>
       </div>
       <div class="pillar-score" aria-label={`Fiscal pillar score ${Math.round(pillar.value)}`}>
@@ -174,8 +174,8 @@ const chartHasData = rounds.length >= 2;
 .pillar-score-num { font-size: 40px; font-weight: 500; color: var(--ink-0); font-variant-numeric: tabular-nums; }
 .pillar-score-sub { color: var(--ink-2); font-size: 14px; }
 .pillar-score-delta { margin-left: 12px; font-size: 12px; }
-.pillar-score-delta.up { color: var(--band-acute); }
-.pillar-score-delta.dn { color: var(--band-slack); }
+.pillar-score-delta.up { color: var(--band-slack); }
+.pillar-score-delta.dn { color: var(--band-acute); }
 .pillar-score-delta.flat { color: var(--ink-2); }
 .pillar-score-delta .trend-word { font-style: italic; opacity: 0.85; }
 

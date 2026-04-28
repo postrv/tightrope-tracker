@@ -55,7 +55,8 @@ function snap(contribs: Record<string, string>): ScoreSnapshot {
       labour: pillar("labour", []),
       delivery: pillar("delivery", []),
     },
-    schemaVersion: 1,
+    scoreDirection: "higher_is_better",
+    schemaVersion: 2,
   };
 }
 

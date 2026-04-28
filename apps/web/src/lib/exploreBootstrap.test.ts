@@ -116,7 +116,7 @@ function makeSnapshot(): ScoreSnapshot {
     delta30d: 1.5,
     deltaYtd: 4.0,
   };
-  return { headline, pillars, schemaVersion: 1 };
+  return { headline, pillars, scoreDirection: "higher_is_better", schemaVersion: 2 };
 }
 
 function makeBaselines(): Record<string, BaselineSummary> {
@@ -239,15 +239,15 @@ describe("bootstrapExplore — slider interaction", () => {
     const root = mountFixture(config);
     const ctrl = bootstrapExplore(root, config, window as unknown as Window & typeof globalThis);
 
-    // Push gilt_30y to the top of its range -> market pressure should rise.
+    // Push gilt_30y to the top of its range -> market score should fall.
     const slider = root.querySelector<HTMLInputElement>('[data-lever="gilt30y"] [data-lever-range]')!;
     slider.value = "7.0";
     slider.dispatchEvent(new Event("input"));
     ctrl.recompute();
 
     const marketDelta = root.querySelector<HTMLElement>('[data-pillar="market"] [data-pillar-delta]')!;
-    expect(marketDelta.textContent).toMatch(/^\+/);
-    expect(marketDelta.classList.contains("up")).toBe(true);
+    expect(marketDelta.textContent).toMatch(/^-/);
+    expect(marketDelta.classList.contains("dn")).toBe(true);
 
     // Headline should move with it.
     const vs = root.querySelector<HTMLElement>("[data-vs-live] .vs-live-text")!;
@@ -556,7 +556,7 @@ describe("bootstrapExplore — empty contributions reactivity", () => {
     expect(marketValue).toMatch(/\./);
   });
 
-  it("toggles a pulse-up class on the pillar value when the score worsens", () => {
+  it("toggles a pulse-dn class on the pillar value when the score worsens", () => {
     const config = emptyConfig();
     const root = mountFixture(config);
     const ctrl = bootstrapExplore(root, config, window as unknown as Window & typeof globalThis);
@@ -572,9 +572,9 @@ describe("bootstrapExplore — empty contributions reactivity", () => {
 
     const valueEl = root.querySelector<HTMLElement>('[data-pillar="market"] [data-pillar-value]')!;
     // The element receives one of the two pulse classes when it changes;
-    // worsening (rising score) -> pulse-up.
+    // worsening (falling score) -> pulse-dn.
     expect(valueEl.classList.contains("pulse-up") || valueEl.classList.contains("pulse-dn")).toBe(true);
-    expect(valueEl.classList.contains("pulse-up")).toBe(true);
+    expect(valueEl.classList.contains("pulse-dn")).toBe(true);
   });
 
   it("does not toggle a pulse class when the value is unchanged", () => {

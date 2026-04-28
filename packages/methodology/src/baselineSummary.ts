@@ -1,7 +1,7 @@
 /**
  * Compact serialisable summaries of an indicator's historical baseline,
  * sized for shipping to the browser. The live methodology computes a
- * pressure score by running the raw value through an empirical CDF
+ * public Tightrope Score by running the raw value through an empirical CDF
  * (`ecdf` in normalise.ts) over the full baseline -- typically a few
  * thousand daily observations going back to 2019. Sending those arrays
  * to the browser would inflate the page weight by ~200KB across all
@@ -121,7 +121,7 @@ export function ecdfFromSummary(value: number, summary: BaselineSummary): number
 }
 
 /**
- * Map a raw value to a [0, 100] pressure score via the summary. The
+ * Map a raw value to a [0, 100] Tightrope Score via the summary. The
  * `risingIsBad` direction matches `normalisedScore` from normalise.ts.
  */
 export function normalisedFromSummary(
@@ -130,8 +130,8 @@ export function normalisedFromSummary(
   risingIsBad: boolean,
 ): number {
   const p = ecdfFromSummary(value, summary);
-  const pressure = risingIsBad ? p : 1 - p;
-  return clamp(pressure * 100, 0, 100);
+  const score = risingIsBad ? 1 - p : p;
+  return clamp(score * 100, 0, 100);
 }
 
 function clamp(n: number, lo: number, hi: number): number {

@@ -17,6 +17,7 @@ export function PillarCard(props: PillarCardProps): JsxNode {
   const trendArrow = props.score.trend7d === "up" ? "▲" : props.score.trend7d === "down" ? "▼" : "▬";
   const variant = bandVariant(band.id);
   const deltaStr = props.score.delta7d > 0 ? `+${props.score.delta7d.toFixed(1)}` : props.score.delta7d.toFixed(1);
+  const deltaWord = Math.abs(props.score.delta7d) < 0.05 ? "flat" : props.score.delta7d > 0 ? "better" : "worse";
 
   return (
     <CardShell
@@ -24,7 +25,7 @@ export function PillarCard(props: PillarCardProps): JsxNode {
       eyebrow={`Tightrope Tracker · ${def.shortTitle}`}
       meta={formatDate(props.updatedAt)}
       source={`Weight · ${(def.weight * 100).toFixed(0)}% of the headline`}
-      footerRight={`${trendArrow} ${deltaStr} on the week`}
+      footerRight={`${trendArrow} ${deltaStr} ${deltaWord} on the week`}
     >
       <div style={{ display: "flex", flexDirection: "column" }}>
         <BandChip label={`${trendArrow} ${band.label}`} color={band.hex} />

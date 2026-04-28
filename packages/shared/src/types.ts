@@ -4,7 +4,22 @@ import type { ScoreBand } from "./bands.js";
 /** ISO-8601 UTC timestamp (e.g. `2026-04-17T14:02:00Z`). */
 export type Iso8601 = string;
 
-/** A pillar's score at a point in time. 0 = no pressure / on track, 100 = maximum stress / badly off track. */
+export const SCORE_SCHEMA_VERSION = 2;
+export const SCORE_HISTORY_SCHEMA_VERSION = 2;
+export const SCORE_DIRECTION = "higher_is_better" as const;
+
+/**
+ * Sentinel timestamp used by the D1 fallback paths (API + SSR) when no
+ * headline row exists yet — i.e. the DB is freshly migrated but the seed
+ * has not run, or the seed was purged. Stamping `now` would make the
+ * placeholder snapshot look fresh and bypass the not-seeded screen, so we
+ * stamp the unix epoch instead. The API's `looksUnseeded` predicate (and
+ * any future SSR equivalent) tests `Date.parse(updatedAt) < Date.UTC(2000, 0, 1)`
+ * to distinguish a placeholder from a real read.
+ */
+export const EPOCH_ISO = "1970-01-01T00:00:00.000Z" as const;
+
+/** A pillar's score at a point in time. 0 = critical / badly off track, 100 = on track / room to move. Higher is better. */
 export interface PillarScore {
   pillar: PillarId;
   /** Human-readable label, sourced from `PILLARS[pillar].shortTitle`. */
@@ -111,9 +126,11 @@ export interface SourceHealthEntry {
 export interface ScoreSnapshot {
   headline: HeadlineScore;
   pillars: Record<PillarId, PillarScore>;
+  /** Public score polarity. Since v2, higher scores mean more room to move; lower scores mean conditions are worsening (closer to the rope giving way). */
+  scoreDirection: typeof SCORE_DIRECTION;
   /** Sources whose latest ingestion attempt did not succeed. Absent or empty when every source is healthy. */
   sourceHealth?: readonly SourceHealthEntry[];
-  schemaVersion: 1;
+  schemaVersion: typeof SCORE_SCHEMA_VERSION;
 }
 
 export interface ScoreHistoryPoint {
@@ -126,7 +143,9 @@ export interface ScoreHistory {
   points: ScoreHistoryPoint[];
   /** Max range returned — older data is in R2 archives. */
   rangeDays: number;
-  schemaVersion: 1;
+  /** Public score polarity for every point in this series. */
+  scoreDirection: typeof SCORE_DIRECTION;
+  schemaVersion: typeof SCORE_HISTORY_SCHEMA_VERSION;
 }
 
 export interface TodayMovement {

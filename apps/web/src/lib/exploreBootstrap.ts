@@ -388,6 +388,15 @@ export function bootstrapExplore(
 
     const dominant = root.querySelector<HTMLElement>("[data-dominant-pillar]");
     if (dominant) dominant.textContent = PILLARS[s.headline.dominantPillar].title;
+    // Keep the "Biggest drag" / "Pillar pulling hardest" label in sync with
+    // the SSR computation in ExploreIsland.astro: when every pillar is at
+    // 60 or above (steady+), avoid the "biggest drag" framing because there
+    // isn't one.
+    const dominantLabel = root.querySelector<HTMLElement>("[data-dominant-label]");
+    if (dominantLabel) {
+      const minPillarValue = Math.min(...PILLAR_ORDER.map((p) => s.pillars[p].value));
+      dominantLabel.textContent = (minPillarValue < 60 ? "Biggest drag" : "Pillar pulling hardest") + ":";
+    }
 
     const vs = root.querySelector<HTMLElement>("[data-vs-live]");
     const liveHeadline = snapshot.headline.value;
@@ -402,11 +411,11 @@ export function bootstrapExplore(
       } else if (delta > 0) {
         vs.classList.add("up");
         if (arrowEl) arrowEl.textContent = "▲";
-        if (textEl) textEl.textContent = `+${delta.toFixed(1)} vs live (more pressure)`;
+        if (textEl) textEl.textContent = `+${delta.toFixed(1)} vs live (better)`;
       } else {
         vs.classList.add("dn");
         if (arrowEl) arrowEl.textContent = "▼";
-        if (textEl) textEl.textContent = `${delta.toFixed(1)} vs live (less pressure)`;
+        if (textEl) textEl.textContent = `${delta.toFixed(1)} vs live (worse)`;
       }
     }
   }

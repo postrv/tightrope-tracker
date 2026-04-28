@@ -66,7 +66,7 @@ function makeSnapshot(): ScoreSnapshot {
   const fiscalDefs = Object.values(INDICATORS).filter((d) => d.pillar === "fiscal");
   const fiscalWeightSum = fiscalDefs.reduce((a, d) => a + d.weight, 0);
   const fiscalContribs: IndicatorContribution[] = [
-    makeContribution("cb_headroom", 23.6, 47.2, fiscalWeightSum), // headroom 23.6 inside [0,50] → 1-(23.6/50)=0.528 → 52.8 (rising-is-good)
+    makeContribution("cb_headroom", 23.6, 47.2, fiscalWeightSum), // headroom 23.6 inside [0,50] => 23.6/50 = 47.2 (rising-is-good)
     makeContribution("psnfl_trajectory", 0.05, 50, fiscalWeightSum),
     makeContribution("borrowing_outturn", 11.0, 50, fiscalWeightSum),
     makeContribution("debt_interest", 8.0, 50, fiscalWeightSum),
@@ -140,7 +140,7 @@ function makeSnapshot(): ScoreSnapshot {
     sparkline90d: [54, 55, 55, 56, 55],
   };
 
-  return { headline, pillars, schemaVersion: 1 };
+  return { headline, pillars, scoreDirection: "higher_is_better", schemaVersion: 2 };
 }
 
 function weightedMean(contribs: IndicatorContribution[]): number {
@@ -278,18 +278,18 @@ describe("formatScenarioHash", () => {
 /* -------------------------------------------------------------------------- */
 
 describe("sliderToNormalised", () => {
-  it("maps the max of the range to 100 when risingIsBad", () => {
+  it("maps the max of the range to 0 when risingIsBad", () => {
     const lever = LEVERS.find((l) => l.key === "gilt30y")!;
-    expect(sliderToNormalised(lever.max, lever, true)).toBe(100);
+    expect(sliderToNormalised(lever.max, lever, true)).toBe(0);
   });
-  it("maps the min of the range to 0 when risingIsBad", () => {
+  it("maps the min of the range to 100 when risingIsBad", () => {
     const lever = LEVERS.find((l) => l.key === "gilt30y")!;
-    expect(sliderToNormalised(lever.min, lever, true)).toBe(0);
+    expect(sliderToNormalised(lever.min, lever, true)).toBe(100);
   });
-  it("inverts the mapping when risingIsBad is false", () => {
+  it("maps rising-good indicators directly onto the public score", () => {
     const lever = LEVERS.find((l) => l.key === "headroom")!;
-    expect(sliderToNormalised(lever.min, lever, false)).toBe(100);
-    expect(sliderToNormalised(lever.max, lever, false)).toBe(0);
+    expect(sliderToNormalised(lever.min, lever, false)).toBe(0);
+    expect(sliderToNormalised(lever.max, lever, false)).toBe(100);
   });
   it("returns a value in [0,100] for any input within range", () => {
     const lever = LEVERS.find((l) => l.key === "pay")!;
@@ -337,7 +337,7 @@ describe("recomputeFromOverrides", () => {
   it("returns a snapshot equal to the input when no overrides are supplied", () => {
     const snap = makeSnapshot();
     const out = recomputeFromOverrides(snap, {});
-    expect(out.schemaVersion).toBe(1);
+    expect(out.schemaVersion).toBe(2);
     for (const id of PILLAR_ORDER) {
       expect(out.pillars[id].value).toBe(snap.pillars[id].value);
       expect(out.pillars[id].band).toBe(snap.pillars[id].band);
@@ -362,49 +362,49 @@ describe("recomputeFromOverrides", () => {
     expect(twice.headline.value).toBe(once.headline.value);
   });
 
-  it("raises the headline when fiscal headroom is cut to zero", () => {
+  it("lowers the headline when fiscal headroom is cut to zero", () => {
     const snap = makeSnapshot();
     const baseline = recomputeFromOverrides(snap, {});
     const stressed = recomputeFromOverrides(snap, { headroom: 0 });
-    expect(stressed.pillars.fiscal.value).toBeGreaterThan(baseline.pillars.fiscal.value);
-    expect(stressed.headline.value).toBeGreaterThan(baseline.headline.value);
+    expect(stressed.pillars.fiscal.value).toBeLessThan(baseline.pillars.fiscal.value);
+    expect(stressed.headline.value).toBeLessThan(baseline.headline.value);
   });
 
-  it("lowers the headline when fiscal headroom is raised to the max", () => {
+  it("raises the headline when fiscal headroom is raised to the max", () => {
     const snap = makeSnapshot();
     const baseline = recomputeFromOverrides(snap, {});
     const easy = recomputeFromOverrides(snap, { headroom: 50 });
-    expect(easy.pillars.fiscal.value).toBeLessThan(baseline.pillars.fiscal.value);
-    expect(easy.headline.value).toBeLessThan(baseline.headline.value);
+    expect(easy.pillars.fiscal.value).toBeGreaterThan(baseline.pillars.fiscal.value);
+    expect(easy.headline.value).toBeGreaterThan(baseline.headline.value);
   });
 
-  it("raises the headline when the 20y gilt yield is pushed to the top", () => {
+  it("lowers the headline when the 30y gilt yield is pushed to the top", () => {
     const snap = makeSnapshot();
     const baseline = recomputeFromOverrides(snap, {});
     const stressed = recomputeFromOverrides(snap, { gilt30y: 6.5 });
-    expect(stressed.pillars.market.value).toBeGreaterThan(baseline.pillars.market.value);
-    expect(stressed.headline.value).toBeGreaterThan(baseline.headline.value);
+    expect(stressed.pillars.market.value).toBeLessThan(baseline.pillars.market.value);
+    expect(stressed.headline.value).toBeLessThan(baseline.headline.value);
   });
 
-  it("lowers the labour pillar when real pay is set high", () => {
+  it("raises the labour pillar when real pay is set high", () => {
     const snap = makeSnapshot();
     const baseline = recomputeFromOverrides(snap, {});
     const better = recomputeFromOverrides(snap, { pay: 5 });
-    expect(better.pillars.labour.value).toBeLessThan(baseline.pillars.labour.value);
+    expect(better.pillars.labour.value).toBeGreaterThan(baseline.pillars.labour.value);
   });
 
-  it("raises the labour pillar when health-related inactivity is set high", () => {
+  it("lowers the labour pillar when health-related inactivity is set high", () => {
     const snap = makeSnapshot();
     const baseline = recomputeFromOverrides(snap, {});
     const worse = recomputeFromOverrides(snap, { inactivity: 3.5 });
-    expect(worse.pillars.labour.value).toBeGreaterThan(baseline.pillars.labour.value);
+    expect(worse.pillars.labour.value).toBeLessThan(baseline.pillars.labour.value);
   });
 
-  it("lowers the delivery pillar when housing trajectory is at the top", () => {
+  it("raises the delivery pillar when housing trajectory is at the top", () => {
     const snap = makeSnapshot();
     const baseline = recomputeFromOverrides(snap, {});
     const easier = recomputeFromOverrides(snap, { housing: 110 });
-    expect(easier.pillars.delivery.value).toBeLessThan(baseline.pillars.delivery.value);
+    expect(easier.pillars.delivery.value).toBeGreaterThan(baseline.pillars.delivery.value);
   });
 
   it("clamps out-of-range values rather than letting them poison the score", () => {
@@ -496,7 +496,7 @@ describe("recomputeFromOverrides — ECDF mode", () => {
   it("uses the ECDF mapping rather than linear when the slider deviates", () => {
     const snap = makeSnapshot();
     const baselines = buildBaselines();
-    // Raise the gilt 30y to its midpoint and confirm pressure ≈ 50,
+    // Raise the gilt 30y to its midpoint and confirm the public score is bounded,
     // which the ECDF over a uniform baseline returns. Linear over the
     // raw slider's hard-coded domain would also return 50 -- we
     // distinguish by *changing* the slider domain externally so linear
@@ -510,7 +510,7 @@ describe("recomputeFromOverrides — ECDF mode", () => {
     // 30y at the midpoint should produce a *different* market score
     // from 30y at its max.
     const stressed = recomputeFromOverrides(snap, { gilt30y: lever.max }, baselines);
-    expect(stressed.pillars.market.value).toBeGreaterThan(out.pillars.market.value);
+    expect(stressed.pillars.market.value).toBeLessThan(out.pillars.market.value);
   });
 
   it("falls back to linear when an indicator has no baseline summary", () => {
@@ -525,7 +525,7 @@ describe("recomputeFromOverrides — ECDF mode", () => {
     partial[housingLever.indicatorId] = summariseBaseline(samples);
 
     // Raise gilt30y -- no baseline supplied; the result must still
-    // produce a finite, bounded score and reflect a higher pressure.
+    // produce a finite, bounded score.
     const out = recomputeFromOverrides(snap, { gilt30y: 6.5 }, partial);
     expect(out.pillars.market.value).toBeGreaterThan(0);
     expect(out.pillars.market.value).toBeLessThanOrEqual(100);
@@ -592,13 +592,14 @@ describe("recomputeFromOverrides — empty contributions fallback", () => {
       dominantPillar: "market",
       sparkline90d: [54, 55, 56, 57],
     };
-    return { headline, pillars, schemaVersion: 1 };
+    return { headline, pillars, scoreDirection: "higher_is_better", schemaVersion: 2 };
   }
 
   it("does not freeze the headline when overrides arrive but contributions are empty", () => {
     const snap = emptyContribsSnapshot();
     const baselines = buildBaselines();
-    // Big move on a heavyweight market lever -- pressure should rise visibly.
+    // Big move on a heavyweight market lever — under v2 a worsening raw lever
+    // should drag the high-good market score (and headline) visibly DOWN.
     const before = recomputeFromOverrides(snap, {}, baselines);
     const after = recomputeFromOverrides(snap, { gilt30y: 7.0 }, baselines);
     expect(after.pillars.market.value).not.toBe(before.pillars.market.value);

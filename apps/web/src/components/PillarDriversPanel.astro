@@ -8,6 +8,19 @@
  * "why is the score where it is" view — not the live ticker, just a
  * quick read of which inputs are doing the work.
  *
+ * Ranking convention — distinct from Hero's dominant-pillar choice:
+ *   - This panel ranks INDICATORS within each pillar by `weight × |zScore|`
+ *     (direction-blind, "biggest mover from baseline"). The framing
+ *     "doing the heaviest lifting" / "Driven by" is intentionally
+ *     direction-neutral so a green-good or red-bad indicator can both
+ *     surface as the explainer.
+ *   - Hero's `dominantPillar` ranks PILLARS by `(100 - value) × weight`
+ *     ("biggest weighted drag on the headline"). That's a directional
+ *     "biggest drag" framing, defensible because the Hero editorial
+ *     sentence is about which pillar is pulling the score down.
+ *   The two surfaces answer different questions and can name different
+ *   pillars without contradiction.
+ *
  * Visual language matches PillarStrip but with more detail per card.
  */
 import type { ScoreSnapshot, IndicatorContribution } from "@tightrope/shared";
@@ -199,8 +212,8 @@ function describeDriver(c: IndicatorContribution): Driver {
   display: inline-block; margin-right: 6px;
   color: var(--ink-3); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px;
 }
-.deltas .delta.up { color: var(--band-acute); }
-.deltas .delta.dn { color: var(--band-slack); }
+.deltas .delta.up { color: var(--band-slack); }
+.deltas .delta.dn { color: var(--band-acute); }
 .deltas .delta.flat { color: var(--ink-2); }
 .deltas .delta .trend-word { font-style: italic; opacity: 0.85; }
 .driver-line { margin: 0; color: var(--ink-1); font-size: 13.5px; line-height: 1.5; }

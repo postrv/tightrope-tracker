@@ -35,7 +35,7 @@ function buildHistory(): ScoreHistory {
       delivery: 30 + (i % 5),
     }));
   }
-  return { points: days, rangeDays: 14, schemaVersion: 1 };
+  return { points: days, rangeDays: 14, scoreDirection: "higher_is_better", schemaVersion: 2 };
 }
 
 function ev(id: string, date: string, partial: Partial<TimelineEvent> = {}): TimelineEvent {

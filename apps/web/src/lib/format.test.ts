@@ -42,14 +42,14 @@ describe("trendClass", () => {
 });
 
 describe("trendDescriptor", () => {
-  it("calls a positive pressure-score delta 'worse'", () => {
-    expect(trendDescriptor(2.1)).toBe("worse");
-    expect(trendDescriptor(0.06)).toBe("worse");
+  it("calls a positive score delta 'better'", () => {
+    expect(trendDescriptor(2.1)).toBe("better");
+    expect(trendDescriptor(0.06)).toBe("better");
   });
 
-  it("calls a negative pressure-score delta 'better'", () => {
-    expect(trendDescriptor(-2.1)).toBe("better");
-    expect(trendDescriptor(-0.06)).toBe("better");
+  it("calls a negative score delta 'worse'", () => {
+    expect(trendDescriptor(-2.1)).toBe("worse");
+    expect(trendDescriptor(-0.06)).toBe("worse");
   });
 
   it("returns the empty string for sub-threshold flat moves", () => {
@@ -60,8 +60,8 @@ describe("trendDescriptor", () => {
 
   it("respects a custom threshold matching trendArrow", () => {
     expect(trendDescriptor(0.5, 1)).toBe("");
-    expect(trendDescriptor(1.5, 1)).toBe("worse");
-    expect(trendDescriptor(-1.5, 1)).toBe("better");
+    expect(trendDescriptor(1.5, 1)).toBe("better");
+    expect(trendDescriptor(-1.5, 1)).toBe("worse");
   });
 
   it("agrees in direction with trendClass on the same delta", () => {
@@ -71,8 +71,8 @@ describe("trendDescriptor", () => {
     for (const d of probes) {
       const cls = trendClass(d);
       const word = trendDescriptor(d);
-      if (cls === "up") expect(word).toBe("worse");
-      else if (cls === "dn") expect(word).toBe("better");
+      if (cls === "up") expect(word).toBe("better");
+      else if (cls === "dn") expect(word).toBe("worse");
       else expect(word).toBe("");
     }
   });

@@ -3,7 +3,7 @@ import type { ScoreSnapshot, TodayMovement, IndicatorContribution, PillarId } fr
 import type { DeliveryCommitment } from "@tightrope/shared/delivery";
 import { BANDS, OBR_LATEST_VINTAGE_LABEL, OBR_TARGET_YEAR_LABEL } from "@tightrope/shared";
 import { shortDate } from "~/lib/format.js";
-import { mortgageDelta, formatExtra, MORTGAGE_BUDGET_BASELINE_PCT } from "~/lib/mortgage.js";
+import { mortgageDelta, formatExtra, MORTGAGE_BUDGET_BASELINE_PCT, MORTGAGE_BUDGET_BASELINE_LABEL } from "~/lib/mortgage.js";
 
 interface Props {
   snapshot: ScoreSnapshot;
@@ -16,6 +16,12 @@ const { snapshot, movements, delivery } = Astro.props;
 const band = BANDS.find((b) => b.id === snapshot.headline.band) ?? BANDS[0];
 const scoreRounded = Math.round(snapshot.headline.value);
 const today = shortDate(snapshot.headline.updatedAt);
+
+function scoreCardVariant(id: string): string {
+  if (id === "critical" || id === "acute") return "critical";
+  if (id === "strained") return "accent";
+  return "";
+}
 
 function findContrib(snap: ScoreSnapshot, pillar: PillarId, indicatorId: string): IndicatorContribution | undefined {
   return snap.pillars[pillar]?.contributions.find((c) => c.indicatorId === indicatorId);
@@ -47,7 +53,7 @@ interface Card {
 const allCards: (Card | null)[] = [
   {
     id: "headline-score",
-    variant: "critical",
+    variant: scoreCardVariant(band.id),
     brand: "Tightrope Tracker · Headline",
     stat: `${scoreRounded} / 100`,
     label: `Tightrope Score — “${band.label}.” ${band.editorialLabel}.`,
@@ -83,11 +89,14 @@ const allCards: (Card | null)[] = [
   } : null,
   mortRates ? {
     id: "mortgage",
-    variant: "accent",
+    // Variant flexes by sign so a negative delta (households paying less than
+    // at the comparator) doesn't paint in alarm orange. Positive → accent
+    // (orange, "more expensive"). Negative → good (green, "cheaper").
+    variant: mortRates.extraPerMonth > 0 ? "accent" : mortRates.extraPerMonth < 0 ? "good" : "",
     brand: "Tightrope Tracker · Households",
     stat: formatExtra(mortRates.extraPerMonth),
-    label: `A month, on a £250k 25-year mortgage, vs the rate at the Spring 2024 Budget. 2y fix now ${mortRates.currentRate.toFixed(2)}%.`,
-    foot: ["Source · Moneyfacts (live)", shortDate(mortgage!.observedAt)],
+    label: `A month, on a £250k 25-year mortgage, vs the rate at the ${MORTGAGE_BUDGET_BASELINE_LABEL}. 2y fix now ${mortRates.currentRate.toFixed(2)}%.`,
+    foot: ["Source · BoE IADB (IUMBV34)", shortDate(mortgage!.observedAt)],
     ogPath: "/og/mortgage-pressure.png",
   } : null,
   housingContrib ? {
@@ -151,6 +160,11 @@ const cards = allCards.filter((c): c is Card => c !== null);
 .share-card.critical .sc-stat { color: var(--band-critical); }
 .share-card.accent { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), var(--bg-1)); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
 .share-card.accent .sc-stat { color: var(--accent); }
+/* `good` variant — slack-green tint, used when a card's headline number is a
+   positive outcome (e.g. mortgage cost falling vs comparator). Mirrors the
+   OG `good` variant in apps/og/src/templates/components.tsx. */
+.share-card.good { background: linear-gradient(135deg, color-mix(in srgb, var(--band-slack) 12%, transparent), var(--bg-1)); border-color: color-mix(in srgb, var(--band-slack) 35%, transparent); }
+.share-card.good .sc-stat { color: var(--band-slack); }
 
 .section-head {
   display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;

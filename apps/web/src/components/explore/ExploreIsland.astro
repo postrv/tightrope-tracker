@@ -8,7 +8,7 @@
  *
  * Two normalisation modes (set in `whatIf.ts`):
  *   1. Empirical CDF (preferred). Used when the page-data loader passed
- *      a non-empty `baselines` map. Produces the same pressure score the
+ *      a non-empty `baselines` map. Produces the same Tightrope Score the
  *      live methodology would produce for any in-domain raw value.
  *   2. Linear fallback. Used per-indicator when a baseline summary is
  *      missing (e.g. delivery editorials with no historical series).
@@ -101,7 +101,7 @@ const partialEcdf = ecdfTotal > 0 && ecdfTotal < LEVERS.length;
         <p class="fallback-banner" role="status">
           {!allEcdf && !partialEcdf ? (
             <>
-              <strong>Approximation in effect.</strong> No baseline data available right now — every slider falls back to a linear remap of its domain to a 0–100 pressure score. Refresh in a minute to retry the live methodology, or read the <a href="/methodology">methodology</a> for what changes when ECDF is unavailable.
+              <strong>Approximation in effect.</strong> No baseline data available right now — every slider falls back to a linear remap of its domain to a 0–100 score. Refresh in a minute to retry the live methodology, or read the <a href="/methodology">methodology</a> for what changes when ECDF is unavailable.
             </>
           ) : (
             <>
@@ -190,7 +190,7 @@ const partialEcdf = ecdfTotal > 0 && ecdfTotal < LEVERS.length;
           {allEcdf ? (
             <>Every lever is normalised through the live empirical CDF over the 2019&ndash;present baseline (excluding the 2020 COVID outlier window). Untouched indicators stay at their live values; the headline still uses the production weighted-geometric-mean aggregation. <a href="/methodology">Read the full methodology &rarr;</a></>
           ) : partialEcdf ? (
-            <>Levers tagged ECDF use the live empirical-CDF baseline; levers tagged "linear" fall back to a linear remap of the slider range to a 0&ndash;100 pressure score (no baseline available). Untouched indicators stay at their live values; the headline still uses the production weighted-geometric-mean aggregation. <a href="/methodology">Read the full methodology &rarr;</a></>
+            <>Levers tagged ECDF use the live empirical-CDF baseline; levers tagged "linear" fall back to a linear remap of the slider range to a 0&ndash;100 score (no baseline available). Untouched indicators stay at their live values; the headline still uses the production weighted-geometric-mean aggregation. <a href="/methodology">Read the full methodology &rarr;</a></>
           ) : (
             <>The page-data loader did not return baselines on this request, so each lever falls back to a linear remap of its slider range. Refresh in 60s to retry the API. <a href="/methodology">Read the full methodology &rarr;</a></>
           )}
@@ -214,7 +214,7 @@ const partialEcdf = ecdfTotal > 0 && ecdfTotal < LEVERS.length;
             </div>
           </div>
           <div class="readout-walker" data-readout-walker>
-            <TightropeWalker score={headlineRounded} animate={false} />
+            <TightropeWalker score={100 - headlineRounded} animate={false} />
           </div>
         </div>
 
@@ -238,10 +238,25 @@ const partialEcdf = ecdfTotal > 0 && ecdfTotal < LEVERS.length;
           })}
         </ul>
 
-        <div class="dominant-row">
-          <span class="dominant-label">Dominant pillar:</span>
-          <span data-dominant-pillar>{PILLARS[headline.dominantPillar].title}</span>
-        </div>
+        {(() => {
+          // Label flexes by whether any pillar is dragging the score:
+          //   * any pillar below 60 (steady) → "Biggest drag" — there is
+          //     genuinely a drag and we should name it.
+          //   * all pillars at 60+ → "Pillar pulling hardest" — direction-
+          //     neutral, avoids the editorial trap of saying "biggest drag"
+          //     while the score is healthy.
+          // The same threshold logic lives in exploreBootstrap.ts so the
+          // simulator can flip the label when sliders push every pillar
+          // into healthy territory; keep them in sync.
+          const minValue = Math.min(...PILLAR_ORDER.map((p) => snapshot.pillars[p].value));
+          const dominantLabel = minValue < 60 ? "Biggest drag" : "Pillar pulling hardest";
+          return (
+            <div class="dominant-row">
+              <span class="dominant-label" data-dominant-label>{dominantLabel}:</span>
+              <span data-dominant-pillar>{PILLARS[headline.dominantPillar].title}</span>
+            </div>
+          );
+        })()}
 
         <div class="share-row">
           <button type="button" class="share-btn" data-action="share">Copy share link</button>
@@ -576,8 +591,8 @@ const partialEcdf = ecdfTotal > 0 && ecdfTotal < LEVERS.length;
     height: 14px;
     transition: color 240ms;
   }
-  .lever-effect.up { color: var(--band-acute); }
-  .lever-effect.dn { color: var(--band-slack); }
+  .lever-effect.up { color: var(--band-slack); }
+  .lever-effect.dn { color: var(--band-acute); }
 
   .methodology-note {
     margin: 22px 0 0;
@@ -651,14 +666,14 @@ const partialEcdf = ecdfTotal > 0 && ecdfTotal < LEVERS.length;
     transition: color 200ms, border-color 200ms, background 200ms;
   }
   .vs-live.up {
-    color: var(--band-acute);
-    border-color: color-mix(in srgb, var(--band-acute) 60%, var(--border));
-    background: color-mix(in srgb, var(--band-acute) 10%, transparent);
-  }
-  .vs-live.dn {
     color: var(--band-slack);
     border-color: color-mix(in srgb, var(--band-slack) 60%, var(--border));
     background: color-mix(in srgb, var(--band-slack) 10%, transparent);
+  }
+  .vs-live.dn {
+    color: var(--band-acute);
+    border-color: color-mix(in srgb, var(--band-acute) 60%, var(--border));
+    background: color-mix(in srgb, var(--band-acute) 10%, transparent);
   }
   .vs-live-arrow { display: inline-block; min-width: 10px; font-weight: 600; }
   .readout-walker { width: 160px; max-width: 160px; }
@@ -710,12 +725,12 @@ const partialEcdf = ecdfTotal > 0 && ecdfTotal < LEVERS.length;
   }
   @keyframes pillar-pulse-up {
     0%   { transform: scale(1);    color: var(--ink-0); }
-    35%  { transform: scale(1.10); color: var(--band-acute); }
+    35%  { transform: scale(1.10); color: var(--band-slack); }
     100% { transform: scale(1);    color: var(--ink-0); }
   }
   @keyframes pillar-pulse-dn {
     0%   { transform: scale(1);    color: var(--ink-0); }
-    35%  { transform: scale(1.10); color: var(--band-slack); }
+    35%  { transform: scale(1.10); color: var(--band-acute); }
     100% { transform: scale(1);    color: var(--ink-0); }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -758,8 +773,8 @@ const partialEcdf = ecdfTotal > 0 && ecdfTotal < LEVERS.length;
     font-size: 12px;
     font-weight: 600;
   }
-  .pillar-tile-delta.up { color: var(--band-acute); }
-  .pillar-tile-delta.dn { color: var(--band-slack); }
+  .pillar-tile-delta.up { color: var(--band-slack); }
+  .pillar-tile-delta.dn { color: var(--band-acute); }
   .pillar-tile-weight {
     font-family: var(--font-mono);
     font-size: 10px;

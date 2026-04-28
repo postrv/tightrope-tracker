@@ -21,7 +21,7 @@ function point(date: string, headline: number): ScoreHistoryPoint {
 }
 
 function history(points: ScoreHistoryPoint[]): ScoreHistory {
-  return { points, rangeDays: 90, schemaVersion: 1 };
+  return { points, rangeDays: 90, scoreDirection: "higher_is_better", schemaVersion: 2 };
 }
 
 function event(id: string, date: string, partial?: Partial<TimelineEvent>): TimelineEvent {

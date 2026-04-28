@@ -6,7 +6,14 @@ import type {
   PillarScore,
   HeadlineScore,
 } from "@tightrope/shared";
-import { PILLAR_ORDER, PILLARS, bandFor } from "@tightrope/shared";
+import {
+  PILLAR_ORDER,
+  PILLARS,
+  SCORE_DIRECTION,
+  SCORE_HISTORY_SCHEMA_VERSION,
+  SCORE_SCHEMA_VERSION,
+  bandFor,
+} from "@tightrope/shared";
 import type { DeliveryCommitment } from "@tightrope/shared/delivery";
 import type { TimelineEvent } from "@tightrope/shared/timeline";
 
@@ -176,7 +183,7 @@ function emptyFallback(): Omit<HomepageData, "empty"> {
  * to special-case undefined.
  */
 export function emptyHistory(): ScoreHistory {
-  return { points: [], rangeDays: 90, schemaVersion: 1 };
+  return { points: [], rangeDays: 90, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
 }
 
 /**
@@ -187,11 +194,11 @@ export function emptyHistory(): ScoreHistory {
  */
 export async function loadHistory(astroLocals: App.Locals, days: number): Promise<ScoreHistory> {
   const env = astroLocals.runtime?.env;
-  if (!env || !env.DB) return { points: [], rangeDays: clampDays(days), schemaVersion: 1 };
+  if (!env || !env.DB) return { points: [], rangeDays: clampDays(days), scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
   try {
     return await getHistory(env, days);
   } catch {
-    return { points: [], rangeDays: clampDays(days), schemaVersion: 1 };
+    return { points: [], rangeDays: clampDays(days), scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
   }
 }
 
@@ -235,5 +242,5 @@ function emptySnapshot(): ScoreSnapshot {
     dominantPillar: "market",
     sparkline90d: [],
   };
-  return { headline, pillars, schemaVersion: 1 };
+  return { headline, pillars, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_SCHEMA_VERSION };
 }

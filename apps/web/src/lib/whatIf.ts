@@ -32,6 +32,8 @@ import {
   INDICATORS,
   PILLAR_ORDER,
   PILLARS,
+  SCORE_DIRECTION,
+  SCORE_SCHEMA_VERSION,
   type HeadlineScore,
   type IndicatorContribution,
   type PillarId,
@@ -473,7 +475,8 @@ export function recomputeFromOverrides(
   return {
     headline: finalHeadline,
     pillars: newPillars,
-    schemaVersion: 1,
+    scoreDirection: SCORE_DIRECTION,
+    schemaVersion: SCORE_SCHEMA_VERSION,
     ...(snapshot.sourceHealth ? { sourceHealth: snapshot.sourceHealth } : {}),
   };
 }
@@ -486,7 +489,7 @@ function findContribution(snapshot: ScoreSnapshot, lever: LeverDefinition): Indi
 
 /**
  * Map a slider value within `[lever.min, lever.max]` to a normalised
- * pressure score in `[0, 100]` via a linear remap. Used as a fallback
+ * Tightrope Score in `[0, 100]` via a linear remap. Used as a fallback
  * when no baseline summary is available for the indicator.
  */
 export function sliderToNormalised(
@@ -497,8 +500,8 @@ export function sliderToNormalised(
   const range = lever.max - lever.min;
   if (range === 0) return 0;
   const fraction = clamp((value - lever.min) / range, 0, 1);
-  const pressure = risingIsBad ? fraction : 1 - fraction;
-  return clamp(pressure * 100, 0, 100);
+  const score = risingIsBad ? 1 - fraction : fraction;
+  return clamp(score * 100, 0, 100);
 }
 
 function recomputePillar(
@@ -612,7 +615,7 @@ function inPillarWeight(lever: LeverDefinition): number {
 }
 
 /**
- * Compute a normalised pressure score for a lever's raw value using
+ * Compute a normalised public score for a lever's raw value using
  * the same logic as the override path: prefer the snapshot's existing
  * contribution if present (avoids ECDF approximation drift), then ECDF
  * via the baseline summary, then linear remap of the slider domain.
@@ -665,7 +668,7 @@ function makeHeadlineWithCarriedFields(
 
 function makeEditorial(headline: HeadlineScore): string {
   const def = PILLARS[headline.dominantPillar];
-  return `In this scenario, ${def.title.toLowerCase()} is the dominant pillar.`;
+  return `In this scenario, ${def.title.toLowerCase()} is the biggest drag.`;
 }
 
 function isLeverKey(s: string): s is LeverKey {

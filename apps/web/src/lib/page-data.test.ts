@@ -106,7 +106,7 @@ describe("emptyHistory", () => {
     const h = emptyHistory();
     expect(h.points).toEqual([]);
     expect(h.rangeDays).toBe(90);
-    expect(h.schemaVersion).toBe(1);
+    expect(h.schemaVersion).toBe(2);
   });
 });
 
@@ -139,7 +139,8 @@ describe("loadHomepageData history wiring", () => {
         { timestamp: new Date().toISOString(), headline: 64, pillars: { market: 70, fiscal: 60, labour: 50, delivery: 40 } },
       ],
       rangeDays: 90,
-      schemaVersion: 1,
+      scoreDirection: "higher_is_better",
+      schemaVersion: 2,
     };
     // d1Throws = true ensures the test fails if D1 is touched at all.
     const env = buildEnv({ kvHistory: fresh, d1Throws: true });
@@ -155,7 +156,8 @@ describe("loadHomepageData history wiring", () => {
         { timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), headline: 99, pillars: { market: 99, fiscal: 99, labour: 99, delivery: 99 } },
       ],
       rangeDays: 90,
-      schemaVersion: 1,
+      scoreDirection: "higher_is_better",
+      schemaVersion: 2,
     };
     const headlineRows: StubRow[] = [
       { observed_at: "2026-04-19T12:00:00Z", value: 50 },

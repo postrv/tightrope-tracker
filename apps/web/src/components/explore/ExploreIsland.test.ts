@@ -112,7 +112,7 @@ function makeSnapshot(): ScoreSnapshot {
     sparkline90d: [54, 55, 56, 57, 56.5],
   };
 
-  return { headline, pillars, schemaVersion: 1 };
+  return { headline, pillars, scoreDirection: "higher_is_better", schemaVersion: 2 };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -210,7 +210,7 @@ describe("ExploreIsland DOM contract", () => {
     expect(parsed.live).toBeDefined();
     expect(parsed.live.headroom).toBeCloseTo(23.6, 1);
     expect(parsed.live.gilt30y).toBeCloseTo(5.4, 1);
-    expect(parsed.snapshot.schemaVersion).toBe(1);
+    expect(parsed.snapshot.schemaVersion).toBe(2);
   });
 
   it("renders a tile per pillar with a delta placeholder", () => {
@@ -254,7 +254,7 @@ describe("ExploreIsland recompute contract", () => {
     const newSnap = recomputeFromOverrides(snap, { headroom: 0, gilt30y: 6.5 });
     headlineEl!.textContent = String(Math.round(newSnap.headline.value));
 
-    expect(Number(headlineEl!.textContent)).toBeGreaterThan(initial);
+    expect(Number(headlineEl!.textContent)).toBeLessThan(initial);
   });
 
   it("hash format matches the format produced by formatScenarioHash", () => {

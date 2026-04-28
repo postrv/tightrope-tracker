@@ -20,27 +20,26 @@ export function trendArrow(delta: number, threshold = 0.05): string {
   return delta > 0 ? "▲" : "▼";
 }
 
-/** Returns a CSS class suffix — 'up' | 'dn' | 'flat' — from a delta where positive = worsening. */
+/** Returns a CSS class suffix — 'up' | 'dn' | 'flat' — from the numeric delta sign. */
 export function trendClass(delta: number, threshold = 0.05): "up" | "dn" | "flat" {
   if (Math.abs(delta) < threshold) return "flat";
   return delta > 0 ? "up" : "dn";
 }
 
 /**
- * Returns the plain-English semantic of a pressure-score delta — "worse",
+ * Returns the plain-English semantic of a Tightrope Score delta — "worse",
  * "better", or "" for sub-threshold (flat) moves.
  *
- * Pressure scores rise when conditions deteriorate, so a positive delta
- * is "worse" and a negative delta is "better". This pair lives next to
- * the arrow so red ▲ / green ▼ has explicit semantic backing — viewers
- * default to "↑ = good" otherwise.
+ * Public scores rise when conditions improve, so a positive delta is
+ * "better" and a negative delta is "worse". This pair lives next to the
+ * arrow so the sign is explicit in broadcast/social contexts.
  *
  * Returns the empty string for flat deltas so callers can render
  * `{trendDescriptor(d)}` without conditional wrappers.
  */
 export function trendDescriptor(delta: number, threshold = 0.05): "worse" | "better" | "" {
   if (Math.abs(delta) < threshold) return "";
-  return delta > 0 ? "worse" : "better";
+  return delta > 0 ? "better" : "worse";
 }
 
 const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

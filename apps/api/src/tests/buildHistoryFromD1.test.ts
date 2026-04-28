@@ -6,7 +6,7 @@
  * The original pattern was safe in practice (the days argument is integer-
  * clamped before binding) but it's a fragile shape — any future caller that
  * skipped the clamp could ride the `||` concatenation past D1's parameter
- * binding. Switching to a single bound ISO string removes the shape entirely.
+ * binding. Switching to precomputed bound ISO strings removes the shape entirely.
  */
 import { describe, expect, it, vi } from "vitest";
 import { buildHistoryFromD1 } from "../lib/db.js";
@@ -35,7 +35,7 @@ function makeStubEnv(captures: BindCapture[]): Env {
 }
 
 describe("buildHistoryFromD1 — SEC-7 binding hardening", () => {
-  it("uses a single bound ISO parameter for the cutoff (no '-' || ?1 || ' days' shape)", async () => {
+  it("uses bound ISO cutoff parameters (no '-' || ?1 || ' days' shape)", async () => {
     const captures: BindCapture[] = [];
     const env = makeStubEnv(captures);
     await buildHistoryFromD1(env, 90);
@@ -44,15 +44,17 @@ describe("buildHistoryFromD1 — SEC-7 binding hardening", () => {
       // The fragile shape is gone — no SQL-side string concat for the cutoff.
       expect(c.sql).not.toContain("'-' || ?1 || ' days'");
       expect(c.sql).not.toContain("|| ?1 ||");
-      // It uses datetime() comparison against a single bound value.
+      // It uses direct comparison against a bound value.
       expect(c.sql).toContain("WHERE observed_at >= ?1");
-      // Each prepared query is bound with exactly one parameter.
-      expect(c.bindArgs).toHaveLength(1);
-      // The bound value is a string (ISO 8601), not a raw integer.
-      expect(typeof c.bindArgs[0]).toBe("string");
-      // It parses as a real Date.
-      const parsed = Date.parse(c.bindArgs[0] as string);
-      expect(Number.isFinite(parsed)).toBe(true);
+      // The pillar query binds the same cutoff twice: once for the requested
+      // window and once to fetch the last pre-window carry-forward row.
+      expect(c.bindArgs.length).toBeGreaterThanOrEqual(1);
+      expect(c.bindArgs.length).toBeLessThanOrEqual(2);
+      for (const arg of c.bindArgs) {
+        expect(typeof arg).toBe("string");
+        expect(Number.isFinite(Date.parse(arg as string))).toBe(true);
+        expect(arg).toBe(c.bindArgs[0]);
+      }
     }
   });
 

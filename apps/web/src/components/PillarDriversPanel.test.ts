@@ -74,7 +74,8 @@ function makeSnapshot(overrides: Partial<Record<PillarId, PillarOverride>> = {})
       sparkline90d: [],
     },
     pillars,
-    schemaVersion: 1,
+    scoreDirection: "higher_is_better",
+    schemaVersion: 2,
   };
 }
 

@@ -56,15 +56,15 @@ function ecdfPath(): string {
         <li><strong>Collect.</strong> Each indicator is pulled from a named public source on a defined cadence (see the table per pillar).</li>
         <li><strong>Normalise.</strong> Each indicator's current reading is mapped to its empirical percentile against an expanding baseline running from <code>{BASELINE_START_ISO.slice(0, 10)}</code> to today, excluding the COVID shock window <code>{COVID_EXCLUDE_START_ISO.slice(0, 10)}</code>–<code>{COVID_EXCLUDE_END_ISO.slice(0, 10)}</code>. The baseline includes today's reading itself; for series with hundreds of observations, this contributes &lt;1/n to the rank and is harmless. We also compute a z-score against the same baseline and surface it on the homepage tiles for context, but the score itself does <em>not</em> use the z-score as an input.
           <br /><span class="footnote"><strong>Why this window:</strong> 2019-01-01 is the earliest date for which the four-pillar mix (gilt yields, OBR fiscal vintages, ONS LMS, MHCLG quarterly housing) is jointly available without splicing methodology breaks. The upper bound is "today" — every recompute folds today's reading back into the baseline, so the percentile mass shifts glacially as new data arrives. The 2020-Q2 exclusion drops the three-month window when GDP fell ~20% in a quarter and gilt issuance broke 9% of GDP — including those points would mean a normal-times reading like "gilt 30y at 5%" landed at the 60th percentile rather than its true ~95th, because the dispersion would be artificially fattened by a shock that has now passed. The exclusion is fixed and disclosed (versus a moving window or a "robust" trimming that would silently change the score).</span></li>
-        <li><strong>Direct.</strong> Where a rising raw value is <em>good</em> (e.g. real pay, FTSE 250), we invert the percentile (<code>p &rarr; 1 - p</code>) so every indicator yields a pressure score on the same axis: higher = more pressure.</li>
-        <li><strong>Bound to [0, 100].</strong> The (possibly inverted) percentile is multiplied by 100. The chart below illustrates the shape, but note: production uses the <em>empirical</em> CDF over each indicator's actual baseline, not a normal CDF — the shape varies per indicator (gilt yields are roughly log-normal; planning consents heavily skewed).</li>
+        <li><strong>Direct.</strong> Where a rising raw value is <em>bad</em> for the underlying condition (e.g. gilt yields, borrowing, inactivity), we invert the percentile (<code>p &rarr; 1 - p</code>) so every indicator yields a public score on the same axis: higher = more room to move, lower = closer to the rope giving way.</li>
+        <li><strong>Bound to [0, 100].</strong> The direction-adjusted percentile is multiplied by 100. The chart below illustrates the shape, but note: production uses the <em>empirical</em> CDF over each indicator's actual baseline, not a normal CDF — the shape varies per indicator (gilt yields are roughly log-normal; planning consents heavily skewed).</li>
         <li><strong>Pillar score.</strong> Weighted arithmetic mean of the pillar's indicators. Arithmetic at the pillar level means individual inputs are additive and debuggable.</li>
-        <li><strong>Headline Tightrope Score.</strong> Weighted <em>geometric</em> mean of the four pillar scores. Geometric at the headline level means one pillar blowing out (e.g. a gilt shock) pulls the headline hard — the correct behaviour for a systemic-stress metric.</li>
+        <li><strong>Headline Tightrope Score.</strong> Weighted <em>geometric</em> mean of the four pillar scores. Geometric at the headline level means one weak pillar pulls the headline down hard — the correct behaviour for a tightrope metric where one failing support cannot be fully offset elsewhere.</li>
       </ol>
 
       <div class="band-table">
         <h3>Score bands</h3>
-        <p class="caption">The headline and pillar scores are bucketed into five bands at 20-point steps. The same thresholds drive colour choices throughout the site and the OG-card rendering; change one and the tests in <code>packages/shared/src/bands.test.ts</code> flag the drift.</p>
+        <p class="caption">The headline and pillar scores are bucketed into five bands at 20-point steps. Since score schema v2, lower scores are worse: critical is 0–20 and slack is 80–100. The same thresholds drive colour choices throughout the site and the OG-card rendering; change one and the tests in <code>packages/shared/src/bands.test.ts</code> flag the drift.</p>
         <table class="inputs bands">
           <thead>
             <tr>
@@ -112,12 +112,13 @@ function ecdfPath(): string {
           </g>
           <path d={ecdfPath()} stroke="var(--accent)" stroke-width="1.6" fill="none"/>
         </svg>
-        <p class="caption">Schematic only: y-axis is the [0, 100] pressure score; x-axis is a value's rank in the baseline (illustrated here against a standard-normal shape for legibility). Production uses each indicator's <em>actual</em> empirical CDF, which varies in shape — see the per-indicator distributions in the API <code>/methodology/baselines</code> response.</p>
+        <p class="caption">Schematic only: y-axis is the [0, 100] Tightrope Score; x-axis is a value's rank in the baseline (illustrated here against a standard-normal shape for legibility). Production uses each indicator's <em>actual</em> empirical CDF, which varies in shape — see the per-indicator distributions in the API <code>/methodology/baselines</code> response.</p>
       </div>
     </section>
 
     <section class="block">
       <h2>Inputs, weights and sources by pillar</h2>
+      <p class="muted">A note on the <strong>Direction</strong> column: it describes whether a <em>rising raw value</em> is good or bad for the underlying condition (e.g. rising gilt yields = "Rising = worse"). The public Tightrope Score is always high-good — we apply the inversion in step 3 above before the score reaches the page. So a "Rising = worse" indicator can sit next to a healthy-looking pillar score without contradiction: the indicator's raw direction and the pillar's score axis are not the same axis.</p>
       {PILLAR_ORDER.map((p) => {
         const def = PILLARS[p];
         const inds = indicatorsForPillar(p);
@@ -125,7 +126,7 @@ function ecdfPath(): string {
         return (
           <div class="pillar-block">
             <h3>{def.title} <span class="pillar-weight">{weightPct}% of headline</span></h3>
-            <p class="pillar-blurb">{def.blurb} — cadence <code>{def.cadence}</code>{def.inverted ? " · inverted (higher raw delivery = lower pressure)" : ""}.</p>
+            <p class="pillar-blurb">{def.blurb} — cadence <code>{def.cadence}</code>{def.inverted ? " · progress measures score higher when raw delivery is higher" : ""}.</p>
             <table class="inputs">
               <thead>
                 <tr>
@@ -250,7 +251,7 @@ function ecdfPath(): string {
       <ul class="bullets">
         <li>The baseline window excludes 2020 Q2 but retains the 2021–22 energy shock period. Changing the baseline requires a versioned methodology update — no silent rebaselining.</li>
         <li>Intra-pillar weights sum to 1 per pillar; they are normalised at scoring time even if the raw <code>weight</code> values in <code>INDICATORS</code> don't sum to exactly 1 (they are target weights).</li>
-        <li>Delivery is <em>inverted</em>: we flip the raw progress reading before combining with the other pillars so that every pillar score reads "higher = more pressure".</li>
+        <li>Delivery progress indicators are rising-good: higher raw progress produces a higher public score, just like higher real pay or stronger market confidence.</li>
         <li>The geometric mean at the headline level cannot handle a zero input. In practice no pillar score reaches 0. We guard against it anyway by adding a tiny epsilon (<code>1e-6</code>) inside the <code>log</code> and subtracting the same epsilon after <code>exp</code> — so a zero pillar pulls the headline strongly toward zero (as an unguarded geometric mean would) without producing <code>log(0)</code>. See <code>weightedGeometricMean</code> in <code>packages/methodology/src/normalise.ts</code>.</li>
       </ul>
     </section>

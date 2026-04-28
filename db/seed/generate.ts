@@ -4,8 +4,8 @@
  * Run: `pnpm tsx db/seed/generate.ts > db/seed/seed.sql`
  *
  * Produces:
- *  - 90-day headline & pillar score history terminating at the mockup targets
- *    (headline 67, market 78, fiscal 61, labour 72, delivery 54)
+ *  - 90-day headline & pillar score history terminating at high-good targets
+ *    (roughly headline 31, market 22, fiscal 39, labour 28, delivery 46)
  *  - Current raw indicator observations for every defined indicator
  *  - Delivery commitments (matching the mockup)
  *  - Timeline events (matching the mockup, extended 18 months)
@@ -54,10 +54,10 @@ function buildSeries(target: number, start: number, days: number, noise: number)
 }
 
 const PILLAR_TARGETS: Record<PillarId, { target: number; start: number }> = {
-  market:   { target: 78, start: 46 },
-  fiscal:   { target: 61, start: 52 },
-  labour:   { target: 72, start: 68 },
-  delivery: { target: 54, start: 48 },
+  market:   { target: 22, start: 54 },
+  fiscal:   { target: 39, start: 48 },
+  labour:   { target: 28, start: 32 },
+  delivery: { target: 46, start: 52 },
 };
 
 // Generate the pillar series
@@ -91,11 +91,11 @@ for (let i = 0; i < 90; i++) {
   headlineSeries.push(geoMean(values, pillarWeights));
 }
 
-function editorialFor(dominant: PillarId, dir: "rising" | "easing" | "broadly unchanged", delta: number): string {
+function editorialFor(dominant: PillarId, dir: "improving" | "worsening" | "broadly unchanged", delta: number): string {
   const def = PILLARS[dominant];
   const sign = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
   const mag = Math.abs(delta).toFixed(1);
-  return `${def.title} is the dominant pillar; pressure is ${dir} (${sign} ${mag} on the week).`;
+  return `${def.title} is the biggest drag; the score is ${dir} (${sign} ${mag} on the week).`;
 }
 
 // ---------- emit SQL ----------
@@ -129,17 +129,17 @@ for (let i = 0; i < 90; i++) {
   }
   const h = headlineSeries[i]!;
   const band = bandFor(h).id;
-  // Pick dominant pillar by weight*value at each day.
+  // Pick biggest drag by weighted shortfall from 100 at each day.
   let dom: PillarId = "market";
   let best = -1;
   for (const p of PILLAR_ORDER) {
-    const impact = pillarSeries[p][i]! * PILLARS[p].weight;
+    const impact = (100 - pillarSeries[p][i]!) * PILLARS[p].weight;
     if (impact > best) { best = impact; dom = p; }
   }
   const prev7 = i > 7 ? headlineSeries[i - 7]! : h;
   const delta7 = h - prev7;
-  const dir: "rising" | "easing" | "broadly unchanged" =
-    Math.abs(delta7) < 0.3 ? "broadly unchanged" : delta7 > 0 ? "rising" : "easing";
+  const dir: "improving" | "worsening" | "broadly unchanged" =
+    Math.abs(delta7) < 0.3 ? "broadly unchanged" : delta7 > 0 ? "improving" : "worsening";
   const ed = editorialFor(dom, dir, delta7);
   out.push(
     `INSERT INTO headline_scores (observed_at, value, band, dominant, editorial) VALUES ('${iso}', ${h.toFixed(3)}, '${band}', '${dom}', '${esc(ed)}');`,

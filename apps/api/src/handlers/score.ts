@@ -1,5 +1,5 @@
 import type { ScoreHistory, ScoreSnapshot } from "@tightrope/shared";
-import { PILLAR_ORDER } from "@tightrope/shared";
+import { PILLAR_ORDER, SCORE_HISTORY_SCHEMA_VERSION, SCORE_SCHEMA_VERSION } from "@tightrope/shared";
 import { json, notSeeded } from "../lib/router.js";
 import { kvGetJson, kvPutJson, readThrough } from "../lib/cache.js";
 import { buildHistoryFromD1, buildSnapshotFromD1 } from "../lib/db.js";
@@ -34,7 +34,7 @@ function snapshotHasContributions(snapshot: ScoreSnapshot): boolean {
  * rebuild. Wrong schema version → not fresh.
  */
 function historyIsFresh(history: ScoreHistory): boolean {
-  if (history.schemaVersion !== 1) return false;
+  if (history.schemaVersion !== SCORE_HISTORY_SCHEMA_VERSION) return false;
   if (history.points.length === 0) return false;
   const last = history.points[history.points.length - 1]!.timestamp;
   const ts = Date.parse(last);
@@ -43,18 +43,18 @@ function historyIsFresh(history: ScoreHistory): boolean {
 }
 
 /**
- * True when a snapshot is an empty-seed placeholder: either the headline row
- * is missing (we default updatedAt to `new Date()` in that case, but the value
- * is 0 for every pillar) or we're still looking at unix-epoch-dated zeros.
+ * True when a snapshot is an empty-seed placeholder built from a fresh /
+ * un-seeded D1. The signal is `updatedAt` at or before the unix epoch — the
+ * `EPOCH_ISO` sentinel that buildSnapshotFromD1 stamps when no headline row
+ * exists. We previously also gated on "every pillar value === 0" + headline
+ * value === 0, but under score schema v2 an all-zero reading is a legitimate
+ * (if extreme) low-score state that we must NOT 503 — it would be a worst-
+ * case real reading the page is meant to display, not a placeholder.
  */
 function looksUnseeded(snapshot: ScoreSnapshot): boolean {
-  const { headline, pillars } = snapshot;
-  const allPillarsZero = Object.values(pillars).every((p) => p.value === 0);
-  if (!allPillarsZero) return false;
-  if (headline.value !== 0) return false;
-  if (!headline.updatedAt) return true;
-  const tsMs = Date.parse(headline.updatedAt);
-  // Epoch dates indicate we constructed a placeholder rather than read a real row.
+  const updatedAt = snapshot.headline?.updatedAt;
+  if (!updatedAt) return true;
+  const tsMs = Date.parse(updatedAt);
   return !Number.isFinite(tsMs) || tsMs < Date.UTC(2000, 0, 1);
 }
 
@@ -73,7 +73,7 @@ export async function handleScore(
   try {
     const cached = await kvGetJson<ScoreSnapshot>(env, "score:latest");
     let snapshot: ScoreSnapshot;
-    if (cached && cached.schemaVersion === 1 && snapshotIsFresh(cached) && snapshotHasContributions(cached)) {
+    if (cached && cached.schemaVersion === SCORE_SCHEMA_VERSION && snapshotIsFresh(cached) && snapshotHasContributions(cached)) {
       snapshot = cached;
     } else {
       snapshot = await buildSnapshotFromD1(env);

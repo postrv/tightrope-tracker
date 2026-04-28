@@ -31,7 +31,8 @@ function makeHistory(latest: string, value: number): ScoreHistory {
       { timestamp: latest,                  headline: value, pillars: { market: value, fiscal: value, labour: value, delivery: value } },
     ],
     rangeDays: 90,
-    schemaVersion: 1,
+    scoreDirection: "higher_is_better",
+    schemaVersion: 2,
   };
 }
 
@@ -117,7 +118,7 @@ describe("handleScoreHistory — KV freshness gate on score:history:90d", () => 
   });
 
   it("falls through to D1 when the cached slice has zero points (degenerate cache)", async () => {
-    const empty: ScoreHistory = { points: [], rangeDays: 90, schemaVersion: 1 };
+    const empty: ScoreHistory = { points: [], rangeDays: 90, scoreDirection: "higher_is_better", schemaVersion: 2 };
     const { env, ctx, loaderCalls } = makeEnv({ cached: empty, d1Latest: 50 });
     await handleScoreHistory(makeRequest(), env, ctx);
     // Empty points → no newest timestamp → treat as stale, force a rebuild.

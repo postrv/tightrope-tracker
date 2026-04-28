@@ -4,7 +4,7 @@
  * but is trimmed to just the fields a card actually needs.
  */
 import type { PillarId, ScoreSnapshot, PillarScore, HeadlineScore, Iso8601 } from "@tightrope/shared";
-import { PILLAR_ORDER, PILLARS, bandFor } from "@tightrope/shared";
+import { PILLAR_ORDER, PILLARS, SCORE_DIRECTION, SCORE_SCHEMA_VERSION, bandFor } from "@tightrope/shared";
 
 /**
  * KV snapshot is only trusted if at most this old. The api and web
@@ -18,7 +18,7 @@ const KV_SNAPSHOT_MAX_AGE_MS = 30 * 60_000;
 
 export async function loadSnapshot(env: Env): Promise<ScoreSnapshot> {
   const cached = await env.KV.get<ScoreSnapshot>("score:latest", "json");
-  if (cached && cached.schemaVersion === 1 && isFresh(cached)) return cached;
+  if (cached && cached.schemaVersion === SCORE_SCHEMA_VERSION && isFresh(cached)) return cached;
   return buildFromD1(env);
 }
 
@@ -115,12 +115,13 @@ async function buildFromD1(env: Env): Promise<ScoreSnapshot> {
   }
 
   const hValue = headlineRow?.value ?? 0;
+  const dominantPillar = dominantDrag(pillars);
   const headline: HeadlineScore = {
     value: hValue,
     band: (headlineRow?.band as HeadlineScore["band"]) ?? bandFor(hValue).id,
-    editorial: headlineRow?.editorial ?? "",
+    editorial: renderEditorialNote(dominantPillar, pillars),
     updatedAt: (headlineRow?.observed_at as Iso8601) ?? new Date().toISOString(),
-    dominantPillar: (headlineRow?.dominant as PillarId) ?? "market",
+    dominantPillar,
     sparkline90d: [],
     delta24h: 0,
     delta30d: 0,
@@ -128,5 +129,29 @@ async function buildFromD1(env: Env): Promise<ScoreSnapshot> {
     ...(isStaleFallback ? { stale: true } : {}),
   };
 
-  return { headline, pillars, schemaVersion: 1 };
+  return { headline, pillars, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_SCHEMA_VERSION };
+}
+
+function dominantDrag(pillars: Record<PillarId, PillarScore>): PillarId {
+  let dominant: PillarId = "market";
+  let best = -1;
+  for (const p of PILLAR_ORDER) {
+    const impact = (100 - pillars[p].value) * PILLARS[p].weight;
+    if (impact > best) {
+      best = impact;
+      dominant = p;
+    }
+  }
+  return dominant;
+}
+
+function renderEditorialNote(dominant: PillarId, pillars: Record<PillarId, PillarScore>): string {
+  const p = pillars[dominant];
+  const def = PILLARS[dominant];
+  const trendWord = p.trend7d === "up" ? "improving"
+    : p.trend7d === "down" ? "worsening"
+    : "broadly unchanged";
+  const direction = p.delta7d > 0 ? "up" : p.delta7d < 0 ? "down" : "flat";
+  const mag = Math.abs(p.delta7d).toFixed(1);
+  return `${def.title} is the biggest drag; the score is ${trendWord} (${direction} ${mag} on the week).`;
 }

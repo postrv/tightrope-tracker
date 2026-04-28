@@ -132,11 +132,14 @@ async function renderInactivity(env: Env): Promise<Response> {
 }
 
 /**
- * Editorial baseline: average 2y fix at the time of the Spring 2024 Budget
- * (Moneyfacts press archive, week of 6 March 2024). Stable comparator —
- * update on the next fiscal event that resets the "since last Budget" frame.
+ * Editorial baseline: BoE IADB IUMBV34 monthly print for March 2025 (the
+ * month of the Spring Statement 2025). Must stay in lockstep with
+ * MORTGAGE_BUDGET_BASELINE_PCT in apps/web/src/lib/mortgage.ts — both anchor
+ * the same "since the Spring Statement" delta and a unit-mismatch flips the
+ * sign of the headline £/month figure.
  */
-const MORTGAGE_BASELINE_PCT = 5.18;
+const MORTGAGE_BASELINE_PCT = 4.54;
+const MORTGAGE_BASELINE_LABEL = "Spring Statement 2025";
 
 function mortgageExtra(baselinePct: number, currentPct: number, principal = 250_000, termYears = 25): number {
   const monthly = (p: number, r: number, n: number) => {
@@ -162,6 +165,7 @@ async function renderMortgage(env: Env): Promise<Response> {
       twoYearFixPct: currentPct,
       spreadBp,
       updatedAt,
+      baselineLabel: MORTGAGE_BASELINE_LABEL,
     }),
     { width: CARD_W, height: CARD_H, fonts },
   );

@@ -26,32 +26,44 @@ export interface PillarDefinition {
   weight: number;
   cadence: "intraday" | "daily" | "monthly" | "event";
   blurb: string;
-  /** If true, higher raw score means better delivery -- we invert before normalising. */
+  /**
+   * Editorial-only display flag: true when the pillar is mostly made of raw
+   * progress measures (e.g. housing starts, planning consents) where a
+   * higher raw reading is better for the underlying condition. Used solely
+   * by the methodology page to add a "progress measures score higher when
+   * raw delivery is higher" gloss next to the pillar's blurb.
+   *
+   * Under score schema v2 this flag has no effect on scoring — polarity is
+   * handled per-indicator via `risingIsBad`, and the pillar arithmetic mean
+   * operates on a high-good axis without any further inversion. The field
+   * is retained for the methodology gloss only; do not introduce new code
+   * that branches on it.
+   */
   inverted: boolean;
 }
 
 export const PILLARS: Record<PillarId, PillarDefinition> = {
   market: {
     id: "market",
-    title: "Market Pressure",
+    title: "Market Stability",
     shortTitle: "Market",
     weight: 0.40,
     cadence: "intraday",
-    blurb: "Are markets shaking the wire?",
+    blurb: "Are markets giving the government room to move?",
     inverted: false,
   },
   fiscal: {
     id: "fiscal",
-    title: "Fiscal Constraint",
+    title: "Fiscal Room",
     shortTitle: "Fiscal",
     weight: 0.30,
     cadence: "event",
-    blurb: "Is the fiscal buffer shrinking or expanding?",
+    blurb: "Is the fiscal buffer expanding or shrinking?",
     inverted: false,
   },
   labour: {
     id: "labour",
-    title: "Labour & Living-Standards Strain",
+    title: "Labour & Living-Standards Resilience",
     shortTitle: "Labour",
     weight: 0.20,
     cadence: "monthly",
@@ -102,7 +114,7 @@ export interface IndicatorDefinition {
   unit: string;
   /** Intra-pillar weight. Normalised so all indicators in a pillar sum to 1 at scoring time. */
   weight: number;
-  /** True if a rising raw value represents worsening pressure. */
+  /** True if a rising raw value represents worsening conditions for the underlying thing being measured (e.g. rising gilt yields = bad for borrowing costs). The public score is always high-good — the inversion happens in `normalisedScore`. */
   risingIsBad: boolean;
   sourceId: string;
   description: string;

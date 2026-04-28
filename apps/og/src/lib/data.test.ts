@@ -45,7 +45,8 @@ function makeFreshSnapshot(updatedAt: string, value = 50): ScoreSnapshot {
       labour:   { pillar: "labour",   label: "Labour",   value, band: "strained", weight: 0.2, contributions: [], trend7d: "flat", delta7d: 0, trend30d: "flat", delta30d: 0, sparkline30d: [] },
       delivery: { pillar: "delivery", label: "Delivery", value, band: "strained", weight: 0.1, contributions: [], trend7d: "flat", delta7d: 0, trend30d: "flat", delta30d: 0, sparkline30d: [] },
     },
-    schemaVersion: 1,
+    scoreDirection: "higher_is_better",
+    schemaVersion: 2,
   };
 }
 

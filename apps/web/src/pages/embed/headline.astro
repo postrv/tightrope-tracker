@@ -21,8 +21,9 @@ const delta30Label = h.delta30dBaselineDate ? `since ${shortDateLabel(h.delta30d
   <div class="embed-root">
     <div class="score-side">
       <div class="chip" style={`color: var(${band.colourToken}); border-color: var(${band.colourToken});`}>{band.label}</div>
-      <div class="num" aria-label={`Tightrope Score ${score}`}>{score}<span class="unit">/100</span></div>
+      <div class="num" aria-label={`Tightrope Score ${score} out of 100. Higher is better; 0 is critical, 100 is on track.`}>{score}<span class="unit">/100</span></div>
       <div class="label">{band.editorialLabel}</div>
+      <div class="scale" aria-hidden="true">0 = critical · 100 = on track</div>
       <div class="delta" aria-label="Delta row">
         <span>1d <span class={trendClass(h.delta24h)}>{trendArrow(h.delta24h)} {signedDelta(Math.abs(h.delta24h), 1)}{trendDescriptor(h.delta24h) ? <span class="trend-word"> {trendDescriptor(h.delta24h)}</span> : null}</span></span>
         <span>{delta30Label} <span class={trendClass(h.delta30d)}>{trendArrow(h.delta30d)} {signedDelta(Math.abs(h.delta30d), 1)}{trendDescriptor(h.delta30d) ? <span class="trend-word"> {trendDescriptor(h.delta30d)}</span> : null}</span></span>
@@ -30,7 +31,7 @@ const delta30Label = h.delta30dBaselineDate ? `since ${shortDateLabel(h.delta30d
       <a class="credit" href="https://tightropetracker.uk" target="_blank" rel="noopener">tightropetracker.uk</a>
     </div>
     <div class="rope-side">
-      <TightropeWalker score={score} animate={false} />
+      <TightropeWalker score={100 - score} animate={false} />
     </div>
   </div>
 </BaseLayout>
@@ -59,9 +60,13 @@ body { background-image: none !important; }
 .num { font-family: var(--font-mono); font-size: 64px; font-weight: 500; line-height: 1; color: var(--ink-0); font-variant-numeric: tabular-nums; margin-top: 4px; }
 .num .unit { font-size: 18px; color: var(--ink-2); font-weight: 400; }
 .label { font-family: var(--font-serif); font-style: italic; color: var(--ink-1); font-size: 18px; }
+/* Schema legend: third-party iframes (Substack, news sites) lift this embed
+   out of context, so the score axis must be self-explanatory. Neutral
+   colour so it never paints over a band tint. */
+.scale { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); margin-top: 6px; }
 .delta { display: flex; gap: 14px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); margin-top: 8px; }
-.delta .up { color: var(--band-acute); }
-.delta .dn { color: var(--band-slack); }
+.delta .up { color: var(--band-slack); }
+.delta .dn { color: var(--band-acute); }
 .delta .flat { color: var(--ink-2); }
 .delta .trend-word { font-style: italic; opacity: 0.85; }
 .credit { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); margin-top: 10px; letter-spacing: 0.1em; }

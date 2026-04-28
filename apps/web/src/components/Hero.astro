@@ -17,10 +17,8 @@ interface Props {
    * Last few OBR cb_headroom vintages, latest first. When present, the hero
    * renders a paired £Bn-headroom card alongside the composite, with the
    * delta between [0] and [1] displayed as "since previous EFO". The pair
-   * exists so a TV viewer has BOTH the sophisticated composite (up = more
-   * strain) AND the intuitive £Bn anchor (down = less freedom) — most
-   * humans process "up = good", so we hand them the figure that follows
-   * intuition next to the figure that doesn't.
+   * exists so a TV viewer has BOTH the composite (down = less room to move)
+   * AND the intuitive £Bn anchor (down = less fiscal freedom).
    */
   headroomVintages?: ReadonlyArray<{ value: number; observedAt: string }>;
 }
@@ -28,9 +26,9 @@ interface Props {
 const { headline, freshestAt, headroomVintages = [] } = Astro.props;
 const band = BANDS.find((b) => b.id === headline.band) ?? bandFor(headline.value);
 const bandColour = band.colourToken;
-const dominantLabel = PILLARS[headline.dominantPillar]?.title ?? "The dominant pillar";
+const dominantLabel = PILLARS[headline.dominantPillar]?.title ?? "The biggest drag";
 const scoreRounded = Math.round(headline.value);
-const editorial = headline.editorial || `${dominantLabel} is the dominant pillar. See the sections below for the drivers.`;
+const editorial = headline.editorial || `${dominantLabel} is the biggest drag. See the sections below for the drivers.`;
 
 const delta24 = headline.delta24h;
 const delta30 = headline.delta30d;
@@ -75,12 +73,16 @@ const headroomPrior = headroomVintages[1];
 const headroomDelta = (headroomCurrent && headroomPrior)
   ? Math.round((headroomCurrent.value - headroomPrior.value) * 10) / 10
   : null;
-// "down = bad" intuition: a falling headroom means less fiscal freedom.
-// We tint the card the same critical colour as the composite when its
-// delta is negative, otherwise neutral.
+// Headroom delta colour: a falling £Bn buffer is less fiscal freedom, so
+// negative deltas paint red (`dn`) and positive paint green (`up`). The
+// classes resolve to band-acute / band-slack via the .delta-row CSS rules
+// below — same vocabulary as the composite card's delta row, even though
+// the underlying axis here is £Bn (down = bad) rather than the public score
+// (up = good). For the headroom card both conventions point the same way:
+// negative → red, positive → green.
 const headroomDeltaClass = headroomDelta === null
   ? "flat"
-  : headroomDelta < 0 ? "up" /* up = worse */ : headroomDelta > 0 ? "dn" : "flat";
+  : headroomDelta < 0 ? "dn" : headroomDelta > 0 ? "up" : "flat";
 const headroomDeltaArrow = headroomDelta === null
   ? "→"
   : headroomDelta < 0 ? "↓" : headroomDelta > 0 ? "↑" : "→";
@@ -99,14 +101,14 @@ function headroomDateLabel(iso: string): string {
           class="eyebrow"
           title={`Latest indicator observation: ${eyebrowDate(freshestAt ?? headline.updatedAt)}. Recompute heartbeat: ${eyebrowDate(headline.updatedAt)}.`}
         >Civic data · {eyebrowDate(freshestAt ?? headline.updatedAt)}</span>
-        <h1>the UK is on a <span class="lfg-u">fiscal tightrope</span>. the more it sways, the harder it is to <span class="lfg-u lfg-u--blue">move forward</span>.</h1>
-        <p class="lede">Fiscal headroom is thin. The less stable the economic picture — markets, borrowing costs, the labour force — the less freedom the government has to invest in growth. This score tracks that instability: how much the rope is swaying, and whether the government is steadying it or making it worse. Every number sourced and open.</p>
+        <h1>the UK is on a <span class="lfg-u">fiscal tightrope</span>. the steadier the rope, the more room to <span class="lfg-u lfg-u--blue">move forward</span>.</h1>
+        <p class="lede">The Tightrope Score runs from 0 to 100: <strong>higher means more room to move</strong>, lower means the rope is closer to giving way. Markets, fiscal headroom, the labour force, and growth delivery each pull on the rope; the score is the geometric mean of those four pillars. Every number sourced and open.</p>
 
         <div class="dual-cards">
           <div class="score-card composite-card" style={`--band-colour: var(${bandColour});`}>
             <div class="card-header">
               <span class="card-label">Tightrope Score</span>
-              <span class="card-direction" title="The composite. Higher numbers = the rope is swaying more = less fiscal freedom.">↑ MORE STRAIN</span>
+              <span class="card-direction" title="The composite. Higher numbers mean more room to move; lower numbers mean the rope is closer to giving way.">↑ HIGHER = BETTER</span>
             </div>
             <div>
               <div class="score-num" data-target={scoreRounded} aria-label={`Tightrope Score: ${scoreRounded} out of 100`}>
@@ -165,7 +167,7 @@ function headroomDateLabel(iso: string): string {
         </div>
       </div>
 
-      <TightropeWalker score={scoreRounded} />
+      <TightropeWalker score={100 - scoreRounded} />
     </div>
   </div>
 </section>
@@ -223,7 +225,12 @@ function headroomDateLabel(iso: string): string {
   color: var(--ink-1);
   font-weight: 500;
 }
-.composite-card .card-direction { color: var(--band-colour, var(--band-acute)); }
+/* Caption colour stays neutral so the legend never mis-paints (e.g. a green
+   "HIGHER = BETTER" alongside a red critical score, or vice-versa). The
+   band colour is already carried by the side-bar, the band pill, and the
+   editorial label below — the legend is a permanent direction-of-travel
+   gloss, not a value-of-the-day signal. */
+.composite-card .card-direction { color: var(--ink-2); }
 .headroom-card .card-direction { color: var(--accent); }
 .score-num {
   font-family: var(--font-mono);
@@ -255,8 +262,8 @@ function headroomDateLabel(iso: string): string {
 .band-label { font-family: var(--font-sans); font-size: 16px; letter-spacing: -0.01em; color: var(--ink-0); font-weight: 400; font-style: italic; margin-top: 2px; }
 .headroom-sub { font-style: normal; font-size: 13px; color: var(--ink-1); }
 .delta-row { display: flex; gap: 16px; margin-top: 8px; font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-2); flex-wrap: wrap; }
-.delta-row span.up { color: var(--band-acute); }
-.delta-row span.dn { color: var(--band-slack); }
+.delta-row span.up { color: var(--band-slack); }
+.delta-row span.dn { color: var(--band-acute); }
 .delta-row span.flat { color: var(--ink-2); }
 .delta-row .trend-word { font-style: italic; opacity: 0.85; }
 

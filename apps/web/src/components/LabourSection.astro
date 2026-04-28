@@ -18,7 +18,7 @@ const { pillar } = Astro.props;
 
 // Mortgage card: pull the live mortgage_2y_fix indicator from the labour
 // pillar's contributions so the headline £/month figure reflects the
-// latest Moneyfacts (or BoE IADB) reading rather than a hardcoded literal.
+// latest BoE IADB (IUMBV34) reading rather than a hardcoded literal.
 // Falls back to the editorial baseline only if D1 hasn't yet ingested a
 // live observation; the cold-cache case shows "no change" rather than a
 // fabricated number.
@@ -61,7 +61,7 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
     <div class="section-head">
       <div>
         <span class="eyebrow">Pillar 3 · 20%</span>
-        <h2 class="sec-title" id="labour-title" style="margin-top: 14px;">Labour & living-standards strain</h2>
+        <h2 class="sec-title" id="labour-title" style="margin-top: 14px;">Labour & living-standards resilience</h2>
         <p class="section-sub">Health-related inactivity, labour-market tightness, real wages and — the line households feel — mortgage rates.</p>
       </div>
       <div class="pillar-score" aria-label={`Labour pillar score ${Math.round(pillar.value)}`}>
@@ -134,7 +134,7 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
             sourceUrl="https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment"
           />
         </div>
-        <p class="hint">Rolling quarterly ratio — falling = more slack appearing in the labour market. <strong>Lower is worse.</strong></p>
+        <p class="hint">Rolling quarterly ratio — falling = more slack appearing in the labour market. The Tightrope methodology treats this as a worsening indicator and inverts it before it reaches the high-good pillar score.</p>
         <svg class="chart" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Vacancies per unemployed person">
           <g stroke="var(--border-soft)" stroke-width="1">
             <line x1="40" y1="20" x2="380" y2="20"/>
@@ -171,14 +171,14 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
         <div class="card-head">
           <h3>Mortgage translator</h3>
           <IllustrativeBadge
-            sourceSummary={`Live indicator: mortgage_2y_fix (Moneyfacts average 2-year fix at 75% LTV). Baseline ${MORTGAGE_BUDGET_BASELINE_PCT.toFixed(2)}% is the rate at the ${MORTGAGE_BUDGET_BASELINE_LABEL}. £250k / 25-year is the worked example.`}
-            sourceUrl="https://www.moneyfactscompare.co.uk/mortgages/"
+            sourceSummary={`Live indicator: mortgage_2y_fix (BoE IADB IUMBV34 — monthly effective rate on new 2-year fixes at 75% LTV). Baseline ${MORTGAGE_BUDGET_BASELINE_PCT.toFixed(2)}% is the IUMBV34 print for the ${MORTGAGE_BUDGET_BASELINE_LABEL}. £250k / 25-year is the worked example.`}
+            sourceUrl="https://www.bankofengland.co.uk/statistics/visual-summaries/effective-interest-rates"
           />
         </div>
         <p class="hint">What the 2-year fixed-rate move means on a £250,000, 25-year repayment mortgage.</p>
         <div class="mortgage-big">{formatExtra(m.extraPerMonth)}<span class="mortgage-sub"> / month</span></div>
-        <p class="mortgage-caption">Extra vs. the rate at the {MORTGAGE_BUDGET_BASELINE_LABEL} ({m.baselineRate.toFixed(2)}% → {m.currentRate.toFixed(2)}%). Payment: £{m.currentPayment.toLocaleString("en-GB")} vs. £{m.baselinePayment.toLocaleString("en-GB")}.</p>
-        <p class="mortgage-note">This is the line you will see quoted in the press. The rate series is Moneyfacts' reported average 2-year fix at 75% LTV{mortgageObservedAt ? ` · latest reading ${shortDate(mortgageObservedAt)}` : ""}.</p>
+        <p class="mortgage-caption">Change vs. the rate at the {MORTGAGE_BUDGET_BASELINE_LABEL} ({m.baselineRate.toFixed(2)}% → {m.currentRate.toFixed(2)}%). Payment: £{m.currentPayment.toLocaleString("en-GB")} vs. £{m.baselinePayment.toLocaleString("en-GB")}.</p>
+        <p class="mortgage-note">This is the line you will see quoted in the press. The rate series is the Bank of England's IUMBV34 monthly effective rate on new 2-year fixes at 75% LTV{mortgageObservedAt ? ` · latest reading ${shortDate(mortgageObservedAt)}` : ""}.</p>
       </div>
 
       <div class="chart-card">
@@ -258,8 +258,8 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
 .pillar-score-num { font-size: 40px; font-weight: 500; color: var(--ink-0); font-variant-numeric: tabular-nums; }
 .pillar-score-sub { color: var(--ink-2); font-size: 14px; }
 .pillar-score-delta { margin-left: 12px; font-size: 12px; }
-.pillar-score-delta.up { color: var(--band-acute); }
-.pillar-score-delta.dn { color: var(--band-slack); }
+.pillar-score-delta.up { color: var(--band-slack); }
+.pillar-score-delta.dn { color: var(--band-acute); }
 .pillar-score-delta.flat { color: var(--ink-2); }
 .pillar-score-delta .trend-word { font-style: italic; opacity: 0.85; }
 

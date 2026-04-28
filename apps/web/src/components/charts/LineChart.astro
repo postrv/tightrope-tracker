@@ -12,6 +12,10 @@ interface Props {
   width?: number;
   height?: number;
   stroke?: string;
+  /** Colour for the fill gradient under the line. Defaults to `stroke` so a
+   * band-derived stroke (e.g. `var(--band-steady)`) flows through to the fill
+   * without callers having to pass it twice. */
+  fillColour?: string;
   fillGradientId?: string;
   ariaLabel?: string;
   gridLines?: number;
@@ -25,6 +29,7 @@ const {
   width = 600,
   height = 240,
   stroke = "var(--accent)",
+  fillColour,
   fillGradientId,
   ariaLabel,
   gridLines = 4,
@@ -32,6 +37,7 @@ const {
   maxLabel,
   xTicks = [],
 } = Astro.props;
+const fillStop = fillColour ?? stroke;
 
 const safeSeries = series && series.length ? series : [0, 0];
 const padL = 40;
@@ -88,8 +94,8 @@ const fullLabel = `${baseLabel}: ${summary}`;
   {fillGradientId ? (
     <defs>
       <linearGradient id={fillGradientId} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="var(--accent)" stop-opacity="0.22" />
-        <stop offset="1" stop-color="var(--accent)" stop-opacity="0" />
+        <stop offset="0" stop-color={fillStop} stop-opacity="0.22" />
+        <stop offset="1" stop-color={fillStop} stop-opacity="0" />
       </linearGradient>
     </defs>
   ) : null}

@@ -2,6 +2,8 @@ import type { D1PreparedStatement } from "@cloudflare/workers-types";
 import {
   INDICATORS,
   PILLAR_ORDER,
+  SCORE_DIRECTION,
+  SCORE_HISTORY_SCHEMA_VERSION,
   computeSourceHealth,
   evaluatePillarFreshness,
   type IndicatorDefinition,
@@ -371,7 +373,7 @@ function buildHistory(
       pillars: { market: last.market, fiscal: last.fiscal, labour: last.labour, delivery: last.delivery },
     });
   }
-  return { points: points.slice(-90), rangeDays: 90, schemaVersion: 1 };
+  return { points: points.slice(-90), rangeDays: 90, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
 }
 
 /**

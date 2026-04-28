@@ -55,13 +55,13 @@ export function ecdf(value: number, baseline: readonly number[]): number {
 }
 
 /**
- * Map a raw indicator value to a pressure score in [0, 100] using the ECDF.
+ * Map a raw indicator value to a public Tightrope Score in [0, 100] using
+ * the ECDF.
  *
  * @param value     the current raw reading
  * @param baseline  historical samples (excluding outlier windows)
- * @param risingIsBad when true, higher raw value implies higher pressure.
- *                    When false, the direction is flipped so a higher raw
- *                    reading produces a lower pressure score.
+ * @param risingIsBad when true, higher raw value implies a lower score.
+ *                    When false, a higher raw value implies a higher score.
  */
 export function normalisedScore(
   value: number,
@@ -69,8 +69,8 @@ export function normalisedScore(
   risingIsBad: boolean,
 ): number {
   const p = ecdf(value, baseline);
-  const pressure = risingIsBad ? p : 1 - p;
-  return clamp(pressure * 100, 0, 100);
+  const score = risingIsBad ? 1 - p : p;
+  return clamp(score * 100, 0, 100);
 }
 
 /** Clamp `n` to the inclusive range [lo, hi]. */

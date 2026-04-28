@@ -67,8 +67,8 @@ describe("computePillarScore", () => {
     }
   });
 
-  it("inverts the delivery pillar so that good delivery ⇒ low pressure", () => {
-    // Housing & planning deeply ahead of baseline ⇒ rising-is-good readings high
+  it("scores good delivery high on the public higher-is-better axis", () => {
+    // Housing & planning deeply ahead of baseline => rising-is-good readings high.
     const readings = Object.values(INDICATORS)
       .filter((d) => d.pillar === "delivery")
       .map((d) => ({
@@ -82,7 +82,7 @@ describe("computePillarScore", () => {
       readings,
       sparkline30d: Array.from({ length: 30 }, () => 30),
     });
-    expect(pillar.value).toBeLessThan(20); // good delivery ⇒ low pressure
+    expect(pillar.value).toBeGreaterThan(80);
   });
 
   it("handles missing readings gracefully without crashing", () => {
@@ -207,7 +207,7 @@ describe("computeHeadlineScore", () => {
     expect(hLow.value).toBeLessThan(52.5);
   });
 
-  it("picks the dominant pillar by weight × value", () => {
+  it("picks the dominant pillar by weighted shortfall from 100", () => {
     const pillars: Record<PillarId, PillarScore> = {
       market: mkPillar("market", 78),
       fiscal: mkPillar("fiscal", 61),
@@ -219,8 +219,8 @@ describe("computeHeadlineScore", () => {
       sparkline90d: [60],
       updatedAt: "2026-04-17T14:00:00Z",
     });
-    expect(h.dominantPillar).toBe("market"); // 78 * 0.40 = 31.2, beats fiscal 18.3, labour 14.4, delivery 5.4
-    expect(h.editorial).toContain("Market Pressure");
+    expect(h.dominantPillar).toBe("fiscal"); // (100 - 61) * 0.30 = 11.7, the largest weighted drag.
+    expect(h.editorial).toContain("Fiscal Room");
   });
 
   it("includes deltas when anchor values are supplied", () => {
@@ -325,7 +325,7 @@ describe("computeHeadlineScore", () => {
       updatedAt: "2026-04-17T14:00:00Z",
     });
     const snap = assembleSnapshot(pillars, headline);
-    expect(snap.schemaVersion).toBe(1);
+    expect(snap.schemaVersion).toBe(2);
     expect(snap.headline.value).toBeGreaterThan(0);
     for (const p of PILLAR_ORDER) expect(snap.pillars[p]).toBeDefined();
   });

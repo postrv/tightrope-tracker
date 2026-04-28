@@ -66,8 +66,8 @@ const LABEL_LANES = [
 // a 70 in April. Boundaries come from BANDS so any future re-banding
 // flows through automatically.
 function yFor(score: number): number {
-  // 0 = bottom of plot (best), 100 = top of plot (worst). Higher score
-  // pushes the line UP because higher = more pressure / less freedom.
+  // 0 = bottom of plot (worst), 100 = top of plot (best). Higher score
+  // pushes the line UP because higher = more room to move.
   const clamped = Math.max(0, Math.min(100, score));
   return padT + plotH - (clamped / 100) * plotH;
 }

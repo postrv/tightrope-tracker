@@ -124,19 +124,19 @@ describe("normalisedFromSummary", () => {
     const sorted = [...baseline].sort((a, b) => a - b);
     const median = sorted[200]!;
     const top = sorted[399]!;
-    // High value, risingIsBad: high pressure.
-    expect(normalisedFromSummary(top, summary, true)).toBeGreaterThan(95);
-    // High value, risingIsBad=false: low pressure.
-    expect(normalisedFromSummary(top, summary, false)).toBeLessThan(5);
-    // Median: pressure ~ 50 either way.
+    // High value, risingIsBad: low score.
+    expect(normalisedFromSummary(top, summary, true)).toBeLessThan(5);
+    // High value, risingIsBad=false: high score.
+    expect(normalisedFromSummary(top, summary, false)).toBeGreaterThan(95);
+    // Median: score ~ 50 either way.
     expect(Math.abs(normalisedFromSummary(median, summary, true) - 50)).toBeLessThan(2);
     expect(Math.abs(normalisedFromSummary(median, summary, false) - 50)).toBeLessThan(2);
   });
 
   it("clamps to [0, 100]", () => {
     const summary = summariseBaseline([1, 2, 3, 4, 5]);
-    expect(normalisedFromSummary(-1000, summary, true)).toBe(0);
-    expect(normalisedFromSummary(1000, summary, true)).toBe(100);
+    expect(normalisedFromSummary(-1000, summary, true)).toBe(100);
+    expect(normalisedFromSummary(1000, summary, true)).toBe(0);
   });
 });
 

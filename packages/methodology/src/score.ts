@@ -11,6 +11,8 @@ import {
   type Trend,
   type Iso8601,
   bandFor,
+  SCORE_DIRECTION,
+  SCORE_SCHEMA_VERSION,
 } from "@tightrope/shared";
 import {
   clamp,
@@ -95,10 +97,9 @@ export function computePillarScore(
     ? 0
     : weightedArithmeticMean(normalisedValues, weights);
 
-  // Direction handling is done at the indicator level (risingIsBad flag). The
-  // delivery pillar is tagged `inverted: true` because every one of its inputs
-  // is rising-is-good -- but each indicator already produces a pressure score,
-  // so the pillar arithmetic mean is already pressure-oriented. No further flip.
+  // Direction handling is done at the indicator level (risingIsBad flag). Each
+  // indicator already produces a public high-good Tightrope Score, so the
+  // pillar arithmetic mean is on the same high-good axis. No further flip.
   const value = clamp(rawPillar, 0, 100);
   const band = bandFor(value);
   const sign = trendSign(input.sparkline30d.slice(-14));
@@ -171,11 +172,13 @@ export function computeHeadlineScore(input: HeadlineComputationInput): HeadlineS
   const rawHeadline = weightedGeometricMean(values, weights);
   const value = roundTo(clamp(rawHeadline, 0, 100), 1);
 
-  // Dominant pillar = highest weight * value product.
+  // Dominant pillar = largest weighted shortfall from 100. The public score is
+  // high-good, so the most important drag is the weighted gap, not the highest
+  // pillar value.
   let dominant: PillarId = "market";
   let best = -1;
   for (const p of PILLAR_ORDER) {
-    const impact = input.pillars[p].value * PILLARS[p].weight;
+    const impact = (100 - input.pillars[p].value) * PILLARS[p].weight;
     if (impact > best) {
       best = impact;
       dominant = p;
@@ -238,19 +241,29 @@ export function computeHeadlineScore(input: HeadlineComputationInput): HeadlineS
 function renderEditorialNote(dominant: PillarId, pillars: Record<PillarId, PillarScore>): string {
   const p = pillars[dominant];
   const def = PILLARS[dominant];
-  const trendWord = p.trend7d === "up" ? "rising"
-    : p.trend7d === "down" ? "easing"
+  const trendWord = p.trend7d === "up" ? "improving"
+    : p.trend7d === "down" ? "worsening"
     : "broadly unchanged";
   const direction = p.delta7d > 0 ? "up" : p.delta7d < 0 ? "down" : "flat";
   const mag = Math.abs(p.delta7d).toFixed(1);
-  return `${def.title} is the dominant pillar; pressure is ${trendWord} (${direction} ${mag} on the week).`;
+  // "Biggest drag" reads as a strong claim. Reserve it for when the dominant
+  // pillar (the one with the largest weighted shortfall) is genuinely below
+  // the "steady" threshold — i.e. there really is a drag. When every pillar
+  // is steady or slack, name the dominant as "the pillar with the most room
+  // to improve" instead, which is editorially honest and won't read as a
+  // contradiction next to a healthy headline. Same threshold used by
+  // ExploreIsland and ActionSection so all three surfaces stay consistent.
+  const lead = p.value < 60
+    ? `${def.title} is the biggest drag`
+    : `${def.title} has the most room to improve`;
+  return `${lead}; the score is ${trendWord} (${direction} ${mag} on the week).`;
 }
 
 export function assembleSnapshot(
   pillars: Record<PillarId, PillarScore>,
   headline: HeadlineScore,
 ): ScoreSnapshot {
-  return { headline, pillars, schemaVersion: 1 };
+  return { headline, pillars, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_SCHEMA_VERSION };
 }
 
 function roundTo(n: number, digits: number): number {

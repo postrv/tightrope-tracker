@@ -9,7 +9,7 @@ proxies for those inputs. They exist so the Tightrope Tracker can surface
 "the OBR's central forecast is probably getting stale" weeks before the next
 EFO lands.
 
-All sit in the **Market Pressure** pillar (40% of headline).
+All sit in the **Market Stability** pillar (40% of headline).
 
 ## Inflation inputs
 

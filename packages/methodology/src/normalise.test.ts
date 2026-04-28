@@ -76,23 +76,23 @@ describe("ecdf", () => {
 });
 
 describe("normalisedScore", () => {
-  it("rising-is-bad maps a tail observation high", () => {
+  it("rising-is-bad maps a tail observation low", () => {
     const baseline = Array.from({ length: 100 }, (_, i) => i + 1);
     const score = normalisedScore(98, baseline, true);
-    expect(score).toBeGreaterThan(95);
+    expect(score).toBeLessThan(5);
   });
-  it("rising-is-bad maps a low observation low", () => {
+  it("rising-is-bad maps a low observation high", () => {
     const baseline = Array.from({ length: 100 }, (_, i) => i + 1);
     const score = normalisedScore(2, baseline, true);
-    expect(score).toBeLessThan(5);
+    expect(score).toBeGreaterThan(95);
   });
   it("direction flip inverts the score for a rising-is-good indicator", () => {
     const baseline = Array.from({ length: 100 }, (_, i) => i + 1);
     const worse = normalisedScore(2, baseline, false);
     const better = normalisedScore(99, baseline, false);
-    expect(worse).toBeGreaterThan(better);
-    expect(worse).toBeGreaterThan(90);
-    expect(better).toBeLessThan(10);
+    expect(worse).toBeLessThan(better);
+    expect(worse).toBeLessThan(10);
+    expect(better).toBeGreaterThan(90);
   });
   it("clamps to [0,100]", () => {
     const s = normalisedScore(1000, [1, 2, 3], true);

@@ -19,16 +19,25 @@ const {
 
 const scoreRounded = Math.round(headline.value);
 const band = BANDS.find((b) => b.id === headline.band) ?? BANDS[0];
-const dominant = PILLARS[headline.dominantPillar]?.title ?? "Market Pressure";
+const dominant = PILLARS[headline.dominantPillar]?.title ?? "Market Stability";
+
+// Frame the dominant-pillar sentence by band: when the score is below the
+// "steady" threshold (60) the score IS being dragged, so "biggest drag" is
+// editorially honest. When the score is steady or slack, no pillar is
+// genuinely dragging — call it out as the pillar with most room to improve
+// rather than misnaming it as a "drag".
+const dominantSentence = headline.value < 60
+  ? `The biggest drag on the score is ${dominant.toLowerCase()}.`
+  : `The pillar with the most room to improve within the score is ${dominant.toLowerCase()}.`;
 
 const defaultLetter = `Dear [MP name],
 
 I am writing as your constituent to ask for your view on the UK's current fiscal and economic trajectory.
 
-As of today, the Tightrope Tracker headline score stands at ${scoreRounded} out of 100 — ${band.label.toLowerCase()}, "${band.editorialLabel.toLowerCase()}". The dominant source of pressure is ${dominant.toLowerCase()}.
+As of today, the Tightrope Tracker headline score stands at ${scoreRounded} out of 100 — ${band.label.toLowerCase()}, "${band.editorialLabel.toLowerCase()}". ${dominantSentence}
 
 I would be grateful for your assessment of:
-  1. What policy levers you consider appropriate to ease constraint in this pillar.
+  1. What policy levers you consider appropriate to improve this pillar.
   2. Whether you will be pressing the Chancellor to publish a credible, sourced response.
 
 Every figure behind this score is published at https://tightropetracker.uk/methodology with full source links. I would welcome your reply.
@@ -64,7 +73,7 @@ const embedSnippets = {
 
       <div class="action-card" data-mp-card>
         <h3>Write to your MP</h3>
-        <p>Enter your postcode. We'll find your MP and pre-fill a short, factual letter citing today's Tightrope Score, the worst-performing pillar, and the methodology page. One click opens a draft email to your MP's parliamentary address.</p>
+        <p>Enter your postcode. We'll find your MP and pre-fill a short, factual letter citing today's Tightrope Score, the pillar most affecting it, and the methodology page. One click opens a draft email to your MP's parliamentary address.</p>
         <form class="mp-form" aria-label="MP postcode lookup">
           <label class="mp-label" for="mp-postcode">UK postcode</label>
           <div class="input-row">

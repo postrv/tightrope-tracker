@@ -22,7 +22,18 @@ import type {
   Trend,
   Iso8601,
 } from "@tightrope/shared";
-import { INDICATORS, PILLAR_ORDER, PILLARS, bandFor, computeSourceHealth, isScoreRowStale } from "@tightrope/shared";
+import {
+  EPOCH_ISO,
+  INDICATORS,
+  PILLAR_ORDER,
+  PILLARS,
+  SCORE_DIRECTION,
+  SCORE_HISTORY_SCHEMA_VERSION,
+  SCORE_SCHEMA_VERSION,
+  bandFor,
+  computeSourceHealth,
+  isScoreRowStale,
+} from "@tightrope/shared";
 
 interface PillarLatestRow {
   id: PillarId;
@@ -165,7 +176,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       value,
       band: (latest?.band as PillarScore["band"]) ?? bandFor(value).id,
       weight: PILLARS[p].weight,
-      contributions: buildContributionsForPillar(p, obsByIndicator),
+      contributions: buildContributionsForPillar(p, obsByIndicator, value),
       trend7d: trend,
       delta7d: round1(delta),
       trend30d: trend30,
@@ -179,10 +190,10 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
   // Already ordered ASC by observed_at (one row per UTC day, see SQL above).
   const hSeries = headlineHistory.results.map((r) => r.value);
   const hRows = headlineHistory.results;
-  // If the headline row is missing we stamp updatedAt at the unix epoch so
-  // callers can distinguish an empty-seed placeholder from a real read. See
+  // If the headline row is missing we stamp updatedAt at the unix epoch
+  // (`EPOCH_ISO`, exported from @tightrope/shared) so callers can
+  // distinguish an empty-seed placeholder from a real read. See
   // looksUnseeded() in ../handlers/score.ts.
-  const EPOCH_ISO = "1970-01-01T00:00:00.000Z";
   // Headline is stale if any pillar is stale OR the headline row itself is
   // past MAX_SCORE_AGE_MS. Recompute refuses to write a new headline row when
   // any pillar fails quorum, so an aging headline row is the canonical signal
@@ -190,12 +201,13 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
   const headlineStale = anyPillarStale || isScoreRowStale(headlineRow?.observed_at, now);
   const deltas30d = deltaAgoWithFallback(hRows, 30, 7);
   const deltasYtd = deltaAgoYtdWithFallback(hRows, now, 7);
+  const dominantPillar = dominantDrag(pillars);
   const headline: HeadlineScore = {
     value: hValue,
     band: (headlineRow?.band as HeadlineScore["band"]) ?? bandFor(hValue).id,
-    editorial: headlineRow?.editorial ?? "",
+    editorial: renderEditorialNote(dominantPillar, pillars),
     updatedAt: (headlineRow?.observed_at as Iso8601) ?? (EPOCH_ISO as Iso8601),
-    dominantPillar: (headlineRow?.dominant as PillarId) ?? "market",
+    dominantPillar,
     sparkline90d: hSeries,
     delta24h: deltaAgo(hSeries, 1),
     // Mirrors the recompute fallback: if history doesn't reach back 30d, use
@@ -218,7 +230,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     lastSuccessBySource,
   );
 
-  const snapshot: ScoreSnapshot = { headline, pillars, schemaVersion: 1 };
+  const snapshot: ScoreSnapshot = { headline, pillars, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_SCHEMA_VERSION };
   if (sourceHealth.length > 0) snapshot.sourceHealth = sourceHealth;
   return snapshot;
 }
@@ -265,26 +277,44 @@ export async function buildHistoryFromD1(env: Env, days: number): Promise<ScoreH
          WHERE observed_at >= ?1
          GROUP BY pillar_id, substr(observed_at, 1, 10)
        ) m ON p.pillar_id = m.pillar_id AND p.observed_at = m.ts
-       ORDER BY p.observed_at ASC`,
-    ).bind(cutoffISO).all<PillarSeriesRow>(),
+       UNION ALL
+       SELECT p.pillar_id AS id, p.observed_at, p.value FROM pillar_scores p
+       JOIN (
+         SELECT pillar_id, MAX(observed_at) AS ts
+         FROM pillar_scores
+         WHERE observed_at < ?2
+         GROUP BY pillar_id
+       ) prev ON p.pillar_id = prev.pillar_id AND p.observed_at = prev.ts
+       ORDER BY observed_at ASC`,
+    ).bind(cutoffISO, cutoffISO).all<PillarSeriesRow>(),
   ]);
 
-  // Index pillar rows by timestamp.
-  const pillarsByTs = new Map<string, Partial<Record<PillarId, number>>>();
-  for (const r of pillarRows.results) {
-    const bucket = pillarsByTs.get(r.observed_at) ?? {};
-    bucket[r.id] = r.value;
-    pillarsByTs.set(r.observed_at, bucket);
-  }
+  const byPillar: Record<PillarId, PillarSeriesRow[]> = {
+    market: [], fiscal: [], labour: [], delivery: [],
+  };
+  for (const r of pillarRows.results) byPillar[r.id].push(r);
+  for (const p of PILLAR_ORDER) byPillar[p].sort((a, b) => a.observed_at.localeCompare(b.observed_at));
+
+  const cursors: Record<PillarId, number> = { market: 0, fiscal: 0, labour: 0, delivery: 0 };
+  const last: Record<PillarId, number> = {
+    market: 0,
+    fiscal: 0,
+    labour: 0,
+    delivery: 0,
+  };
 
   const points: ScoreHistoryPoint[] = headlineRows.results.map((r) => {
-    const pbucket = pillarsByTs.get(r.observed_at) ?? {};
-    const pillars = {} as Record<PillarId, number>;
-    for (const p of PILLAR_ORDER) pillars[p] = pbucket[p] ?? 0;
-    return { timestamp: r.observed_at as Iso8601, headline: r.value, pillars };
+    for (const p of PILLAR_ORDER) {
+      const arr = byPillar[p];
+      while (cursors[p] < arr.length && arr[cursors[p]]!.observed_at <= r.observed_at) {
+        last[p] = arr[cursors[p]]!.value;
+        cursors[p] += 1;
+      }
+    }
+    return { timestamp: r.observed_at as Iso8601, headline: r.value, pillars: { ...last } };
   });
 
-  return { points, rangeDays: clampedDays, schemaVersion: 1 };
+  return { points, rangeDays: clampedDays, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
 }
 
 export async function getDeliveryCommitments(env: Env): Promise<DeliveryCommitment[]> {
@@ -353,14 +383,15 @@ export async function getLastIngestionAudit(
  * The recompute loop writes a full snapshot (including z-score and
  * normalised contributions) into KV. When we miss the KV cache and
  * rebuild from D1 we don't have cheap access to the baseline series, so
- * we return `zScore: 0` / `normalised: 0` placeholders -- the raw
- * value, observedAt, sourceId and weight are enough for a stale banner
+ * we return `zScore: 0` plus the pillar fallback score as `normalised` --
+ * the raw value, observedAt, sourceId and weight are enough for a stale banner
  * to name the specific indicator that froze, and for an API consumer
  * to inspect the inputs. Full contribution detail lives in KV.
  */
 function buildContributionsForPillar(
   pillar: PillarId,
   obs: Map<string, { value: number; observedAt: string; sourceId: string }>,
+  fallbackNormalised: number,
 ): IndicatorContribution[] {
   const defs = Object.values(INDICATORS).filter((d) => d.pillar === pillar);
   const pillarWeightSum = defs.reduce((acc, d) => acc + d.weight, 0);
@@ -373,13 +404,37 @@ function buildContributionsForPillar(
       rawValue: o.value,
       rawValueUnit: def.unit,
       zScore: 0,
-      normalised: 0,
+      normalised: fallbackNormalised,
       weight: pillarWeightSum > 0 ? def.weight / pillarWeightSum : 0,
       sourceId: o.sourceId,
       observedAt: o.observedAt,
     });
   }
   return out;
+}
+
+function dominantDrag(pillars: Record<PillarId, PillarScore>): PillarId {
+  let dominant: PillarId = "market";
+  let best = -1;
+  for (const p of PILLAR_ORDER) {
+    const impact = (100 - pillars[p].value) * PILLARS[p].weight;
+    if (impact > best) {
+      best = impact;
+      dominant = p;
+    }
+  }
+  return dominant;
+}
+
+function renderEditorialNote(dominant: PillarId, pillars: Record<PillarId, PillarScore>): string {
+  const p = pillars[dominant];
+  const def = PILLARS[dominant];
+  const trendWord = p.trend7d === "up" ? "improving"
+    : p.trend7d === "down" ? "worsening"
+    : "broadly unchanged";
+  const direction = p.delta7d > 0 ? "up" : p.delta7d < 0 ? "down" : "flat";
+  const mag = Math.abs(p.delta7d).toFixed(1);
+  return `${def.title} is the biggest drag; the score is ${trendWord} (${direction} ${mag} on the week).`;
 }
 
 // --- helpers ---------------------------------------------------------------

@@ -39,8 +39,10 @@ export interface CardShellProps {
   source: string;
   /** Right-hand footer note. */
   footerRight: string;
-  /** Background variant. */
-  variant: "critical" | "accent" | "sober" | "warn" | "rope";
+  /** Background variant. `good` is a green-glow variant for sign-aware
+   * cards where a positive outcome should not be painted in alarm tones (e.g.
+   * the mortgage card when the change is a fall in monthly cost). */
+  variant: "critical" | "accent" | "sober" | "warn" | "good" | "rope";
   children?: unknown;
 }
 
@@ -111,6 +113,13 @@ function variantBackground(v: CardShellProps["variant"]): string {
         radial-gradient(ellipse 60% 40% at 80% 20%, rgba(238, 153, 68, 0.22), transparent 70%),
         linear-gradient(135deg, ${TOKENS.bg1} 0%, ${TOKENS.bg0} 100%)
       `;
+    case "good":
+      // Slack green glow over cream — for sign-aware cards where the
+      // displayed number is a positive outcome (e.g. mortgage costs falling).
+      return `
+        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(95, 178, 124, 0.22), transparent 70%),
+        linear-gradient(135deg, ${TOKENS.bg1} 0%, ${TOKENS.bg0} 100%)
+      `;
     case "rope":
       return `linear-gradient(180deg, ${TOKENS.bg1} 0%, ${TOKENS.bg0} 100%)`;
     default:
@@ -123,6 +132,7 @@ function variantBorder(v: CardShellProps["variant"]): string {
     case "critical": return "rgba(200, 75, 60, 0.45)";
     case "accent":   return "rgba(254, 85, 0, 0.35)";
     case "warn":     return "rgba(238, 153, 68, 0.40)";
+    case "good":     return "rgba(95, 178, 124, 0.40)";
     default:         return TOKENS.border;
   }
 }

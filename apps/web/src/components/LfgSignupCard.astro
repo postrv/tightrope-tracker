@@ -25,11 +25,13 @@ const {
   source = "tightrope-card",
 } = Astro.props;
 
-// Turnstile site key. Public — safe to embed in HTML. Falls back to the
-// always-pass test key Cloudflare publishes for development; production
-// MUST set PUBLIC_TURNSTILE_SITE_KEY in .env (Vite-side) or via wrangler.
+// Turnstile site key. Public — safe to embed in HTML (in fact it must be).
+// Hardcoded fallback is the real production key for tightropetracker.uk;
+// .env override exists so contributors can swap to a localhost-only test
+// site without editing source. The site key isn't a secret in any sense
+// — it's literally in the rendered HTML and visible to every visitor.
 const turnstileSiteKey =
-  import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "1x00000000000000000000AA";
+  import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAADE9sTe9AF78Oq27";
 ---
 <div class="action-card lfg-card">
   <span class="eyebrow lfg-eyebrow">Get involved</span>

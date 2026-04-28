@@ -33,7 +33,7 @@ SET notes = 'Search ''Planning and Infrastructure Bill'' on bills.parliament.uk 
 WHERE id = 'planning_bill';
 
 UPDATE delivery_commitments
-SET notes = 'Inactivity-due-to-long-term-sickness numbers come from ONS Labour Force Survey (series LF2R). The policy target is set out in the DWP ''Get Britain Working'' white paper; the rolling figure is against that baseline.'
+SET notes = 'Inactivity-due-to-long-term-sickness numbers come from ONS Labour Force Survey (series LF69, LFS: Econ. inactivity reasons: Long Term Sick: UK: 16-64). The policy target is set out in the DWP ''Get Britain Working'' white paper; the rolling figure is against that baseline.'
 WHERE id = 'keep_britain_working';
 
 UPDATE delivery_commitments

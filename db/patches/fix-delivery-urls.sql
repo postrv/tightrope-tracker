@@ -23,7 +23,7 @@ WHERE id = 'planning_bill';
 UPDATE delivery_commitments
 SET source_url   = 'https://www.gov.uk/government/organisations/department-for-work-pensions',
     source_label = 'DWP',
-    notes        = 'Inactivity-due-to-long-term-sickness numbers come from ONS Labour Force Survey (series LF2R). The policy target is set out in the DWP ''Get Britain Working'' white paper; the rolling figure is against that baseline.'
+    notes        = 'Inactivity-due-to-long-term-sickness numbers come from ONS Labour Force Survey (series LF69, LFS: Econ. inactivity reasons: Long Term Sick: UK: 16-64). The policy target is set out in the DWP ''Get Britain Working'' white paper; the rolling figure is against that baseline.'
 WHERE id = 'keep_britain_working';
 
 -- Also sync the remaining labels and notes that were enriched in the seed

@@ -2,11 +2,15 @@
  * POST /api/v1/lfg-signup
  *
  * Worker-side proxy that captures interest from the Tightrope Tracker site
- * and forwards it to LFG's CRM ingestion endpoint (a Zapier webhook that
- * fans out to Brevo). The proxy exists to keep the upstream URL out of the
- * page source, to enforce a Cloudflare Turnstile challenge before any
- * record is created, and to give us one place to rate-limit / shape /
- * audit signups.
+ * and forwards it to LFG's CRM. The proxy keeps any upstream URL/key out of
+ * page source, enforces a Cloudflare Turnstile challenge before any record
+ * is created, and gives us one place to rate-limit / shape / audit signups.
+ *
+ * Backend selection:
+ *   - LFG_API_KEY set      → POST direct to Brevo /v3/contacts (primary path).
+ *   - else LFG_SIGNUP_API_URL set → POST to that URL (Zapier webhook fallback).
+ *   - neither              → 502 UPSTREAM_ERROR.
+ *   To switch back to Zapier-only, delete the LFG_API_KEY secret.
  *
  * Contract:
  *   Request body (JSON):
@@ -16,6 +20,7 @@
  *       postcode?: string,         // optional, 0..16 chars (lightly checked)
  *       source?: "tightrope-card" | "tightrope-mp" | "tightrope-other",
  *       mpInterest?: boolean,      // true iff signup came from the MP-letter card
+ *       weeklyUpdates?: boolean,   // true iff user opted in to weekly digest
  *       turnstileToken: string     // required, fresh Turnstile widget token
  *     }
  *   Success: 200 { ok: true }
@@ -37,6 +42,8 @@ const MAX_POSTCODE = 16;
 
 const ALLOWED_SOURCES = new Set(["tightrope-card", "tightrope-mp", "tightrope-other"]);
 
+const BREVO_CONTACTS_URL = "https://api.brevo.com/v3/contacts";
+
 interface SignupBody {
   email: string;
   firstName?: string;
@@ -45,20 +52,30 @@ interface SignupBody {
   mpInterest?: boolean;
   /**
    * True iff the user explicitly opted in to a weekly AI-generated digest of
-   * Tightrope movements. Carried into Brevo as a field the upstream Zap can
-   * route into a separate list / segment for digest delivery. The pub/sub
-   * worker that actually emits the digest is forthcoming; capturing intent
-   * now means we have a real audience the moment it ships.
+   * Tightrope movements. Recorded as the WEEKLY_DIGEST contact attribute in
+   * Brevo so a future scheduled worker can pull the segment and emit the
+   * digest. Capturing intent now means we have a real audience the moment
+   * the digest worker ships.
    */
   weeklyUpdates?: boolean;
   turnstileToken: string;
 }
 
+/** Sanitised, validated form of the inbound body — what the upstream forwarders consume. */
+interface CleanSignup {
+  email: string;
+  firstName: string;
+  postcode: string;
+  sourceVariant: string;
+  mpInterest: boolean;
+  weeklyUpdates: boolean;
+}
+
 /**
- * Lightweight RFC-5322-ish check. Doesn't try to be exhaustive — Zapier and
- * Brevo will reject a malformed address downstream. Goal here is to catch
- * obvious typos and prevent header-injection (newlines, control chars) on
- * fields that may end up in email metadata.
+ * Lightweight RFC-5322-ish check. Doesn't try to be exhaustive — Brevo will
+ * reject a malformed address downstream too. Goal here is to catch obvious
+ * typos and prevent header-injection (newlines, control chars) on fields
+ * that may end up in email metadata.
  */
 function looksLikeEmail(s: unknown): s is string {
   if (typeof s !== "string") return false;
@@ -91,13 +108,16 @@ export async function handleLfgSignup(req: Request, env: Env): Promise<Response>
   if (!looksLikeEmail(email)) {
     return json({ error: "valid email required", code: "BAD_EMAIL" }, 400);
   }
-  const firstName = trimmedString(body.firstName, MAX_NAME);
-  const postcode = trimmedString(body.postcode, MAX_POSTCODE);
-  const source = ALLOWED_SOURCES.has(String(body.source))
-    ? (body.source as string)
-    : "tightrope-other";
-  const mpInterest = body.mpInterest === true;
-  const weeklyUpdates = body.weeklyUpdates === true;
+  const clean: CleanSignup = {
+    email,
+    firstName: trimmedString(body.firstName, MAX_NAME),
+    postcode: trimmedString(body.postcode, MAX_POSTCODE),
+    sourceVariant: ALLOWED_SOURCES.has(String(body.source))
+      ? (body.source as string)
+      : "tightrope-other",
+    mpInterest: body.mpInterest === true,
+    weeklyUpdates: body.weeklyUpdates === true,
+  };
   const turnstileToken = trimmedString(body.turnstileToken, 4096);
   if (!turnstileToken) {
     return json({ error: "turnstile token required", code: "TURNSTILE_FAILED" }, 400);
@@ -112,31 +132,97 @@ export async function handleLfgSignup(req: Request, env: Env): Promise<Response>
     return json({ error: "challenge failed — please try again", code: "TURNSTILE_FAILED" }, 400);
   }
 
-  // 4. Forward to Zapier / LFG ingestion endpoint.
+  // 4. Forward — Brevo direct if API key is bound, else Zapier fallback.
+  if (env.LFG_API_KEY) {
+    return forwardToBrevo(env, clean);
+  }
+  if (env.LFG_SIGNUP_API_URL) {
+    return forwardToZapier(env, clean);
+  }
+  console.error("no upstream configured: LFG_API_KEY and LFG_SIGNUP_API_URL both unset");
+  return json({ error: "signup unavailable", code: "UPSTREAM_ERROR" }, 502);
+}
+
+/**
+ * Brevo `POST /v3/contacts` with `updateEnabled: true` so re-signups upsert
+ * cleanly rather than 400ing on duplicate. Optional fields are omitted from
+ * the attributes object when empty so we don't clobber existing values on
+ * an existing contact.
+ *
+ * Brevo returns 201 on created, 204 on updated — both are 2xx, both are ok.
+ * Errors come back as { code, message } JSON; we surface the code in worker
+ * logs (visible via `wrangler tail`) and return UPSTREAM_ERROR to the client.
+ */
+async function forwardToBrevo(env: Env, c: CleanSignup): Promise<Response> {
+  const attributes: Record<string, unknown> = {
+    SOURCE: c.sourceVariant,
+    MP_INTEREST: c.mpInterest,
+    WEEKLY_DIGEST: c.weeklyUpdates,
+  };
+  if (c.firstName) attributes.FIRSTNAME = c.firstName;
+  if (c.postcode) attributes.POSTCODE = c.postcode;
+
+  const payload = {
+    email: c.email,
+    attributes,
+    listIds: [Number(env.BREVO_LIST_NUMBER) || 0],
+    emailBlacklisted: false,
+    smsBlacklisted: false,
+    updateEnabled: true,
+  };
+
+  try {
+    const res = await fetch(BREVO_CONTACTS_URL, {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "api-key": env.LFG_API_KEY,
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) {
+      let detail = "";
+      try {
+        const j = (await res.json()) as { code?: string; message?: string };
+        detail = j?.code ?? j?.message ?? "";
+      } catch { /* non-JSON body */ }
+      console.error("Brevo upstream non-2xx", res.status, detail);
+      return json({ error: "signup failed — please try again", code: "UPSTREAM_ERROR" }, 502);
+    }
+    return json({ ok: true });
+  } catch (err) {
+    console.error("Brevo upstream error", err instanceof Error ? err.message : "unknown");
+    return json({ error: "signup failed — please try again", code: "UPSTREAM_ERROR" }, 502);
+  }
+}
+
+/**
+ * Zapier webhook fallback. Payload shape mirrors apps/web's sister site
+ * (youcanjustdostuff) so a single Brevo Zap can consume both feeds.
+ * Reserved as an escape hatch in case Brevo direct breaks — flip back by
+ * deleting the LFG_API_KEY secret.
+ */
+async function forwardToZapier(env: Env, c: CleanSignup): Promise<Response> {
   const upstreamUrl = env.LFG_SIGNUP_API_URL;
-  if (!upstreamUrl || !/^https:\/\//.test(upstreamUrl)) {
-    console.error("LFG_SIGNUP_API_URL missing or not https");
+  if (!/^https:\/\//.test(upstreamUrl)) {
+    console.error("LFG_SIGNUP_API_URL not https");
     return json({ error: "signup unavailable", code: "UPSTREAM_ERROR" }, 502);
   }
-
-  // Shape mirrors apps/web's sister site (youcanjustdostuff) so a single
-  // Brevo Zap can consume both feeds. lastName / phoneNumber / bio are
-  // omitted today (not collected on this form) but kept as empty strings
-  // for parity with the upstream Zap's expected schema.
   const payload = {
-    firstName,
+    firstName: c.firstName,
     lastName: "",
-    email,
+    email: c.email,
     phoneNumber: "",
-    postcode,
+    postcode: c.postcode,
     bio: "",
     listIds: [Number(env.BREVO_LIST_NUMBER) || 0],
     source: "tightrope-tracker",
-    sourceVariant: source,
-    mpInterest,
-    weeklyUpdates,
+    sourceVariant: c.sourceVariant,
+    mpInterest: c.mpInterest,
+    weeklyUpdates: c.weeklyUpdates,
   };
-
   try {
     const upstream = await fetch(upstreamUrl, {
       method: "POST",

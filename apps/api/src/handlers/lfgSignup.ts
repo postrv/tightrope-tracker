@@ -1,0 +1,156 @@
+/**
+ * POST /api/v1/lfg-signup
+ *
+ * Worker-side proxy that captures interest from the Tightrope Tracker site
+ * and forwards it to LFG's CRM ingestion endpoint (a Zapier webhook that
+ * fans out to Brevo). The proxy exists to keep the upstream URL out of the
+ * page source, to enforce a Cloudflare Turnstile challenge before any
+ * record is created, and to give us one place to rate-limit / shape /
+ * audit signups.
+ *
+ * Contract:
+ *   Request body (JSON):
+ *     {
+ *       email: string,             // required, RFC-shaped
+ *       firstName?: string,        // optional, 0..120 chars
+ *       postcode?: string,         // optional, 0..16 chars (lightly checked)
+ *       source?: "tightrope-card" | "tightrope-mp" | "tightrope-other",
+ *       mpInterest?: boolean,      // true iff signup came from the MP-letter card
+ *       turnstileToken: string     // required, fresh Turnstile widget token
+ *     }
+ *   Success: 200 { ok: true }
+ *   Failure: 4xx { error, code } where code ∈
+ *     BAD_BODY | BAD_EMAIL | TURNSTILE_FAILED | UPSTREAM_ERROR
+ *
+ * Note: no PII is logged. Turnstile error codes ARE logged so we can debug
+ * misconfiguration without recording subjects' tokens or emails.
+ */
+
+import { json } from "../lib/router.js";
+import { verifyTurnstile, TEST_ALWAYS_PASS_SECRET } from "../lib/turnstile.js";
+import { clientIp } from "../lib/rateLimit.js";
+
+/** Soft caps so a misbehaving client can't push a 1MB bio into the upstream. */
+const MAX_EMAIL = 254;
+const MAX_NAME = 120;
+const MAX_POSTCODE = 16;
+
+const ALLOWED_SOURCES = new Set(["tightrope-card", "tightrope-mp", "tightrope-other"]);
+
+interface SignupBody {
+  email: string;
+  firstName?: string;
+  postcode?: string;
+  source?: string;
+  mpInterest?: boolean;
+  /**
+   * True iff the user explicitly opted in to a weekly AI-generated digest of
+   * Tightrope movements. Carried into Brevo as a field the upstream Zap can
+   * route into a separate list / segment for digest delivery. The pub/sub
+   * worker that actually emits the digest is forthcoming; capturing intent
+   * now means we have a real audience the moment it ships.
+   */
+  weeklyUpdates?: boolean;
+  turnstileToken: string;
+}
+
+/**
+ * Lightweight RFC-5322-ish check. Doesn't try to be exhaustive — Zapier and
+ * Brevo will reject a malformed address downstream. Goal here is to catch
+ * obvious typos and prevent header-injection (newlines, control chars) on
+ * fields that may end up in email metadata.
+ */
+function looksLikeEmail(s: unknown): s is string {
+  if (typeof s !== "string") return false;
+  if (s.length < 3 || s.length > MAX_EMAIL) return false;
+  if (/[\r\n\t\x00-\x1f\x7f]/.test(s)) return false;
+  return /^[^\s<>@",;:\\]+@[^\s<>@",;:\\]+\.[^\s<>@",;:\\]+$/.test(s);
+}
+
+function trimmedString(v: unknown, max: number): string {
+  if (typeof v !== "string") return "";
+  // Strip control chars before slicing — header injection / log poisoning defence.
+  return v.replace(/[\r\n\t\x00-\x1f\x7f]/g, "").trim().slice(0, max);
+}
+
+export async function handleLfgSignup(req: Request, env: Env): Promise<Response> {
+  // 1. Parse body.
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return json({ error: "request body must be JSON", code: "BAD_BODY" }, 400);
+  }
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return json({ error: "request body must be a JSON object", code: "BAD_BODY" }, 400);
+  }
+  const body = raw as Partial<SignupBody>;
+
+  // 2. Validate fields.
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  if (!looksLikeEmail(email)) {
+    return json({ error: "valid email required", code: "BAD_EMAIL" }, 400);
+  }
+  const firstName = trimmedString(body.firstName, MAX_NAME);
+  const postcode = trimmedString(body.postcode, MAX_POSTCODE);
+  const source = ALLOWED_SOURCES.has(String(body.source))
+    ? (body.source as string)
+    : "tightrope-other";
+  const mpInterest = body.mpInterest === true;
+  const weeklyUpdates = body.weeklyUpdates === true;
+  const turnstileToken = trimmedString(body.turnstileToken, 4096);
+  if (!turnstileToken) {
+    return json({ error: "turnstile token required", code: "TURNSTILE_FAILED" }, 400);
+  }
+
+  // 3. Verify Turnstile.
+  const secret = env.TURNSTILE_SECRET_KEY || TEST_ALWAYS_PASS_SECRET;
+  const verify = await verifyTurnstile(turnstileToken, secret, clientIp(req));
+  if (!verify.ok) {
+    // Don't echo the full error-code list to the client — it's debug telemetry.
+    console.warn("turnstile verify failed", verify.errorCodes.join(","));
+    return json({ error: "challenge failed — please try again", code: "TURNSTILE_FAILED" }, 400);
+  }
+
+  // 4. Forward to Zapier / LFG ingestion endpoint.
+  const upstreamUrl = env.LFG_SIGNUP_API_URL;
+  if (!upstreamUrl || !/^https:\/\//.test(upstreamUrl)) {
+    console.error("LFG_SIGNUP_API_URL missing or not https");
+    return json({ error: "signup unavailable", code: "UPSTREAM_ERROR" }, 502);
+  }
+
+  // Shape mirrors apps/web's sister site (youcanjustdostuff) so a single
+  // Brevo Zap can consume both feeds. lastName / phoneNumber / bio are
+  // omitted today (not collected on this form) but kept as empty strings
+  // for parity with the upstream Zap's expected schema.
+  const payload = {
+    firstName,
+    lastName: "",
+    email,
+    phoneNumber: "",
+    postcode,
+    bio: "",
+    listIds: [Number(env.BREVO_LIST_NUMBER) || 0],
+    source: "tightrope-tracker",
+    sourceVariant: source,
+    mpInterest,
+    weeklyUpdates,
+  };
+
+  try {
+    const upstream = await fetch(upstreamUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!upstream.ok) {
+      console.error("LFG upstream non-2xx", upstream.status);
+      return json({ error: "signup failed — please try again", code: "UPSTREAM_ERROR" }, 502);
+    }
+    return json({ ok: true });
+  } catch (err) {
+    console.error("LFG upstream error", err instanceof Error ? err.message : "unknown");
+    return json({ error: "signup failed — please try again", code: "UPSTREAM_ERROR" }, 502);
+  }
+}

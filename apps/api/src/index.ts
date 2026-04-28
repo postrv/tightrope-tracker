@@ -13,10 +13,16 @@ import { handleMp } from "./handlers/mp.js";
 import { handleHealth } from "./handlers/health.js";
 import { handleMethodologyBaselines } from "./handlers/methodology.js";
 import { handleOpenapi } from "./handlers/openapi.js";
+import { handleLfgSignup } from "./handlers/lfgSignup.js";
 
 /**
  * Exported so the OpenAPI drift-guard test can list registered paths and
  * assert they match the published spec (`apps/api/src/tests/openapi.test.ts`).
+ *
+ * Note on POST /api/v1/lfg-signup: deliberately omitted from the OpenAPI
+ * spec. The published spec describes the read-only civic data API; the
+ * signup endpoint is a private auxiliary that proxies form submissions to
+ * LFG's CRM and isn't part of the public contract.
  */
 export const router = new Router()
   .get("/api/v1/score", handleScore)
@@ -26,7 +32,8 @@ export const router = new Router()
   .get("/api/v1/mp", (req, env) => handleMp(req, env))
   .get("/api/v1/health", (req, env) => handleHealth(req, env))
   .get("/api/v1/methodology/baselines", handleMethodologyBaselines)
-  .get("/api/v1/openapi.json", handleOpenapi);
+  .get("/api/v1/openapi.json", handleOpenapi)
+  .post("/api/v1/lfg-signup", (req, env) => handleLfgSignup(req, env));
 
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {

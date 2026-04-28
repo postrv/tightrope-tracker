@@ -1,0 +1,211 @@
+---
+/**
+ * LFG signup card. Captures email + optional first name + postcode, gates
+ * submission on a Cloudflare Turnstile challenge, and POSTs the payload to
+ * `apiBase + /api/v1/lfg-signup`. The worker proxies to LFG's CRM
+ * (Brevo via Zapier today) so the upstream URL never reaches the browser.
+ *
+ * The form submission code lives inline with `is:inline` + per-request CSP
+ * nonce (Astro bundling cannot inject a nonce into a script it inlines
+ * without one — see SEC-10 / inlineScriptNonce.test).
+ *
+ * The Turnstile widget loader is loaded as an external script with `src=`,
+ * so CSP `script-src 'self' https://challenges.cloudflare.com` covers it.
+ */
+
+interface Props {
+  /** API origin used for /api/v1/lfg-signup. Defaults match production. */
+  apiBase?: string;
+  /** Tracks where on the page this card was rendered, for downstream CRM segmentation. */
+  source?: "tightrope-card" | "tightrope-mp" | "tightrope-other";
+}
+
+const {
+  apiBase = "https://api.tightropetracker.uk",
+  source = "tightrope-card",
+} = Astro.props;
+
+// Turnstile site key. Public — safe to embed in HTML. Falls back to the
+// always-pass test key Cloudflare publishes for development; production
+// MUST set PUBLIC_TURNSTILE_SITE_KEY in .env (Vite-side) or via wrangler.
+const turnstileSiteKey =
+  import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "1x00000000000000000000AA";
+---
+<div class="action-card lfg-card">
+  <span class="eyebrow lfg-eyebrow">Get involved</span>
+  <h3>Join Looking For Growth</h3>
+  <p>
+    Looking For Growth is the cross-party movement campaigning to get Britain building, growing and delivering. If the numbers on this page move you, the most useful thing you can do is join the people working to change them.
+  </p>
+  <form class="lfg-form" data-lfg-form aria-label="LFG signup">
+    <label class="lfg-label" for="lfg-email">Email</label>
+    <input id="lfg-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com" />
+
+    <div class="lfg-row">
+      <div>
+        <label class="lfg-label" for="lfg-firstname">First name <span class="opt">(optional)</span></label>
+        <input id="lfg-firstname" name="firstName" type="text" autocomplete="given-name" />
+      </div>
+      <div>
+        <label class="lfg-label" for="lfg-postcode">Postcode <span class="opt">(optional)</span></label>
+        <input id="lfg-postcode" name="postcode" type="text" autocomplete="postal-code" placeholder="EX4 4QJ" />
+      </div>
+    </div>
+
+    <label class="lfg-checkbox">
+      <input type="checkbox" id="lfg-weekly" name="weeklyUpdates" />
+      <span>Email me a weekly AI-generated summary of how the Tightrope score has moved.</span>
+    </label>
+
+    <div class="cf-turnstile lfg-turnstile" data-sitekey={turnstileSiteKey} data-callback="onLfgTurnstileSuccess" data-error-callback="onLfgTurnstileError" data-expired-callback="onLfgTurnstileExpired" data-theme="auto"></div>
+
+    <button class="btn" type="submit" data-lfg-submit disabled>Sign up to LFG →</button>
+    <p class="lfg-hint" data-lfg-status hidden></p>
+    <p class="lfg-hint">By signing up you agree to receive occasional emails from Looking For Growth. Unsubscribe any time.</p>
+  </form>
+</div>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<script is:inline nonce={Astro.locals.cspNonce} define:vars={{ apiBase, source }}>
+(() => {
+  const form = document.querySelector('[data-lfg-form]');
+  if (!form) return;
+  const submit = form.querySelector('[data-lfg-submit]');
+  const status = form.querySelector('[data-lfg-status]');
+  let turnstileToken = '';
+
+  // Turnstile auto-render reads these globals by name. The widget calls
+  // them from its iframe via postMessage — they have to be on `window`.
+  window.onLfgTurnstileSuccess = function (token) {
+    turnstileToken = String(token || '');
+    if (submit) submit.disabled = false;
+  };
+  window.onLfgTurnstileError = function () {
+    turnstileToken = '';
+    if (submit) submit.disabled = true;
+  };
+  window.onLfgTurnstileExpired = function () {
+    turnstileToken = '';
+    if (submit) submit.disabled = true;
+  };
+
+  function setStatus(msg, kind) {
+    if (!status) return;
+    if (!msg) {
+      status.hidden = true;
+      status.textContent = '';
+      status.removeAttribute('data-kind');
+      return;
+    }
+    status.hidden = false;
+    status.textContent = msg;
+    status.setAttribute('data-kind', kind || 'info');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    setStatus('Submitting…', 'info');
+    if (submit) submit.disabled = true;
+
+    const fd = new FormData(form);
+    const payload = {
+      email: String(fd.get('email') || '').trim(),
+      firstName: String(fd.get('firstName') || '').trim(),
+      postcode: String(fd.get('postcode') || '').trim(),
+      weeklyUpdates: fd.get('weeklyUpdates') === 'on',
+      source: source,
+      turnstileToken: turnstileToken,
+    };
+
+    if (!payload.email) {
+      setStatus('Email is required.', 'error');
+      if (submit) submit.disabled = false;
+      return;
+    }
+    if (!payload.turnstileToken) {
+      setStatus('Please complete the challenge before submitting.', 'error');
+      return;
+    }
+
+    try {
+      const res = await fetch(apiBase + '/api/v1/lfg-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        setStatus("Thanks — you're signed up. Welcome aboard.", 'ok');
+        form.reset();
+        // Reset Turnstile so the user can re-submit if they want to.
+        if (window.turnstile && typeof window.turnstile.reset === 'function') {
+          try { window.turnstile.reset(); } catch (_) { /* ignore */ }
+        }
+        turnstileToken = '';
+        if (submit) submit.disabled = true;
+        return;
+      }
+      let code = '';
+      try {
+        const body = await res.json();
+        code = body && body.code ? String(body.code) : '';
+      } catch (_) { /* non-JSON */ }
+      if (code === 'BAD_EMAIL') {
+        setStatus('That email address looks invalid — please check and try again.', 'error');
+      } else if (code === 'TURNSTILE_FAILED') {
+        setStatus('The challenge failed — please retry.', 'error');
+        if (window.turnstile && typeof window.turnstile.reset === 'function') {
+          try { window.turnstile.reset(); } catch (_) { /* ignore */ }
+        }
+        turnstileToken = '';
+      } else {
+        setStatus('Something went wrong. Please try again in a moment.', 'error');
+      }
+      if (submit) submit.disabled = !turnstileToken;
+    } catch (_) {
+      setStatus('Network error — please try again.', 'error');
+      if (submit) submit.disabled = !turnstileToken;
+    }
+  });
+})();
+</script>
+
+<style>
+.lfg-card { border-color: var(--accent-dim); }
+.lfg-eyebrow { color: var(--accent); }
+.lfg-form { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+.lfg-form .lfg-label { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 6px; }
+.lfg-form .opt { color: var(--ink-3); font-weight: normal; letter-spacing: 0.05em; text-transform: none; }
+.lfg-form input[type="email"],
+.lfg-form input[type="text"] {
+  width: 100%;
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px; color: var(--ink-0); font-family: var(--font-mono); font-size: 13px;
+  outline: none; transition: border-color 180ms;
+}
+.lfg-form input[type="email"]:focus,
+.lfg-form input[type="text"]:focus { border-color: var(--accent-dim); }
+.lfg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.lfg-checkbox {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13px; color: var(--ink-1); line-height: 1.45;
+  padding: 10px 12px;
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer;
+}
+.lfg-checkbox input[type="checkbox"] {
+  flex-shrink: 0; margin-top: 2px;
+  width: 16px; height: 16px;
+  accent-color: var(--accent);
+}
+.lfg-turnstile { margin: 4px 0; min-height: 65px; }
+.lfg-form .btn { width: 100%; }
+.lfg-form .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.lfg-hint { margin: 0; font-size: 12px; color: var(--ink-2); }
+.lfg-hint[data-kind="ok"] { color: var(--accent); }
+.lfg-hint[data-kind="error"] { color: var(--band-critical); }
+
+@media (max-width: 600px) {
+  .lfg-row { grid-template-columns: 1fr; }
+}
+</style>

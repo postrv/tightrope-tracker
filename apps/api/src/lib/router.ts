@@ -6,7 +6,7 @@
  * by handlers off the Request URL. That is all the router has to do.
  */
 
-export type Method = "GET" | "OPTIONS" | "HEAD";
+export type Method = "GET" | "POST" | "OPTIONS" | "HEAD";
 
 export type Handler = (
   req: Request,
@@ -23,16 +23,30 @@ interface Route {
 export class Router {
   private readonly routes: Route[] = [];
   private notFoundHandler: Handler = () => json({ error: "not_found", code: "NOT_FOUND" }, 404);
-  private fallbackOptionsPaths: Set<string> = new Set();
+  /** path → set of allowed concrete methods (excluding OPTIONS, which is universal). */
+  private readonly methodsByPath: Map<string, Set<Method>> = new Map();
 
   get(path: string, handler: Handler): this {
-    this.routes.push({ method: "GET", path, handler });
-    this.fallbackOptionsPaths.add(path);
-    return this;
+    return this.register("GET", path, handler);
+  }
+
+  post(path: string, handler: Handler): this {
+    return this.register("POST", path, handler);
   }
 
   options(path: string, handler: Handler): this {
     this.routes.push({ method: "OPTIONS", path, handler });
+    return this;
+  }
+
+  private register(method: Method, path: string, handler: Handler): this {
+    this.routes.push({ method, path, handler });
+    let set = this.methodsByPath.get(path);
+    if (!set) {
+      set = new Set();
+      this.methodsByPath.set(path, set);
+    }
+    set.add(method);
     return this;
   }
 
@@ -52,9 +66,9 @@ export class Router {
     return null;
   }
 
-  /** Every GET path also responds to OPTIONS for CORS preflight. */
+  /** True if the path has any concrete method registered (not just OPTIONS). */
   hasOptions(pathname: string): boolean {
-    return this.fallbackOptionsPaths.has(pathname);
+    return this.methodsByPath.has(pathname);
   }
 
   /**
@@ -66,6 +80,15 @@ export class Router {
     return this.routes.filter((r) => r.method === method).map((r) => r.path);
   }
 
+  /** Comma-joined Allow header for a known path: "GET, OPTIONS" or "POST, OPTIONS" etc. */
+  private allowHeader(pathname: string): string {
+    const set = this.methodsByPath.get(pathname);
+    if (!set) return "OPTIONS";
+    const ordered: Method[] = (["GET", "POST"] as Method[]).filter((m) => set.has(m));
+    ordered.push("OPTIONS");
+    return ordered.join(", ");
+  }
+
   async handle(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
     const method = req.method.toUpperCase();
@@ -73,18 +96,18 @@ export class Router {
     const direct = this.match(method, url.pathname);
     if (direct) return direct(req, env, ctx);
 
-    // CORS preflight for any registered GET path.
+    // CORS preflight for any registered path (regardless of method).
     if (method === "OPTIONS" && this.hasOptions(url.pathname)) {
       // Note: handlers can override by registering an OPTIONS route explicitly.
       const optionsRoute = this.match("OPTIONS", url.pathname);
       if (optionsRoute) return optionsRoute(req, env, ctx);
-      return preflight();
+      return preflight(this.allowHeader(url.pathname));
     }
 
     // Method not allowed on an existing path.
-    if (this.fallbackOptionsPaths.has(url.pathname)) {
+    if (this.methodsByPath.has(url.pathname)) {
       return json({ error: "method_not_allowed", code: "METHOD_NOT_ALLOWED" }, 405, {
-        Allow: "GET, OPTIONS",
+        Allow: this.allowHeader(url.pathname),
       });
     }
 
@@ -137,12 +160,12 @@ export function notSeeded(): Response {
   );
 }
 
-export function preflight(): Response {
+export function preflight(allowMethods = "GET, OPTIONS"): Response {
   return new Response(null, {
     status: 204,
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Methods": allowMethods,
       "Access-Control-Allow-Headers": "Content-Type",
       "Access-Control-Max-Age": "86400",
       "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",

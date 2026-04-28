@@ -1,0 +1,24 @@
+# Tightrope API worker — local secrets template.
+#
+# Copy this file to `.dev.vars` (gitignored) and fill in real values for
+# `wrangler dev`. Production values are uploaded with `wrangler secret put`
+# and never live in any tracked file.
+#
+# Note: `wrangler dev` reads `.dev.vars` here. The repo-root `.env` is read
+# by Astro/Vite (apps/web) and is NOT visible to this worker.
+
+# LFG signup ingestion endpoint. Zapier webhook fronts Brevo.
+LFG_SIGNUP_API_URL=https://hooks.zapier.com/hooks/catch/REPLACE_ME/REPLACE_ME/
+
+# Brevo list ID for Tightrope-sourced contacts (integer).
+BREVO_LIST_NUMBER=127
+
+# Cloudflare Turnstile secret key (paired with PUBLIC_TURNSTILE_SITE_KEY
+# on the web side). Use the always-pass test secret 1x0000000000000000000000000000000AA
+# for local development if you don't yet have a real key — the worker
+# falls back to it automatically when this is unset.
+TURNSTILE_SECRET_KEY=
+
+# Brevo direct-API key. Reserved for a future direct integration; not
+# used by the Zapier proxy path today.
+LFG_API_KEY=

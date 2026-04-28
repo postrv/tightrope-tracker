@@ -59,13 +59,17 @@ export function buildCsp({ nonce, isEmbed }: CspOptions): string {
     // SEC-10: 'unsafe-inline' removed; every inline script must carry the
     // per-request nonce. External scripts (Astro-bundled, Plausible) are
     // both 'self' now — SEC-12 self-hosts plausible.js under /vendor.
-    `script-src 'self' 'nonce-${nonce}'`,
+    // challenges.cloudflare.com is allowed for the Cloudflare Turnstile
+    // widget loaded by the LFG signup form.
+    `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com`,
     // Plausible events still POST to plausible.io via the script's
     // `data-api` attribute; that's why connect-src retains the host even
     // though script-src no longer needs it.
     "connect-src 'self' https://plausible.io https://tightropetracker.uk https://api.tightropetracker.uk",
     "object-src 'none'",
-    "frame-src 'none'",
+    // Turnstile renders its challenge inside an iframe served from
+    // challenges.cloudflare.com — must be allowed in frame-src.
+    "frame-src https://challenges.cloudflare.com",
     "worker-src 'self'",
     "manifest-src 'self'",
     "base-uri 'self'",

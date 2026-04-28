@@ -1,6 +1,7 @@
 ---
 import type { HeadlineScore } from "@tightrope/shared";
 import { PILLARS, BANDS } from "@tightrope/shared";
+import LfgSignupCard from "./LfgSignupCard.astro";
 
 interface Props {
   headline: HeadlineScore;
@@ -54,11 +55,13 @@ const embedSnippets = {
     <div class="section-head">
       <div>
         <span class="eyebrow">Act</span>
-        <h2 class="sec-title" id="action-title" style="margin-top: 14px;">Two useful things you can do with this</h2>
+        <h2 class="sec-title" id="action-title" style="margin-top: 14px;">Three useful things you can do with this</h2>
       </div>
     </div>
 
     <div class="actions-grid">
+      <LfgSignupCard apiBase={apiBase} source="tightrope-card" />
+
       <div class="action-card" data-mp-card>
         <h3>Write to your MP</h3>
         <p>Enter your postcode. We'll find your MP and pre-fill a short, factual letter citing today's Tightrope Score, the worst-performing pillar, and the methodology page. One click opens a draft email to your MP's parliamentary address.</p>
@@ -81,6 +84,7 @@ const embedSnippets = {
             <button class="btn ghost" type="button" data-mp-reset>Reset draft</button>
           </div>
           <p class="mp-hint" data-mp-copy-feedback hidden>Letter copied to clipboard — paste it into the form on Parliament's site.</p>
+          <p class="mp-hint mp-followup">Want to do more than write a letter? <a href="#action">Sign up to LFG</a> ↑.</p>
         </div>
         <div class="mp-error" data-mp-error hidden></div>
       </div>
@@ -231,8 +235,8 @@ const embedSnippets = {
 
 <style>
 .actions-sec { padding: 80px 0; background: var(--bg-1); border-bottom: 1px solid var(--border-soft); }
-.actions-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; }
-.action-card { background: var(--bg-0); border: 1px solid var(--border); border-radius: 12px; padding: 32px; }
+.actions-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; align-items: start; }
+.action-card { background: var(--bg-0); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
 .action-card h3 { font-family: var(--font-serif); font-weight: 400; font-size: 26px; margin: 0 0 8px; letter-spacing: -0.01em; }
 .action-card p { color: var(--ink-1); font-size: 14px; margin: 0 0 20px; }
 .mp-label { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 8px; }
@@ -255,6 +259,8 @@ const embedSnippets = {
 }
 .mp-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .mp-error { margin-top: 14px; color: var(--band-critical); font-size: 13px; font-family: var(--font-mono); }
+.mp-followup { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-soft); }
+.mp-followup a { color: var(--accent); }
 
 .embed-code {
   background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px;
@@ -276,7 +282,10 @@ const embedSnippets = {
   margin-bottom: 40px;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 1100px) {
+  .actions-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+}
+@media (max-width: 720px) {
   .actions-grid { grid-template-columns: 1fr; gap: 24px; }
   .section-head { grid-template-columns: 1fr; }
 }

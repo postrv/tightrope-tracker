@@ -26,7 +26,7 @@ const refreshLabel = stale ? "Last fresh data" : "Latest data";
       <div class="foot-col">
         <h4>About</h4>
         <p class="foot-about"><strong>Tightrope Tracker</strong> is an independent civic data project. Not affiliated with any political party or government body. All data is public and verifiable. Built by citizens who believe sunlight is the best disinfectant.<!-- --></p>
-        <p class="foot-credits">Made by Laurence Avent and commissioned by <a href="https://lookingforgrowth.uk/" rel="noopener" target="_blank">Looking for Growth UK</a>, a grassroots non-party movement. Editorial independence preserved: figures are sourced from named publishers and every correction is logged.</p>
+        <p class="foot-credits">Made by <a href="https://laurenceavent.com/" rel="noopener" target="_blank">Laurence Avent</a>, founder of <a href="https://arbitersec.com/" rel="noopener" target="_blank">Arbitersec.com</a>, and commissioned by <a href="https://lookingforgrowth.uk/" rel="noopener" target="_blank">Looking for Growth UK</a>, a grassroots non-party movement. Editorial independence preserved: figures are sourced from named publishers and every correction is logged.</p>
       </div>
       <div class="foot-col">
         <h4>The score</h4>
@@ -62,7 +62,7 @@ const refreshLabel = stale ? "Last fresh data" : "Latest data";
     </div>
     <div class="foot-motif" aria-hidden="true"></div>
     <div class="foot-bottom">
-      <span>© 2026 Tightrope Tracker · MIT-licensed · source on <a href="https://github.com/postrv/tightrope-tracker" rel="noopener" target="_blank" class="gh-link"><svg class="gh-icon" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.63 7.63 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a></span>
+      <span>© 2026 LFG: Tightrope Tracker · MIT-licensed · source on <a href="https://github.com/postrv/tightrope-tracker" rel="noopener" target="_blank" class="gh-link"><svg class="gh-icon" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.63 7.63 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg><span class="gh-text">GitHub</span></a></span>
       <span>
         {refreshLabel}: <span class={`refresh-ts${stale ? " stale" : ""}`}>{observationTs ?? recomputeTs}</span>
         {observationTs ? <span class="recompute-ts" title="Five-minutely recompute heartbeat — separate from the indicator-level data freshness shown above.">· recompute {recomputeTs}</span> : null}
@@ -93,8 +93,22 @@ footer.site a:hover { color: var(--accent); }
   background-repeat: no-repeat;
 }
 .foot-bottom { padding-top: 16px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-.gh-link { display: inline-flex; align-items: center; gap: 4px; }
-.gh-icon { width: 14px; height: 14px; vertical-align: -1px; flex-shrink: 0; }
+/* GitHub link in the © line. The link is inline-flex so the icon and
+   the word "GitHub" stay vertically centred on each other regardless
+   of font metrics, and `white-space: nowrap` keeps them on the same
+   line if the © line wraps. The whole flex box is then nudged down
+   ~2px relative to the surrounding text baseline so the icon's centre
+   aligns with the text x-height rather than its cap-height (otherwise
+   it sits visibly too high). */
+.gh-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  vertical-align: -2px;
+}
+.gh-icon { width: 14px; height: 14px; flex-shrink: 0; }
+.gh-text { line-height: 1; }
 .refresh-ts { font-family: var(--font-mono); color: var(--ink-1); }
 .refresh-ts.stale { color: var(--band-critical); }
 .recompute-ts { font-family: var(--font-mono); color: var(--ink-3); margin-left: 6px; font-size: 11px; }

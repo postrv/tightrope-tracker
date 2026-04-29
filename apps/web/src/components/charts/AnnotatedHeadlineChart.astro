@@ -7,17 +7,16 @@
  * how the score has moved across the visible window, and pins the events
  * that drove the moves so the chart reads at a glance.
  *
- * Pure SVG, no client JS. Tooltips are CSS `:focus-within`/`:hover` only,
- * so the chart degrades gracefully and meets the <5KB JS budget by
- * shipping zero JS for the chart itself. Each event marker is keyboard-
- * focusable (`tabindex="0"`) and has a per-marker `aria-label`. The SVG
- * element itself carries a numeric ARIA summary so screen-reader users
- * never have to "read" a path.
+ * The chart is server-rendered SVG with a tiny interaction shim for hover,
+ * focus, and tap-to-pin tooltips. Each event marker is keyboard-focusable
+ * (`tabindex="0"`) and has a per-marker `aria-label`. The SVG element itself
+ * carries a numeric ARIA summary so screen-reader users never have to "read"
+ * a path.
  */
 import type { ScoreHistory } from "@tightrope/shared";
 import type { TimelineEvent, TimelineCategory } from "@tightrope/shared/timeline";
 import { BANDS, bandFor, PILLAR_ORDER, PILLARS } from "@tightrope/shared";
-import { pathFromSeries, shortDate } from "~/lib/format.js";
+import { shortDate } from "~/lib/format.js";
 import { mapEventsToChart } from "~/lib/chartAnnotations.js";
 import { safeHref } from "~/lib/safeHref.js";
 
@@ -40,23 +39,26 @@ const {
 
 // --- layout constants -----------------------------------------------------
 // Padding leaves room for left axis labels (0..100), bottom date ticks, and
-// two rows of permanent event labels above + two rows below the plot. The
+// three rows of permanent event labels above + three rows below the plot. The
 // extra top/bottom space is what lets dense Budget-clustered events stagger
 // across multiple lanes instead of piling up in two parity rows.
 const padL = 44;
 const padR = 16;
-const padT = 30;
-const padB = 48;
+const padT = 44;
+const padB = 64;
 const plotW = width - padL - padR;
 const plotH = height - padT - padB;
-// Per-lane y-anchors for the four-row label layout. Two lanes sit in padT,
-// two in padB. Each holds one label per chart-x-position before spilling to
-// the next lane.
+// Per-lane y-anchors for the six-row label layout. Three lanes sit in padT,
+// three in padB. Each holds one label per chart-x-position before spilling to
+// the next lane. The closest lanes are first so the common case stays visually
+// tight to the marker.
 const LABEL_LANES = [
-  { y: padT - 18, above: true },   // above row 0 — closest to plot
-  { y: padT - 4,  above: true },   // above row 1 — closer to top
+  { y: padT - 6, above: true },   // above row 0 — closest to plot
+  { y: padT - 20, above: true },
+  { y: padT - 34, above: true },
   { y: padT + plotH + 14, above: false }, // below row 0
-  { y: padT + plotH + 28, above: false }, // below row 1 (above date ticks)
+  { y: padT + plotH + 28, above: false },
+  { y: padT + plotH + 42, above: false }, // below row 2 (above date ticks)
 ] as const;
 
 // --- band-tinted background regions and y-axis ticks ----------------------
@@ -129,41 +131,42 @@ const pillarPaths = showPillars
 // --- annotations ----------------------------------------------------------
 const annotations = mapEventsToChart(history, events);
 
-/**
- * Permanent labels: which annotations get an always-visible name above or
- * below the chart line. We restrict to fiscal + geopolitical events because
- * those are the moves the public will recognise (Budgets, GE, conflict
- * shocks). Monetary / policy / delivery still get a hover-tooltip dot.
- *
- * Titles are abbreviated to keep the SVG legible — the full title remains
- * accessible via the tooltip.
+/** Titles are abbreviated to keep the SVG legible — the full title remains
+ * accessible via the tooltip and label hover/focus target.
  */
-const LABEL_CATEGORIES = new Set<TimelineCategory>(["fiscal", "geopolitical"]);
+const LABEL_MAX_CHARS = 22;
 function abbreviateEventTitle(title: string): string {
-  // Conservative truncation: split on the first comma/colon/dash, keep
-  // the head clause, then trim to a hard cap so a label never blows the
-  // chart width on mobile.
-  const head = title.split(/[,:—–-]/, 1)[0]!.trim();
-  return head.length > 18 ? `${head.slice(0, 17)}…` : head;
+  // Prefer the leading clause, but do not reduce short actor-led titles
+  // ("US, Israel and Iran agree...") to a single ambiguous token.
+  const normalised = title.replace(/\s+/g, " ").trim();
+  const clauseMatch = normalised.match(/^(.+?)(?:,|:|\s[—–-]\s)/);
+  let head = clauseMatch?.[1]?.trim() ?? normalised;
+  if (head.split(/\s+/).length < 2 && normalised.length > head.length) {
+    const keyword = normalised.match(/\b(ceasefire|budget|forecast|headroom|inflation|CPI|rates?|conflict)\b/i)?.[0];
+    head = keyword ? `${head} ${keyword}` : normalised;
+  }
+  return head.length > LABEL_MAX_CHARS
+    ? `${head.slice(0, LABEL_MAX_CHARS - 1)}…`
+    : head;
 }
-const majorAnnotations = annotations.filter((a) =>
-  LABEL_CATEGORIES.has(a.event.category),
-);
+const labelledAnnotations = annotations;
 
 // --- label collision-resolving placement ----------------------------------
 // The previous algorithm staggered labels above/below by index parity, which
 // piles up two adjacent fiscal events on the same line whenever they happen
 // to share parity (e.g. a Budget plus the OBR commentary on the same week).
-// Pack into 4 lanes greedily by xRatio, dropping any label that doesn't fit
+// Pack into six lanes greedily by xRatio, dropping any label that doesn't fit
 // — the marker dot remains, so the event is still readable on hover, but the
 // chart never collapses into stacked overlapping text.
 const LABEL_CHAR_WIDTH = 6.2; // ~10.5px monospace, conservative
 const LABEL_GAP_PX = 6;
 
 interface PlacedLabel {
-  annotation: typeof majorAnnotations[number];
+  annotation: typeof labelledAnnotations[number];
   cx: number;
   cy: number;
+  labelLeft: number;
+  labelWidth: number;
   labelX: number;
   labelY: number;
   anchor: "start" | "middle" | "end";
@@ -172,7 +175,7 @@ interface PlacedLabel {
 }
 
 function placeLabels(
-  inputs: readonly typeof majorAnnotations[number][],
+  inputs: readonly typeof labelledAnnotations[number][],
 ): readonly PlacedLabel[] {
   const sorted = [...inputs].sort((a, b) => a.xRatio - b.xRatio);
   const laneRightEdge = LABEL_LANES.map(() => Number.NEGATIVE_INFINITY);
@@ -218,6 +221,8 @@ function placeLabels(
       annotation: a,
       cx,
       cy,
+      labelLeft,
+      labelWidth: width,
       labelX,
       labelY: lane.y,
       anchor,
@@ -228,7 +233,7 @@ function placeLabels(
   return out;
 }
 
-const placedLabels = placeLabels(majorAnnotations);
+const placedLabels = placeLabels(labelledAnnotations);
 
 // Map TimelineCategory → CSS variable. Markers stay readable on the cream
 // background and align with how the rest of the site colours each kind
@@ -251,6 +256,11 @@ const CATEGORY_LABEL: Record<TimelineCategory, string> = {
 };
 function colourFor(category: TimelineCategory): string {
   return CATEGORY_COLOUR[category] ?? "var(--accent)";
+}
+
+function tooltipIdFor(eventId: string): string {
+  const safeId = eventId.replace(/[^a-zA-Z0-9_-]/g, "-");
+  return `tooltip-${idScope}-${safeId}`;
 }
 
 // --- date ticks (sparse) --------------------------------------------------
@@ -356,7 +366,15 @@ const idScope = `chart-${width}x${height}`;
       const cy = yFor(a.value);
       const colour = colourFor(a.event.category);
       return (
-        <g class="marker" tabindex="0" role="img" aria-label={`${a.event.title}, ${shortDate(a.event.date)}`}>
+        <g
+          class="marker"
+          tabindex="0"
+          role="button"
+          aria-pressed="false"
+          aria-describedby={tooltipIdFor(a.event.id)}
+          aria-label={`${a.event.title}, ${shortDate(a.event.date)}`}
+          data-event-id={a.event.id}
+        >
           {/* Vertical guide line from the data point down to the x-axis. */}
           <line
             x1={cx}
@@ -376,8 +394,8 @@ const idScope = `chart-${width}x${height}`;
       );
     })}
 
-    {/* Permanent labels for major events (fiscal + geopolitical), packed
-        into four lanes (two above plot, two below) by xRatio with greedy
+    {/* Permanent labels for charted events, packed
+        into six lanes (three above plot, three below) by xRatio with greedy
         collision resolution. Labels that can't fit any lane are dropped —
         the marker dot still renders so the event remains hover-discoverable
         but the chart never collapses into overlapping text. */}
@@ -386,12 +404,29 @@ const idScope = `chart-${width}x${height}`;
       const connectorY1 = p.above ? p.cy - 6 : p.cy + 6;
       const connectorY2 = p.above ? p.labelY + 4 : p.labelY - 10;
       return (
-        <g class="event-label" aria-hidden="true">
+        <g
+          class="event-label"
+          tabindex="0"
+          role="button"
+          aria-pressed="false"
+          aria-describedby={tooltipIdFor(p.annotation.event.id)}
+          aria-label={`${p.annotation.event.title}, ${shortDate(p.annotation.event.date)}`}
+          data-event-id={p.annotation.event.id}
+        >
+          <rect
+            x={p.labelLeft - 4}
+            y={p.labelY - 12}
+            width={p.labelWidth + 8}
+            height="18"
+            rx="3"
+            class="event-label-hit"
+          />
           <line
             x1={p.cx}
             y1={connectorY1}
             x2={p.cx}
             y2={connectorY2}
+            class="event-label-connector"
             stroke={colour}
             stroke-width="1"
             stroke-opacity="0.7"
@@ -424,14 +459,16 @@ const idScope = `chart-${width}x${height}`;
   {/* Tooltips: one per marker. They're absolute-positioned siblings of the
       SVG so they can render outside the SVG's clipping rect. Anchored via
       the same xRatio used to place the marker. */}
-  <div class="tooltip-layer" aria-hidden="true">
+  <div class="tooltip-layer">
     {annotations.map((a) => {
       const leftPct = ((padL + a.xRatio * plotW) / width) * 100;
       const colour = colourFor(a.event.category);
       const summary = a.event.summary.length > 140 ? `${a.event.summary.slice(0, 137)}…` : a.event.summary;
       return (
         <div
+          id={tooltipIdFor(a.event.id)}
           class="tooltip"
+          role="tooltip"
           data-event-id={a.event.id}
           style={`left: ${leftPct.toFixed(2)}%;`}
         >
@@ -478,16 +515,45 @@ const idScope = `chart-${width}x${height}`;
 .pillar-labour { stroke: var(--accent-cool); stroke-dasharray: 6 3; }
 .pillar-delivery { stroke: var(--ink-2); stroke-dasharray: 2 4; }
 
-/* Permanent event labels (fiscal + geopolitical only). Hidden on small
-   viewports so the chart stays legible — the hover-tooltip dot remains
-   accessible. */
+/* Permanent event labels. Hidden on small viewports so the chart stays
+   legible — the tap-target dot remains accessible. */
+.event-label {
+  cursor: default;
+  outline: none;
+  pointer-events: none;
+  touch-action: manipulation;
+}
+.event-label-hit {
+  fill: transparent;
+  stroke: transparent;
+  pointer-events: all;
+  cursor: pointer;
+}
+.event-label-connector {
+  cursor: default;
+  pointer-events: none;
+}
 .event-label-text {
   font-family: var(--font-mono);
   font-size: 10.5px;
   font-weight: 500;
   letter-spacing: 0.02em;
+  cursor: pointer;
   pointer-events: none;
   user-select: none;
+}
+.event-label:hover .event-label-text,
+.event-label:focus-visible .event-label-text,
+.event-label[data-active="true"] .event-label-text,
+.event-label[data-pinned="true"] .event-label-text {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.event-label:focus-visible .event-label-hit,
+.event-label[data-pinned="true"] .event-label-hit {
+  fill: color-mix(in srgb, var(--bg-1) 74%, transparent);
+  stroke: var(--border);
 }
 @media (max-width: 600px) {
   /* Hide permanent labels on phones — at viewBox-scaled font sizes they
@@ -502,15 +568,22 @@ const idScope = `chart-${width}x${height}`;
 }
 
 /* Markers — keyboard-focusable, with a soft halo on focus/hover. */
-.marker { cursor: pointer; outline: none; }
+.marker {
+  cursor: default;
+  outline: none;
+  pointer-events: none;
+  touch-action: manipulation;
+}
 .marker-hit {
   /* Invisible hit-target circle; widens the tap area on touch devices
      without bloating the visible dot. pointer-events:all ensures the
      transparent fill still receives taps/clicks. */
   fill: transparent;
   pointer-events: all;
+  cursor: pointer;
 }
 .marker-guide {
+  cursor: default;
   stroke: var(--ink-2);
   stroke-opacity: 0.18;
   stroke-width: 1;
@@ -519,12 +592,17 @@ const idScope = `chart-${width}x${height}`;
 }
 .marker:hover .marker-guide,
 .marker:focus-visible .marker-guide,
+.marker[data-active="true"] .marker-guide,
 .marker[data-pinned="true"] .marker-guide { stroke-opacity: 0.55; }
+.marker-dot,
+.marker-dot-inner { pointer-events: none; }
 .marker-dot { transition: r 120ms ease-out; }
 .marker:hover .marker-dot,
 .marker:focus-visible .marker-dot,
+.marker[data-active="true"] .marker-dot,
 .marker[data-pinned="true"] .marker-dot { r: 7; }
 .marker:focus-visible,
+.marker[data-active="true"],
 .marker[data-pinned="true"] {
   /* SVG focus ring — outlines aren't reliable inside SVG, so we lean on
      the marker's own size change above plus a halo via filter. The pinned
@@ -566,16 +644,15 @@ const idScope = `chart-${width}x${height}`;
   z-index: 5;
 }
 
-/* The JS shim pairs each marker to its tooltip by DOM index and sets
-   `data-active="true"` on hover, focus, or tap-to-pin. The tap-to-pin
-   path also sets `data-pinned="true"` on the marker so the tooltip
-   survives mouseleave; document-level click and Escape clear the pin.
-   Without JS, the tooltip stays hidden but every event remains listed
-   in the DOM with its title, summary and source link, so screen readers
-   and crawlers still see the data. */
+/* The JS shim pairs each marker/label control to its tooltip by event id and
+   sets `data-active="true"` on hover, focus, or tap-to-pin. The tap-to-pin
+   path also sets `data-pinned="true"` on the active controls so the tooltip
+   survives mouseleave; document-level click and Escape clear the pin. */
 .tooltip[data-active="true"] {
   opacity: 1;
   visibility: visible;
+}
+.tooltip[data-pinned="true"] {
   pointer-events: auto;
 }
 .tooltip-head { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
@@ -607,34 +684,61 @@ const idScope = `chart-${width}x${height}`;
 
 <script is:inline nonce={Astro.locals.cspNonce}>
 /**
- * Marker → tooltip wiring.
+ * Marker/label → tooltip wiring.
  *
  * Three behaviours:
  *   1. Hover / focus surfaces the matching tooltip transiently.
- *   2. Tap (click) on a marker pins its tooltip — survives mouseleave,
+ *   2. Tap (click) on a marker or label pins its tooltip — survives mouseleave,
  *      survives focus moving away. Tap a different marker to switch the
- *      pin; tap outside any marker (or press Escape) to clear it.
+ *      pin; tap outside any marker/label (or press Escape) to clear it.
  *   3. After activation, the tooltip's horizontal position is clamped
  *      so the 220–240px box never clips the chart edges on narrow
  *      viewports.
  *
- * We pair markers and tooltips by DOM index — the SSR template renders
- * them in matching order. Without this script the chart still renders;
- * tooltip content stays in the DOM behind opacity:0 so screen readers
- * and crawlers can still read every event.
+ * We pair controls and tooltips by event id so permanent labels can use the
+ * same detail surface as the plotted dots.
  */
 (() => {
   const charts = document.querySelectorAll(".annotated-chart");
   for (const chart of charts) {
-    const markers = chart.querySelectorAll(".marker[aria-label]");
+    const controls = chart.querySelectorAll("[data-event-id][aria-label]");
     const tooltips = chart.querySelectorAll(".tooltip[data-event-id]");
-    if (!markers.length) continue;
+    if (!controls.length) continue;
+
+    const tooltipsById = new Map();
+    const controlsById = new Map();
+    for (const tooltip of tooltips) {
+      const id = tooltip.dataset.eventId;
+      if (id) tooltipsById.set(id, tooltip);
+    }
+    for (const control of controls) {
+      const id = control.dataset.eventId;
+      if (!id || !tooltipsById.has(id)) continue;
+      const group = controlsById.get(id) ?? [];
+      group.push(control);
+      controlsById.set(id, group);
+    }
+    let pinnedId = null;
+    let suppressNextClick = false;
 
     function clearAllActive() {
       tooltips.forEach((t) => { t.dataset.active = "false"; });
+      controls.forEach((c) => { c.dataset.active = "false"; });
     }
     function clearAllPinned() {
-      markers.forEach((m) => { m.dataset.pinned = "false"; });
+      pinnedId = null;
+      tooltips.forEach((t) => { t.dataset.pinned = "false"; });
+      controls.forEach((c) => {
+        c.dataset.pinned = "false";
+        c.setAttribute("aria-pressed", "false");
+      });
+    }
+    function setControlState(eventId, key, value) {
+      const eventControls = controlsById.get(eventId) ?? [];
+      for (const control of eventControls) {
+        control.dataset[key] = value ? "true" : "false";
+        if (key === "pinned") control.setAttribute("aria-pressed", value ? "true" : "false");
+      }
     }
     function clampTooltip(tooltip) {
       // Reset shift, measure, then nudge horizontally so the tooltip stays
@@ -654,69 +758,127 @@ const idScope = `chart-${width}x${height}`;
         if (shift !== 0) tooltip.style.setProperty("--tip-shift", `${shift}px`);
       });
     }
-    function activate(idx) {
+    function activate(eventId) {
       // Single-tooltip rule: only one is visible at a time.
       clearAllActive();
-      const tooltip = tooltips[idx];
+      const tooltip = tooltipsById.get(eventId);
       if (!tooltip) return;
       tooltip.dataset.active = "true";
+      setControlState(eventId, "active", true);
       clampTooltip(tooltip);
     }
-    function deactivate(idx) {
-      const tooltip = tooltips[idx];
+    function deactivate(eventId) {
+      if (pinnedId === eventId) return;
+      const tooltip = tooltipsById.get(eventId);
       if (tooltip) tooltip.dataset.active = "false";
+      setControlState(eventId, "active", false);
+    }
+    function togglePinned(eventId) {
+      const wasPinned = pinnedId === eventId;
+      clearAllPinned();
+      if (wasPinned) {
+        deactivate(eventId);
+        return;
+      }
+      pinnedId = eventId;
+      const tooltip = tooltipsById.get(eventId);
+      if (tooltip) tooltip.dataset.pinned = "true";
+      setControlState(eventId, "pinned", true);
+      activate(eventId);
+    }
+    function clearPinnedAndActive() {
+      clearAllPinned();
+      clearAllActive();
+    }
+    function eventIdFromHitTarget(node) {
+      if (!node || typeof node.closest !== "function") return null;
+      const hit = node.closest(".marker-hit, .event-label-hit");
+      if (!hit || !chart.contains(hit)) return null;
+      const control = hit.closest("[data-event-id]");
+      return control && control.dataset ? control.dataset.eventId : null;
     }
 
-    markers.forEach((marker, idx) => {
-      marker.addEventListener("mouseenter", () => {
-        if (marker.dataset.pinned === "true") return;
-        activate(idx);
+    chart.addEventListener("pointerover", (e) => {
+      const eventId = eventIdFromHitTarget(e.target);
+      if (!eventId || !tooltipsById.has(eventId)) return;
+      if (pinnedId && pinnedId !== eventId) return;
+      activate(eventId);
+    });
+    chart.addEventListener("pointerout", (e) => {
+      const eventId = eventIdFromHitTarget(e.target);
+      if (!eventId || !tooltipsById.has(eventId)) return;
+      if (eventIdFromHitTarget(e.relatedTarget) === eventId) return;
+      deactivate(eventId);
+    });
+
+    controls.forEach((control) => {
+      const eventId = control.dataset.eventId;
+      if (!eventId || !tooltipsById.has(eventId)) return;
+
+      control.addEventListener("focus", () => {
+        if (pinnedId && pinnedId !== eventId) return;
+        activate(eventId);
       });
-      marker.addEventListener("mouseleave", () => {
-        if (marker.dataset.pinned === "true") return;
-        deactivate(idx);
+      control.addEventListener("blur", () => {
+        deactivate(eventId);
       });
-      marker.addEventListener("focus", () => activate(idx));
-      marker.addEventListener("blur", () => {
-        if (marker.dataset.pinned === "true") return;
-        deactivate(idx);
+      control.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") return;
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        togglePinned(eventId);
       });
+      control.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "mouse") return;
+        e.preventDefault();
+        e.stopPropagation();
+        suppressNextClick = true;
+        window.setTimeout(() => { suppressNextClick = false; }, 700);
+        togglePinned(eventId);
+      });
+      // Older WebKit builds did not consistently dispatch Pointer Events
+      // for SVG children. Keep a touch fallback so tap-to-pin still lands.
+      control.addEventListener("touchend", (e) => {
+        if ("PointerEvent" in window) return;
+        e.preventDefault();
+        e.stopPropagation();
+        suppressNextClick = true;
+        window.setTimeout(() => { suppressNextClick = false; }, 700);
+        togglePinned(eventId);
+      }, { passive: false });
       // Tap-to-pin. stopPropagation prevents the document-level handler
       // below from immediately clearing the pin we just set.
-      marker.addEventListener("click", (e) => {
+      control.addEventListener("click", (e) => {
         e.stopPropagation();
-        const wasPinned = marker.dataset.pinned === "true";
-        clearAllPinned();
-        if (wasPinned) {
-          deactivate(idx);
-        } else {
-          marker.dataset.pinned = "true";
-          activate(idx);
+        if (suppressNextClick) {
+          suppressNextClick = false;
+          return;
         }
+        togglePinned(eventId);
       });
     });
 
-    // Outside-tap dismiss: any click outside a marker AND outside the
+    // Outside-tap dismiss: any click outside a marker/label AND outside the
     // active tooltip clears the pin and hides the tooltip. The tooltip
     // exception is what lets readers click the "Source ↗" link without
     // the click immediately tearing down the tooltip they came from.
-    // composedPath resolves SVG child elements (line, circles) to .marker.
+    // composedPath resolves SVG child elements (line, circles) to their group.
     document.addEventListener("click", (e) => {
       const path = typeof e.composedPath === "function" ? e.composedPath() : [];
       const inside = path.some((n) => n && n.classList && (
-        n.classList.contains("marker") || n.classList.contains("tooltip")
+        n.classList.contains("marker") ||
+        n.classList.contains("event-label") ||
+        n.classList.contains("tooltip")
       ));
       if (inside) return;
-      clearAllPinned();
-      clearAllActive();
+      clearPinnedAndActive();
     });
 
     // Escape clears any pinned tooltip — keyboard users get the same
     // dismiss affordance as touch users.
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape") return;
-      clearAllPinned();
-      clearAllActive();
+      clearPinnedAndActive();
     });
 
     // Re-clamp on resize / orientation change so a pinned tooltip that

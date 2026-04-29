@@ -23,14 +23,14 @@ import {
 import type { RangeOption } from "~/components/RangeToggle.astro";
 
 // --- range parsing --------------------------------------------------------
-// "all" maps to the maximum window the API serves (365). The historical
-// archive past 365 days lives in R2 and isn't part of this view.
+// "all" maps to the maximum D1 window the API serves today. The historical
+// archive beyond this lives in R2 and isn't part of this view yet.
 const url = new URL(Astro.request.url);
 const rawRange = url.searchParams.get("range") ?? "90";
 const embed = url.searchParams.get("embed") === "1";
 
 function parseRange(raw: string): { option: RangeOption; days: number } {
-  if (raw === "all") return { option: "all", days: 365 };
+  if (raw === "all") return { option: "all", days: 800 };
   const n = Number.parseInt(raw, 10);
   if (n === 30) return { option: 30, days: 30 };
   if (n === 90) return { option: 90, days: 90 };

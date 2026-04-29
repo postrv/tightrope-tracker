@@ -112,6 +112,7 @@ describe("AnnotatedHeadlineChart", () => {
     const doc = await render({ history: buildHistory(), events });
     const tooltips = doc.querySelectorAll(".tooltip");
     expect(tooltips.length).toBe(1);
+    expect(tooltips[0]!.getAttribute("role")).toBe("tooltip");
     const html = tooltips[0]!.innerHTML;
     expect(html).toMatch(/OBR April forecast/);
     expect(html).toMatch(/Office for Budget Responsibility/);
@@ -163,19 +164,40 @@ describe("AnnotatedHeadlineChart", () => {
     expect(text.endsWith("…")).toBe(true);
   });
 
-  it("renders a permanent label for fiscal and geopolitical events", async () => {
+  it("renders a permanent label for every event category", async () => {
     const events: TimelineEvent[] = [
       ev("budget", "2026-04-05T12:00:00Z", { title: "Spring Statement", category: "fiscal" }),
       ev("conflict", "2026-04-10T12:00:00Z", { title: "Geopolitical shock", category: "geopolitical" }),
       ev("rate", "2026-04-12T12:00:00Z", { title: "Bank Rate cut", category: "monetary" }),
+      ev("policy", "2026-04-13T12:00:00Z", { title: "Industrial strategy reset", category: "policy" }),
+      ev("delivery", "2026-04-14T12:00:00Z", { title: "Planning Act receives assent", category: "delivery" }),
     ];
     const doc = await render({ history: buildHistory(), events });
     const labels = Array.from(doc.querySelectorAll("g.event-label text.event-label-text"))
       .map((el) => el.textContent?.trim() ?? "");
-    // Both fiscal and geopolitical labels render; the monetary one does not.
     expect(labels).toContain("Spring Statement");
     expect(labels).toContain("Geopolitical shock");
-    expect(labels).not.toContain("Bank Rate cut");
+    expect(labels).toContain("Bank Rate cut");
+    expect(labels.some((label) => label.startsWith("Industrial strategy"))).toBe(true);
+    expect(labels.some((label) => label.startsWith("Planning Act receives"))).toBe(true);
+  });
+
+  it("makes permanent labels interactive detail targets", async () => {
+    const events: TimelineEvent[] = [
+      ev("budget", "2026-04-05T12:00:00Z", { title: "Spring Statement", category: "fiscal" }),
+    ];
+    const doc = await render({ history: buildHistory(), events });
+    const label = doc.querySelector("g.event-label");
+    const marker = doc.querySelector("g.marker");
+    const tooltip = doc.querySelector(".tooltip");
+    expect(label).not.toBeNull();
+    expect(label!.getAttribute("data-event-id")).toBe("budget");
+    expect(label!.getAttribute("role")).toBe("button");
+    expect(label!.querySelector("rect.event-label-hit")).not.toBeNull();
+    expect(label!.querySelector("line.event-label-connector")).not.toBeNull();
+    expect(label!.getAttribute("aria-describedby")).toBe(tooltip!.getAttribute("id"));
+    expect(marker!.getAttribute("data-event-id")).toBe("budget");
+    expect(marker!.getAttribute("aria-describedby")).toBe(tooltip!.getAttribute("id"));
   });
 
   it("abbreviates long permanent-label titles", async () => {
@@ -185,11 +207,10 @@ describe("AnnotatedHeadlineChart", () => {
     ];
     const doc = await render({ history: buildHistory(), events });
     const labelText = doc.querySelector("g.event-label text.event-label-text")?.textContent ?? "";
-    // Abbreviated label is at most ~18 chars (with ellipsis when truncated).
-    // Cap tightened from 22 → 18 so labels fit inside the four-lane layout
-    // without colliding with adjacent fiscal/geopolitical events.
+    // Abbreviated label is capped so labels fit inside the six-lane layout
+    // without colliding with adjacent events.
     expect(labelText.length).toBeLessThan(longTitle.length);
-    expect(labelText.length).toBeLessThanOrEqual(18);
+    expect(labelText.length).toBeLessThanOrEqual(22);
   });
 
   it("splits comma-separated event titles at the first clause", async () => {
@@ -204,15 +225,15 @@ describe("AnnotatedHeadlineChart", () => {
     expect(labelText).toBe("Iran shock");
   });
 
-  it("does not render labels for non-major categories", async () => {
+  it("keeps short actor-led labels meaningful", async () => {
     const events: TimelineEvent[] = [
-      ev("rate", "2026-04-05T12:00:00Z", { category: "monetary" }),
-      ev("policy", "2026-04-08T12:00:00Z", { category: "policy" }),
-      ev("delivery", "2026-04-11T12:00:00Z", { category: "delivery" }),
+      ev("ceasefire", "2026-04-05T12:00:00Z", {
+        title: "US, Israel and Iran agree conditional ceasefire",
+        category: "geopolitical",
+      }),
     ];
     const doc = await render({ history: buildHistory(), events });
-    expect(doc.querySelectorAll("g.event-label").length).toBe(0);
-    // Markers and tooltips still render so the dot is hover-revealable.
-    expect(doc.querySelectorAll("g.marker").length).toBe(3);
+    const labelText = doc.querySelector("g.event-label text.event-label-text")?.textContent?.trim() ?? "";
+    expect(labelText).toBe("US ceasefire");
   });
 });

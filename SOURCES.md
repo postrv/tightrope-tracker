@@ -44,8 +44,8 @@ links that editorial uses to refresh the fixture.
 | Source ID | Reference upstream | Indicator(s) | Pillar | Adapter | Editorial cadence | Freshness guard |
 |-----------|--------------------|--------------|--------|---------|-------------------|-----------------|
 | `obr_efo` | OBR Economic & Fiscal Outlook — `https://obr.uk/efo/` | `cb_headroom`, `psnfl_trajectory` | fiscal | `obrEfo.ts` + `fixtures/obr-efo.json` | Twice yearly + in-year updates | None — fixture validated at parse time only. |
-| `eia_brent` | US EIA Europe Brent Spot — `https://www.eia.gov/dnav/pet/hist/rbrted.htm` | `brent_gbp` (USD/bbl × XUDLUSS) | market | `eiaBrent.ts` + `fixtures/brent.json` | Weekly | **None**. Stale fixture silently emits old value (see audit findings). |
-| `lseg` (FTSE 250) | London Stock Exchange — `https://www.londonstockexchange.com/indices/ftse-250` | `ftse_250` | market | `lseFtse250.ts` + `fixtures/ftse-250.json` | Weekly | `assertFixtureFresh` 14 days. |
+| `eia_brent` | US EIA Open Data v2 — Europe Brent Spot (`EPCBRENT`), divided by BoE `XUDLUSS` 4pm fix | `brent_gbp` | market | `eiaBrent.ts` + `fixtures/brent.json` | Live every 5 min in market hours; fixture refreshed weekly as fallback | `assertFixtureFresh` 14 days on fallback. Live path falls through silently on empty EIA rows or BoE/EIA pairing skew > 7 days. Two-tier latest-observation selector (audit 2026-04-29) surfaces D1 backfill rows when the fixture-fallback observed_at is older. Requires `EIA_API_KEY` secret. |
+| `lseg` (FTSE 250) | EODHD EOD — `https://eodhd.com/api/eod/FTMC.LSE` | `ftse_250` | market | `lseFtse250.ts` + `fixtures/ftse-250.json` | Live daily ~16:35 UK; fixture refreshed weekly as fallback | `assertFixtureFresh` 14 days on fallback. Two-tier latest-observation selector (audit 2026-04-29) surfaces D1 backfill rows when the fixture-fallback observed_at is older. Requires `EODHD_API_KEY` secret. |
 | `lseg_housebuilders` | LSE — same five housebuilders | (none — superseded) | (none) | `lseHousebuilders.ts` + `fixtures/housebuilders.json` | Weekly | None. **Retired**: `eodhd_housebuilders` runs in fiscal pipeline instead. Audit row sticks around. |
 | `moneyfacts` | Moneyfacts — `https://moneyfacts.co.uk` | `mortgage_2y_fix` | labour | `moneyfactsMortgage.ts` + `fixtures/mortgage.json` | Monthly | None. |
 | `mhclg` | MHCLG / DLUHC live tables — `https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building` & planning live tables | `housing_trajectory`, `planning_consents` | delivery | `mhclgHousing.ts` + `fixtures/housing.json` (live), `fixtures/housing-history.json` (back-series) | Quarterly | None on live; back-series uses `historicalPayloadHash`. |
@@ -61,19 +61,32 @@ links that editorial uses to refresh the fixture.
 ## What ships in fixtures (and why this matters)
 
 The fixture-backed adapters above (every "fixture" row) emit observations
-whose `observed_at` comes verbatim from the JSON. If a fixture's
-`observed_at` ever moves backwards (e.g. an editorial swap from a 2025
-EFO snapshot to the 2026 one with an earlier publication date), the
-adapter writes new rows but the API's `MAX(observed_at)` selector keeps
-returning the older row. See `AUDIT_FINDINGS.md` for two live instances
-of this happening (cb_headroom, housing_trajectory) and the recommended fix.
+whose `observed_at` comes verbatim from the JSON. The latest-observation
+selector in `apps/api/src/lib/db.ts`, `apps/web/src/lib/db.ts`, and
+`apps/ingest/src/lib/history.ts::readLatestLiveObservations` is two-tier
+(audit 2026-04-29):
+
+  - **Tier 1 (live)** picks `MAX(ingested_at)` over non-`hist:%` non-`seed%`
+    rows. This protects against fixture supersedes — when a fixture's
+    `observed_at` moves backwards (e.g. an editorial swap from a 2025 EFO
+    snapshot to the 2026 one with an earlier publication date), the
+    new write wins despite the older `observed_at`.
+  - **Tier 2 (hist)** picks `MAX(observed_at)` over `hist:%` rows.
+    Surfaces backfill data when a live adapter is silently falling
+    through to a stale-dated fixture.
+
+The outer ranking is `observed_at DESC`, live-before-hist on ties,
+`ingested_at DESC` as final tiebreaker. So fresher backfill wins over
+stale fixture-fallback writes, but a real live row at the same
+`observed_at` always beats its backfill counterpart.
 
 ## Secrets / vars referenced
 
 | Name | Where set | Purpose |
 |------|-----------|---------|
 | `ADMIN_TOKEN` | `wrangler secret put` (ingest worker) | Guards `POST /admin/run` |
-| `EODHD_API_KEY` | `wrangler secret put` (ingest worker) | Daily housebuilder EOD; absence triggers fixture fallback |
+| `EODHD_API_KEY` | `wrangler secret put` (ingest worker) | Daily housebuilder EOD + FTSE 250 close; absence triggers fixture fallback |
+| `EIA_API_KEY` | `wrangler secret put` (ingest worker) | EIA Open Data v2 Brent spot; absence triggers fixture fallback |
 | `TWELVE_DATA_KEY` | (deprecated) | Old housebuilder vendor; free tier dropped LSE |
 | `PARLIAMENT_API_BASE` | `[vars]` in `apps/api/wrangler.toml` | SSRF-pinned to `members-api.parliament.uk` |
 | `ALERT_WEBHOOK_URL` | optional | Source-health alerts on recompute (no-op if unset) |

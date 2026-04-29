@@ -44,6 +44,12 @@ describe("computePillarScore", () => {
     const pillar = computePillarScore("market", {
       readings,
       sparkline30d: Array.from({ length: 30 }, (_, i) => 40 + i * 0.5),
+      // value7dAgo set to 0 so the resulting (positive) pillar.value gives
+      // a delta7d well above the 0.5-flat-band epsilon, which in turn
+      // produces a defensible trend7d="up". Without value7dAgo the
+      // delta-derived trend would correctly be "flat" and we'd lose
+      // the directional check.
+      value7dAgo: 0,
     });
 
     expect(pillar.value).toBeGreaterThanOrEqual(0);
@@ -51,6 +57,9 @@ describe("computePillarScore", () => {
     expect(pillar.pillar).toBe("market");
     expect(pillar.weight).toBe(0.40);
     expect(pillar.contributions.length).toBeGreaterThan(0);
+    // trend7d derives from the sign of delta7d (Fix B audit, 2026-04-29) so
+    // it can never disagree with the magnitude on the public API. With
+    // value7dAgo=0 and a positive pillar.value, delta7d > 0.5 → "up".
     expect(pillar.trend7d).toBe("up");
   });
 
@@ -221,6 +230,136 @@ describe("computeHeadlineScore", () => {
     });
     expect(h.dominantPillar).toBe("fiscal"); // (100 - 61) * 0.30 = 11.7, the largest weighted drag.
     expect(h.editorial).toContain("Fiscal Room");
+  });
+
+  // Audit fix 2026-04-29: the legacy editorial used to read "the score is
+  // worsening (down 12.6 on the week)" while quoting the dominant pillar's
+  // delta7d. When the dominant pillar fell but the headline rose, that
+  // sentence misattributed the magnitude. The motion clause now attaches
+  // to the pillar, never to "the score".
+  it("attributes the motion clause to the dominant pillar by name, not to the headline", () => {
+    const market = mkPillar("market", 30);
+    const movedMarket: PillarScore = { ...market, delta7d: -12.6, trend7d: "down" };
+    const pillars: Record<PillarId, PillarScore> = {
+      market: movedMarket,
+      fiscal: mkPillar("fiscal", 72),
+      labour: mkPillar("labour", 53),
+      delivery: mkPillar("delivery", 41),
+    };
+    const h = computeHeadlineScore({
+      pillars,
+      sparkline90d: [45],
+      updatedAt: "2026-04-29T09:00:00Z",
+    });
+    expect(h.editorial).toContain("Market Stability");
+    expect(h.editorial).toContain("down 12.6 on the week");
+    expect(h.editorial).not.toContain("the score is");
+    expect(h.editorial).not.toContain("worsening");
+    expect(h.editorial).not.toContain("improving");
+  });
+
+  it("renders broadly flat when the dominant pillar delta7d is inside the 0.5 epsilon band", () => {
+    const fiscal = mkPillar("fiscal", 61);
+    const flatFiscal: PillarScore = { ...fiscal, delta7d: 0.2, trend7d: "flat" };
+    const pillars: Record<PillarId, PillarScore> = {
+      market: mkPillar("market", 80),
+      fiscal: flatFiscal,
+      labour: mkPillar("labour", 80),
+      delivery: mkPillar("delivery", 80),
+    };
+    const h = computeHeadlineScore({
+      pillars,
+      sparkline90d: [70],
+      updatedAt: "2026-04-29T09:00:00Z",
+    });
+    expect(h.editorial).toContain("broadly flat on the week");
+    expect(h.editorial).not.toMatch(/up \d/);
+    expect(h.editorial).not.toMatch(/down \d/);
+  });
+
+  it("uses room-to-improve framing when the dominant pillar is at or above the steady threshold", () => {
+    const fiscal = mkPillar("fiscal", 65);
+    const movedFiscal: PillarScore = { ...fiscal, delta7d: 1.8, trend7d: "up" };
+    const pillars: Record<PillarId, PillarScore> = {
+      market: mkPillar("market", 78),
+      fiscal: movedFiscal,
+      labour: mkPillar("labour", 80),
+      delivery: mkPillar("delivery", 76),
+    };
+    const h = computeHeadlineScore({
+      pillars,
+      sparkline90d: [76],
+      updatedAt: "2026-04-29T09:00:00Z",
+    });
+    expect(h.dominantPillar).toBe("fiscal");
+    expect(h.editorial).toContain("has the most room to improve");
+    expect(h.editorial).not.toContain("biggest drag");
+    expect(h.editorial).toContain("up 1.8 on the week");
+  });
+
+  // trend7d direction-consistency with delta7d (Fix B). Both fields are
+  // public on the API; if they ever disagree directionally a viewer can
+  // spot it in seconds against the served JSON. The legacy bug was that
+  // trend7d = sign of 14-day slope of sparkline30d while delta7d = pillar
+  // value minus value7dAgo, so a fixture catch-up could leave them
+  // pointing opposite directions inside the same response.
+  it("derives pillar trend7d from the sign of delta7d so direction cannot disagree, regardless of sparkline slope", () => {
+    // Sparkline slopes DOWN over the last 14 entries, but pillar.value
+    // (=0 with no readings) minus value7dAgo (=-10) is +10. The legacy
+    // slope-based trend7d would have read "down"; the new delta-based
+    // trend7d reads "up", consistent with delta7d.
+    const slopeDownDeltaUp = computePillarScore("fiscal", {
+      readings: [],
+      sparkline30d: [
+        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+        30, 28, 26, 24, 22, 20, 18, 16, 14, 12,
+      ],
+      value7dAgo: -10,
+    });
+    expect(slopeDownDeltaUp.delta7d).toBeGreaterThan(0.5);
+    expect(slopeDownDeltaUp.trend7d).toBe("up");
+
+    // Sparkline slopes UP over the last 14 entries, but pillar.value (=0)
+    // minus value7dAgo (=+10) is -10 — trend should follow delta down.
+    const slopeUpDeltaDown = computePillarScore("delivery", {
+      readings: [],
+      sparkline30d: [
+        50, 48, 46, 44, 42, 40, 38, 36, 34, 32,
+        30, 32, 34, 36, 38, 40, 42, 44, 46, 48,
+      ],
+      value7dAgo: 10,
+    });
+    expect(slopeUpDeltaDown.delta7d).toBeLessThan(-0.5);
+    expect(slopeUpDeltaDown.trend7d).toBe("down");
+  });
+
+  it("reports trend7d flat inside the 0.5 epsilon band even when value7dAgo is set", () => {
+    const flat = computePillarScore("labour", {
+      readings: [],
+      sparkline30d: [50, 50.1, 50.2, 50.1, 50.0],
+      value7dAgo: 0.3,
+    });
+    // pillar.value=0 (no readings); delta7d = 0 - 0.3 = -0.3, abs(d) < 0.5 -> flat.
+    expect(Math.abs(flat.delta7d)).toBeLessThan(0.5);
+    expect(flat.trend7d).toBe("flat");
+  });
+
+  it("keeps trend7d flat at the exact 0.5 epsilon boundary", () => {
+    const upBoundary = computePillarScore("labour", {
+      readings: [],
+      sparkline30d: [],
+      value7dAgo: -0.5,
+    });
+    expect(upBoundary.delta7d).toBe(0.5);
+    expect(upBoundary.trend7d).toBe("flat");
+
+    const downBoundary = computePillarScore("labour", {
+      readings: [],
+      sparkline30d: [],
+      value7dAgo: 0.5,
+    });
+    expect(downBoundary.delta7d).toBe(-0.5);
+    expect(downBoundary.trend7d).toBe("flat");
   });
 
   it("includes deltas when anchor values are supplied", () => {

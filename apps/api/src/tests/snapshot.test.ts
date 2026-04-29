@@ -216,4 +216,35 @@ describe("buildSnapshotFromD1", () => {
     // giving a 7.5 delta instead. Assert the calendar value.
     expect(snap.pillars.market.delta7d).toBe(10);
   });
+
+  it("keeps D1 fallback trend/editorial flat at the exact 0.5 public delta boundary", async () => {
+    const todayMs = Date.UTC(
+      new Date().getUTCFullYear(),
+      new Date().getUTCMonth(),
+      new Date().getUTCDate(),
+    );
+    const isoFor = (offsetDays: number) =>
+      new Date(todayMs - offsetDays * 86_400_000).toISOString();
+
+    const rows: PillarRow[] = [
+      { pillar_id: "market", observed_at: isoFor(7), value: 50.0, band: "strained" },
+      { pillar_id: "market", observed_at: isoFor(0), value: 50.5, band: "strained" },
+    ];
+    for (const p of PILLAR_ORDER) {
+      if (p === "market") continue;
+      rows.push(
+        { pillar_id: p, observed_at: isoFor(7), value: 90.0, band: "slack" },
+        { pillar_id: p, observed_at: isoFor(0), value: 90.0, band: "slack" },
+      );
+    }
+
+    const env = makeEnv({ pillarRows: rows, headlineRows: [] });
+    const snap = await buildSnapshotFromD1(env);
+
+    expect(snap.pillars.market.delta7d).toBe(0.5);
+    expect(snap.pillars.market.trend7d).toBe("flat");
+    expect(snap.headline.editorial).toContain("Market Stability is the biggest drag");
+    expect(snap.headline.editorial).toContain("broadly flat on the week");
+    expect(snap.headline.editorial).not.toContain("up 0.5 on the week");
+  });
 });

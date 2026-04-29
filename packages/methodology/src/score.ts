@@ -102,9 +102,14 @@ export function computePillarScore(
   // pillar arithmetic mean is on the same high-good axis. No further flip.
   const value = clamp(rawPillar, 0, 100);
   const band = bandFor(value);
-  const sign = trendSign(input.sparkline30d.slice(-14));
-  const trend = asTrend(sign);
   const delta7d = input.value7dAgo === undefined ? 0 : roundTo(value - input.value7dAgo, 1);
+  // trend7d derives from the sign of delta7d so direction can never disagree
+  // with the magnitude on the public API. The previous 14-day slope was
+  // noise-resistant but produced contradictions like "trend=down, delta=+37.9"
+  // whenever a fixture catch-up stepped the level inside the 7d window.
+  // Same epsilon (0.5) and shape as apps/api/src/lib/db.ts's runtime
+  // computation, so the two code paths agree on direction by construction.
+  const trend: Trend = Math.abs(delta7d) <= 0.5 ? "flat" : delta7d > 0 ? "up" : "down";
 
   // 30d trend/delta: first → last across the full sparkline. A sparkline
   // shorter than two points can't span the window honestly, so both fall
@@ -241,22 +246,24 @@ export function computeHeadlineScore(input: HeadlineComputationInput): HeadlineS
 function renderEditorialNote(dominant: PillarId, pillars: Record<PillarId, PillarScore>): string {
   const p = pillars[dominant];
   const def = PILLARS[dominant];
-  const trendWord = p.trend7d === "up" ? "improving"
-    : p.trend7d === "down" ? "worsening"
-    : "broadly unchanged";
-  const direction = p.delta7d > 0 ? "up" : p.delta7d < 0 ? "down" : "flat";
-  const mag = Math.abs(p.delta7d).toFixed(1);
   // "Biggest drag" reads as a strong claim. Reserve it for when the dominant
   // pillar (the one with the largest weighted shortfall) is genuinely below
   // the "steady" threshold — i.e. there really is a drag. When every pillar
   // is steady or slack, name the dominant as "the pillar with the most room
-  // to improve" instead, which is editorially honest and won't read as a
-  // contradiction next to a healthy headline. Same threshold used by
-  // ExploreIsland and ActionSection so all three surfaces stay consistent.
+  // to improve" instead. Same threshold used by ExploreIsland and
+  // ActionSection so all three surfaces stay consistent.
   const lead = p.value < 60
     ? `${def.title} is the biggest drag`
     : `${def.title} has the most room to improve`;
-  return `${lead}; the score is ${trendWord} (${direction} ${mag} on the week).`;
+  // The motion clause is attributed to the *pillar*, not "the score" — the
+  // delta is the pillar's own week-on-week move, so any other framing would
+  // misattribute the magnitude. Keep the epsilon aligned with the trend7d
+  // flat band (0.5) above so a boundary value never flips the JSON trend and
+  // editorial sentence in opposite directions.
+  const mag = Math.abs(p.delta7d).toFixed(1);
+  if (p.delta7d > 0.5) return `${lead}, up ${mag} on the week.`;
+  if (p.delta7d < -0.5) return `${lead}, down ${mag} on the week.`;
+  return `${lead}, broadly flat on the week.`;
 }
 
 export function assembleSnapshot(

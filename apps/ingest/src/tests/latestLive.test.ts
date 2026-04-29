@@ -1,11 +1,10 @@
 /**
  * Unit tests for `filterStaleLiveRows` and `readLatestLiveObservations`.
  *
- * Both exist to fix the fixture-supersede bug: when an editorial fixture
- * changes its `observed_at` to an earlier date, a previously-written
- * live row at the older `observed_at` lingers and a `MAX(observed_at)`
- * selector locks onto it. We pivot to `MAX(ingested_at)` over rows that
- * are not historical backfill (`hist:*`) or seed (`seed*`).
+ * Both exist to fix fixture/current-row selector bugs. The live tier still
+ * uses `MAX(ingested_at)` over non-hist/non-seed rows so fixture supersedes
+ * work when observed_at moves backwards; the hist tier uses MAX(observed_at)
+ * so fresher backfill can surface when the live path stalls on an old fixture.
  */
 import { describe, expect, it } from "vitest";
 import type { D1Database } from "@cloudflare/workers-types";
@@ -189,13 +188,22 @@ describe("readLatestLiveObservations — SQL contract", () => {
     } as unknown as D1Database;
   }
 
-  it("uses MAX(ingested_at) — never MAX(observed_at) — for the per-indicator group", async () => {
+  it("uses MAX(ingested_at) for the live tier and MAX(observed_at) for the hist tier", async () => {
+    // Audit fix 2026-04-29 (Fix C/D): the selector now has two tiers.
+    // The live tier still anchors on MAX(ingested_at) (preserving the OBR
+    // EFO supersede protection); the hist tier uses MAX(observed_at) so
+    // backfill rows with newer observed_at can win when a live adapter
+    // is silently falling through to a stale-dated fixture.
     const captured = { value: "" };
     const db = makeDb([], captured);
     await readLatestLiveObservations(db);
 
     expect(captured.value).toMatch(/MAX\s*\(\s*ingested_at\s*\)/i);
-    expect(captured.value, "must NOT use MAX(observed_at) for the live selector").not.toMatch(/MAX\s*\(\s*observed_at\s*\)/i);
+    expect(captured.value).toMatch(/MAX\s*\(\s*observed_at\s*\)/i);
+    // The outer ranking sorts by observed_at DESC so the freshest reading
+    // surfaces; the CASE expression breaks ties live-before-hist.
+    expect(captured.value).toMatch(/ROW_NUMBER\s*\(\s*\)\s*OVER/i);
+    expect(captured.value).toMatch(/ORDER BY\s+observed_at\s+DESC/i);
   });
 
   it("filters out hist:* and seed* rows on both sides of the JOIN", async () => {

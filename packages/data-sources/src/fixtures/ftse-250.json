@@ -1,11 +1,11 @@
 {
-  "_comment": "FTSE 250 index level at most recent London close. The FTSE 250 is a cleaner read on the domestic UK economy than the FTSE 100 (which is dominated by global commodity and pharma names). LSEG does not expose a free index-level JSON feed; the number is transcribed from the published closing price each week. The adapter's freshness guard rejects fixtures older than 14 days so a missed refresh surfaces in the ingest audit. TODO(source): an authorised LSEG index-licence vendor would let us drop this fixture and fetch the close directly.",
-  "as_of": "2026-04-23",
-  "observed_at": "2026-04-23T16:30:00Z",
+  "_comment": "FTSE 250 index level at most recent London close. The FTSE 250 is a cleaner read on the domestic UK economy than the FTSE 100 (which is dominated by global commodity and pharma names). LSEG does not expose a free index-level JSON feed; the number is transcribed from the published closing price each week. The adapter's freshness guard rejects fixtures older than 14 days so a missed refresh surfaces in the ingest audit. AUDIT 2026-04-29: refreshed forwards from 2026-04-23 (22984) to the most recent backfill row 2026-04-24 (22583), sourced during the 2026-04-27 backfill run from Yahoo ^FTMC daily closes. The previous fixture's 4/23 print was a re-write that survived because the live EODHD path has been silently falling through to fixture every cron tick — unrelated investigation, see /docs/runbooks. The SQL selector now prefers fresher backfill rows when the live path stalls, but we keep the fixture aligned so the editorial fallback and the served row tell the same story. TODO(source): an authorised LSEG index-licence vendor would let us drop this fixture and fetch the close directly.",
+  "as_of": "2026-04-24",
+  "observed_at": "2026-04-24T16:30:00Z",
   "ftse_250": {
-    "value": 22984,
+    "value": 22583,
     "unit": "index",
-    "source": "London Stock Exchange FTSE 250 closing level, 23 April 2026"
+    "source": "London Stock Exchange FTSE 250 closing level, 24 April 2026"
   },
   "source_url": "https://www.londonstockexchange.com/indices/ftse-250",
   "release_schedule": "Every London trading day at ~16:30; editorial fixture refreshed weekly."

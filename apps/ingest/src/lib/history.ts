@@ -98,40 +98,72 @@ export interface LatestLiveObservation {
 }
 
 /**
- * For each indicator, return the live observation with the most recent
- * `ingested_at`. Live = `payload_hash` is neither `hist:*` nor `seed*`.
+ * For each indicator, return the freshest observation under a two-tier
+ * selector. Mirrors the production-API selector in apps/api/src/lib/db.ts —
+ * keeping the recompute pipeline (which writes score:latest in KV) and the
+ * D1-fallback path on a single rule so KV and serve-time always agree on
+ * which row is "current".
  *
- * Why not `MAX(observed_at)`? Because adapters write rows with `INSERT
- * OR REPLACE` keyed on `(indicator_id, observed_at)`. When an editorial
- * fixture changes its `observed_at` to an *earlier* date (e.g. an OBR
- * EFO fixture is corrected from a 2026-03-26 placeholder to the actual
- * 2026-03-03 publication date), the previously-written row at the
- * later observed_at survives untouched and a `MAX(observed_at)`
- * selector locks onto the stale value. `MAX(ingested_at)` tracks the
- * actual most-recently-written row, which always reflects the current
- * fixture state.
+ *  TIER 1 (live):  MAX(ingested_at) over rows whose payload_hash is not
+ *                  'hist:%' and not 'seed%'. Picking by ingested_at
+ *                  protects against a previously-written fixture row
+ *                  whose observed_at lingers (e.g. OBR EFO synthetic
+ *                  date superseded by an EFO whose real publication
+ *                  date is earlier).
+ *  TIER 2 (hist):  MAX(observed_at) over hist:% rows. Backfill rows
+ *                  represent real prints we trust.
+ *  Final ordering (per indicator):
+ *      observed_at DESC                        — freshest reading wins
+ *      live-before-hist on observed_at ties    — live overrides backfill
+ *      ingested_at DESC                        — last writer breaks final ties
  *
- * The `WHERE` clauses on both halves of the JOIN are repeated so the
- * planner can use the same predicate on each side; a single `WHERE` on
- * the outer query is correct semantically but the duplicate keeps the
- * query plan symmetric.
+ *  Audit fix 2026-04-29 (Fix C/D): pre-fix, the live tier alone won every
+ *  selection. Brent and FTSE 250 live paths had been silently failing
+ *  through to the editorial fixture every cron tick, so the fixture row
+ *  (observed_at=2026-04-17 / 2026-04-23) kept winning over backfill rows
+ *  with newer observed_at (2026-04-20 / 2026-04-24). The two-tier
+ *  selector surfaces the fresher backfill rows when the live tier has
+ *  stalled, without losing the OBR EFO supersede protection — see
+ *  apps/api/src/tests/snapshot-fixture-supersede.test.ts for the
+ *  combined regression suite.
  */
 export async function readLatestLiveObservations(
   db: D1Database,
 ): Promise<LatestLiveObservation[]> {
   const res = await db
     .prepare(
-      `SELECT o.indicator_id, o.source_id, o.observed_at, o.value, o.ingested_at
-       FROM indicator_observations o
-       JOIN (
-         SELECT indicator_id, MAX(ingested_at) AS ts
-         FROM indicator_observations
-         WHERE payload_hash IS NULL
-            OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%')
-         GROUP BY indicator_id
-       ) m ON o.indicator_id = m.indicator_id AND o.ingested_at = m.ts
-         AND (o.payload_hash IS NULL
-              OR (o.payload_hash NOT LIKE 'hist:%' AND o.payload_hash NOT LIKE 'seed%'))`,
+      `SELECT indicator_id, source_id, observed_at, value, ingested_at FROM (
+         SELECT indicator_id, source_id, observed_at, value, ingested_at, payload_hash,
+                ROW_NUMBER() OVER (
+                  PARTITION BY indicator_id
+                  ORDER BY observed_at DESC,
+                           CASE WHEN payload_hash LIKE 'hist:%' THEN 1 ELSE 0 END ASC,
+                           ingested_at DESC
+                ) AS rn
+         FROM (
+           SELECT o.indicator_id, o.source_id, o.observed_at, o.value, o.ingested_at, o.payload_hash
+           FROM indicator_observations o
+           JOIN (
+             SELECT indicator_id, MAX(ingested_at) AS ts
+             FROM indicator_observations
+             WHERE payload_hash IS NULL
+                OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%')
+             GROUP BY indicator_id
+           ) m ON o.indicator_id = m.indicator_id AND o.ingested_at = m.ts
+              AND (o.payload_hash IS NULL
+                   OR (o.payload_hash NOT LIKE 'hist:%' AND o.payload_hash NOT LIKE 'seed%'))
+           UNION ALL
+           SELECT o.indicator_id, o.source_id, o.observed_at, o.value, o.ingested_at, o.payload_hash
+           FROM indicator_observations o
+           JOIN (
+             SELECT indicator_id, MAX(observed_at) AS oa
+             FROM indicator_observations
+             WHERE payload_hash LIKE 'hist:%'
+             GROUP BY indicator_id
+           ) m ON o.indicator_id = m.indicator_id AND o.observed_at = m.oa
+              AND o.payload_hash LIKE 'hist:%'
+         ) candidates
+       ) ranked WHERE rn = 1`,
     )
     .all<LatestLiveObservation>();
   return res.results ?? [];

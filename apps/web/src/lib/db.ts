@@ -143,26 +143,47 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       `SELECT source_id, MAX(started_at) AS last_success
        FROM ingestion_audit WHERE status IN ('success', 'unchanged') GROUP BY source_id`,
     ).all<{ source_id: string; last_success: string }>(),
-    // Latest *live* observation per indicator. Pick by MAX(ingested_at)
-    // — not MAX(observed_at) — so a fixture whose observed_at moves
-    // backwards (e.g. an OBR EFO update with an earlier publication
-    // date) does not lock the API onto the stale row. Exclude
-    // historical-backfill rows (`hist:*`) and seed rows (`seed*`)
-    // so a recently-run backfill cannot mis-select as "live". See
-    // apps/api/src/tests/snapshot-fixture-supersede.test.ts for
-    // the regression cases.
+    // Latest observation per indicator, two-tier selection. Mirrors
+    // apps/api/src/lib/db.ts — see the comment block there for the
+    // policy rationale (OBR EFO supersede + backfill freshness over a
+    // silent live fall-through). Behaviour summary:
+    //   tier 1 (live):  MAX(ingested_at) among non-hist non-seed rows
+    //   tier 2 (hist):  MAX(observed_at) among hist:% rows
+    //   final:           observed_at DESC, live before hist on ties,
+    //                    ingested_at DESC as final tiebreaker
     db.prepare(
-      `SELECT o.indicator_id, o.value, o.observed_at, o.source_id
-       FROM indicator_observations o
-       JOIN (
-         SELECT indicator_id, MAX(ingested_at) AS ts
-         FROM indicator_observations
-         WHERE payload_hash IS NULL
-            OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%')
-         GROUP BY indicator_id
-       ) m ON o.indicator_id = m.indicator_id AND o.ingested_at = m.ts
-         AND (o.payload_hash IS NULL
-              OR (o.payload_hash NOT LIKE 'hist:%' AND o.payload_hash NOT LIKE 'seed%'))`,
+      `SELECT indicator_id, value, observed_at, source_id FROM (
+         SELECT indicator_id, value, observed_at, source_id, payload_hash, ingested_at,
+                ROW_NUMBER() OVER (
+                  PARTITION BY indicator_id
+                  ORDER BY observed_at DESC,
+                           CASE WHEN payload_hash LIKE 'hist:%' THEN 1 ELSE 0 END ASC,
+                           ingested_at DESC
+                ) AS rn
+         FROM (
+           SELECT o.indicator_id, o.value, o.observed_at, o.source_id, o.payload_hash, o.ingested_at
+           FROM indicator_observations o
+           JOIN (
+             SELECT indicator_id, MAX(ingested_at) AS ts
+             FROM indicator_observations
+             WHERE payload_hash IS NULL
+                OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%')
+             GROUP BY indicator_id
+           ) m ON o.indicator_id = m.indicator_id AND o.ingested_at = m.ts
+              AND (o.payload_hash IS NULL
+                   OR (o.payload_hash NOT LIKE 'hist:%' AND o.payload_hash NOT LIKE 'seed%'))
+           UNION ALL
+           SELECT o.indicator_id, o.value, o.observed_at, o.source_id, o.payload_hash, o.ingested_at
+           FROM indicator_observations o
+           JOIN (
+             SELECT indicator_id, MAX(observed_at) AS oa
+             FROM indicator_observations
+             WHERE payload_hash LIKE 'hist:%'
+             GROUP BY indicator_id
+           ) m ON o.indicator_id = m.indicator_id AND o.observed_at = m.oa
+              AND o.payload_hash LIKE 'hist:%'
+         ) candidates
+       ) ranked WHERE rn = 1`,
     ).all<{ indicator_id: string; value: number; observed_at: string; source_id: string }>(),
   ]);
 
@@ -189,8 +210,8 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     // most by the size of the gap, not by N positions. Mirrors
     // apps/api/src/lib/db.ts pickValueDaysBefore.
     const sevenDaysAgo = pickValueDaysBefore(pRows, latest?.observed_at, 7) ?? value;
-    const delta = value - sevenDaysAgo;
-    const trend: Trend = Math.abs(delta) < 0.5 ? "flat" : delta > 0 ? "up" : "down";
+    const delta = Math.round((value - sevenDaysAgo) * 10) / 10;
+    const trend: Trend = Math.abs(delta) <= 0.5 ? "flat" : delta > 0 ? "up" : "down";
     // 30d spans the full pillar sparkline so labels match what the user
     // sees in the chart — mirrors computePillarScore in the recompute path.
     const first = series[0];
@@ -212,7 +233,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       weight: PILLARS[p].weight,
       contributions: buildContributionsForPillar(p, obsByIndicator, value),
       trend7d: trend,
-      delta7d: Math.round(delta * 10) / 10,
+      delta7d: delta,
       trend30d: trend30,
       delta30d: Math.round(delta30 * 10) / 10,
       sparkline30d: series,
@@ -432,12 +453,17 @@ function dominantDrag(pillars: Record<PillarId, PillarScore>): PillarId {
 function renderEditorialNote(dominant: PillarId, pillars: Record<PillarId, PillarScore>): string {
   const p = pillars[dominant];
   const def = PILLARS[dominant];
-  const trendWord = p.trend7d === "up" ? "improving"
-    : p.trend7d === "down" ? "worsening"
-    : "broadly unchanged";
-  const direction = p.delta7d > 0 ? "up" : p.delta7d < 0 ? "down" : "flat";
+  // Mirror packages/methodology/src/score.ts::renderEditorialNote so the web
+  // D1-fallback path produces identical copy to the API + KV path. Subject
+  // is the pillar, not "the score" — the delta is the pillar's own
+  // week-on-week move and any other framing would misattribute the magnitude.
+  const lead = p.value < 60
+    ? `${def.title} is the biggest drag`
+    : `${def.title} has the most room to improve`;
   const mag = Math.abs(p.delta7d).toFixed(1);
-  return `${def.title} is the biggest drag; the score is ${trendWord} (${direction} ${mag} on the week).`;
+  if (p.delta7d > 0.5) return `${lead}, up ${mag} on the week.`;
+  if (p.delta7d < -0.5) return `${lead}, down ${mag} on the week.`;
+  return `${lead}, broadly flat on the week.`;
 }
 
 /**

@@ -57,11 +57,11 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   const recent = filterStaleLiveRows(recentRaw);
   const baseline = filterStaleLiveRows(baselineRaw);
 
-  // `latestByIndicator` is sourced from a dedicated MAX(ingested_at) query
-  // that excludes hist:/seed rows. This is the only correct selector for
-  // "what is the live value right now" — see
-  // apps/api/src/tests/snapshot-fixture-supersede.test.ts for the
-  // regression cases that motivated it.
+  // `latestByIndicator` is sourced from the same two-tier selector as the
+  // API fallback: latest live row by ingested_at, plus the newest hist row
+  // when its observed_at is fresher than a stale live fixture. See
+  // apps/api/src/tests/snapshot-fixture-supersede.test.ts for the regression
+  // cases that motivated it.
   const latestByIndicator = new Map<string, { value: number; observedAt: string }>();
   for (const row of latestLive) {
     latestByIndicator.set(row.indicator_id, { value: row.value, observedAt: row.observed_at });

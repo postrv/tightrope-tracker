@@ -113,31 +113,72 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       `SELECT source_id, MAX(started_at) AS last_success
        FROM ingestion_audit WHERE status IN ('success', 'unchanged') GROUP BY source_id`,
     ).all<{ source_id: string; last_success: string }>(),
-    // Latest *live* observation per indicator. We pick by MAX(ingested_at)
-    // — not MAX(observed_at) — so the row most recently written by an
-    // adapter wins, even if an editorial fixture has moved its
-    // `observed_at` backwards (e.g. an OBR EFO update where the
-    // publication date is earlier than the previously-shipped fixture's
-    // synthetic date). MAX(observed_at) locks onto the stale row;
-    // MAX(ingested_at) tracks the current state.
+    // Latest observation per indicator, two-tier selection.
     //
-    // We also exclude historical-backfill rows (payload_hash 'hist:*')
-    // and seed rows (payload_hash 'seed*') so a recently-run backfill
-    // or seed re-import cannot be mis-selected as the live value. Live
-    // adapters write a sha256 hash (no prefix); the NULL fallback
-    // covers any pre-payload_hash rows.
+    //  TIER 1 (live): MAX(ingested_at) over rows whose payload_hash is
+    //                 not 'hist:%' and not 'seed%'. Live adapters write a
+    //                 sha256 hash (no prefix); the NULL fallback covers
+    //                 any pre-payload_hash rows. Picking by ingested_at
+    //                 — not observed_at — protects against a previously-
+    //                 written fixture row whose observed_at lingers (e.g.
+    //                 OBR EFO synthetic date superseded by an EFO whose
+    //                 real publication date is earlier).
+    //
+    //  TIER 2 (historical backfill): MAX(observed_at) over hist:%
+    //                 rows. Backfill represents real prints we trust.
+    //                 Tier 2 only wins the outer ranking when its
+    //                 observed_at is strictly newer than tier 1's —
+    //                 surfacing backfill data when a live adapter is
+    //                 silently falling through to a stale-dated fixture.
+    //
+    //  Final ordering:
+    //    observed_at DESC                        (freshest reading wins)
+    //    is_hist ASC (live before hist on ties)  (live overrides backfill at same observedAt)
+    //    ingested_at DESC                        (last writer wins on full ties)
+    //
+    //  Audit fix 2026-04-29 (Fix C/D, "Brent + FTSE 250 silent stale"):
+    //  before this change, the FTSE 250 fixture-fall-through row at
+    //  2026-04-23 was winning over the backfill row at 2026-04-24
+    //  because MAX(ingested_at) anchored on the most-recent fixture
+    //  write. Surfacing the backfill row instead is honestly fresher
+    //  data without inventing editorial values.
+    //
+    //  See apps/api/src/tests/snapshot-fixture-supersede.test.ts for
+    //  both the supersede regressions this preserves and the backfill
+    //  freshness cases.
     db.prepare(
-      `SELECT o.indicator_id, o.value, o.observed_at, o.source_id
-       FROM indicator_observations o
-       JOIN (
-         SELECT indicator_id, MAX(ingested_at) AS ts
-         FROM indicator_observations
-         WHERE payload_hash IS NULL
-            OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%')
-         GROUP BY indicator_id
-       ) m ON o.indicator_id = m.indicator_id AND o.ingested_at = m.ts
-         AND (o.payload_hash IS NULL
-              OR (o.payload_hash NOT LIKE 'hist:%' AND o.payload_hash NOT LIKE 'seed%'))`,
+      `SELECT indicator_id, value, observed_at, source_id FROM (
+         SELECT indicator_id, value, observed_at, source_id, payload_hash, ingested_at,
+                ROW_NUMBER() OVER (
+                  PARTITION BY indicator_id
+                  ORDER BY observed_at DESC,
+                           CASE WHEN payload_hash LIKE 'hist:%' THEN 1 ELSE 0 END ASC,
+                           ingested_at DESC
+                ) AS rn
+         FROM (
+           SELECT o.indicator_id, o.value, o.observed_at, o.source_id, o.payload_hash, o.ingested_at
+           FROM indicator_observations o
+           JOIN (
+             SELECT indicator_id, MAX(ingested_at) AS ts
+             FROM indicator_observations
+             WHERE payload_hash IS NULL
+                OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%')
+             GROUP BY indicator_id
+           ) m ON o.indicator_id = m.indicator_id AND o.ingested_at = m.ts
+              AND (o.payload_hash IS NULL
+                   OR (o.payload_hash NOT LIKE 'hist:%' AND o.payload_hash NOT LIKE 'seed%'))
+           UNION ALL
+           SELECT o.indicator_id, o.value, o.observed_at, o.source_id, o.payload_hash, o.ingested_at
+           FROM indicator_observations o
+           JOIN (
+             SELECT indicator_id, MAX(observed_at) AS oa
+             FROM indicator_observations
+             WHERE payload_hash LIKE 'hist:%'
+             GROUP BY indicator_id
+           ) m ON o.indicator_id = m.indicator_id AND o.observed_at = m.oa
+              AND o.payload_hash LIKE 'hist:%'
+         ) candidates
+       ) ranked WHERE rn = 1`,
     ).all<{ indicator_id: string; value: number; observed_at: string; source_id: string }>(),
   ]);
 
@@ -160,8 +201,8 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
     // UTC day of the latest row so a missed day shifts the baseline at
     // most by the size of the gap, not by N positions.
     const sevenDaysAgo = pickValueDaysBefore(pRows, latest?.observed_at, 7) ?? value;
-    const delta = value - sevenDaysAgo;
-    const trend: Trend = Math.abs(delta) < 0.5 ? "flat" : delta > 0 ? "up" : "down";
+    const delta = round1(value - sevenDaysAgo);
+    const trend: Trend = Math.abs(delta) <= 0.5 ? "flat" : delta > 0 ? "up" : "down";
     // 30d trend/delta spans the full pillar sparkline (first → last) so
     // chart-adjacent labels can't contradict the visible chart. See
     // computePillarScore for the matching recompute-path implementation.
@@ -185,7 +226,7 @@ export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
       weight: PILLARS[p].weight,
       contributions: buildContributionsForPillar(p, obsByIndicator, value),
       trend7d: trend,
-      delta7d: round1(delta),
+      delta7d: delta,
       trend30d: trend30,
       delta30d: round1(delta30),
       sparkline30d: series,
@@ -439,12 +480,17 @@ function dominantDrag(pillars: Record<PillarId, PillarScore>): PillarId {
 function renderEditorialNote(dominant: PillarId, pillars: Record<PillarId, PillarScore>): string {
   const p = pillars[dominant];
   const def = PILLARS[dominant];
-  const trendWord = p.trend7d === "up" ? "improving"
-    : p.trend7d === "down" ? "worsening"
-    : "broadly unchanged";
-  const direction = p.delta7d > 0 ? "up" : p.delta7d < 0 ? "down" : "flat";
+  // Mirror packages/methodology/src/score.ts::renderEditorialNote so the
+  // KV-cached snapshot and the D1-fallback path produce identical copy.
+  // Subject is the pillar, not "the score" — the delta is the pillar's own
+  // week-on-week move and any other framing would misattribute the magnitude.
+  const lead = p.value < 60
+    ? `${def.title} is the biggest drag`
+    : `${def.title} has the most room to improve`;
   const mag = Math.abs(p.delta7d).toFixed(1);
-  return `${def.title} is the biggest drag; the score is ${trendWord} (${direction} ${mag} on the week).`;
+  if (p.delta7d > 0.5) return `${lead}, up ${mag} on the week.`;
+  if (p.delta7d < -0.5) return `${lead}, down ${mag} on the week.`;
+  return `${lead}, broadly flat on the week.`;
 }
 
 // --- helpers ---------------------------------------------------------------

@@ -107,7 +107,15 @@ async function fetchEiaBrentUsd(
     if (typeof v !== "number" || !Number.isFinite(v) || v <= 0) continue;
     return { value: v, period: r.period };
   }
-  console.warn(`${SOURCE_ID}: EIA returned no usable Brent rows`);
+  // Diagnostic: surface enough signal in tail logs to triage which facet
+  // / parameter combo EIA is rejecting. Live audit on 2026-04-29 traced
+  // a 12-day silent fall-through to this branch: the upstream replied with
+  // an empty rows array, so the adapter quietly served the editorial
+  // fixture every cron tick.
+  const sample = rows.slice(0, 3).map((r) => ({ period: r.period, duoarea: r.duoarea, value: r.value }));
+  console.warn(
+    `${SOURCE_ID}: EIA returned no usable Brent rows (count=${rows.length}, sample=${JSON.stringify(sample)})`,
+  );
   return null;
 }
 

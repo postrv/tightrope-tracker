@@ -187,13 +187,16 @@ async function renderGilt30y(env: Env): Promise<Response> {
 }
 
 /**
- * Government's housing pledge — 1.5m homes over five years = 305k/year by
- * FY 2030/31. Stable comparator (a political target). The OBR trajectory
- * baseline used inside `housing_trajectory` is 300k; we display against
- * the 305k pledge for editorial salience but feed the bar from the live
- * trajectory percentage so readers see the live progress.
+ * `housing_trajectory` is computed as annualised completions ÷ 300k OBR
+ * working assumption × 100. The card uses the same 300k denominator so
+ * the headline percentage and the indicator value match exactly (audit
+ * 2026-04-29). Labour's 305k political pledge is surfaced on the
+ * homepage delivery-commitment card prose, where both denominators are
+ * explained side by side; on a single OG card we prefer arithmetic
+ * coherence over political-headline framing — a viewer punching the
+ * displayed numbers into a calculator must land on the same percentage.
  */
-const HOUSING_TARGET_THOUSANDS = 305;
+const HOUSING_TARGET_THOUSANDS = 300;
 
 async function renderDeliveryHousing(env: Env): Promise<Response> {
   const [snapshot, indicators, fonts] = await Promise.all([
@@ -202,7 +205,9 @@ async function renderDeliveryHousing(env: Env): Promise<Response> {
   const reading = indicators.housingTrajectory;
   // housing_trajectory = annualised completions ÷ 300k * 100 (see fixture
   // _comment for the formula). To recover annualised completions in
-  // thousands: rawValue / 100 * 300.
+  // thousands: rawValue / 100 * 300. Same 300k anchor flows through to
+  // the card's percentage by using HOUSING_TARGET_THOUSANDS as the
+  // denominator below — no rounding round-trip drift.
   const currentThousands = reading ? Math.round((reading.value / 100) * 300) : 147;
   const updatedAt = reading?.observedAt ?? snapshot.headline.updatedAt;
   const png = await renderPng(

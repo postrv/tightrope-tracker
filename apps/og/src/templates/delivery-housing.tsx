@@ -5,7 +5,13 @@ import { CardShell, SERIF, TOKENS, formatDate } from "./components.js";
 export interface DeliveryHousingProps {
   /** Most recent annualised net additions, in thousands. */
   currentThousands: number;
-  /** Target thousands (305k for the 2030 target). */
+  /**
+   * Target thousands. As of the 2026-04-29 audit fix this is 300k —
+   * the OBR 2030 working assumption that `housing_trajectory` is
+   * computed against. Labour's 305k political pledge is described on
+   * the homepage delivery card; the OG headline uses the indicator's
+   * own denominator so the percentage matches the indicator value.
+   */
   targetThousands: number;
   updatedAt: string;
 }
@@ -47,7 +53,7 @@ export function DeliveryHousingCard(props: DeliveryHousingProps): JsxNode {
             <span style={{ color: TOKENS.accent, marginLeft: `${Math.max(0, Math.round(progress * 100) - 6)}%` }}>
               {Math.round(currentThousands)}k today
             </span>
-            <span style={{ color: TOKENS.ink0 }}>{Math.round(targetThousands)}k · 2030 target</span>
+            <span style={{ color: TOKENS.ink0 }}>{Math.round(targetThousands)}k · OBR 2030 path</span>
           </div>
           <svg width="1056" height="60" viewBox="0 0 1056 60" preserveAspectRatio="none" style={{ display: "block" }}>
             <defs>

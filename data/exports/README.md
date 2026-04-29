@@ -59,17 +59,25 @@ are at <https://tightropetracker.uk/methodology>.
 
 ## Reproducing this export
 
-The query that produced this CSV lives in this repo at
-`db/scripts/export-composite-history.sh` (TODO if needed); the inline
-SQL is also in the export-script header comment. Run via:
+The script that produced this CSV lives in this repo at
+`db/scripts/export-composite-history.sh`. The inline SQL is the single
+source of truth for what each row contains, documented in the script
+header. The query is read-only — `rows_written=0`, `changed_db=false`
+on the wrangler ack — so it's safe to re-run any time.
 
 ```bash
-wrangler d1 execute tightrope_db --remote \
-  --config=apps/api/wrangler.toml --command="<SQL>" --json
+# Default: writes data/exports/tightrope-composite-history-YYYY-MM-DD.csv
+db/scripts/export-composite-history.sh
+
+# Or write to an explicit path:
+db/scripts/export-composite-history.sh path/to/out.csv
 ```
 
-then pipe through the lightweight Python CSV writer used in this
-session (in the chat transcript on 2026-04-29).
+Requires `wrangler` authenticated against the production Cloudflare
+account and `python3` in PATH (used as a CSV writer with proper
+quoting). Re-running on a past date produces byte-identical output to
+the committed CSV for that date — verified after the script landed by
+diffing against this CSV.
 
 ## Source provenance
 

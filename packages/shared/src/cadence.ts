@@ -1,4 +1,5 @@
 import { SOURCES, type ExpectedCadence } from "./indicators.js";
+import { INACTIVE_INGEST_SOURCES } from "./sourceHealth.js";
 
 /**
  * Release-cadence registry (AUTOMATION_PLAN.md §2.1).
@@ -36,9 +37,13 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * These are the *floor* of a healthy publishing rhythm — a reading younger
  * than this cannot be "overdue" because the next release isn't due yet.
  *
- *   trading-daily → 1 business day (weekend/bank-holiday slack lives in
- *                   graceDays so a Friday close doesn't flip amber on Sunday
- *                   the moment the calendar rolls over).
+ *   trading-daily → 4 calendar days. A trading feed publishes each business day
+ *                   at T+1, but a reading is not "overdue" across a normal
+ *                   non-trading gap: Friday's close is the freshest number all
+ *                   weekend and, on a bank-holiday Monday, through Tuesday. 4
+ *                   covers Fri close → Tue (Sat+Sun+bank-holiday Mon) so a
+ *                   healthy feed does not flip amber every single weekend; the
+ *                   red boundary still lives in graceDays (per-source).
  *   monthly       → 31 (one calendar month; ONS/PMI/GfK/RICS/BoE monthly).
  *   quarterly     → 92 (~one quarter; MHCLG live tables).
  *   biannual      → 183 (~six months).
@@ -47,7 +52,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  *                   (OBR EFO, think-tank outputs).
  */
 export const CADENCE_PERIOD_DAYS: Record<ExpectedCadence, number> = {
-  "trading-daily": 1,
+  "trading-daily": 4,
   monthly: 31,
   quarterly: 92,
   biannual: 183,
@@ -133,9 +138,12 @@ export interface LatestSourceObservation {
  * entry per source, then evaluate each source's state.
  *
  * A source feeds one or more indicators; its cadence anchor is the freshest
- * (releasedAt ?? observedAt) across them. Observations whose `sourceId` has no
- * SOURCES entry (or an entry with no declared cadence) are skipped — cadence
- * is only meaningful for sources we know the publishing rhythm of.
+ * (releasedAt ?? observedAt) across them. Observations are skipped when the
+ * `sourceId` has no SOURCES entry (or an entry with no declared cadence), or
+ * when the source is in INACTIVE_INGEST_SOURCES — a retired adapter (e.g.
+ * `moneyfacts`) leaves stale observation rows in D1 that nothing polls, so
+ * surfacing a cadence chip for it would be misleading, exactly as the
+ * source-health banner already suppresses it.
  *
  * `now` is injected; the output is sorted by sourceId for stable UI order.
  */
@@ -146,6 +154,7 @@ export function computeSourceCadence(
   const freshestBySource = new Map<string, LatestSourceObservation>();
   for (const o of observations) {
     if (!SOURCES[o.sourceId]) continue;
+    if (INACTIVE_INGEST_SOURCES.has(o.sourceId)) continue;
     const ref = o.releasedAt || o.observedAt;
     const prev = freshestBySource.get(o.sourceId);
     const prevRef = prev ? prev.releasedAt || prev.observedAt : "";

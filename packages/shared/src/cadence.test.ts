@@ -15,12 +15,12 @@ function daysAgo(days: number): string {
 }
 
 describe("evaluateCadenceState", () => {
-  it("trading-daily: fresh within a day is green, a weekend gap is amber, past grace is red", () => {
+  it("trading-daily: a normal Fri→Tue gap stays green, then amber inside grace, red past grace", () => {
     const base = { cadence: "trading-daily" as ExpectedCadence, graceDays: 5, now: NOW };
     expect(evaluateCadenceState({ ...base, latestObservedAt: daysAgo(0.5) })).toBe("green");
-    expect(evaluateCadenceState({ ...base, latestObservedAt: daysAgo(1) })).toBe("green"); // == period
-    expect(evaluateCadenceState({ ...base, latestObservedAt: daysAgo(3) })).toBe("amber"); // long weekend
-    expect(evaluateCadenceState({ ...base, latestObservedAt: daysAgo(5) })).toBe("amber"); // == grace
+    expect(evaluateCadenceState({ ...base, latestObservedAt: daysAgo(3) })).toBe("green"); // long weekend / bank holiday — NOT amber (period 4)
+    expect(evaluateCadenceState({ ...base, latestObservedAt: daysAgo(4) })).toBe("green"); // == period
+    expect(evaluateCadenceState({ ...base, latestObservedAt: daysAgo(5) })).toBe("amber"); // past period, == grace
     expect(evaluateCadenceState({ ...base, latestObservedAt: daysAgo(6) })).toBe("red"); // past grace
   });
 
@@ -75,7 +75,7 @@ describe("evaluateCadenceState", () => {
   });
 
   it("period table matches the documented publication rhythms", () => {
-    expect(CADENCE_PERIOD_DAYS["trading-daily"]).toBe(1);
+    expect(CADENCE_PERIOD_DAYS["trading-daily"]).toBe(4); // Fri close → Tue (incl. a bank holiday)
     expect(CADENCE_PERIOD_DAYS.monthly).toBe(31);
     expect(CADENCE_PERIOD_DAYS.quarterly).toBe(92);
     expect(CADENCE_PERIOD_DAYS.biannual).toBe(183);
@@ -119,6 +119,19 @@ describe("computeSourceCadence", () => {
   it("skips observations whose source_id has no SOURCES entry", () => {
     const out = computeSourceCadence([{ sourceId: "delivery_milestones", observedAt: daysAgo(1) }], NOW);
     expect(out).toEqual([]);
+  });
+
+  it("F4: skips a retired source (moneyfacts) even though it still has a SOURCES entry and stale rows", () => {
+    // moneyfacts was retired (INACTIVE_INGEST_SOURCES) but its historical rows
+    // linger in D1; a stale reading must NOT emit a misleading red chip.
+    const out = computeSourceCadence(
+      [
+        { sourceId: "moneyfacts", observedAt: daysAgo(400) }, // long-stale, would be red
+        { sourceId: "boe_yields", observedAt: daysAgo(1) },
+      ],
+      NOW,
+    );
+    expect(out.map((c) => c.sourceId)).toEqual(["boe_yields"]);
   });
 });
 

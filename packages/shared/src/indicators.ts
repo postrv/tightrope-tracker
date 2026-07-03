@@ -652,9 +652,10 @@ export const SOURCES: Record<string, DataSource> = {
   moneyfacts: {
     id: "moneyfacts", name: "Moneyfacts -- UK Mortgage Rates",
     homepage: "https://moneyfacts.co.uk",
-    // Retired 2026-07 (superseded by boe_mortgage_rates); no longer produces
-    // observations, so computeSourceCadence never emits a chip for it. Marked
-    // event with a wide grace as an inert placeholder.
+    // Retired 2026-07 (superseded by boe_mortgage_rates). Listed in
+    // INACTIVE_INGEST_SOURCES, so computeSourceCadence skips it even if stale
+    // historical observation rows linger in D1 — no chip is emitted for it.
+    // Marked event with a wide grace as an inert placeholder.
     expectedCadence: "event", graceDays: 400,
   },
   mhclg: {

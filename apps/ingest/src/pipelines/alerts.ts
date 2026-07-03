@@ -1,5 +1,6 @@
 import type { SourceHealthEntry } from "@tightrope/shared";
 import type { Env } from "../env.js";
+import { postAlert } from "../lib/alertWebhook.js";
 
 /**
  * Post a concise alert to the configured webhook when one or more
@@ -52,15 +53,7 @@ export async function maybeAlertSourceHealth(
     `Triage: \`curl -H "x-admin-token: $ADMIN_TOKEN" https://ingest.tightropetracker.uk/admin/health\``,
   ].join("\n");
 
-  try {
-    await fetch(webhook, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
-  } catch (err) {
-    console.warn(`alert webhook post failed: ${(err as Error)?.message ?? String(err)}`);
-  }
+  await postAlert(env, text);
 }
 
 async function kvGet(env: Env, key: string): Promise<string | null> {

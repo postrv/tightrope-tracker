@@ -45,7 +45,10 @@ export async function runAdapter(
   };
   try {
     const result = await fetchWithRetry(adapter, ctx, opts);
-    const rowsWritten = await writeObservations(env.DB, result.observations);
+    // writeObservations runs the plausibility gate (§2.2): implausible values
+    // are quarantined + alerted rather than written, so rowsWritten counts only
+    // the observations that actually landed.
+    const rowsWritten = await writeObservations(env, result.observations);
     const payloadHash = combineHashes(result.observations.map((o) => o.payloadHash));
     await closeAuditSuccess(env.DB, handle, {
       rowsWritten,

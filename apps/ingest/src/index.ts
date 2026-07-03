@@ -12,6 +12,7 @@ import { ingestMarket } from "./pipelines/market.js";
 import { recomputeScores } from "./pipelines/recompute.js";
 import { updateTodayMovements } from "./pipelines/todayMovements.js";
 import { sanitizeForLog } from "./lib/sanitize.js";
+import { postAlert } from "./lib/alertWebhook.js";
 
 export default {
   /**
@@ -43,7 +44,7 @@ export default {
    */
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     const cron = event.cron;
-    ctx.waitUntil(dispatchCron(cron, env));
+    ctx.waitUntil(dispatchCron(cron, env, ctx));
   },
 
   /**
@@ -116,7 +117,7 @@ export function isKnownCron(cron: string): cron is KnownCron {
   return Object.prototype.hasOwnProperty.call(CRON_BRANCHES, cron);
 }
 
-export async function dispatchCron(cron: string, env: Env): Promise<void> {
+export async function dispatchCron(cron: string, env: Env, ctx?: ExecutionContext): Promise<void> {
   switch (cron) {
     case "*/5 * * * *": {
       // Market ingest (throttled out of hours) + recompute + today strip.
@@ -124,21 +125,21 @@ export async function dispatchCron(cron: string, env: Env): Promise<void> {
       // last-known values with a staleness flag so the site doesn't freeze on
       // a single upstream outage.
       await runStage("ingestMarket", () => ingestMarket(env));
-      await runStage("recomputeScores", () => recomputeScores(env));
+      await runRecompute(env, ctx);
       await runStage("updateTodayMovements", () => updateTodayMovements(env));
       return;
     }
     case "0 2 * * *":
       await runStage("ingestFiscal", () => ingestFiscal(env));
-      await runStage("recomputeScores", () => recomputeScores(env));
+      await runRecompute(env, ctx);
       return;
     case "15 2 * * *":
       await runStage("ingestLabour", () => ingestLabour(env));
-      await runStage("recomputeScores", () => recomputeScores(env));
+      await runRecompute(env, ctx);
       return;
     case "30 2 * * *":
       await runStage("ingestDelivery", () => ingestDelivery(env));
-      await runStage("recomputeScores", () => recomputeScores(env));
+      await runRecompute(env, ctx);
       return;
     default:
       // Unknown cron -- log loudly and record an audit row so the miss is
@@ -174,6 +175,36 @@ async function runStage<T>(name: string, fn: () => Promise<T>): Promise<T | null
   }
 }
 
+/**
+ * Run recompute and, only on a *fully-successful* recompute (a non-null
+ * snapshot — recomputeScores returns null when it skips, runStage returns null
+ * when it throws), fire the dead-man heartbeat. A skipped/failed recompute
+ * deliberately leaves the heartbeat silent so the external monitor notices.
+ */
+async function runRecompute(env: Env, ctx?: ExecutionContext): Promise<void> {
+  const snapshot = await runStage("recomputeScores", () => recomputeScores(env));
+  if (snapshot) fireHeartbeat(env, ctx);
+}
+
+/**
+ * GET the heartbeat URL, best-effort. Scheduled via ctx.waitUntil so the ping
+ * doesn't hold up the response; failures are logged, never thrown. No-op when
+ * HEARTBEAT_URL is unset.
+ */
+function fireHeartbeat(env: Env, ctx?: ExecutionContext): void {
+  const url = env.HEARTBEAT_URL;
+  if (!url) return;
+  const ping = (async () => {
+    try {
+      await fetch(url, { method: "GET" });
+    } catch (err) {
+      console.warn(`heartbeat ping failed: ${sanitizeForLog((err as Error)?.message ?? String(err))}`);
+    }
+  })();
+  if (ctx) ctx.waitUntil(ping);
+  else void ping;
+}
+
 async function recordCronMiss(env: Env, cron: string): Promise<void> {
   const now = new Date().toISOString();
   const id = globalThis.crypto.randomUUID();
@@ -185,4 +216,30 @@ async function recordCronMiss(env: Env, cron: string): Promise<void> {
     )
     .bind(id, now, now, `unknown cron pattern: ${cron}`.slice(0, 2000))
     .run();
+  // A cron_miss means the schedule itself broke — that must page, not just sit
+  // in the audit table. KV-deduped so a persistently-broken schedule pages
+  // once per window, not on every discovery.
+  await maybeAlertCronMiss(env, cron);
+}
+
+const CRON_MISS_DEDUPE_TTL_SEC = 6 * 60 * 60; // 6 hours
+
+async function maybeAlertCronMiss(env: Env, cron: string): Promise<void> {
+  const safeCron = sanitizeForLog(cron);
+  const key = `alert:cron_miss:${safeCron}`;
+  try {
+    if (await env.KV.get(key)) return; // already paged this window
+  } catch { /* KV read failed — fall through and try to alert anyway */ }
+
+  const text = [
+    `*Tightrope cron miss* (${new Date().toISOString().slice(0, 16).replace("T", " ")}Z)`,
+    `The scheduler fired an unrecognised cron pattern: \`${safeCron}\``,
+    `Ingestion for that schedule did not run — reconcile wrangler.toml crons with the dispatch switch (CRON_BRANCHES).`,
+  ].join("\n");
+  const posted = await postAlert(env, text);
+  if (posted) {
+    try {
+      await env.KV.put(key, new Date().toISOString(), { expirationTtl: CRON_MISS_DEDUPE_TTL_SEC });
+    } catch { /* best-effort dedupe mark */ }
+  }
 }

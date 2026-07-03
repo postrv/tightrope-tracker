@@ -24,4 +24,11 @@ export interface Env {
   EODHD_API_KEY?: string;
   /** EIA Open Data v2 API key for daily Brent crude spot prices. */
   EIA_API_KEY?: string;
+  /**
+   * Optional dead-man heartbeat URL (healthchecks.io-style). When set, a GET
+   * fires at the end of every fully-successful recompute (best-effort, via
+   * ctx.waitUntil). The external service emails if the pings stop — covering
+   * "Cloudflare cron stopped firing entirely", which no in-stack alert can.
+   */
+  HEARTBEAT_URL?: string;
 }

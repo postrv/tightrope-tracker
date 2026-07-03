@@ -58,6 +58,13 @@ ENVIRONMENT = "production"
 # optional: EODHD_API_KEY -- free-tier API key for daily housebuilder EOD closes.
 # set via `wrangler secret put EODHD_API_KEY` from apps/ingest/.
 # Without it the adapter falls back to the editorial fixture.
+# optional: ALERT_WEBHOOK_URL -- Slack-shaped webhook for source-health,
+# plausibility-quarantine, and cron-miss alerts. Unset = alerts are no-ops.
+# set via `wrangler secret put ALERT_WEBHOOK_URL`.
+# optional: HEARTBEAT_URL -- dead-man switch (healthchecks.io-style). GET
+# fires at the end of every fully-successful recompute; the external service
+# emails if the pings stop (covers "Cloudflare cron stopped firing"). Unset =
+# no heartbeat. set via `wrangler secret put HEARTBEAT_URL`.
 
 [observability]
 enabled = true

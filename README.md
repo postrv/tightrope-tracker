@@ -11,7 +11,7 @@ Tightrope Tracker measures **the gap between the government's stated commitments
 - It **is** a live snapshot, a published methodology, and a reproducible scoring pipeline.
 - It **isn't** a forecast, an opinion column, or a grading of any party.
 
-Every figure on the site links back to its source — BoE IADB, ONS, OBR, DMO, MHCLG, Moneyfacts, gov.uk RSS — and every weight, transformation, and baseline window is published on the [methodology page](https://tightropetracker.uk/methodology).
+Every figure on the site links back to its source — BoE IADB, ONS, OBR, DMO, MHCLG, EODHD, EIA, gov.uk RSS — and every weight, transformation, and baseline window is published on the [methodology page](https://tightropetracker.uk/methodology).
 
 ## Scoring model
 
@@ -33,10 +33,11 @@ apps/
   api/          Worker — public JSON API, MP postcode lookup
   og/           Worker — social share-card rendering (Satori)
   ingest/       Worker — scheduled data ingestion + score recompute
+  curator/      Worker — AI capture/verify/publish for non-API sources
 packages/
   shared/       Types, constants, pillar + band definitions
   methodology/  Pure scoring library (z-score, ECDF, weighted means) + tests
-  data-sources/ Adapters: BoE, ONS, OBR, DMO, MHCLG, gov.uk RSS, Moneyfacts
+  data-sources/ Adapters: BoE, ONS, OBR, DMO, MHCLG, EODHD, EIA, gov.uk RSS
 db/
   migrations/   D1 SQL migrations
   seed/         Seed data for local dev + fresh deployments
@@ -58,6 +59,7 @@ pnpm dev              # Astro site at http://localhost:4321
 pnpm dev:api          # API worker at http://localhost:8787
 pnpm dev:og           # OG worker at http://localhost:8788
 pnpm dev:ingest       # Ingest worker (scheduled) at http://localhost:8789
+pnpm dev:curator      # Curator worker (AI capture, scheduled) at http://localhost:8790
 ```
 
 All tests and typecheck:

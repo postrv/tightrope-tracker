@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CaptureRow, GateId, VerificationReport } from "../types";
 import { decideAndPersist, isShadowMode } from "../pipeline/publish";
+import { listCaptures } from "../lib/captures";
 import { makeEnv, makeFakeDb, observationSpec, type FakeCaptureRow } from "./helpers";
 
 function report(overrides: Partial<Record<GateId, boolean>> = {}): VerificationReport {
@@ -64,6 +65,29 @@ describe("decideAndPersist", () => {
     expect(db.observationWrites).toHaveLength(0);
     expect(db.captures).toHaveLength(1);
     expect(db.captures[0]!.decided_by).toContain("intended=auto_published");
+  });
+
+  it("F1: an EDITORIAL draft under shadow persists 'pending' and reaches the review queue (not 'shadow')", async () => {
+    const db = makeFakeDb();
+    const env = makeEnv({ db, extra: { CURATOR_MODE: "shadow" } });
+    const spec = observationSpec({ kind: "delivery_milestone", indicatorIds: [], plausibility: {}, allowAutoPublish: false });
+    const out = await decideAndPersist(env, spec, row({ kind: "delivery_milestone" }), report());
+    // Shadow gates the publish action for OBSERVATIONS, not the editorial queue.
+    expect(out.status).toBe("pending");
+    expect(out.decidedBy).toBe("auto"); // not shadowed
+    expect(db.observationWrites).toHaveLength(0);
+    // Visible to a reviewer: listCaptures('pending') returns it.
+    const queue = await listCaptures(db.db, "pending");
+    expect(queue.some((c) => c.id === out.id)).toBe(true);
+  });
+
+  it("F1: an OBSERVATION under shadow stays 'shadow' (contrast with the editorial path)", async () => {
+    const db = makeFakeDb();
+    const env = makeEnv({ db, extra: { CURATOR_MODE: "shadow" } });
+    const out = await decideAndPersist(env, observationSpec({ allowAutoPublish: true }), row(), report());
+    expect(out.status).toBe("shadow");
+    const pendingQueue = await listCaptures(db.db, "pending");
+    expect(pendingQueue.some((c) => c.id === out.id)).toBe(false);
   });
 
   it("auto-publishes when live + gates pass + allowAutoPublish, writing an ai:-prefixed observation", async () => {

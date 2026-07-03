@@ -1,5 +1,5 @@
 import type { Env } from "../env";
-import type { CaptureRow, CaptureSpec, ExtractionResult } from "../types";
+import { isEditorialKind, type CaptureRow, type CaptureSpec, type ExtractionResult } from "../types";
 import { CAPTURE_SPECS } from "../sources/registry";
 import { captureSource } from "../pipeline/capture";
 import { extractFromArtifact, runExtraction } from "../pipeline/extract";
@@ -8,7 +8,6 @@ import { decideAndPersist } from "../pipeline/publish";
 import { closeAudit, openAudit } from "./audit";
 import { listPending, setCaptureDecision, updatePayload } from "./captures";
 
-const EDITORIAL_KINDS = new Set(["delivery_milestone", "delivery_commitment", "timeline_event"]);
 /** The triage spec reads staged gov.uk rows rather than fetching a URL. */
 export const TIMELINE_TRIAGE_SOURCE = "timeline_triage";
 const TIMELINE_TRIAGE_LIMIT = 15;
@@ -25,6 +24,9 @@ export interface SweepSummary {
   results: SpecResult[];
 }
 
+/** Bounded fan-out: a modest pool keeps AI/upstream calls in flight without stampeding rate-limited sources. */
+const SWEEP_CONCURRENCY = 3;
+
 /**
  * Run the full capture→verify→decide pipeline across every registered spec.
  *
@@ -34,13 +36,33 @@ export interface SweepSummary {
  * unchanged / failure). `force: true` (the pre-deadline sweep) ignores the
  * content-hash short-circuit; `force: false` (the daily poll) extracts only on
  * change.
+ *
+ * Specs run with bounded concurrency (pool of 3): runSpec never throws (it
+ * records a 'failure' audit row and returns a failure result), so per-spec
+ * isolation holds under concurrency, and results are written back by input
+ * index so the summary order is deterministic (CAPTURE_SPECS order) regardless
+ * of completion order — the tests rely on that stability.
  */
 export async function runSweep(env: Env, opts: { force: boolean }): Promise<SweepSummary> {
-  const results: SpecResult[] = [];
-  for (const spec of CAPTURE_SPECS) {
-    results.push(await runSpec(env, spec, opts));
-  }
+  const results = await mapWithConcurrency(CAPTURE_SPECS, SWEEP_CONCURRENCY, (spec) => runSpec(env, spec, opts));
   return { ran: results.length, results };
+}
+
+/** Map with a fixed worker pool, preserving input order in the output array. */
+async function mapWithConcurrency<T, R>(
+  items: readonly T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let cursor = 0;
+  async function worker(): Promise<void> {
+    for (let index = cursor++; index < items.length; index = cursor++) {
+      out[index] = await fn(items[index]!, index);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => worker()));
+  return out;
 }
 
 async function runSpec(env: Env, spec: CaptureSpec, opts: { force: boolean }): Promise<SpecResult> {
@@ -63,7 +85,7 @@ async function runSpec(env: Env, spec: CaptureSpec, opts: { force: boolean }): P
     const verification = await verifyExtraction(env, spec, cap, extraction);
 
     let rows = 0;
-    if (EDITORIAL_KINDS.has(spec.kind)) {
+    if (isEditorialKind(spec.kind)) {
       await decideAndPersist(env, spec, buildEditorialRow(spec, cap, extraction), verification);
       rows = 1;
     } else {

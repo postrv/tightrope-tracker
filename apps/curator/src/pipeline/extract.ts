@@ -1,9 +1,8 @@
 import type { Env } from "../env";
-import type { CaptureArtifact, CaptureSpec, ExtractionResult } from "../types";
+import { isEditorialKind, type CaptureArtifact, type CaptureSpec, type ExtractionResult } from "../types";
 import { runModelJson } from "../lib/ai";
 import { buildPrompt, type PromptFraming } from "../lib/prompts";
 
-const EDITORIAL_KINDS = new Set(["delivery_milestone", "delivery_commitment", "timeline_event"]);
 const MAX_RETRIES = 2; // ≤2 retries on schema-invalid output → 3 attempts total.
 
 /**
@@ -81,7 +80,7 @@ function parseAndValidate(raw: string, spec: CaptureSpec): ValidateResult {
       : undefined;
   if (releasedAt === undefined) return { ok: false, error: "releasedAt must be a string or null" };
 
-  const isEditorial = EDITORIAL_KINDS.has(spec.kind);
+  const isEditorial = isEditorialKind(spec.kind);
 
   if (isEditorial) {
     const draft = o.draft;

@@ -1,5 +1,5 @@
-import { CADENCE_PERIOD_DAYS, computeSourceCadence, type ScoreSnapshot } from "@tightrope/shared";
-import { readLatestObservations } from "@tightrope/snapshot";
+import { CADENCE_PERIOD_DAYS, computeSourceCadence, type SourceCadenceEntry, type ScoreSnapshot } from "@tightrope/shared";
+import { readLatestObservations, SNAPSHOT_CACHE_KEY } from "@tightrope/snapshot";
 import { curatorPublicUrl, type Env } from "../env";
 import { postAlert } from "../lib/alert";
 import { listCaptures } from "../lib/captures";
@@ -18,7 +18,6 @@ import { listCaptures } from "../lib/captures";
  * deadline". Best-effort throughout: a missing section never aborts the digest.
  */
 const LAST_DIGEST_KEY = "curator:digest:last";
-const SNAPSHOT_KEY = "score:latest";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function sendEditorialDigest(env: Env, now: Date = new Date()): Promise<void> {
@@ -27,10 +26,15 @@ export async function sendEditorialDigest(env: Env, now: Date = new Date()): Pro
     `Dataset status ahead of the weekly editorial deadline.`,
   ];
 
+  // Compute the cadence roll-up ONCE and feed both sections that need it (the
+  // amber/red list and the "expected next 7 days" list) instead of reading the
+  // latest-observations table twice per digest.
+  const cadence = await cadenceEntries(env, now);
+
   sections.push(await scoreSection(env));
-  sections.push(await cadenceSection(env, now));
+  sections.push(cadenceSection(cadence));
   sections.push(await pendingSection(env));
-  sections.push(await upcomingSection(env, now));
+  sections.push(upcomingSection(cadence, now));
   const since = await readLastDigestAt(env);
   sections.push(await autoPublishedSection(env, since));
   sections.push(await milestoneParitySection(env, since));
@@ -50,8 +54,7 @@ async function scoreSection(env: Env): Promise<string> {
   return lines.join("\n");
 }
 
-async function cadenceSection(env: Env, now: Date): Promise<string> {
-  const cadence = await cadenceEntries(env, now);
+function cadenceSection(cadence: readonly SourceCadenceEntry[]): string {
   const flagged = cadence.filter((c) => c.state !== "green");
   if (flagged.length === 0) return "*Cadence:* all sources green.";
   return ["*Cadence (amber/red):*", ...flagged.map((c) => `  • ${c.sourceId}: ${c.state} (last ${(c.latestReleasedAt ?? c.latestObservedAt).slice(0, 10)})`)].join("\n");
@@ -72,8 +75,7 @@ async function pendingSection(env: Env): Promise<string> {
   return [`*Pending review (${pending.length}):*`, ...lines].join("\n");
 }
 
-async function upcomingSection(env: Env, now: Date): Promise<string> {
-  const cadence = await cadenceEntries(env, now);
+function upcomingSection(cadence: readonly SourceCadenceEntry[], now: Date): string {
   const soon: string[] = [];
   for (const c of cadence) {
     const period = CADENCE_PERIOD_DAYS[c.cadence];
@@ -134,7 +136,7 @@ async function cadenceEntries(env: Env, now: Date) {
 
 async function readSnapshot(env: Env): Promise<ScoreSnapshot | null> {
   try {
-    const raw = await env.KV.get(SNAPSHOT_KEY);
+    const raw = await env.KV.get(SNAPSHOT_CACHE_KEY);
     if (!raw) return null;
     return JSON.parse(raw) as ScoreSnapshot;
   } catch {

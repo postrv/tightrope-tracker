@@ -282,9 +282,18 @@ class of bugs is exactly what these gates exist to catch.
 ### 7.3 Shadow-mode comparison procedure
 
 Before a source is flipped to auto-publish it runs two full weekly cycles in
-shadow. During shadow every capture is recorded with `status='shadow'` and
-`decided_by='auto:shadow(intended=...)'` — the intended (pre-shadow) decision
-is preserved so you can see what *would* have happened.
+shadow. Shadow mode gates the **publish action for numeric observations**, not
+the review queue for editorial drafts:
+
+- **Observation** captures are recorded with `status='shadow'` and
+  `decided_by='auto:shadow(intended=...)'` — verified, gate-scored, and
+  recorded, but nothing is written to `indicator_observations`. The intended
+  (pre-shadow) decision is preserved so you can see what *would* have happened.
+- **Editorial** captures (`delivery_milestone`, `delivery_commitment`,
+  `timeline_event`) are recorded at their intended `status='pending'` and reach
+  the review queue exactly as they would in live mode — human approval is itself
+  the safeguard, and they can never auto-publish regardless of `CURATOR_MODE`.
+  Review them with `?status=pending`, not `?status=shadow`.
 
 Compare shadow captures against the hand-verified fixture value:
 

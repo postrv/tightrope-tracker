@@ -10,17 +10,68 @@ export type CaptureKind =
   | "delivery_commitment"
   | "timeline_event";
 
-export type CaptureStatus =
-  | "shadow"
-  | "pending"
-  | "auto_published"
-  | "approved"
-  | "rejected"
-  | "superseded"
-  | "quarantined"
-  | "unchanged";
+/**
+ * The editorial capture kinds — drafts that ALWAYS await human approval and are
+ * never auto-published (AUTOMATION_PLAN Phase 3, rule 3). Single source of
+ * truth: every pipeline stage that needs to branch editorial-vs-observation
+ * imports `isEditorialKind` rather than re-declaring its own set (which is how
+ * the five copies drifted apart before).
+ */
+export const EDITORIAL_KINDS: ReadonlySet<CaptureKind> = new Set<CaptureKind>([
+  "delivery_milestone",
+  "delivery_commitment",
+  "timeline_event",
+]);
+
+/** True when a capture kind is editorial (never auto-publishable). */
+export function isEditorialKind(kind: CaptureKind): boolean {
+  return EDITORIAL_KINDS.has(kind);
+}
+
+/**
+ * Every persisted / query-able `curator_captures.status` — the single source of
+ * truth for both the `CaptureStatus` union and the admin surface's
+ * `VALID_STATUSES`. Kept in lock-step with the CHECK constraint in
+ * db/migrations/0011_curator_captures.sql.
+ *
+ * NB `unchanged` is in the DB CHECK (a byte-identical repoll short-circuits
+ * before any row is inserted) but the curator never actually WRITES a capture
+ * row with that status — the sweep records it on the ingestion_audit row, not
+ * here. It is retained in the vocabulary so the type mirrors the DB contract
+ * and the admin `?status=` filter stays symmetric with the migration.
+ */
+export const CAPTURE_STATUSES = [
+  "shadow",
+  "pending",
+  "auto_published",
+  "approved",
+  "rejected",
+  "superseded",
+  "quarantined",
+  "unchanged",
+] as const;
+
+export type CaptureStatus = (typeof CAPTURE_STATUSES)[number];
 
 export type ArtefactFormat = "html" | "pdf" | "atom";
+
+/**
+ * Per-indicator gate parameters on a CaptureSpec. `maxDelta` (gate G4) is local;
+ * `min`/`max` (gate G3) default to the shared PLAUSIBILITY entry and are only
+ * present as explicit tighter overrides (none today).
+ */
+export interface PlausibilitySpec {
+  maxDelta: number;
+  min?: number;
+  max?: number;
+}
+
+/** The G3 range + G4 maxDelta a spec effectively applies for one indicator. */
+export interface EffectivePlausibility {
+  min: number;
+  max: number;
+  maxDelta: number;
+}
 
 export type ReleaseCadence =
   | "trading-daily"
@@ -44,11 +95,15 @@ export interface CaptureSpec {
   format: ArtefactFormat;
   cadence: ReleaseCadence;
   /**
-   * Publication gates, per indicator (AUTOMATION_PLAN Appendix A). Range is
-   * a hard bound; maxDelta is per upstream release, checked against the
-   * latest published observation (gate G4).
+   * Publication gates, per indicator (AUTOMATION_PLAN Appendix A). Only
+   * `maxDelta` (the per-upstream-release cap checked by gate G4) is a local
+   * value. The hard range (G3 min/max) is DERIVED from the shared
+   * `PLAUSIBILITY` table via `effectivePlausibility` (sources/registry.ts) so
+   * the curator G3 gate and the ingest write gate can never structurally
+   * diverge. `min`/`max` here are OPTIONAL overrides for the rare case a spec
+   * needs a tighter bound than the shared table — there are none today.
    */
-  plausibility: Record<string, { min: number; max: number; maxDelta: number }>;
+  plausibility: Record<string, PlausibilitySpec>;
   /**
    * Tolerance for gate G5 (independent second extraction must agree within
    * this absolute difference).

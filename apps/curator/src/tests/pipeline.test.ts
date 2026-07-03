@@ -65,4 +65,19 @@ describe("pipeline integration (capture -> extract -> verify -> publish)", () =>
     // One started + one closing audit row per spec.
     expect(db.audit.length).toBeGreaterThanOrEqual(CAPTURE_SPECS.length);
   });
+
+  it("C4: bounded-concurrency sweep returns results in deterministic CAPTURE_SPECS order", async () => {
+    // Each spec resolves after a jittered delay so completion order != input
+    // order; the pooled runner must still return results in registry order.
+    vi.stubGlobal("fetch", async () => {
+      await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 5)));
+      throw new Error("network down");
+    });
+    const ai = makeAi({ run: () => "{}" });
+    const db = makeFakeDb();
+    const env = makeEnv({ db, kv: makeKv().kv, ai: ai.AI });
+
+    const summary = await runSweep(env, { force: false });
+    expect(summary.results.map((r) => r.sourceId)).toEqual(CAPTURE_SPECS.map((s) => s.sourceId));
+  });
 });

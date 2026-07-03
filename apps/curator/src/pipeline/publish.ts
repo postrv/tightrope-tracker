@@ -1,7 +1,7 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { INDICATORS } from "@tightrope/shared";
 import { curatorPublicUrl, type Env } from "../env";
-import type { CaptureRow, CaptureSpec, CaptureStatus, VerificationReport } from "../types";
+import { isEditorialKind, type CaptureRow, type CaptureSpec, type CaptureStatus, type VerificationReport } from "../types";
 import { insertCapture, setCaptureDecision, supersedeOlderUnpublished, type CaptureDetail } from "../lib/captures";
 import {
   insertCorrection,
@@ -11,7 +11,6 @@ import {
 import { postAlert } from "../lib/alert";
 
 const TIMELINE_CACHE_KEY = "timeline:latest";
-const EDITORIAL_KINDS = new Set(["delivery_milestone", "delivery_commitment", "timeline_event"]);
 
 /** Shadow mode is default-ON: anything other than an explicit "live" stays shadow. */
 export function isShadowMode(env: Pick<Env, "CURATOR_MODE">): boolean {
@@ -27,11 +26,18 @@ export function isShadowMode(env: Pick<Env, "CURATOR_MODE">): boolean {
  *   - observation, G3 or G4 failed                     → 'quarantined' (+ alert)
  *   - observation, verification.passed ∧ allowAutoPublish → 'auto_published'
  *   - observation, otherwise                           → 'pending'
- * Shadow override (rule 6): while CURATOR_MODE ≠ "live", the persisted status is
- * forced to 'shadow' and NOTHING publishes — but a would-be quarantine still
- * fires its alert, because a plausibility breach is worth surfacing during the
- * shadow-comparison window. The intended (pre-shadow) decision is recorded in
- * decided_by for the digest/audit trail.
+ *
+ * Shadow gate (rule 6, F1): shadow mode gates the PUBLISH ACTION for
+ * OBSERVATIONS, not the review queue for editorial drafts. While CURATOR_MODE ≠
+ * "live":
+ *   - an OBSERVATION's persisted status is forced to 'shadow' and NOTHING
+ *     publishes (its intended decision is recorded in decided_by), but a
+ *     would-be quarantine still fires its alert because a plausibility breach is
+ *     worth surfacing during the shadow-comparison window;
+ *   - an EDITORIAL draft is persisted at its intended status ('pending') and
+ *     reaches the review queue exactly as it would in live mode — human
+ *     approval is itself the safeguard, so shadow mode never withholds
+ *     editorial drafts from a reviewer (they can never auto-publish anyway).
  */
 export async function decideAndPersist(
   env: Env,
@@ -41,14 +47,17 @@ export async function decideAndPersist(
 ): Promise<CaptureRow> {
   const intended = decideStatus(spec, verification);
   const shadow = isShadowMode(env);
-  const finalStatus: CaptureStatus = shadow ? "shadow" : intended;
+  const editorial = isEditorialKind(spec.kind);
+  // Only observations are shadowed; editorial drafts always reach the queue.
+  const finalStatus: CaptureStatus = shadow && !editorial ? "shadow" : intended;
   const willPublish = finalStatus === "auto_published";
 
   // Deterministic observation key (indicator|observed_at) when this row can publish.
   const canKey = row.indicatorId && row.observedAt;
   const observationKey = canKey ? `${row.indicatorId}|${row.observedAt}` : null;
 
-  const decidedBy = shadow && intended !== "shadow" ? `auto:shadow(intended=${intended})` : "auto";
+  const shadowed = finalStatus === "shadow";
+  const decidedBy = shadowed ? `auto:shadow(intended=${intended})` : "auto";
   const persisted: CaptureRow = {
     ...row,
     status: finalStatus,
@@ -83,7 +92,7 @@ export async function decideAndPersist(
 }
 
 function decideStatus(spec: CaptureSpec, verification: VerificationReport): CaptureStatus {
-  if (EDITORIAL_KINDS.has(spec.kind)) return "pending";
+  if (isEditorialKind(spec.kind)) return "pending";
   const failed = (id: string) => verification.gates.some((g) => g.gate === id && !g.passed);
   if (failed("G3") || failed("G4")) return "quarantined";
   if (verification.passed && spec.allowAutoPublish) return "auto_published";

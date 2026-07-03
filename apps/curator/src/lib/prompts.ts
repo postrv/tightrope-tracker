@@ -1,5 +1,5 @@
 import { INDICATORS } from "@tightrope/shared";
-import type { CaptureSpec } from "../types";
+import { isEditorialKind, type CaptureSpec } from "../types";
 
 /**
  * Extraction prompts, keyed by (sourceId, promptVersion).
@@ -7,11 +7,9 @@ import type { CaptureSpec } from "../types";
  * Design: the prompt text is DERIVED deterministically from the CaptureSpec
  * (its indicatorIds, kind, cadence) plus the indicator registry (units,
  * labels), so a source's prompt is fully reproducible from `(sourceId,
- * promptVersion)` — the two fields stamped on every capture row. A per-source
- * override registry (`OVERRIDES`) lets a specific (sourceId, promptVersion) pin
- * bespoke wording without disturbing the others; unmatched keys fall back to
- * the generic builder. Bump `spec.promptVersion` on ANY wording change so
- * historical rows stay interpretable.
+ * promptVersion)` — the two fields stamped on every capture row. Bump
+ * `spec.promptVersion` on ANY wording change so historical rows stay
+ * interpretable.
  *
  * Every prompt DEMANDS, per value: the verbatim source sentence (`quote`), the
  * period the value refers to (`observedAt`), and the unit — and forbids
@@ -26,8 +24,6 @@ export interface BuiltPrompt {
   messages: Array<{ role: string; content: string }>;
   schema: Record<string, unknown>;
 }
-
-const EDITORIAL_KINDS = new Set(["delivery_milestone", "delivery_commitment", "timeline_event"]);
 
 /** JSON schema mirroring ExtractionResult (validated by hand in extract.ts too). */
 function extractionSchema(): Record<string, unknown> {
@@ -166,18 +162,8 @@ function buildObservationPrompt(spec: CaptureSpec, text: string, framing: Prompt
   return { messages: [{ role: "system", content: system }, { role: "user", content: user }], schema };
 }
 
-/**
- * Per-source overrides. Empty today — the generic builder covers every spec in
- * the registry. Add an entry `OVERRIDES["sourceId"]["v2"] = (spec, text,
- * framing) => BuiltPrompt` to pin bespoke wording; remember to bump the spec's
- * promptVersion to the overridden key.
- */
-const OVERRIDES: Record<string, Record<string, (spec: CaptureSpec, text: string, framing: PromptFraming) => BuiltPrompt>> = {};
-
-/** Build the prompt for a spec + framing, honouring any (sourceId, promptVersion) override. */
+/** Build the prompt for a spec + framing: editorial draft vs numeric observation. */
 export function buildPrompt(spec: CaptureSpec, text: string, framing: PromptFraming): BuiltPrompt {
-  const override = OVERRIDES[spec.sourceId]?.[spec.promptVersion];
-  if (override) return override(spec, text, framing);
-  if (EDITORIAL_KINDS.has(spec.kind)) return buildEditorialPrompt(spec, text);
+  if (isEditorialKind(spec.kind)) return buildEditorialPrompt(spec, text);
   return buildObservationPrompt(spec, text, framing);
 }

@@ -2,22 +2,22 @@ import type { D1Database } from "@cloudflare/workers-types";
 import { readLatestObservations } from "@tightrope/snapshot";
 
 /**
- * The latest PUBLISHED observation for one indicator — the G4 delta baseline
- * and the G6 "strictly newer than last" reference.
+ * The latest PUBLISHED observation per indicator — the G4 delta baseline and
+ * the G6 "strictly newer than last" reference, keyed by indicator_id.
  *
  * Deliberately defers to the canonical two-tier selector in
  * `@tightrope/snapshot` (readLatestObservations) rather than re-implementing
- * the SQL: that package exists precisely so this rule has ONE copy. Curator
- * runs hourly at most, so filtering the full result is immaterial, and it
- * guarantees the gate compares against exactly the row a reader would see.
+ * the SQL: that package exists precisely so this rule has ONE copy. Read ONCE
+ * per verifyExtraction (not per value) and handed to every gate — a multi-value
+ * spec (MHCLG) no longer re-queries the whole table for each indicator.
  */
-export async function readLatestPublishedObservation(
+export async function readLatestPublishedObservations(
   db: D1Database,
-  indicatorId: string,
-): Promise<{ value: number; observedAt: string } | null> {
+): Promise<Map<string, { value: number; observedAt: string }>> {
   const all = await readLatestObservations(db);
-  const row = all.find((r) => r.indicator_id === indicatorId);
-  return row ? { value: row.value, observedAt: row.observed_at } : null;
+  const out = new Map<string, { value: number; observedAt: string }>();
+  for (const r of all) out.set(r.indicator_id, { value: r.value, observedAt: r.observed_at });
+  return out;
 }
 
 /** The exact currently-published value at (indicator, observed_at), if any. */

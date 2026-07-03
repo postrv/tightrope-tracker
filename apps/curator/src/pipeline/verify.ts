@@ -8,8 +8,10 @@ import type {
   GateResult,
   VerificationReport,
 } from "../types";
+import { isEditorialKind } from "../types";
+import { effectivePlausibility } from "../sources/registry";
 import { runExtraction } from "./extract";
-import { readLatestPublishedObservation } from "../lib/observations";
+import { readLatestPublishedObservations } from "../lib/observations";
 
 /**
  * Stage 3 — verify. Gates G1–G6 (AUTOMATION_PLAN Phase 3). Every gate is
@@ -46,7 +48,6 @@ import { readLatestPublishedObservation } from "../lib/observations";
 
 const GATE_WEIGHTS: Record<Exclude<GateId, "G5">, number> = { G1: 0.25, G2: 0.15, G3: 0.15, G4: 0.15, G6: 0.1 };
 const G5_WEIGHT = 0.2;
-const EDITORIAL_KINDS = new Set(["delivery_milestone", "delivery_commitment", "timeline_event"]);
 
 export async function verifyExtraction(
   env: Env,
@@ -54,20 +55,25 @@ export async function verifyExtraction(
   artifact: CaptureArtifact,
   extraction: ExtractionResult,
 ): Promise<VerificationReport> {
-  if (EDITORIAL_KINDS.has(spec.kind)) {
+  if (isEditorialKind(spec.kind)) {
     return verifyEditorial(spec, artifact, extraction);
   }
 
   const normText = normWs(artifact.text);
   const perValue: Array<{ gates: Record<GateId, GateResult>; a5: number }> = [];
 
-  // G5: one independent second extraction of the whole artefact, matched per value.
-  const second = await secondExtraction(env, spec, artifact.text);
+  // The G5 second extraction and the latest-published snapshot are independent,
+  // so run them concurrently; and read the two-tier selector ONCE for the whole
+  // verification (Map by indicator_id) rather than re-querying per value.
+  const [second, latestByIndicator] = await Promise.all([
+    secondExtraction(env, spec, artifact.text),
+    readLatestPublishedObservations(env.DB),
+  ]);
 
   for (const val of extraction.values) {
     const def = INDICATORS[val.indicatorId];
-    const bound = spec.plausibility[val.indicatorId];
-    const latest = await readLatestPublishedObservation(env.DB, val.indicatorId);
+    const bound = effectivePlausibility(spec, val.indicatorId);
+    const latest = latestByIndicator.get(val.indicatorId) ?? null;
 
     const quoteLocated = normText.includes(normWs(val.quote));
     const g1 = gate("G1", quoteLocated, `quote ${quoteLocated ? "located" : "NOT located"} in artefact for ${val.indicatorId}`);

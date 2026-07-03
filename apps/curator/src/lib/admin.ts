@@ -1,6 +1,6 @@
 import { adminAuthGate, timingSafeEqual } from "@tightrope/shared";
 import type { Env } from "../env";
-import type { CaptureStatus } from "../types";
+import { CAPTURE_STATUSES, type CaptureStatus } from "../types";
 import { getCapture, listCaptures, setCaptureDecision } from "./captures";
 import { readPublishedValueAt } from "./observations";
 import { approveCapture } from "../pipeline/publish";
@@ -18,16 +18,9 @@ import { approveCapture } from "../pipeline/publish";
  * Everything else 405, matching the ingest worker's posture.
  */
 
-const VALID_STATUSES: ReadonlySet<string> = new Set<CaptureStatus>([
-  "shadow",
-  "pending",
-  "auto_published",
-  "approved",
-  "rejected",
-  "superseded",
-  "quarantined",
-  "unchanged",
-]);
+// Derived from the single source of truth (types.ts) so the admin `?status=`
+// filter and the CaptureStatus union / DB CHECK can never drift apart.
+const VALID_STATUSES: ReadonlySet<string> = new Set<CaptureStatus>(CAPTURE_STATUSES);
 
 export async function handleFetch(req: Request, env: Env): Promise<Response> {
   const url = new URL(req.url);

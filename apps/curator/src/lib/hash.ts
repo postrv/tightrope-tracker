@@ -1,12 +1,3 @@
-import { sha256Hex } from "@tightrope/data-sources";
-
-/**
- * Re-export the shared string hasher so callers have one import path. Used for
- * content-string dedupe (editorial candidates) where the "artefact" is a
- * derived string rather than raw bytes.
- */
-export { sha256Hex };
-
 /**
  * SHA-256 hex digest of raw artefact BYTES.
  *

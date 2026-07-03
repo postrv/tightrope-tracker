@@ -302,7 +302,9 @@ export function observationSpec(over: Partial<CaptureSpec> = {}): CaptureSpec {
     urls: ["https://example.test/pmi"],
     format: "html",
     cadence: "monthly",
-    plausibility: { services_pmi: { min: 30, max: 72, maxDelta: 8 } },
+    // min/max are DERIVED from the shared PLAUSIBILITY table (services_pmi
+    // [30,72]); the spec only carries maxDelta. Exercising the derived path.
+    plausibility: { services_pmi: { maxDelta: 8 } },
     agreementTolerance: 0.5,
     allowAutoPublish: true,
     modelId: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",

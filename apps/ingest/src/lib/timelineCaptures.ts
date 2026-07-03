@@ -1,5 +1,6 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import type { TimelineEventCandidate } from "@tightrope/data-sources";
+import { sanitizeForLog } from "@tightrope/shared";
 import { sha256Hex } from "./hash.js";
 
 const SOURCE_ID = "gov_uk";
@@ -25,7 +26,14 @@ export interface StageTimelineResult {
  * content (id/title/link/publishedAt/summary/category), so a materially
  * edited announcement produces a fresh capture worth re-reviewing while an
  * unchanged repoll is ignored. An in-run guard also collapses two identical
- * candidates within a single fetch.
+ * candidates within a single fetch, and the INSERT uses `ON CONFLICT DO
+ * NOTHING` against the partial UNIQUE index (migration 0012) to close the
+ * check-then-act race (C7).
+ *
+ * Telemetry is counted AS WE GO: `inserted`/`skipped` are incremented inside
+ * the loop, and any mid-loop DB failure is caught so the caller still receives
+ * the true count of what was staged before the failure (C7) rather than losing
+ * all progress to a thrown exception.
  */
 export async function stageTimelineCandidates(
   db: D1Database,
@@ -36,32 +44,42 @@ export async function stageTimelineCandidates(
   let inserted = 0;
   let skipped = 0;
 
-  for (const candidate of candidates) {
-    const contentSha256 = await sha256Hex(candidateContent(candidate));
-    if (seenThisRun.has(contentSha256)) {
-      skipped++;
-      continue;
-    }
-    seenThisRun.add(contentSha256);
+  try {
+    for (const candidate of candidates) {
+      const contentSha256 = await sha256Hex(candidateContent(candidate));
+      if (seenThisRun.has(contentSha256)) {
+        skipped++;
+        continue;
+      }
+      seenThisRun.add(contentSha256);
 
-    const existing = await db
-      .prepare("SELECT 1 AS one FROM curator_captures WHERE source_id = ? AND content_sha256 = ? LIMIT 1")
-      .bind(SOURCE_ID, contentSha256)
-      .first<{ one: number }>();
-    if (existing) {
-      skipped++;
-      continue;
-    }
+      const existing = await db
+        .prepare("SELECT 1 AS one FROM curator_captures WHERE source_id = ? AND content_sha256 = ? LIMIT 1")
+        .bind(SOURCE_ID, contentSha256)
+        .first<{ one: number }>();
+      if (existing) {
+        skipped++;
+        continue;
+      }
 
-    await db
-      .prepare(
-        `INSERT INTO curator_captures
-           (source_id, kind, status, captured_at, source_url, content_sha256, payload)
-         VALUES (?, 'timeline_event', 'pending', ?, ?, ?, ?)`,
-      )
-      .bind(SOURCE_ID, capturedAt, candidate.link || FEED_URL, contentSha256, JSON.stringify(candidate))
-      .run();
-    inserted++;
+      await db
+        .prepare(
+          `INSERT INTO curator_captures
+             (source_id, kind, status, captured_at, source_url, content_sha256, payload)
+           VALUES (?, 'timeline_event', 'pending', ?, ?, ?, ?)
+           ON CONFLICT (source_id, content_sha256) WHERE model_id IS NULL DO NOTHING`,
+        )
+        .bind(SOURCE_ID, capturedAt, candidate.link || FEED_URL, contentSha256, JSON.stringify(candidate))
+        .run();
+      inserted++;
+    }
+  } catch (err) {
+    // Best-effort staging: a mid-loop DB failure returns the true count staged
+    // so far instead of discarding it (the caller treats staging as best-effort
+    // and only logs). The already-inserted rows remain durable.
+    console.warn(
+      `stageTimelineCandidates: staging failed after ${inserted} inserted / ${skipped} skipped -- ${sanitizeForLog((err as Error)?.message ?? String(err))}`,
+    );
   }
 
   return { inserted, skipped };

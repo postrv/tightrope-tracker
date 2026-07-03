@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { D1Database } from "@cloudflare/workers-types";
 import type { TimelineEventCandidate } from "@tightrope/data-sources";
 import { stageTimelineCandidates } from "../lib/timelineCaptures.js";
@@ -69,6 +69,7 @@ describe("stageTimelineCandidates", () => {
     expect(ins.sql).toContain("INSERT INTO curator_captures");
     expect(ins.sql).toContain("'timeline_event'");
     expect(ins.sql).toContain("'pending'");
+    expect(ins.sql).toContain("ON CONFLICT"); // C7: race-safe dedupe
     // bind order: [source_id, captured_at, source_url, content_sha256, payload]
     expect(ins.bindings[0]).toBe("gov_uk");
     expect(ins.bindings[2]).toBe(c.link);
@@ -132,5 +133,39 @@ describe("stageTimelineCandidates", () => {
     const res = await stageTimelineCandidates(db, []);
     expect(res).toEqual({ inserted: 0, skipped: 0 });
     expect(inserts).toHaveLength(0);
+  });
+
+  it("C7: a mid-loop DB failure returns the TRUE count staged so far (does not throw or lose progress)", async () => {
+    // A stub whose 2nd insert throws — the first candidate is staged, then the
+    // DB dies mid-loop. The caller must still learn that 1 row was staged.
+    let inserts = 0;
+    interface Stmt {
+      bind: (...b: unknown[]) => Stmt;
+      first: <T>() => Promise<T | null>;
+      run: () => Promise<{ success: true }>;
+    }
+    const makeStmt = (sql: string): Stmt => ({
+      bind: () => makeStmt(sql),
+      first: async <T>() => null as unknown as T | null, // never previously seen
+      run: async () => {
+        if (sql.includes("INSERT INTO curator_captures")) {
+          inserts++;
+          if (inserts === 2) throw new Error("d1 connection lost");
+        }
+        return { success: true };
+      },
+    });
+    const db = { prepare: (sql: string) => makeStmt(sql) } as unknown as D1Database;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    const res = await stageTimelineCandidates(db, [
+      candidate({ id: "a", link: "https://www.gov.uk/a" }),
+      candidate({ id: "b", link: "https://www.gov.uk/b" }),
+      candidate({ id: "c", link: "https://www.gov.uk/c" }),
+    ]);
+
+    expect(res.inserted).toBe(1); // true count, not 0 and not 3
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 });

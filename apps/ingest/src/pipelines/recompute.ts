@@ -20,13 +20,17 @@ import {
   computePillarScore,
   type IndicatorReading,
 } from "@tightrope/methodology";
+import {
+  primeHistoryCache,
+  primeSnapshotCache,
+  readLatestObservations,
+} from "@tightrope/snapshot";
 import type { Env } from "../env.js";
 import {
   downsampleLatestPerDay,
   filterStaleLiveRows,
   readBaselineObservations,
   readHeadlineHistory,
-  readLatestLiveObservations,
   readPillarHistory,
   readRecentObservations,
   valueAtLeastAgo,
@@ -35,7 +39,6 @@ import {
 } from "../lib/history.js";
 import { maybeAlertSourceHealth } from "./alerts.js";
 
-const KV_TTL_6H = 60 * 60 * 6;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
@@ -44,7 +47,7 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
     readRecentObservations(env.DB, 365),
     readHeadlineHistory(env.DB, 365),
     readPillarHistory(env.DB, 90),
-    readLatestLiveObservations(env.DB),
+    readLatestObservations(env.DB),
   ]);
   if (recentRaw.length === 0) return null;
 
@@ -206,10 +209,12 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   // read still returns the last-fresh row; the pillar.stale/headline.stale
   // flags are inferred at serve time from the observed_at age.
   await persistScores(env, snapshot, updatedAt, { skipHeadline: anyStale, skipPillars: stalePillarIds });
-  await env.KV.put("score:latest", JSON.stringify(snapshot), { expirationTtl: KV_TTL_6H });
+  // Single-writer: primeSnapshotCache / primeHistoryCache (@tightrope/snapshot)
+  // own score:latest and score:history:90d.
+  await primeSnapshotCache(env.KV, snapshot);
 
   const history = buildHistory(headlineHist, pillarHistByPillar);
-  await env.KV.put("score:history:90d", JSON.stringify(history), { expirationTtl: KV_TTL_6H });
+  await primeHistoryCache(env.KV, history);
 
   return snapshot;
 }

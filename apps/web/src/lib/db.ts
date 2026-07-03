@@ -3,25 +3,15 @@ import type {
   ScoreSnapshot,
   ScoreHistory,
   ScoreHistoryPoint,
-  PillarScore,
-  HeadlineScore,
-  IndicatorContribution,
-  SourceHealthEntry,
   TodayMovement,
   Trend,
   Iso8601,
 } from "@tightrope/shared";
 import {
-  EPOCH_ISO,
-  INDICATORS,
   PILLAR_ORDER,
-  PILLARS,
   SCORE_DIRECTION,
   SCORE_HISTORY_SCHEMA_VERSION,
   SCORE_SCHEMA_VERSION,
-  bandFor,
-  computeSourceHealth,
-  isScoreRowStale,
   BASELINE_START_ISO,
   COVID_EXCLUDE_START_ISO,
   COVID_EXCLUDE_END_ISO,
@@ -29,35 +19,29 @@ import {
 import type { DeliveryCommitment, DeliveryStatus } from "@tightrope/shared/delivery";
 import type { TimelineEvent, TimelineCategory } from "@tightrope/shared/timeline";
 import { summariseBaseline, type BaselineSummary } from "@tightrope/methodology";
-
-/** Time-series row returned from `headline_scores` / `pillar_scores`. */
-interface ScoreRow {
-  observed_at: string;
-  value: number;
-  band: string;
-  dominant?: string;
-  editorial?: string;
-}
+import { buildSnapshotFromD1 as buildSnapshotFromDb, primeSnapshotCache } from "@tightrope/snapshot";
 
 /** KV snapshot is only trusted if this fresh. Beyond, we fall through to D1. */
 const KV_SNAPSHOT_MAX_AGE_MS = 30 * 60_000;
 
 /**
- * Build a complete score snapshot from D1.
+ * Build a complete score snapshot, KV-first.
  *
  * Prefers the cached snapshot in KV so every page render is a single KV
- * `get` rather than four D1 queries. Falls back to a fresh D1 read if the
- * cache is empty, the schema version has bumped, or the cached snapshot is
- * older than KV_SNAPSHOT_MAX_AGE_MS -- we prefer a slightly slower render
- * over silently serving stale data.
+ * `get` rather than four D1 queries. Falls back to a fresh D1 read (via the
+ * single `@tightrope/snapshot` builder) if the cache is empty, the schema
+ * version has bumped, or the cached snapshot is older than
+ * KV_SNAPSHOT_MAX_AGE_MS -- we prefer a slightly slower render over silently
+ * serving stale data.
  */
 export async function getLatestSnapshot(env: Env): Promise<ScoreSnapshot> {
   const cached = await env.KV.get<ScoreSnapshot>("score:latest", "json");
   if (cached && cached.schemaVersion === SCORE_SCHEMA_VERSION && isFresh(cached) && hasContributions(cached)) return cached;
-  const fresh = await buildSnapshotFromD1(env);
-  // Best-effort re-prime so subsequent hits in the 30-minute window serve from KV.
+  const fresh = await buildSnapshotFromDb(env.DB);
+  // Best-effort re-prime so subsequent hits in the 30-minute window serve
+  // from KV. Single-writer: primeSnapshotCache owns score:latest.
   try {
-    await env.KV.put("score:latest", JSON.stringify(fresh), { expirationTtl: 60 * 60 * 6 });
+    await primeSnapshotCache(env.KV, fresh);
   } catch {
     // KV write failures are non-fatal: we already have the snapshot to return.
   }
@@ -85,386 +69,6 @@ function hasContributions(snapshot: ScoreSnapshot): boolean {
   return false;
 }
 
-export async function buildSnapshotFromD1(env: Env): Promise<ScoreSnapshot> {
-  const db = env.DB;
-
-  // Run the four score queries and the two ingestion_audit queries in parallel
-  // -- they're all independent reads against D1 and blocking sequentially here
-  // would add 4-6x round-trip latency to every cache miss.
-  const [headlineRow, headlineHistory, pillarsLatest, pillarHistory, latestAttempts, lastSuccesses, latestObservations] = await Promise.all([
-    db.prepare(
-      "SELECT observed_at, value, band, dominant, editorial FROM headline_scores ORDER BY observed_at DESC LIMIT 1",
-    ).first<ScoreRow>(),
-    // Downsample to one row per UTC day (latest per day wins) over the last
-    // 90 days. Without this, 90 rows of 5-min recompute output covers ~7.5
-    // hours, producing a flat line every day indicators hold steady.
-    db.prepare(
-      `SELECT h.observed_at, h.value FROM headline_scores h
-       JOIN (
-         SELECT substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
-         FROM headline_scores
-         WHERE observed_at >= datetime('now', '-90 days')
-         GROUP BY substr(observed_at, 1, 10)
-       ) m ON h.observed_at = m.ts
-       ORDER BY h.observed_at ASC`,
-    ).all<ScoreRow>(),
-    db.prepare(
-      `SELECT p.pillar_id AS id, p.observed_at, p.value, p.band
-       FROM pillar_scores p
-       JOIN (
-         SELECT pillar_id, MAX(observed_at) AS ts FROM pillar_scores GROUP BY pillar_id
-       ) m ON p.pillar_id = m.pillar_id AND p.observed_at = m.ts`,
-    ).all<{ id: PillarId; observed_at: string; value: number; band: string }>(),
-    // Downsample to one row per UTC day per pillar. Mirrors the headline
-    // query above — see the comment there for the reasoning.
-    db.prepare(
-      `SELECT p.pillar_id AS id, p.observed_at, p.value FROM pillar_scores p
-       JOIN (
-         SELECT pillar_id, substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
-         FROM pillar_scores
-         WHERE observed_at >= datetime('now', '-30 days')
-         GROUP BY pillar_id, substr(observed_at, 1, 10)
-       ) m ON p.pillar_id = m.pillar_id AND p.observed_at = m.ts
-       ORDER BY p.pillar_id, p.observed_at ASC`,
-    ).all<{ id: PillarId; observed_at: string; value: number }>(),
-    // Latest ingestion attempt per source (any status) -- powers the
-    // source-health signal that surfaces upstream failures earlier than the
-    // observation-age staleness thresholds.
-    db.prepare(
-      `SELECT i.source_id, i.started_at, i.status FROM ingestion_audit i
-       JOIN (
-         SELECT source_id, MAX(started_at) AS ts FROM ingestion_audit GROUP BY source_id
-       ) m ON i.source_id = m.source_id AND i.started_at = m.ts`,
-    ).all<{ source_id: string; started_at: string; status: string }>(),
-    db.prepare(
-      // 'unchanged' is a healthy fetch (same payload as last time).
-      // Include it so sources that publish less often than they're
-      // polled don't appear to be failing between real updates.
-      `SELECT source_id, MAX(started_at) AS last_success
-       FROM ingestion_audit WHERE status IN ('success', 'unchanged') GROUP BY source_id`,
-    ).all<{ source_id: string; last_success: string }>(),
-    // Latest observation per indicator, two-tier selection. Mirrors
-    // apps/api/src/lib/db.ts — see the comment block there for the
-    // policy rationale (OBR EFO supersede + backfill freshness over a
-    // silent live fall-through). Behaviour summary:
-    //   tier 1 (live):  MAX(ingested_at) among non-hist non-seed rows
-    //   tier 2 (hist):  MAX(observed_at) among hist:% rows
-    //   final:           observed_at DESC, live before hist on ties,
-    //                    ingested_at DESC as final tiebreaker
-    db.prepare(
-      `SELECT indicator_id, value, observed_at, source_id FROM (
-         SELECT indicator_id, value, observed_at, source_id, payload_hash, ingested_at,
-                ROW_NUMBER() OVER (
-                  PARTITION BY indicator_id
-                  ORDER BY observed_at DESC,
-                           CASE WHEN payload_hash LIKE 'hist:%' THEN 1 ELSE 0 END ASC,
-                           ingested_at DESC
-                ) AS rn
-         FROM (
-           SELECT o.indicator_id, o.value, o.observed_at, o.source_id, o.payload_hash, o.ingested_at
-           FROM indicator_observations o
-           JOIN (
-             SELECT indicator_id, MAX(ingested_at) AS ts
-             FROM indicator_observations
-             WHERE payload_hash IS NULL
-                OR (payload_hash NOT LIKE 'hist:%' AND payload_hash NOT LIKE 'seed%')
-             GROUP BY indicator_id
-           ) m ON o.indicator_id = m.indicator_id AND o.ingested_at = m.ts
-              AND (o.payload_hash IS NULL
-                   OR (o.payload_hash NOT LIKE 'hist:%' AND o.payload_hash NOT LIKE 'seed%'))
-           UNION ALL
-           SELECT o.indicator_id, o.value, o.observed_at, o.source_id, o.payload_hash, o.ingested_at
-           FROM indicator_observations o
-           JOIN (
-             SELECT indicator_id, MAX(observed_at) AS oa
-             FROM indicator_observations
-             WHERE payload_hash LIKE 'hist:%'
-             GROUP BY indicator_id
-           ) m ON o.indicator_id = m.indicator_id AND o.observed_at = m.oa
-              AND o.payload_hash LIKE 'hist:%'
-         ) candidates
-       ) ranked WHERE rn = 1`,
-    ).all<{ indicator_id: string; value: number; observed_at: string; source_id: string }>(),
-  ]);
-
-  // Shape into snapshot.
-  const now = new Date();
-  const obsByIndicator = new Map<string, { value: number; observedAt: string; sourceId: string }>();
-  for (const r of latestObservations.results) {
-    obsByIndicator.set(r.indicator_id, { value: r.value, observedAt: r.observed_at, sourceId: r.source_id });
-  }
-  const pillars = {} as Record<PillarId, PillarScore>;
-  let anyPillarStale = false;
-  type PillarLatestRow = { id: PillarId; observed_at: string; value: number; band: string };
-  type PillarHistoryRow = { id: PillarId; observed_at: string; value: number };
-  for (const p of PILLAR_ORDER) {
-    const latest = (pillarsLatest.results as PillarLatestRow[]).find((r: PillarLatestRow) => r.id === p);
-    const pRows = (pillarHistory.results as PillarHistoryRow[]).filter((r: PillarHistoryRow) => r.id === p);
-    const series = pRows.map((r: PillarHistoryRow) => r.value);
-    const value = latest?.value ?? 0;
-    // Calendar-anchored 7d lookup. The pillar history SQL above downsamples
-    // to one row per UTC day — but recompute refuses to write a row when
-    // any pillar fails quorum, so a multi-day quorum gap leaves a hole and
-    // `series.at(-7)` silently reaches back 9–10 calendar days. Anchor on
-    // the UTC day of the latest row so a missed day shifts the baseline at
-    // most by the size of the gap, not by N positions. Mirrors
-    // apps/api/src/lib/db.ts pickValueDaysBefore.
-    const sevenDaysAgo = pickValueDaysBefore(pRows, latest?.observed_at, 7) ?? value;
-    const delta = Math.round((value - sevenDaysAgo) * 10) / 10;
-    const trend: Trend = Math.abs(delta) <= 0.5 ? "flat" : delta > 0 ? "up" : "down";
-    // 30d spans the full pillar sparkline so labels match what the user
-    // sees in the chart — mirrors computePillarScore in the recompute path.
-    const first = series[0];
-    const last = series[series.length - 1];
-    const delta30 = series.length >= 2 && first !== undefined && last !== undefined
-      ? last - first
-      : 0;
-    const trend30: Trend = Math.abs(delta30) < 0.5 ? "flat" : delta30 > 0 ? "up" : "down";
-    // Serve-time staleness inference: recompute writes every non-stale pillar
-    // every 5 min, so a row older than MAX_SCORE_AGE_MS (30 min) signals
-    // either a broken loop or a pillar that has been failing its quorum.
-    const stale = isScoreRowStale(latest?.observed_at, now);
-    if (stale) anyPillarStale = true;
-    pillars[p] = {
-      pillar: p,
-      label: PILLARS[p].shortTitle,
-      value,
-      band: (latest?.band as PillarScore["band"]) ?? bandFor(value).id,
-      weight: PILLARS[p].weight,
-      contributions: buildContributionsForPillar(p, obsByIndicator, value),
-      trend7d: trend,
-      delta7d: delta,
-      trend30d: trend30,
-      delta30d: Math.round(delta30 * 10) / 10,
-      sparkline30d: series,
-      ...(stale ? { stale: true } : {}),
-    };
-  }
-
-  const hValue = headlineRow?.value ?? 0;
-  // Already ordered ASC by observed_at (one row per UTC day, see SQL above).
-  const hRows = (headlineHistory.results as ScoreRow[]);
-  const hSeries = hRows.map((r: ScoreRow) => r.value);
-  const headlineStale = anyPillarStale || isScoreRowStale(headlineRow?.observed_at, now);
-  // delta30d / deltaYtd pair the number with the ISO date of the row
-  // actually used as the baseline. When the row is meaningfully off the
-  // requested window (history doesn't stretch back 30d / to Jan 1), the
-  // UI should render "since DD MMM" instead of the "30d" / "YTD" label.
-  // This fixes the live-prod bug where both deltas silently collapsed to
-  // the same oldest-row number because the fallback was invisible.
-  const delta30d = deltaAgoWithDate(hRows, 30);
-  const deltaYtd = deltaAgoYtd(hRows, now);
-  const dominantPillar = dominantDrag(pillars);
-  const headline: HeadlineScore = {
-    value: hValue,
-    band: (headlineRow?.band as HeadlineScore["band"]) ?? bandFor(hValue).id,
-    editorial: renderEditorialNote(dominantPillar, pillars),
-    // EPOCH_ISO sentinel mirrors apps/api/src/lib/db.ts: stamping `now` here
-    // would make an empty-seed placeholder look fresh and bypass any
-    // "not seeded" gating downstream. The unix epoch is unambiguous.
-    updatedAt: (headlineRow?.observed_at as Iso8601) ?? (EPOCH_ISO as Iso8601),
-    dominantPillar,
-    sparkline90d: hSeries,
-    // Calendar-anchored: with the daily downsample, index-based offset
-    // (`series.at(-2)`) labels a 48h delta as "24h" if yesterday's
-    // recompute missed quorum. See pickValueDaysBefore.
-    delta24h: deltaCalendar(hRows, 1),
-    delta30d: delta30d.value,
-    deltaYtd: deltaYtd.value,
-    ...(delta30d.baselineDate ? { delta30dBaselineDate: delta30d.baselineDate as Iso8601 } : {}),
-    ...(deltaYtd.baselineDate ? { deltaYtdBaselineDate: deltaYtd.baselineDate as Iso8601 } : {}),
-    ...(headlineStale ? { stale: true } : {}),
-  };
-
-  type AttemptRow = { source_id: string; started_at: string; status: string };
-  type SuccessRow = { source_id: string; last_success: string };
-  const lastSuccessBySource: Record<string, string> = {};
-  for (const r of (lastSuccesses.results as SuccessRow[])) lastSuccessBySource[r.source_id] = r.last_success;
-  const sourceHealth: readonly SourceHealthEntry[] = computeSourceHealth(
-    (latestAttempts.results as AttemptRow[]).map((r: AttemptRow) => ({
-      sourceId: r.source_id,
-      startedAt: r.started_at,
-      status: r.status,
-    })),
-    lastSuccessBySource,
-  );
-
-  const snapshot: ScoreSnapshot = { headline, pillars, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_SCHEMA_VERSION };
-  if (sourceHealth.length > 0) snapshot.sourceHealth = sourceHealth;
-  return snapshot;
-}
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-/**
- * UTC YYYY-MM-DD that is `daysBack` calendar days before `iso`. Empty
- * string on parse failure so callers can short-circuit safely.
- */
-function utcDayOffset(iso: string | undefined, daysBack: number): string {
-  if (!iso) return "";
-  const ms = Date.parse(iso);
-  if (!Number.isFinite(ms)) return "";
-  return new Date(ms - daysBack * DAY_MS).toISOString().slice(0, 10);
-}
-
-/**
- * Calendar-anchored 1-row lookup: pick the value of the most recent row
- * whose UTC day is on or before `latest.observed_at - daysBack`. Returns
- * undefined when no such row exists or `latestIso` is missing/malformed.
- *
- * The daily downsample produces one row per UTC day with ISO 8601 UTC
- * observed_at, so lex compare on the date prefix is byte-exact.
- */
-function pickValueDaysBefore(
-  rows: readonly { observed_at: string; value: number }[],
-  latestIso: string | undefined,
-  daysBack: number,
-): number | undefined {
-  const targetDay = utcDayOffset(latestIso, daysBack);
-  if (!targetDay) return undefined;
-  for (let i = rows.length - 1; i >= 0; i--) {
-    if (rows[i]!.observed_at.slice(0, 10) <= targetDay) return rows[i]!.value;
-  }
-  return undefined;
-}
-
-/**
- * Calendar-anchored delta of `latest.value - row[N days ago].value`.
- * Returns 0 when history doesn't reach back `targetDays` calendar days,
- * or when there are fewer than two rows. Use `deltaAgoWithDate` instead
- * when callers want to fall back to the oldest available row.
- */
-function deltaCalendar(
-  rows: readonly { observed_at: string; value: number }[],
-  targetDays: number,
-): number {
-  if (rows.length < 2) return 0;
-  const latest = rows[rows.length - 1]!;
-  const baseline = pickValueDaysBefore(rows.slice(0, -1), latest.observed_at, targetDays);
-  if (baseline === undefined) return 0;
-  return round1(latest.value - baseline);
-}
-
-interface DeltaWithBaseline {
-  value: number;
-  baselineDate?: string;
-}
-
-/**
- * One-UTC-day-per-row history (as produced by the 90d headline query).
- * Returns delta = latest - row[N days ago]. If history is too short,
- * falls back to oldest row as long as it's at least `MIN_FALLBACK_DAYS`
- * old, and surfaces its observedAt as baselineDate so the UI can label
- * the number honestly.
- *
- * Mirrors apps/api/src/lib/db.ts deltaAgoWithFallback. Calendar-anchored
- * (vs the previous positional `rows[length - 1 - targetDays]`) so that
- * gaps from days where pillar quorum failed don't silently turn "30d"
- * into 32–35d. Without the fallback floor, a fresh deploy with thin
- * history would report a 2-day-old delta as "30d" while the API
- * correctly returns 0 — a divergence that would mislead a viewer.
- */
-const MIN_FALLBACK_DAYS = 7;
-
-function deltaAgoWithDate(rows: readonly ScoreRow[], targetDays: number): DeltaWithBaseline {
-  if (rows.length < 2) return { value: 0 };
-  const latest = rows[rows.length - 1]!;
-  const baseline = pickValueDaysBefore(rows.slice(0, -1), latest.observed_at, targetDays);
-  if (baseline !== undefined) {
-    return { value: round1(latest.value - baseline) };
-  }
-  const oldest = rows[0]!;
-  const ageDays = (Date.now() - new Date(oldest.observed_at).getTime()) / DAY_MS;
-  if (ageDays < MIN_FALLBACK_DAYS) return { value: 0 };
-  return { value: round1(latest.value - oldest.value), baselineDate: oldest.observed_at };
-}
-
-function deltaAgoYtd(rows: readonly ScoreRow[], now: Date): DeltaWithBaseline {
-  if (rows.length < 2) return { value: 0 };
-  const latest = rows[rows.length - 1]!;
-  const startOfYearMs = Date.UTC(now.getUTCFullYear(), 0, 1);
-  // Scan backwards for the last row observed on or before 1 Jan.
-  for (let i = rows.length - 1; i >= 0; i--) {
-    const rowMs = new Date(rows[i]!.observed_at).getTime();
-    if (rowMs <= startOfYearMs) {
-      return { value: round1(latest.value - rows[i]!.value) };
-    }
-  }
-  const oldest = rows[0]!;
-  const oldestMs = new Date(oldest.observed_at).getTime();
-  const ageDays = (now.getTime() - oldestMs) / DAY_MS;
-  if (ageDays < MIN_FALLBACK_DAYS) return { value: 0 };
-  return { value: round1(latest.value - oldest.value), baselineDate: oldest.observed_at };
-}
-
-function round1(n: number): number {
-  return Math.round(n * 10) / 10;
-}
-
-/**
- * Lightweight contributions used in the D1-fallback snapshot path.
- *
- * The recompute loop writes a full snapshot (z-score + normalised
- * contributions) into KV. When we miss the KV cache and rebuild from
- * D1 we don't have cheap access to the baseline series, so we fill in
- * `zScore: 0` plus the pillar fallback score as `normalised` and return the raw value, observedAt,
- * sourceId and intra-pillar weight. That's enough for a stale banner
- * to name the specific indicator that froze, and for API consumers to
- * inspect the inputs; the full contribution detail stays in KV.
- */
-function buildContributionsForPillar(
-  pillar: PillarId,
-  obs: Map<string, { value: number; observedAt: string; sourceId: string }>,
-  fallbackNormalised: number,
-): IndicatorContribution[] {
-  const defs = Object.values(INDICATORS).filter((d) => d.pillar === pillar);
-  const pillarWeightSum = defs.reduce((acc, d) => acc + d.weight, 0);
-  const out: IndicatorContribution[] = [];
-  for (const def of defs) {
-    const o = obs.get(def.id);
-    if (!o) continue;
-    out.push({
-      indicatorId: def.id,
-      rawValue: o.value,
-      rawValueUnit: def.unit,
-      zScore: 0,
-      normalised: fallbackNormalised,
-      weight: pillarWeightSum > 0 ? def.weight / pillarWeightSum : 0,
-      sourceId: o.sourceId,
-      observedAt: o.observedAt,
-    });
-  }
-  return out;
-}
-
-function dominantDrag(pillars: Record<PillarId, PillarScore>): PillarId {
-  let dominant: PillarId = "market";
-  let best = -1;
-  for (const p of PILLAR_ORDER) {
-    const impact = (100 - pillars[p].value) * PILLARS[p].weight;
-    if (impact > best) {
-      best = impact;
-      dominant = p;
-    }
-  }
-  return dominant;
-}
-
-function renderEditorialNote(dominant: PillarId, pillars: Record<PillarId, PillarScore>): string {
-  const p = pillars[dominant];
-  const def = PILLARS[dominant];
-  // Mirror packages/methodology/src/score.ts::renderEditorialNote so the web
-  // D1-fallback path produces identical copy to the API + KV path. Subject
-  // is the pillar, not "the score" — the delta is the pillar's own
-  // week-on-week move and any other framing would misattribute the magnitude.
-  const lead = p.value < 60
-    ? `${def.title} is the biggest drag`
-    : `${def.title} has the most room to improve`;
-  const mag = Math.abs(p.delta7d).toFixed(1);
-  if (p.delta7d > 0.5) return `${lead}, up ${mag} on the week.`;
-  if (p.delta7d < -0.5) return `${lead}, down ${mag} on the week.`;
-  return `${lead}, broadly flat on the week.`;
-}
 
 /**
  * Today-movement rows feeding both the intraday strip and the per-pillar

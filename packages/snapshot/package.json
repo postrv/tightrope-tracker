@@ -1,0 +1,30 @@
+{
+  "name": "@tightrope/snapshot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./observations": "./src/observations.ts",
+    "./snapshot": "./src/snapshot.ts",
+    "./cache": "./src/cache.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20250601.0",
+    "@tightrope/methodology": "workspace:*",
+    "@tightrope/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.8",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

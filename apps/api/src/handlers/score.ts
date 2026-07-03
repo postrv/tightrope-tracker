@@ -1,7 +1,8 @@
 import type { ScoreHistory, ScoreSnapshot } from "@tightrope/shared";
 import { PILLAR_ORDER, SCORE_HISTORY_SCHEMA_VERSION, SCORE_SCHEMA_VERSION } from "@tightrope/shared";
+import { primeHistoryCache, primeSnapshotCache } from "@tightrope/snapshot";
 import { json, notSeeded } from "../lib/router.js";
-import { kvGetJson, kvPutJson, readThrough } from "../lib/cache.js";
+import { kvGetJson } from "../lib/cache.js";
 import { buildHistoryFromD1, buildSnapshotFromD1 } from "../lib/db.js";
 
 /** KV snapshot is only trusted if at most this old. Beyond, we re-read from D1. */
@@ -78,7 +79,8 @@ export async function handleScore(
     } else {
       snapshot = await buildSnapshotFromD1(env);
       // Re-prime KV so the next reader within the freshness window can skip D1.
-      ctx.waitUntil(kvPutJson(env, "score:latest", snapshot));
+      // Single-writer: primeSnapshotCache (@tightrope/snapshot) owns score:latest.
+      ctx.waitUntil(primeSnapshotCache(env.KV, snapshot));
     }
     if (looksUnseeded(snapshot)) return notSeeded();
     return json(snapshot);
@@ -116,13 +118,14 @@ export async function handleScoreHistory(
     // a recompute outage — without it the consumer would believe the
     // dashboard had stopped moving.
     if (days === 90) {
-      const history = await readThrough<ScoreHistory>(
-        env,
-        "score:history:90d",
-        () => buildHistoryFromD1(env, 90),
-        ctx,
-        historyIsFresh,
-      );
+      // KV-first read with the 30-min freshness gate, then single-writer
+      // prime on miss/stale. primeHistoryCache (@tightrope/snapshot) owns
+      // score:history:90d — inlined here rather than via readThrough so the
+      // write routes through the one allowed writer.
+      const cached = await kvGetJson<ScoreHistory>(env, "score:history:90d");
+      if (cached && historyIsFresh(cached)) return json(cached);
+      const history = await buildHistoryFromD1(env, 90);
+      ctx.waitUntil(primeHistoryCache(env.KV, history));
       return json(history);
     }
     const history = await buildHistoryFromD1(env, days);
@@ -133,7 +136,7 @@ export async function handleScoreHistory(
         points: history.points.slice(-90),
         rangeDays: 90,
       };
-      ctx.waitUntil(kvPutJson(env, "score:history:90d", trimmed));
+      ctx.waitUntil(primeHistoryCache(env.KV, trimmed));
     }
     return json(history);
   } catch (err) {

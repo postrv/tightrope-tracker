@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@tightrope/methodology": "workspace:*",
-    "@tightrope/shared": "workspace:*"
+    "@tightrope/shared": "workspace:*",
+    "@tightrope/snapshot": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250601.0",

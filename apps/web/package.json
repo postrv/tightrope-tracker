@@ -19,6 +19,7 @@
     "@astrojs/cloudflare": "^12.5.0",
     "@tightrope/methodology": "workspace:*",
     "@tightrope/shared": "workspace:*",
+    "@tightrope/snapshot": "workspace:*",
     "astro": "^5.14.0",
     "typescript": "^5.7.2"
   },

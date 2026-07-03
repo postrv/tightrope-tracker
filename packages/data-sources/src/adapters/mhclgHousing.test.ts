@@ -15,6 +15,10 @@ describe("mhclgHousingAdapter", () => {
         // Live observations use raw sha256 (no hist: prefix — that's reserved
         // for the historical path).
         expect(o.payloadHash).toMatch(/^[0-9a-f]{64}$/);
+        // released_at is the MHCLG publication date, which post-dates the
+        // quarter-end observed_at (the release lands ~7 weeks after the quarter).
+        expect(o.releasedAt).toMatch(/^\d{4}-\d{2}-\d{2}T00:00:00Z$/);
+        expect(Date.parse(o.releasedAt!)).toBeGreaterThan(Date.parse(o.observedAt));
       }
     });
   });

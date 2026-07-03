@@ -38,17 +38,38 @@ const SOURCE_ID = "mhclg";
 const FIXTURE_URL = "local:fixtures/housing.json";
 const HISTORY_FIXTURE_URL = "local:fixtures/housing-history.json";
 
+/** One indicator's figure inside a housing fixture: value plus the MHCLG release date. */
+interface HousingComponent {
+  value: number;
+  /** MHCLG statistical-release publication date (bare YYYY-MM-DD in the fixture). */
+  published?: string;
+}
+
 interface HousingFixture {
   observed_at: string;
-  housing_trajectory?: { value: number };
-  planning_consents?: { value: number };
+  housing_trajectory?: HousingComponent;
+  planning_consents?: HousingComponent;
   source_url?: string;
+}
+
+interface HistoryComponent {
+  value: number | null;
+  published?: string;
 }
 
 interface HistoryPoint {
   observed_at: string;
-  housing_trajectory?: { value: number | null };
-  planning_consents?: { value: number | null };
+  housing_trajectory?: HistoryComponent;
+  planning_consents?: HistoryComponent;
+}
+
+/**
+ * Normalise a fixture publication date to a UTC instant. The MHCLG fixtures
+ * store a bare `YYYY-MM-DD` release date; released_at is stored as an ISO-8601
+ * timestamp, so append the midnight-UTC time when no time component is present.
+ */
+function publishedToIso(published: string): string {
+  return published.includes("T") ? published : `${published}T00:00:00Z`;
 }
 
 interface HistoryFixture {
@@ -65,6 +86,11 @@ export const mhclgHousingAdapter: DataSourceAdapter = {
     }
     const hash = await sha256Hex(JSON.stringify(data));
     const observations: RawObservation[] = [];
+    // observed_at is the quarter-end reference date; the MHCLG release lands
+    // ~7 weeks later. The fixture carries that publication date per component
+    // (`published`), so persist it as released_at — the cadence registry can
+    // then anchor on the real release instant and the backfill can clip
+    // lookahead.
     if (typeof data.housing_trajectory?.value === "number") {
       observations.push({
         indicatorId: "housing_trajectory",
@@ -72,6 +98,7 @@ export const mhclgHousingAdapter: DataSourceAdapter = {
         observedAt: data.observed_at,
         sourceId: SOURCE_ID,
         payloadHash: hash,
+        ...(data.housing_trajectory.published ? { releasedAt: publishedToIso(data.housing_trajectory.published) } : {}),
       });
     }
     if (typeof data.planning_consents?.value === "number") {
@@ -81,6 +108,7 @@ export const mhclgHousingAdapter: DataSourceAdapter = {
         observedAt: data.observed_at,
         sourceId: SOURCE_ID,
         payloadHash: hash,
+        ...(data.planning_consents.published ? { releasedAt: publishedToIso(data.planning_consents.published) } : {}),
       });
     }
     if (observations.length === 0) {
@@ -104,7 +132,8 @@ export const mhclgHousingAdapter: DataSourceAdapter = {
       if (!Number.isFinite(ms)) continue;
       if (ms < fromMs || ms > toMs) { skippedOutOfRange++; continue; }
       for (const indicatorId of ["housing_trajectory", "planning_consents"] as const) {
-        const val = point[indicatorId]?.value;
+        const component = point[indicatorId];
+        const val = component?.value;
         if (typeof val !== "number" || !Number.isFinite(val)) {
           if (val === null) skippedNull++;
           continue;
@@ -115,6 +144,7 @@ export const mhclgHousingAdapter: DataSourceAdapter = {
           observedAt: point.observed_at,
           sourceId: SOURCE_ID,
           payloadHash: await historicalPayloadHash(indicatorId, point.observed_at, val),
+          ...(component?.published ? { releasedAt: publishedToIso(component.published) } : {}),
         });
       }
     }

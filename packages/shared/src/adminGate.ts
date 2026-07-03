@@ -173,6 +173,38 @@ export function clientIpForAdmin(req: Request): string {
 }
 
 /**
+ * The backoff bucket key for one admin request (F6). When Cloudflare gives us a
+ * verified client IP we bucket on it — behaviour identical to before. When the
+ * `cf-connecting-ip` header is ABSENT we no longer collapse every header-less
+ * caller into a single "no-ip" bucket: a caller that PRESENTS A TOKEN gets its
+ * own `tok:<first 8 hex of sha256(token)>` bucket, so a lockout driven by
+ * token-less probes cannot wedge a legitimate token-bearing operator (and vice
+ * versa). Token-less callers still share the "no-ip" bucket.
+ *
+ * Failed attempts with DISTINCT wrong tokens spread across buckets — acceptable:
+ * this gate is the slow-low layer; the WAF rate-limit rule is the volumetric
+ * layer that catches a token-spraying flood. The token hash is truncated to 8
+ * hex (32 bits) purely to key a KV bucket; it is never used as a secret.
+ */
+export async function adminBucketKey(req: Request): Promise<string> {
+  const ip = req.headers.get("cf-connecting-ip");
+  if (ip && ip.length > 0) return ip;
+  const token = req.headers.get("x-admin-token");
+  if (token && token.length > 0) return `tok:${await sha256Prefix8(token)}`;
+  return "no-ip";
+}
+
+/** First 8 hex chars (4 bytes) of SHA-256(input). Web Crypto — Workers + Node ≥20. */
+async function sha256Prefix8(input: string): Promise<string> {
+  const bytes = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const view = new Uint8Array(digest);
+  let hex = "";
+  for (let i = 0; i < 4; i++) hex += view[i]!.toString(16).padStart(2, "0");
+  return hex;
+}
+
+/**
  * Convenience: full admin auth flow. Checks lockout, verifies the token
  * (caller-supplied function), records the failure / clears the counter,
  * and returns either `{ ok: true }` for green-light or `{ ok: false,
@@ -192,7 +224,7 @@ export async function adminAuthGate(
   deps: AdminAuthDeps,
   now: number = Date.now(),
 ): Promise<{ ok: true } | { ok: false; response: Response }> {
-  const ip = clientIpForAdmin(req);
+  const ip = await adminBucketKey(req);
   const state = await isLockedOut(env, ip, now);
   if (state.lockedUntil !== null) {
     const retryAfter = Math.max(1, Math.ceil((state.lockedUntil - now) / 1000));

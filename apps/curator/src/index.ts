@@ -6,6 +6,7 @@ import { sendEditorialDigest } from "./pipeline/digest";
 import { recordCronMiss } from "./lib/audit";
 import { fireHeartbeat, postAlert } from "./lib/alert";
 import { handleFetch } from "./lib/admin";
+import { sanitizeForLog } from "@tightrope/shared";
 
 /**
  * Curator Worker — AI capture/verify/publish for non-API data sources.
@@ -72,12 +73,14 @@ export async function dispatchCron(cron: string, env: Env): Promise<void> {
       await guard("staleness", () => runStalenessMonitor(env));
       return;
     default:
-      console.error(`curator: unknown cron pattern '${cron}'`);
+      // SEC-14: `cron` is scheduler-controlled but sanitised defensively before
+      // it reaches any log line, KV key, or webhook text (parity with ingest).
+      console.error(`curator: unknown cron pattern '${sanitizeForLog(cron)}'`);
       try {
         await recordCronMiss(env.DB, cron);
         await maybeAlertCronMiss(env, cron);
       } catch (err) {
-        console.error(`curator: cron_miss handling failed: ${(err as Error)?.message ?? String(err)}`);
+        console.error(`curator: cron_miss handling failed: ${sanitizeForLog((err as Error)?.message ?? String(err))}`);
       }
   }
 }
@@ -95,7 +98,10 @@ async function guard<T>(name: string, fn: () => Promise<T>): Promise<T | null> {
 const CRON_MISS_DEDUPE_TTL_SEC = 6 * 60 * 60;
 
 async function maybeAlertCronMiss(env: Env, cron: string): Promise<void> {
-  const key = `alert:cron_miss:${cron}`;
+  // SEC-14: strip control bytes before the cron string reaches the KV key or
+  // the webhook text (mirrors ingest's maybeAlertCronMiss).
+  const safeCron = sanitizeForLog(cron);
+  const key = `alert:cron_miss:${safeCron}`;
   try {
     if (await env.KV.get(key)) return;
   } catch {
@@ -105,7 +111,7 @@ async function maybeAlertCronMiss(env: Env, cron: string): Promise<void> {
     env,
     [
       `*Tightrope curator cron miss* (${new Date().toISOString().slice(0, 16).replace("T", " ")}Z)`,
-      `The scheduler fired an unrecognised cron pattern: \`${cron}\``,
+      `The scheduler fired an unrecognised cron pattern: \`${safeCron}\``,
       `Reconcile wrangler.toml crons with CRON_BRANCHES in apps/curator/src/index.ts.`,
     ].join("\n"),
   );

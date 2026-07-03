@@ -3,6 +3,7 @@ export * from "./adminGate.js";
 export * from "./indicators.js";
 export * from "./cadence.js";
 export * from "./plausibility.js";
+export * from "./sanitize.js";
 export * from "./historicalSubset.js";
 export * from "./coverage.js";
 export * from "./seedValues.js";

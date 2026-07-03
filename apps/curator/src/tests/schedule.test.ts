@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -44,4 +44,26 @@ describe("curator scheduled dispatch", () => {
     expect(missRow).toBeDefined();
     expect(JSON.stringify(missRow!.bindings)).toContain("99 99 99 99 99");
   });
+
+  it("SEC-14: strips control chars from the cron string in the cron-miss alert text", async () => {
+    const posts: string[] = [];
+    vi.stubGlobal("fetch", async (_url: string, init: { body: string }) => {
+      posts.push(JSON.parse(init.body).text as string);
+      return new Response("ok");
+    });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const db = makeFakeDb();
+    const env = makeEnv({ db, kv: makeKv().kv, extra: { ALERT_WEBHOOK_URL: "https://hook.test" } });
+    // A cron carrying CR + an ANSI escape — a log/webhook injection vector.
+    // (The alert body legitimately uses "\n" to separate its own lines, so we
+    // assert on CR and ESC, which the message format never emits structurally.)
+    await dispatchCron("0 5 * *\r\x1b[31mfake", env);
+    errSpy.mockRestore();
+    expect(posts).toHaveLength(1);
+    expect(posts[0]!).not.toContain("\r"); // carriage-return stripped
+    expect(posts[0]!).not.toContain("\x1b"); // ANSI escape stripped
+    expect(posts[0]!).toContain("�"); // replaced with U+FFFD, proving sanitisation ran
+  });
 });
+
+afterEach(() => vi.unstubAllGlobals());

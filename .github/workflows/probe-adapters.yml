@@ -1,0 +1,56 @@
+name: Weekly adapter probe
+
+# Runs the live-upstream adapter probe once a week so upstream format drift is
+# caught days before the Tuesday/Wednesday editorial sweep would hit it. On
+# failure, opens (or comments on) a single deduplicated tracking issue.
+#
+# SEC-11: third-party actions are pinned to full commit SHAs (see deploy.yml).
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Monday 06:00 UTC
+  workflow_dispatch:
+
+# Least-privilege: the probe only reads the repo and needs to file/annotate an issue.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    name: Probe live adapters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with: { node-version: "20", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - name: Probe adapters against live upstreams
+        id: probe
+        # tsx resolves the script's .ts adapter imports (node 20 can't strip
+        # types natively). Exits non-zero if any adapter fails.
+        run: node --import tsx scripts/probe-adapters.mjs
+
+      - name: Open or update the probe-failure issue
+        if: failure() && steps.probe.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TITLE="Weekly adapter probe failed"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BODY=$(printf '%s\n\n%s\n\n%s' \
+            "The weekly adapter probe failed on $(date -u '+%Y-%m-%d %H:%M UTC')." \
+            "An upstream adapter could not fetch — likely upstream format drift. See the run log for which adapter and the error." \
+            "Run: ${RUN_URL}")
+          # Dedupe: reuse the open issue with this exact title if one exists.
+          EXISTING=$(gh issue list --state open --search "${TITLE} in:title" --json number,title \
+            --jq "[.[] | select(.title == \"${TITLE}\")][0].number // empty")
+          if [ -n "${EXISTING}" ]; then
+            echo "Commenting on existing issue #${EXISTING}"
+            gh issue comment "${EXISTING}" --body "${BODY}"
+          else
+            echo "Creating a new tracking issue"
+            gh issue create --title "${TITLE}" --body "${BODY}"
+          fi

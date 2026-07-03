@@ -7,9 +7,12 @@ import {
 import type { Env } from "../env.js";
 import { closeAuditFailure, closeAuditSuccess, openAudit } from "../lib/audit.js";
 import { sha256Hex } from "../lib/hash.js";
+import { stageTimelineCandidates, type StageTimelineResult } from "../lib/timelineCaptures.js";
 import { runAdapterSafe } from "./runAdapter.js";
 
-export async function ingestDelivery(env: Env): Promise<{ housingRows: number; candidates: number }> {
+export async function ingestDelivery(
+  env: Env,
+): Promise<{ housingRows: number; candidates: number; timelineStaged: number; timelineSkipped: number }> {
   const housing = await runAdapterSafe(env, mhclgHousingAdapter);
   // Editorial delivery-milestone indicators (new_towns_milestones,
   // bics_rollout, industrial_strategy, smr_programme) live in a
@@ -24,6 +27,7 @@ export async function ingestDelivery(env: Env): Promise<{ housingRows: number; c
   // does not propagate -- the rest of the scheduled run must still complete.
   const handle = await openAudit(env.DB, { sourceId: "gov_uk", sourceUrl: "https://www.gov.uk/search/news-and-communications.atom" });
   let candidates: TimelineEventCandidate[] = [];
+  let staged: StageTimelineResult = { inserted: 0, skipped: 0 };
   try {
     const result = await fetchGovUkCandidates(globalThis.fetch);
     candidates = result.candidates;
@@ -33,15 +37,27 @@ export async function ingestDelivery(env: Env): Promise<{ housingRows: number; c
     // emitsNoObservations so the audit closer keeps this as 'success'
     // rather than downgrading to 'partial' on rows_written === 0.
     await closeAuditSuccess(env.DB, handle, { rowsWritten: 0, payloadHash, emitsNoObservations: true });
-    if (env.DLQ && candidates.length > 0) {
+    // Stage candidates into curator_captures for human review instead of
+    // pushing to the DLQ (whose consumer just logs + acks — effectively a
+    // discard). Best-effort, in its own guard, so a staging DB hiccup can't
+    // flip the already-closed fetch audit row to failure. Dedupe lives in
+    // stageTimelineCandidates.
+    if (candidates.length > 0) {
       try {
-        await env.DLQ.send({ kind: "timeline_candidates", candidates });
-      } catch { /* best-effort */ }
+        staged = await stageTimelineCandidates(env.DB, candidates);
+      } catch (err) {
+        console.warn(`ingestDelivery: staging gov.uk candidates failed -- ${(err as Error)?.message ?? String(err)}`);
+      }
     }
   } catch (err) {
     await closeAuditFailure(env.DB, handle, err);
     console.warn(`ingestDelivery: gov.uk candidates failed -- ${(err as Error)?.message ?? String(err)}`);
   }
 
-  return { housingRows: housing?.observations.length ?? 0, candidates: candidates.length };
+  return {
+    housingRows: housing?.observations.length ?? 0,
+    candidates: candidates.length,
+    timelineStaged: staged.inserted,
+    timelineSkipped: staged.skipped,
+  };
 }

@@ -12,7 +12,9 @@
     "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "@tightrope/shared": "workspace:*"
+    "@tightrope/data-sources": "workspace:*",
+    "@tightrope/shared": "workspace:*",
+    "@tightrope/snapshot": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250601.0",

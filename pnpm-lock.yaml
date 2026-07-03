@@ -54,9 +54,15 @@ importers:
 
   apps/curator:
     dependencies:
+      '@tightrope/data-sources':
+        specifier: workspace:*
+        version: link:../../packages/data-sources
       '@tightrope/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@tightrope/snapshot':
+        specifier: workspace:*
+        version: link:../../packages/snapshot
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20250601.0

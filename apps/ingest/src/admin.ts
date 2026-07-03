@@ -1,4 +1,5 @@
 import { getAdapter, listAdapters } from "@tightrope/data-sources";
+import { timingSafeEqual } from "@tightrope/shared";
 import type { Env } from "./env.js";
 import { adminAuthGate } from "./lib/adminBackoff.js";
 import { backfillHistoricalScores } from "./pipelines/backfill.js";
@@ -12,18 +13,12 @@ import { recomputeScores } from "./pipelines/recompute.js";
 import { updateTodayMovements } from "./pipelines/todayMovements.js";
 
 /**
- * Constant-time string equality. A plain `===` leaks length + match-position
- * information via timing, which is exploitable for short shared secrets.
- * Encoding to bytes first avoids surface differences between multi-byte chars.
+ * Constant-time token compare, re-exported from the shared admin gate so
+ * existing importers (`./admin.js`) keep working while the single
+ * implementation lives in `@tightrope/shared` (adminGate.ts) alongside the
+ * per-IP backoff. One gate, two workers.
  */
-export function timingSafeEqual(a: string, b: string): boolean {
-  const ae = new TextEncoder().encode(a);
-  const be = new TextEncoder().encode(b);
-  if (ae.length !== be.length) return false;
-  let diff = 0;
-  for (let i = 0; i < ae.length; i++) diff |= ae[i]! ^ be[i]!;
-  return diff === 0;
-}
+export { timingSafeEqual };
 
 /**
  * `/admin/run?source=<pipeline>` behind a shared-token header. Intended for

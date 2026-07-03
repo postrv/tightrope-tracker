@@ -11,7 +11,7 @@ on 2026-04-27. Re-run the audit if you add or retire an adapter.
 |----------------|-----------------------------------|--------------------------|
 | `*/5 * * * *`  | market + recompute + today        | boe_yields, boe_fx, boe_breakevens, eia_brent, growth_sentiment, lseg (FTSE 250). Throttled to UK market hours (07:00–16:30 Europe/London) — outside that window only the recompute and today-strip stages run. |
 | `0 2 * * *`    | fiscal + recompute                | obr_efo, ons_psf, dmo, eodhd_housebuilders |
-| `15 2 * * *`   | labour + recompute                | ons_lms, ons_rti, moneyfacts |
+| `15 2 * * *`   | labour + recompute                | ons_lms, ons_rti, boe_mortgage_rates |
 | `30 2 * * *`   | delivery + recompute              | mhclg, delivery_milestones, gov_uk (timeline candidates only) |
 
 `recomputeScores` runs after every ingest stage; on cron-stage failure the
@@ -46,8 +46,8 @@ links that editorial uses to refresh the fixture.
 | `obr_efo` | OBR Economic & Fiscal Outlook — `https://obr.uk/efo/` | `cb_headroom`, `psnfl_trajectory` | fiscal | `obrEfo.ts` + `fixtures/obr-efo.json` | Twice yearly + in-year updates | None — fixture validated at parse time only. |
 | `eia_brent` | US EIA Open Data v2 — Europe Brent Spot (`EPCBRENT`), divided by BoE `XUDLUSS` 4pm fix | `brent_gbp` | market | `eiaBrent.ts` + `fixtures/brent.json` | Live every 5 min in market hours; fixture refreshed weekly as fallback | `assertFixtureFresh` 14 days on fallback. Live path falls through silently on empty EIA rows or BoE/EIA pairing skew > 7 days. Two-tier latest-observation selector (audit 2026-04-29) surfaces D1 backfill rows when the fixture-fallback observed_at is older. Requires `EIA_API_KEY` secret. |
 | `lseg` (FTSE 250) | EODHD EOD — `https://eodhd.com/api/eod/FTMC.LSE` | `ftse_250` | market | `lseFtse250.ts` + `fixtures/ftse-250.json` | Live daily ~16:35 UK; fixture refreshed weekly as fallback | `assertFixtureFresh` 14 days on fallback. Two-tier latest-observation selector (audit 2026-04-29) surfaces D1 backfill rows when the fixture-fallback observed_at is older. Requires `EODHD_API_KEY` secret. |
-| `lseg_housebuilders` | LSE — same five housebuilders | (none — superseded) | (none) | `lseHousebuilders.ts` + `fixtures/housebuilders.json` | Weekly | None. **Retired**: `eodhd_housebuilders` runs in fiscal pipeline instead. Audit row sticks around. |
-| `moneyfacts` | Moneyfacts — `https://moneyfacts.co.uk` | `mortgage_2y_fix` | labour | `moneyfactsMortgage.ts` + `fixtures/mortgage.json` | Monthly | None. |
+| `lseg_housebuilders` | LSE — same five housebuilders | (none — superseded) | (none) | **adapter removed** (`housebuilders.json` kept as the `eodhd_housebuilders` fallback) | — | None. **Retired 2026-07**: `eodhd_housebuilders` runs in the fiscal pipeline instead. Historical audit rows remain in D1 (suppressed via `INACTIVE_INGEST_SOURCES`). |
+| `moneyfacts` | Moneyfacts — `https://moneyfacts.co.uk` | (none — superseded by `boe_mortgage_rates` for `mortgage_2y_fix`) | (none) | **adapter + `mortgage.json` / `mortgage-history.json` removed** | — | None. **Retired 2026-07**: `boe_mortgage_rates` (BoE IADB IUMBV34) feeds `mortgage_2y_fix` from the labour pipeline. Historical audit rows remain in D1 (suppressed via `INACTIVE_INGEST_SOURCES`). |
 | `mhclg` | MHCLG / DLUHC live tables — `https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building` & planning live tables | `housing_trajectory`, `planning_consents` | delivery | `mhclgHousing.ts` + `fixtures/housing.json` (live), `fixtures/housing-history.json` (back-series) | Quarterly | None on live; back-series uses `historicalPayloadHash`. |
 | `delivery_milestones` | gov.uk press releases / departmental dashboards | `new_towns_milestones`, `bics_rollout`, `industrial_strategy`, `smr_programme` | delivery | `deliveryMilestones.ts` + `fixtures/delivery-milestones.json` | Quarterly | `assertFixtureFresh` 90 days. Each indicator carries its own `sourceId` (`gov_uk`, `desnz`, `dbt`). |
 | `sp_global_pmi` / `gfk_confidence` / `rics_rms` | S&P Global / GfK-NIESR / RICS press releases | `services_pmi`, `consumer_confidence`, `rics_price_balance` | market | `growthSentiment.ts` + `fixtures/growth-sentiment.json` | Monthly | None. |
@@ -87,6 +87,5 @@ stale fixture-fallback writes, but a real live row at the same
 | `ADMIN_TOKEN` | `wrangler secret put` (ingest worker) | Guards `POST /admin/run` |
 | `EODHD_API_KEY` | `wrangler secret put` (ingest worker) | Daily housebuilder EOD + FTSE 250 close; absence triggers fixture fallback |
 | `EIA_API_KEY` | `wrangler secret put` (ingest worker) | EIA Open Data v2 Brent spot; absence triggers fixture fallback |
-| `TWELVE_DATA_KEY` | (deprecated) | Old housebuilder vendor; free tier dropped LSE |
 | `PARLIAMENT_API_BASE` | `[vars]` in `apps/api/wrangler.toml` | SSRF-pinned to `members-api.parliament.uk` |
 | `ALERT_WEBHOOK_URL` | optional | Source-health alerts on recompute (no-op if unset) |

@@ -43,8 +43,6 @@ const MANIFEST: FixtureSpec[] = [
   { file: "housebuilders.json", maxAgeDays: 14 },
   { file: "housing-history.json", maxAgeDays: Infinity, skipReason: "historical backfill dataset with no single observed_at" },
   { file: "housing.json", maxAgeDays: 180 },
-  { file: "mortgage.json", maxAgeDays: 60 },
-  { file: "mortgage-history.json", maxAgeDays: Infinity, skipReason: HIST_SKIP },
   { file: "obr-efo.json", maxAgeDays: 210 },
   { file: "ons-rti.json", maxAgeDays: 60 },
   { file: "rics-price-balance-history.json", maxAgeDays: Infinity, skipReason: HIST_SKIP },
@@ -76,8 +74,6 @@ describe("fixture freshness (build-time guard)", () => {
       "housebuilders.json",
       "housing-history.json",
       "housing.json",
-      "mortgage.json",
-      "mortgage-history.json",
       "obr-efo.json",
       "ons-rti.json",
       "rics-price-balance-history.json",
@@ -100,7 +96,7 @@ describe("fixture freshness (build-time guard)", () => {
     it(`${spec.file} observed_at is within ${spec.maxAgeDays} days`, () => {
       const data = loadFixture(spec.file);
       // Two supported shapes:
-      //   - flat: top-level `observed_at` (e.g. brent.json, mortgage.json)
+      //   - flat: top-level `observed_at` (e.g. brent.json, ftse-250.json)
       //   - vintages: `vintages[0].observed_at` (obr-efo.json carries one
       //     entry per OBR publication; the head is the newest vintage and
       //     drives the live `fetch()` path, so freshness applies to it).

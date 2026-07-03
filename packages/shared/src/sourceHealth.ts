@@ -28,12 +28,17 @@ export interface LatestAttemptRow {
  *     `eodhd_housebuilders` adapter in the fiscal pipeline.
  *  - `twelve_data_housebuilders`: deprecated; Twelve Data free tier
  *     dropped LSE equity coverage. EODHD is the live successor.
+ *  - `moneyfacts`: editorial 2y-fix fixture replaced by the live
+ *     `boe_mortgage_rates` adapter (BoE IADB IUMBV34) in the labour
+ *     pipeline. Adapter retired 2026-07; historical audit rows remain
+ *     in prod D1 and must stay off the public health surface.
  */
 export const INACTIVE_INGEST_SOURCES: ReadonlySet<string> = new Set([
   "boe_sonia",
   "ice_gas",
   "lseg_housebuilders",
   "twelve_data_housebuilders",
+  "moneyfacts",
 ]);
 
 export function isActiveIngestSource(sourceId: string): boolean {

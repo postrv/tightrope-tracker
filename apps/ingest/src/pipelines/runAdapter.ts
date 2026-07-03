@@ -19,7 +19,6 @@ export async function runAdapter(env: Env, adapter: DataSourceAdapter): Promise<
   const handle = await openAudit(env.DB, { sourceId: adapter.id, sourceUrl: placeholderUrl(adapter) });
   const ctx: AdapterContext = {
     secrets: {
-      TWELVE_DATA_KEY: env.TWELVE_DATA_KEY,
       EODHD_API_KEY: env.EODHD_API_KEY,
       EIA_API_KEY: env.EIA_API_KEY,
     },

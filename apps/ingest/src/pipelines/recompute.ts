@@ -4,6 +4,7 @@ import {
   PILLAR_ORDER,
   SCORE_DIRECTION,
   SCORE_HISTORY_SCHEMA_VERSION,
+  computeSourceCadence,
   computeSourceHealth,
   evaluatePillarFreshness,
   type IndicatorDefinition,
@@ -198,6 +199,14 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   const snapshot = assembleSnapshot(pillarRecord, headline);
   const sourceHealth = await readSourceHealth(env);
   if (sourceHealth.length > 0) snapshot.sourceHealth = sourceHealth;
+  // Predictive release-cadence chips (§2.1), derived from the same two-tier
+  // latest observations the scoring above consumed — so the KV-cached snapshot
+  // carries them without a second DB round-trip.
+  const sourceCadence = computeSourceCadence(
+    latestLive.map((r) => ({ sourceId: r.source_id, observedAt: r.observed_at, releasedAt: r.released_at })),
+    now,
+  );
+  if (sourceCadence.length > 0) snapshot.sourceCadence = sourceCadence;
 
   // Fire source-health alerts (no-op if ALERT_WEBHOOK_URL is unset, and
   // swallows webhook errors so recompute never blocks on a Slack outage).

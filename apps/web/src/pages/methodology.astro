@@ -23,6 +23,12 @@ import { shortDate } from "~/lib/format.js";
 const audit = await loadIngestionAudit(Astro.locals);
 const snapshot = await loadSnapshot(Astro.locals);
 
+// Predictive release-cadence state per source (§2.1), keyed for the ingestion
+// table below. green = inside the current publication cycle; amber = a release
+// is overdue but within grace; red = past grace / freshness guard tripping.
+const cadenceBySource = new Map((snapshot.sourceCadence ?? []).map((c) => [c.sourceId, c]));
+const cadenceChipClass: Record<string, string> = { green: "ok", amber: "warn", red: "bad" };
+
 // Build an illustrative ECDF example: z-scores spread over a bell curve.
 const ecdfPoints = Array.from({ length: 40 }, (_, i) => {
   const z = -3 + (i / 39) * 6; // -3 to +3
@@ -195,12 +201,12 @@ function ecdfPath(): string {
 
     <section class="block">
       <h2>Last successful ingestion per source</h2>
-      <p class="muted small"><strong>success</strong> = fetch returned a payload different from the previous run (new data). <strong>unchanged</strong> = fetch returned the same bytes as last time (upstream has not republished since the previous "success" row; common for monthly ONS / semi-annual OBR series between publications). Both are healthy states.</p>
+      <p class="muted small"><strong>success</strong> = fetch returned a payload different from the previous run (new data). <strong>unchanged</strong> = fetch returned the same bytes as last time (upstream has not republished since the previous "success" row; common for monthly ONS / semi-annual OBR series between publications). Both are healthy states. The <strong>cadence</strong> chip is predictive: <span class="cadence-chip ok">on&nbsp;schedule</span> means the freshest reading is inside the source's publication cycle; <span class="cadence-chip warn">release&nbsp;due</span> means a new upstream release is overdue but still within grace; <span class="cadence-chip bad">overdue</span> means it is past grace and the freshness guard is tripping.</p>
       {audit.length === 0 ? (
         <p class="muted">No ingestion audit rows yet. On first boot this table will populate within minutes.</p>
       ) : (
         <table class="inputs">
-          <thead><tr><th>Source</th><th>Last run</th><th>Status</th></tr></thead>
+          <thead><tr><th>Source</th><th>Last run</th><th>Status</th><th>Cadence</th></tr></thead>
           <tbody>
             {audit.map((row) => {
               const statusClass =
@@ -208,11 +214,14 @@ function ecdfPath(): string {
                 row.status === "unchanged" ? "ok muted" :
                 row.status === "failure" ? "bad" :
                 "warn";
+              const cadence = cadenceBySource.get(row.sourceId);
+              const cadenceLabel: Record<string, string> = { green: "on schedule", amber: "release due", red: "overdue" };
               return (
                 <tr>
                   <td>{SOURCES[row.sourceId]?.name ?? row.sourceId}</td>
                   <td class="mono">{shortDate(row.startedAt)}</td>
                   <td class={statusClass}>{row.status}</td>
+                  <td>{cadence ? (<span class={`cadence-chip ${cadenceChipClass[cadence.state]}`}>{cadenceLabel[cadence.state]}</span>) : (<span class="muted">—</span>)}</td>
                 </tr>
               );
             })}
@@ -314,4 +323,11 @@ table.inputs td.bad { color: var(--band-critical); font-family: var(--font-mono)
 table.inputs td.warn { color: var(--band-strain); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; }
 
 .muted { color: var(--ink-2); font-size: 13px; }
+
+/* Predictive cadence chip — subtle text chip reusing the band colour tokens
+   the status column already uses (slack/strain/critical). */
+.cadence-chip { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.cadence-chip.ok { color: var(--band-slack); }
+.cadence-chip.warn { color: var(--band-strain); }
+.cadence-chip.bad { color: var(--band-critical); }
 </style>

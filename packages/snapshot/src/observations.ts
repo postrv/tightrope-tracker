@@ -15,6 +15,13 @@ export interface LatestObservationRow {
   observed_at: string;
   value: number;
   ingested_at: string;
+  /**
+   * Upstream publication instant (ONS `updateDate`, OBR vintage date), NULL
+   * for feeds where published ≈ observed (daily BoE/FX). Carried so the
+   * cadence registry (§2.1) can anchor on the real release time rather than
+   * the reference period. Additive projection — existing consumers ignore it.
+   */
+  released_at: string | null;
 }
 
 /**
@@ -64,8 +71,8 @@ export async function readLatestObservations(
 ): Promise<LatestObservationRow[]> {
   const res = await db
     .prepare(
-      `SELECT indicator_id, source_id, observed_at, value, ingested_at FROM (
-         SELECT indicator_id, source_id, observed_at, value, ingested_at, payload_hash,
+      `SELECT indicator_id, source_id, observed_at, value, ingested_at, released_at FROM (
+         SELECT indicator_id, source_id, observed_at, value, ingested_at, released_at, payload_hash,
                 ROW_NUMBER() OVER (
                   PARTITION BY indicator_id
                   ORDER BY observed_at DESC,
@@ -73,7 +80,7 @@ export async function readLatestObservations(
                            ingested_at DESC
                 ) AS rn
          FROM (
-           SELECT o.indicator_id, o.source_id, o.observed_at, o.value, o.ingested_at, o.payload_hash
+           SELECT o.indicator_id, o.source_id, o.observed_at, o.value, o.ingested_at, o.released_at, o.payload_hash
            FROM indicator_observations o
            JOIN (
              SELECT indicator_id, MAX(ingested_at) AS ts
@@ -85,7 +92,7 @@ export async function readLatestObservations(
               AND (o.payload_hash IS NULL
                    OR (o.payload_hash NOT LIKE 'hist:%' AND o.payload_hash NOT LIKE 'seed%'))
            UNION ALL
-           SELECT o.indicator_id, o.source_id, o.observed_at, o.value, o.ingested_at, o.payload_hash
+           SELECT o.indicator_id, o.source_id, o.observed_at, o.value, o.ingested_at, o.released_at, o.payload_hash
            FROM indicator_observations o
            JOIN (
              SELECT indicator_id, MAX(observed_at) AS oa

@@ -27,6 +27,7 @@ import {
   SCORE_DIRECTION,
   SCORE_SCHEMA_VERSION,
   bandFor,
+  computeSourceCadence,
   computeSourceHealth,
   isScoreRowStale,
 } from "@tightrope/shared";
@@ -214,8 +215,17 @@ export async function buildSnapshotFromD1(db: D1Database): Promise<ScoreSnapshot
     lastSuccessBySource,
   );
 
+  // Predictive release-cadence state per source (§2.1). Anchored on the same
+  // two-tier latest observations, so the D1-fallback snapshot carries the
+  // chips the recompute path also computes — one code path, single builder.
+  const sourceCadence = computeSourceCadence(
+    latestObservations.map((r) => ({ sourceId: r.source_id, observedAt: r.observed_at, releasedAt: r.released_at })),
+    now,
+  );
+
   const snapshot: ScoreSnapshot = { headline, pillars, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_SCHEMA_VERSION };
   if (sourceHealth.length > 0) snapshot.sourceHealth = sourceHealth;
+  if (sourceCadence.length > 0) snapshot.sourceCadence = sourceCadence;
   return snapshot;
 }
 

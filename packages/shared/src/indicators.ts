@@ -19,6 +19,19 @@
  */
 export type PillarId = "market" | "fiscal" | "labour" | "delivery";
 
+/**
+ * How often a data source publishes a fresh reading. Defined here (rather
+ * than in cadence.ts) so `DataSource` can reference it without cadence.ts and
+ * indicators.ts forming an import cycle — cadence.ts imports SOURCES from
+ * this module. See cadence.ts for the state machine that consumes it.
+ */
+export type ExpectedCadence =
+  | "trading-daily"
+  | "monthly"
+  | "quarterly"
+  | "biannual"
+  | "event";
+
 export interface PillarDefinition {
   id: PillarId;
   title: string;
@@ -500,6 +513,22 @@ export interface DataSource {
   /** Machine-readable endpoint or RSS feed where appropriate. */
   endpoint?: string;
   notes?: string;
+  /**
+   * How often this source publishes a fresh reading (AUTOMATION_PLAN.md §2.1).
+   * Drives the predictive cadence chip: "a new release should exist by now"
+   * (amber) before the per-indicator `maxStaleMs` guard trips (red). Reason
+   * each value from the actual publication rhythm — see the inline notes on
+   * every SOURCES entry.
+   */
+  expectedCadence: ExpectedCadence;
+  /**
+   * Absolute red-line in days from the cadence anchor: past this, a fresh
+   * release is definitively overdue. Set at or a little inside the source's
+   * effective staleness window (weekends/bank-holidays for daily feeds,
+   * bulletin lag for monthly ONS, publication lag for quarterly MHCLG) so the
+   * chip warns ahead of the freshness guard rather than after it.
+   */
+  graceDays: number;
 }
 
 export const SOURCES: Record<string, DataSource> = {
@@ -507,100 +536,173 @@ export const SOURCES: Record<string, DataSource> = {
     id: "boe_yields", name: "Bank of England -- Statistical Database (gilt yields)",
     homepage: "https://www.bankofengland.co.uk/boeapps/database/",
     endpoint: "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp",
+    // IADB posts each trading day's close at T+1. graceDays 5 spans a long
+    // weekend + bank holiday before red; matches STALE_DAILY_MS.
+    expectedCadence: "trading-daily", graceDays: 5,
   },
   boe_fx: {
     id: "boe_fx", name: "Bank of England -- Exchange rates",
     homepage: "https://www.bankofengland.co.uk/statistics/exchange-rates",
+    // 4pm spot fix published T+1, same rhythm as the gilt feed.
+    expectedCadence: "trading-daily", graceDays: 5,
   },
   boe_breakevens: {
     id: "boe_breakevens", name: "Bank of England -- 5y breakeven inflation",
     homepage: "https://www.bankofengland.co.uk/boeapps/database/",
     endpoint: "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp",
     notes: "Derived from the IADB CSV endpoint (IUDSNZC/IUDSIZC). Emits 5y breakeven inflation (nominal minus real).",
+    expectedCadence: "trading-daily", graceDays: 5,
   },
   lseg: {
     id: "lseg", name: "LSEG -- FTSE 250",
     homepage: "https://www.londonstockexchange.com/indices/ftse-250",
+    // Live daily EOD close, but the fallback fixture only refreshes weekly, so
+    // allow ~10 days (a fixture-only week + weekend) before red — matches the
+    // adapter's 14-day fallback freshness guard.
+    expectedCadence: "trading-daily", graceDays: 10,
   },
   eodhd_housebuilders: {
     id: "eodhd_housebuilders", name: "EODHD -- UK housebuilder composite (daily EOD)",
     homepage: "https://eodhd.com",
     notes: "Equal-weighted composite of Persimmon, Barratt Redrow, Taylor Wimpey, Berkeley, Vistry via EODHD EOD API. Rebased to 100 at 2019 average. Free tier: 20 req/day (5 per fetch). Falls back to editorial fixture when API key is unset.",
+    // Daily EOD; free-tier quota exhaustion drops to a weekly fixture, so
+    // ~8 days covers a fallback week + weekend.
+    expectedCadence: "trading-daily", graceDays: 8,
   },
   eia_brent: {
     id: "eia_brent", name: "US EIA -- Europe Brent Spot Price (FOB)",
     homepage: "https://www.eia.gov/dnav/pet/hist/rbrted.htm",
     endpoint: "https://www.eia.gov/dnav/pet/hist_xls/RBRTEd.xls",
     notes: "EIA Open Data API requires a registration key; the canonical daily series is also available as XLS which is not parseable from a Cloudflare Worker. Fixture-backed, refreshed weekly from the public HTML table. Licence: EIA data is U.S. public domain.",
+    // Daily spot, but the fixture fallback refreshes weekly; ~10 days matches
+    // the 14-day fixture guard.
+    expectedCadence: "trading-daily", graceDays: 10,
   },
   sp_global_pmi: {
     id: "sp_global_pmi", name: "S&P Global -- UK Services PMI",
     homepage: "https://www.pmi.spglobal.com/Public/Home/PressRelease",
     notes: "Headline Services PMI index. Press releases are public; the underlying series is licensed to S&P Global. We mirror only the monthly headline figure -- fair-dealing summary use.",
+    // Monthly final release in the first full week; graceDays 45 covers the
+    // month plus the editorial fixture-refresh lag (STALE_MONTHLY_FIXTURE_MS 50).
+    expectedCadence: "monthly", graceDays: 45,
   },
   gfk_confidence: {
     id: "gfk_confidence", name: "GfK / NIESR -- Consumer Confidence Barometer",
     homepage: "https://www.niesr.ac.uk/our-work/consumer-confidence",
     notes: "Transferred from GfK to NIESR in 2025. Headline index published monthly as a press release; sub-indices are subscription-gated. Fixture-backed, headline-only.",
+    // Monthly, ~month-end; same fixture-mirror lag as the PMI.
+    expectedCadence: "monthly", graceDays: 45,
   },
   rics_rms: {
     id: "rics_rms", name: "RICS -- UK Residential Market Survey",
     homepage: "https://www.rics.org/news-insights/market-surveys/uk-residential-market-survey",
     notes: "Monthly residential survey. Headline balances in each month's press release are public; the full back-set is subscription-gated. Fixture-backed with the headline net price balance.",
+    // Monthly, ~2nd Thursday; same fixture-mirror lag.
+    expectedCadence: "monthly", graceDays: 45,
   },
   obr_efo: {
     id: "obr_efo", name: "Office for Budget Responsibility -- Economic & Fiscal Outlook",
     homepage: "https://obr.uk/efo/",
+    // Event-driven: an EFO accompanies each fiscal event (~twice yearly, but
+    // the exact date is set by the Chancellor, not a calendar). No period, so
+    // amber never fires on a schedule; graceDays 230 red-lines just past the
+    // semi-annual rhythm, matching STALE_OBR_SEMIANNUAL_MS (220d).
+    expectedCadence: "event", graceDays: 230,
   },
   ons_psf: {
     id: "ons_psf", name: "ONS -- Public Sector Finances",
     homepage: "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance",
+    // Monthly bulletin, ~3 weeks after the reference month. We anchor on the
+    // upstream updateDate (releasedAt), so graceDays 50 = one month cadence +
+    // ~3 weeks of publication lag before a missed release goes red.
+    expectedCadence: "monthly", graceDays: 50,
   },
   dmo: {
     id: "dmo", name: "UK Debt Management Office -- gilts in issue",
     homepage: "https://www.dmo.gov.uk/data/gilt-market/gilts-in-issue/",
     endpoint: "https://www.dmo.gov.uk/data/XmlDataReport?reportCode=D1A",
     notes: "Flat XML list of every outstanding gilt at the most recent close-of-business date (instrument type, maturity bracket, nominal + inflation-uplifted amount). Refreshes once per working day. Methodology note: `issuance_long_share` was originally a flow-based measure (planned annual issuance share); it is now stock-based (Long / Ultra-Long share of outstanding conventional gilt stock) because the flow report (D2.1E) is behind a ShieldSquare bot-check. The stock share captures the same structural signal without intra-year seasonality. The D1A feed exposes only today's snapshot, so both DMO indicators are excluded from historical backfill quorum; see the live-only disclosure on /methodology.",
+    // Refreshes once per working day (late-evening UK). Same trading-daily
+    // window as the BoE feeds.
+    expectedCadence: "trading-daily", graceDays: 5,
   },
   ons_lms: {
     id: "ons_lms", name: "ONS -- Labour Market Statistics",
     homepage: "https://www.ons.gov.uk/employmentandlabourmarket",
+    // LMS bulletin publishes monthly; anchored on updateDate, graceDays 50
+    // absorbs the release lag (the individual series' maxStaleMs runs wider to
+    // 180d, but the *bulletin* cadence a missed ingest should flag against is
+    // monthly).
+    expectedCadence: "monthly", graceDays: 50,
   },
   ons_rti: {
     id: "ons_rti", name: "ONS -- Real-Time Indicators",
     homepage: "https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/datasets/realtimeindicatorsofuseconomicactivity",
+    // Monthly RTI bundle (K54L AWE index live; dd_failure_rate mirrored).
+    expectedCadence: "monthly", graceDays: 50,
+  },
+  boe_mortgage_rates: {
+    id: "boe_mortgage_rates", name: "Bank of England -- 2y fix mortgage rate (IUMBV34)",
+    homepage: "https://www.bankofengland.co.uk/boeapps/database/",
+    endpoint: "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp",
+    notes: "IADB IUMBV34: monthly effective rate on new fixed-rate 2-year mortgages to households at 75% LTV. Replaced the retired Moneyfacts fixture in 2026-04.",
+    // Monthly effective-rate print with ~3-week lag; matches STALE_RTI_MONTHLY_MS.
+    expectedCadence: "monthly", graceDays: 50,
   },
   moneyfacts: {
     id: "moneyfacts", name: "Moneyfacts -- UK Mortgage Rates",
     homepage: "https://moneyfacts.co.uk",
+    // Retired 2026-07 (superseded by boe_mortgage_rates); no longer produces
+    // observations, so computeSourceCadence never emits a chip for it. Marked
+    // event with a wide grace as an inert placeholder.
+    expectedCadence: "event", graceDays: 400,
   },
   mhclg: {
     id: "mhclg", name: "MHCLG / DLUHC -- Housing Statistics",
     homepage: "https://www.gov.uk/government/organisations/ministry-of-housing-communities-local-government",
+    // Quarterly live-tables release, published ~7 weeks after the quarter.
+    // graceDays 110 = ~one quarter (92) + publication lag, inside the 130-day
+    // maxStale so the chip warns before the guard.
+    expectedCadence: "quarterly", graceDays: 110,
   },
   gov_uk: {
     id: "gov_uk", name: "gov.uk -- Announcements RSS",
     homepage: "https://www.gov.uk/search/news-and-communications.atom",
+    // The Atom feed is polled daily for timeline candidates (no observations),
+    // but the milestone observations attributed to gov_uk (new towns, SMR)
+    // refresh on the quarterly editorial delivery beat. graceDays 120 matches
+    // the editorial fixture's quarterly maxStale.
+    expectedCadence: "quarterly", graceDays: 120,
   },
   desnz: {
     id: "desnz", name: "Department for Energy Security and Net Zero",
     homepage: "https://www.gov.uk/government/organisations/department-for-energy-security-and-net-zero",
+    // Editorial delivery milestone (BICS rollout) reassessed quarterly.
+    expectedCadence: "quarterly", graceDays: 120,
   },
   dbt: {
     id: "dbt", name: "Department for Business and Trade",
     homepage: "https://www.gov.uk/government/organisations/department-for-business-and-trade",
+    // Editorial delivery milestone (Industrial Strategy) reassessed quarterly.
+    expectedCadence: "quarterly", graceDays: 120,
   },
   ifs: {
     id: "ifs", name: "Institute for Fiscal Studies",
     homepage: "https://ifs.org.uk",
+    // Reference catalog only — not wired into any ingest pipeline, so no chip.
+    expectedCadence: "event", graceDays: 400,
   },
   resolution_foundation: {
     id: "resolution_foundation", name: "Resolution Foundation",
     homepage: "https://www.resolutionfoundation.org",
+    // Reference catalog only — not ingested.
+    expectedCadence: "event", graceDays: 400,
   },
   ifg: {
     id: "ifg", name: "Institute for Government",
     homepage: "https://www.instituteforgovernment.org.uk",
+    // Reference catalog only — not ingested.
+    expectedCadence: "event", graceDays: 400,
   },
 };
 

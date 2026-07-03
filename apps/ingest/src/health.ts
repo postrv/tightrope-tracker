@@ -1,4 +1,6 @@
 import type { Env } from "./env.js";
+import { computeSourceCadence, type SourceCadenceEntry } from "@tightrope/shared";
+import { readLatestObservations } from "@tightrope/snapshot";
 import { timingSafeEqual } from "./admin.js";
 import { adminAuthGate } from "./lib/adminBackoff.js";
 
@@ -39,7 +41,7 @@ export async function handleAdminHealth(req: Request, env: Env): Promise<Respons
   });
   if (!auth.ok) return auth.response;
 
-  const [latestAttempts, lastSuccesses] = await Promise.all([
+  const [latestAttempts, lastSuccesses, latestObservations] = await Promise.all([
     env.DB
       .prepare(
         `SELECT i.source_id, i.started_at, i.status, i.rows_written, i.error
@@ -64,18 +66,31 @@ export async function handleAdminHealth(req: Request, env: Env): Promise<Respons
          FROM ingestion_audit WHERE status IN ('success', 'unchanged') GROUP BY source_id`,
       )
       .all<{ source_id: string; last_success: string }>(),
+    // Latest observation per indicator, for the predictive cadence chip (§2.1).
+    readLatestObservations(env.DB),
   ]);
 
   const successBy: Record<string, string> = {};
   for (const r of lastSuccesses.results) successBy[r.source_id] = r.last_success;
 
-  const now = Date.now();
+  const nowDate = new Date();
+  const now = nowDate.getTime();
+  // Per-source release-cadence state, keyed by source id for the join below.
+  const cadenceBySource = new Map<string, SourceCadenceEntry>();
+  for (const c of computeSourceCadence(
+    latestObservations.map((r) => ({ sourceId: r.source_id, observedAt: r.observed_at, releasedAt: r.released_at })),
+    nowDate,
+  )) {
+    cadenceBySource.set(c.sourceId, c);
+  }
+
   const adapters = latestAttempts.results
     .map((r) => {
       const lastSuccess = successBy[r.source_id];
       const minutesSinceLastSuccess = lastSuccess
         ? Math.round((now - Date.parse(lastSuccess)) / 60000)
         : null;
+      const cadence = cadenceBySource.get(r.source_id);
       return {
         sourceId: r.source_id,
         lastAttemptAt: r.started_at,
@@ -84,6 +99,9 @@ export async function handleAdminHealth(req: Request, env: Env): Promise<Respons
         lastAttemptError: r.error,
         lastSuccessAt: lastSuccess ?? null,
         minutesSinceLastSuccess,
+        // null for sources with no observations / no declared cadence.
+        cadenceState: cadence?.state ?? null,
+        expectedCadence: cadence?.cadence ?? null,
       };
     })
     .sort((a, b) => a.sourceId.localeCompare(b.sourceId));

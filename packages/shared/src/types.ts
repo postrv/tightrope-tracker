@@ -1,5 +1,6 @@
 import type { PillarId } from "./indicators.js";
 import type { ScoreBand } from "./bands.js";
+import type { SourceCadenceEntry } from "./cadence.js";
 
 /** ISO-8601 UTC timestamp (e.g. `2026-04-17T14:02:00Z`). */
 export type Iso8601 = string;
@@ -130,6 +131,16 @@ export interface ScoreSnapshot {
   scoreDirection: typeof SCORE_DIRECTION;
   /** Sources whose latest ingestion attempt did not succeed. Absent or empty when every source is healthy. */
   sourceHealth?: readonly SourceHealthEntry[];
+  /**
+   * Per-source release-cadence state (green/amber/red) for every active
+   * source with an ingested reading (AUTOMATION_PLAN.md §2.1). Distinct from
+   * `sourceHealth`, which lists only *failing* sources: cadence covers healthy
+   * sources too, so a source can be green here and absent from sourceHealth,
+   * or amber here (a scheduled release is overdue) while its last fetch still
+   * succeeded. Computed once in the snapshot layer. Absent when no active
+   * source has observations yet.
+   */
+  sourceCadence?: readonly SourceCadenceEntry[];
   schemaVersion: typeof SCORE_SCHEMA_VERSION;
 }
 

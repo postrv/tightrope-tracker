@@ -64,7 +64,7 @@ describe("readLatestObservations — SQL contract", () => {
 
   it("returns the rows D1 hands back, unchanged", async () => {
     const rows: LatestObservationRow[] = [
-      { indicator_id: "cb_headroom", source_id: "obr_efo", observed_at: "2026-03-03T00:00:00Z", value: 23.6, ingested_at: "2026-04-25T02:00:00Z" },
+      { indicator_id: "cb_headroom", source_id: "obr_efo", observed_at: "2026-03-03T00:00:00Z", value: 23.6, ingested_at: "2026-04-25T02:00:00Z", released_at: "2026-03-03T00:00:00Z" },
     ];
     const db = makeDb(rows, { value: "" });
 

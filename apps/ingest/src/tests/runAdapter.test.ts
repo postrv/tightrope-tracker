@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { AdapterError, type AdapterResult, type DataSourceAdapter } from "@tightrope/data-sources";
+import { AdapterError, type AdapterResult, type DataSourceAdapter, type RawObservation } from "@tightrope/data-sources";
 import { runAdapter, runAdapterSafe } from "../pipelines/runAdapter.js";
+import { combineHashes } from "../lib/hash.js";
 import type { Env } from "../env.js";
 
 /**
@@ -21,6 +22,7 @@ function makeEnv(): {
     bind: (...b: unknown[]) => Stmt;
     run: () => Promise<{ success: true }>;
     first: <T>() => Promise<T | null>;
+    all: <T>() => Promise<{ results: T[] }>;
   }
   const makeStmt = (sql: string, bindings: readonly unknown[] = []): Stmt => ({
     sql,
@@ -32,6 +34,8 @@ function makeEnv(): {
     },
     // lastSuccessPayloadHash lookup → no prior success.
     first: async <T>() => null as unknown as T | null,
+    // readPreviousLive → no prior live rows (jump gate skipped).
+    all: async <T>() => ({ results: [] as T[] }),
   });
 
   const env = {
@@ -126,6 +130,27 @@ describe("runAdapter — bounded network retry", () => {
     ).rejects.toThrow(/not found/);
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(sleep).not.toHaveBeenCalled();
+  });
+});
+
+describe("runAdapter — F5: audit hashes survivors only and marks a mixed batch 'partial'", () => {
+  const good: RawObservation = { indicatorId: "gilt_10y", value: 4.8, observedAt: "2026-07-03T00:00:00Z", sourceId: "boe_yields", payloadHash: "good-hash" };
+  const bad: RawObservation = { indicatorId: "gilt_30y", value: 999, observedAt: "2026-07-03T00:00:00Z", sourceId: "boe_yields", payloadHash: "bad-hash" };
+
+  it("closes 'partial' and hashes ONLY the written observation", async () => {
+    const { env, runs } = makeEnv();
+    const result: AdapterResult = { observations: [good, bad], sourceUrl: "https://example.test/feed", fetchedAt: "2026-07-03T00:00:00Z" };
+    const fetch = vi.fn().mockResolvedValue(result);
+
+    await runAdapter(env, makeAdapter(fetch as unknown as DataSourceAdapter["fetch"]), noSleep);
+
+    const close = runs.find((r) => r.sql.includes("UPDATE ingestion_audit"));
+    expect(close, "should close the audit row").toBeDefined();
+    // closeAuditSuccess binds: [status, completed_at, rows_written, payload_hash, error, id]
+    expect(close!.bindings[0]).toBe("partial"); // mixed batch is degraded
+    expect(close!.bindings[2]).toBe(1); // rows_written = survivors only
+    expect(close!.bindings[3]).toBe(combineHashes(["good-hash"])); // hash excludes the quarantined value
+    noSleep.sleep.mockClear();
   });
 });
 

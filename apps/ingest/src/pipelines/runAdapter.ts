@@ -46,14 +46,17 @@ export async function runAdapter(
   try {
     const result = await fetchWithRetry(adapter, ctx, opts);
     // writeObservations runs the plausibility gate (§2.2): implausible values
-    // are quarantined + alerted rather than written, so rowsWritten counts only
-    // the observations that actually landed.
-    const rowsWritten = await writeObservations(env, result.observations);
-    const payloadHash = combineHashes(result.observations.map((o) => o.payloadHash));
+    // are quarantined + alerted rather than written. rowsWritten and the payload
+    // hash cover ONLY the observations that actually landed (F5a) — a quarantined
+    // value must not colour the "did upstream change?" hash. A batch that both
+    // wrote AND quarantined closes as 'partial' so /admin/health flags it (F5b).
+    const { written, quarantined } = await writeObservations(env, result.observations);
+    const payloadHash = combineHashes(written.map((o) => o.payloadHash));
     await closeAuditSuccess(env.DB, handle, {
-      rowsWritten,
+      rowsWritten: written.length,
       payloadHash,
       emitsNoObservations: result.emitsNoObservations === true,
+      quarantinedCount: quarantined,
     });
     return result;
   } catch (err) {

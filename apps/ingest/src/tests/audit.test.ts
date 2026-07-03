@@ -141,6 +141,31 @@ describe("closeAuditSuccess — stale-but-200 detection", () => {
     expect(update!.bindings[0], "status binding").toBe("success");
   });
 
+  it("F5b: marks status='partial' on a MIXED batch (some written, some quarantined)", async () => {
+    const { db, writes } = makeDb({
+      ons_psf: [{ payload_hash: "old", status: "success", completed_at: "2026-04-18T00:00:00Z" }],
+    });
+    await closeAuditSuccess(db, withHandle("ons_psf"), { rowsWritten: 3, payloadHash: "new", quarantinedCount: 1 });
+    const update = writes.find((w) => /UPDATE ingestion_audit/i.test(w.sql));
+    expect(update!.bindings[0], "status binding").toBe("partial");
+    expect(String(update!.bindings[4]), "error explains the quarantine").toContain("quarantined 1");
+  });
+
+  it("F5b: an all-quarantined batch is 'partial' with a quarantine-specific error, not the empty-parse one", async () => {
+    const { db, writes } = makeDb();
+    await closeAuditSuccess(db, withHandle("mhclg"), { rowsWritten: 0, payloadHash: "x", quarantinedCount: 2 });
+    const update = writes.find((w) => /UPDATE ingestion_audit/i.test(w.sql));
+    expect(update!.bindings[0], "status binding").toBe("partial");
+    expect(String(update!.bindings[4])).toContain("quarantined all 2");
+  });
+
+  it("a clean batch with zero quarantines is unaffected (success)", async () => {
+    const { db, writes } = makeDb();
+    await closeAuditSuccess(db, withHandle("ons_psf"), { rowsWritten: 4, payloadHash: "fresh", quarantinedCount: 0 });
+    const update = writes.find((w) => /UPDATE ingestion_audit/i.test(w.sql));
+    expect(update!.bindings[0], "status binding").toBe("success");
+  });
+
   it("openAudit + closeAuditFailure still behave unchanged", async () => {
     const { db, writes } = makeDb();
     const handle = await openAudit(db, { sourceId: "x", sourceUrl: "http://" });

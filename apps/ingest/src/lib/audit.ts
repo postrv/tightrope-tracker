@@ -34,7 +34,7 @@ export async function openAudit(db: D1Database, init: AuditRowInit): Promise<Aud
 export async function closeAuditSuccess(
   db: D1Database,
   handle: AuditHandle,
-  opts: { rowsWritten: number; payloadHash: string; emitsNoObservations?: boolean },
+  opts: { rowsWritten: number; payloadHash: string; emitsNoObservations?: boolean; quarantinedCount?: number },
 ): Promise<void> {
   // A "success" that wrote zero rows is usually a parse regression: the
   // adapter returned 200 OK and a body that parsed into an empty array.
@@ -46,11 +46,22 @@ export async function closeAuditSuccess(
   // candidates, for instance) set `emitsNoObservations: true` on their
   // AdapterResult and are kept as success.
   const isSilentFailure = opts.rowsWritten === 0 && !opts.emitsNoObservations;
+  const quarantined = opts.quarantinedCount ?? 0;
   let status: string;
   let error: string | null;
   if (isSilentFailure) {
+    // F5b: distinguish "all values quarantined" from a genuine empty parse — an
+    // all-quarantined batch DID parse; the plausibility gate withheld it.
     status = "partial";
-    error = "adapter returned 200 with zero observations -- probable parse regression or upstream schema drift";
+    error =
+      quarantined > 0
+        ? `plausibility gate quarantined all ${quarantined} observation${quarantined === 1 ? "" : "s"} this run -- none reached indicator_observations`
+        : "adapter returned 200 with zero observations -- probable parse regression or upstream schema drift";
+  } else if (quarantined > 0) {
+    // F5b: a mixed batch (some written, some quarantined) is degraded, not
+    // clean — surface it as 'partial' so the source shows as needing attention.
+    status = "partial";
+    error = `plausibility gate quarantined ${quarantined} of ${opts.rowsWritten + quarantined} observations this run (${opts.rowsWritten} written)`;
   } else {
     // Stale-but-200 detection: if the payload_hash matches the most recent
     // successful run for this source, flag the row as 'unchanged'. This is

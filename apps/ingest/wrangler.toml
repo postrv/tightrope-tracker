@@ -53,6 +53,10 @@ crons = [
 
 [vars]
 ENVIRONMENT = "production"
+# Public base URL of the curator worker's admin surface, used only to build the
+# quarantine-review curl in the plausibility-quarantine alert. Overridable per
+# environment; the code falls back to this same literal if unset.
+CURATOR_PUBLIC_URL = "https://curator.tightropetracker.uk"
 # secret required: ADMIN_TOKEN -- shared token for POST /admin/run?source=...
 # set via `wrangler secret put ADMIN_TOKEN` (do NOT commit to this file).
 # optional: EODHD_API_KEY -- free-tier API key for daily housebuilder EOD closes.

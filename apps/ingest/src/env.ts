@@ -20,6 +20,13 @@ export interface Env {
    * spam on every 5-minute tick.
    */
   ALERT_WEBHOOK_URL?: string;
+  /**
+   * Public base URL of the curator worker's admin surface, used only to build
+   * the ready-to-paste quarantine-review curl in the plausibility-quarantine
+   * alert. Defaults to the production custom domain when unset (see
+   * wrangler.toml [vars]); preview/local runs override it.
+   */
+  CURATOR_PUBLIC_URL?: string;
   /** EODHD API key for daily housebuilder EOD close prices. */
   EODHD_API_KEY?: string;
   /** EIA Open Data v2 API key for daily Brent crude spot prices. */

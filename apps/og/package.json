@@ -12,10 +12,8 @@
     "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "@cf-wasm/resvg": "^0.3.3",
-    "@resvg/resvg-wasm": "^2.6.2",
     "@tightrope/shared": "workspace:*",
-    "satori": "^0.26.0"
+    "workers-og": "^0.0.27"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250601.0",

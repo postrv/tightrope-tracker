@@ -1,23 +1,28 @@
 /**
- * Satori -> resvg-wasm -> PNG pipeline.
+ * workers-og render pipeline (JSX element -> PNG).
  *
- * Cloudflare Workers forbid dynamic WebAssembly.compile(). Both Satori (Yoga
- * layout engine) and resvg need wasm — we use the "standalone" Satori build
- * and import each .wasm file as a CompiledWasm module so wrangler pre-compiles
- * them at deploy time.
+ * Cloudflare Workers forbid runtime `WebAssembly.compile()` /
+ * `WebAssembly.instantiate(bytes, …)`. Satori's Yoga layout step and resvg
+ * both need wasm, and the previous `satori/standalone` + `@cf-wasm/resvg`
+ * pipeline tripped `CompileError: Wasm code generation disallowed by embedder`
+ * on workerd because Yoga instantiated its module from raw bytes at runtime.
+ *
+ * `workers-og` bundles pre-compiled satori/yoga/resvg and imports each `.wasm`
+ * as a module (`import mod from "./x.wasm"`), which wrangler resolves to a
+ * `WebAssembly.Module` via the `CompiledWasm` rule in `wrangler.toml`. Workers
+ * accept `WebAssembly.instantiate(module, imports)` — only the bytes form is
+ * banned — so the whole pipeline runs on the edge.
+ *
+ * We drive it through `ImageResponse` (format `"png"`) and lift the raw PNG
+ * bytes back out, so this module keeps ownership of the response headers
+ * (`pngResponse`) and the render-timeout contract (`OgRenderTimeoutError`).
+ * The card templates are unchanged: they still emit satori's `{ type, props }`
+ * element shape, which `ImageResponse` forwards straight to satori whenever
+ * the element is not an HTML string.
  */
-import satoriStandalone, { init as initYoga } from "satori/standalone";
-// @ts-expect-error -- wrangler resolves the export as a compiled WebAssembly.Module
-import yogaWasm from "satori/yoga.wasm";
-import { Resvg } from "@cf-wasm/resvg";
+import { ImageResponse } from "workers-og";
 import type { SatoriFont } from "./fonts.js";
 import type { JsxNode } from "../jsx/jsx-runtime.js";
-
-let yogaReady: Promise<void> | null = null;
-function ensureYoga(): Promise<void> {
-  if (!yogaReady) yogaReady = initYoga(yogaWasm);
-  return yogaReady;
-}
 
 export interface RenderOptions {
   width: number;
@@ -25,8 +30,6 @@ export interface RenderOptions {
   fonts: SatoriFont[];
 }
 
-/** Satori output longer than this is almost certainly pathological -- refuse to rasterise. */
-export const MAX_SVG_BYTES = 2_000_000;
 /** Hard cap on the full render pipeline. */
 export const RENDER_TIMEOUT_MS = 8_000;
 
@@ -43,26 +46,21 @@ export async function renderPng(tree: JsxNode, opts: RenderOptions): Promise<Uin
 }
 
 async function runPipeline(tree: JsxNode, opts: RenderOptions): Promise<Uint8Array> {
-  await ensureYoga();
-  const svg = await satoriStandalone(tree as unknown as Parameters<typeof satoriStandalone>[0], {
+  // workers-og forwards a non-string `element` straight to satori, so our
+  // existing JsxNode templates render unchanged. `format: "png"` runs the
+  // full satori -> resvg pipeline; the ImageResponse body is the PNG.
+  const response = new ImageResponse(tree as unknown as ConstructorParameters<typeof ImageResponse>[0], {
     width: opts.width,
     height: opts.height,
     fonts: opts.fonts,
+    format: "png",
   });
-  if (svg.length > MAX_SVG_BYTES) {
-    throw new Error(`SVG too large (${svg.length} bytes; limit ${MAX_SVG_BYTES})`);
-  }
-
-  const resvg = new Resvg(svg, {
-    fitTo: { mode: "width", value: opts.width },
-    // Satori already resolves font glyphs; we only need resvg to rasterise the
-    // resulting SVG so a loaded fontsdb isn't necessary.
-    font: { loadSystemFonts: false, fontFiles: [] },
-  });
-  const rendered = resvg.render();
-  const png = rendered.asPng();
-  rendered.free();
-  resvg.free();
+  // A render failure inside workers-og rejects the response stream, so this
+  // await surfaces it as a thrown error (mapped to 500 by the router in
+  // index.ts). A timeout is handled by raceWithTimeout above.
+  const buf = await response.arrayBuffer();
+  const png = new Uint8Array(buf);
+  if (png.byteLength === 0) throw new Error("og render produced an empty PNG");
   return png;
 }
 

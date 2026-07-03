@@ -3,8 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Bundle the resvg wasm blob as a WebAssembly module. Satori has no native
-# dependency; resvg does, and we import its wasm from node_modules.
+# Bundle workers-og's pre-compiled yoga + resvg wasm blobs as WebAssembly
+# modules. workers-og imports each .wasm via `import mod from "./x.wasm"`, and
+# this rule makes wrangler resolve those to `WebAssembly.Module` values so the
+# runtime never calls the embedder-forbidden `WebAssembly.instantiate(bytes)`
+# path (the old satori/standalone + @cf-wasm/resvg pipeline tripped that ban).
 rules = [
   { type = "CompiledWasm", globs = ["**/*.wasm"], fallthrough = true },
 ]
@@ -37,12 +40,17 @@ enabled = true
 [placement]
 mode = "smart"
 
-# SEC-1: hard CPU cap. A single PNG render is ~200-500ms wall time but
-# typically 30-50ms CPU; a runaway Satori layout or resvg pathology must not
-# burn unbounded CPU. 50ms is the Workers Bundled default; codifying it here
-# means the limit is reviewed alongside other config and documents intent.
+# Hard CPU cap: a secondary abuse guard beneath the 8s wall-clock timeout in
+# lib/render.ts. A real satori-layout + resvg-rasterise render of a 1200x630
+# card measures several hundred ms of CPU (fonts are memoised at module scope,
+# so warm renders are almost entirely satori/resvg CPU), and the cold-start
+# path additionally parses the woff faces and instantiates the yoga/resvg wasm.
+# The previous 50ms (the Workers Bundled default) predates a working render
+# pipeline and would kill every legitimate render on the platform; 5s leaves
+# generous headroom for cold starts while still bounding a runaway layout,
+# which the wall-clock timeout catches first regardless.
 [limits]
-cpu_ms = 50
+cpu_ms = 5000
 
 # --- Preview environment (SEC-3) -----------------------------------------
 # Top-level bindings point at PROD. Use `--env preview` for any remote-bound

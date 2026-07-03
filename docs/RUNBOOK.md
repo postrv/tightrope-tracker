@@ -11,32 +11,37 @@ incident emerges.
 3. Seed rebuild
 4. DLQ drain procedure
 5. Rotating `ADMIN_TOKEN`
-6. Known issue: OG worker `CompileError` on Cloudflare
+6. Resolved: OG worker `CompileError` on Cloudflare
 7. Fixture-refresh playbook (hand-curated data sources)
 8. Cloudflare dashboard hardening checklist (SEC-2 & SEC-4)
 
 ---
 
-## Known issue: OG image render fails with "Wasm code generation disallowed"
+## Resolved: OG worker `CompileError` on Cloudflare (fixed 2026-07-03)
 
-**Symptoms**
+Share cards used to 500 with `render failed` and, in the worker tail log,
+`RuntimeError: Aborted(CompileError: WebAssembly.instantiate(): Wasm code
+generation disallowed by embedder)`. Satori's Yoga layout step instantiated
+its wasm module from raw bytes at runtime, which the Workers runtime forbids
+(only pre-compiled `WebAssembly.Module` imports are allowed). Swapping the
+resvg side to `@cf-wasm/resvg` did not help because the ban originated in
+Yoga, not resvg.
 
-- `GET og.tightropetracker.uk/og/*.png` returns 500 with body `render failed`
-- Worker tail log: `RuntimeError: Aborted(CompileError: WebAssembly.instantiate(): Wasm code generation disallowed by embedder)`
+**Fix (option 1 from the original triage).** `apps/og` now renders through
+[`workers-og`](https://github.com/kvnang/workers-og), which bundles a
+pre-compiled satori/yoga/resvg and imports each `.wasm` as a module. The
+`CompiledWasm` rule in `apps/og/wrangler.toml` resolves those imports to
+`WebAssembly.Module` values, so the runtime only ever uses the allowed
+module-import instantiation path. Routes, card layouts, caching headers, the
+in-worker rate limit, and the render-timeout wrapper are all unchanged — only
+`apps/og/src/lib/render.ts` swapped rendering engines. Verified end-to-end
+under `wrangler dev` (local workerd enforces the same wasm ban): every
+`/og/*.png` route returns `200` `image/png`.
 
-**Cause**
-
-Satori and its Yoga-layout dependency trigger a runtime `WebAssembly.instantiate(bytes, ...)` call when laying out text. Cloudflare Workers forbid dynamic wasm compilation at runtime — only pre-compiled `WebAssembly.Module` imports are allowed. We tried swapping `@resvg/resvg-wasm` for `@cf-wasm/resvg` to move the resvg side of the pipeline off the dynamic-compile path; the error persists because it originates in Yoga, not resvg.
-
-**Fix path**
-
-Three viable options, none drop-in:
-
-1. Swap the pipeline for [`workers-og`](https://github.com/kvnang/workers-og) — bundles a pre-compiled satori/yoga/resvg for Workers.
-2. Move OG rendering to Cloudflare Browser Rendering (a separate service; different auth/pricing).
-3. Render OG images at build time into R2 and serve statically.
-
-Until one of these lands, social-card meta tags pointing at `og.tightropetracker.uk` will 500. Consider temporarily pointing `og:image` at a static image on the Pages site.
+Operational note: workers-og re-runs resvg's one-shot `initWasm()` on every
+render, so warm isolates log a harmless `Error: Already initialized` trace.
+It is swallowed inside the library (the render still succeeds with the
+already-initialised resvg) and can be ignored in `wrangler tail`.
 
 ---
 

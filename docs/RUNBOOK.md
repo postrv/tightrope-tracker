@@ -12,7 +12,7 @@ incident emerges.
 4. DLQ drain procedure
 5. Rotating `ADMIN_TOKEN`
 6. Resolved: OG worker `CompileError` on Cloudflare
-7. Fixture-refresh playbook (hand-curated data sources)
+7. Data freshness — the curator queue, quarantine triage, and the fixture fallback
 8. Cloudflare dashboard hardening checklist (SEC-2 & SEC-4)
 
 ---
@@ -202,66 +202,168 @@ old value was ever written to a shared channel.
 
 ---
 
-## 7. Fixture-refresh playbook (hand-curated data sources)
+## 7. Data freshness — the curator queue, quarantine triage, and the fixture fallback
 
-Several indicators are fed by on-disk JSON fixtures rather than live
-adapters, because the upstream publisher either doesn't expose a machine
--addressable API (OBR's EFO arrives as a PDF) or is behind a bot-check
-(DMO's D2.1E issuance report). Fixtures must be refreshed by hand on the
-upstream's publication cadence; stale fixtures are the worst-case credibility
-hit because the Auto / fresh chip lies silently.
+The non-API sources (OBR EFO PDF, MHCLG live tables, PMI / consumer-confidence
+/ RICS press releases, ONS DD failure rate, delivery milestones, timeline
+events) used to be hand-refreshed JSON fixtures. **`apps/curator` now owns
+their freshness**: a daily poll hashes each source, extracts on change,
+verifies against deterministic gates, and either auto-publishes (numeric
+series, once signed off) or queues the candidate for human review. The
+fixtures still exist, but their role has shifted — they are the **dev/seed
+fallback tier**, not the live freshness path (see §7.6).
 
-**Fixture inventory** (as of 2026-04):
+Everything below assumes the curator is deployed and `ADMIN_TOKEN` (curator's,
+distinct from ingest's) and `CURATOR_PUBLIC_URL` are set. Until a source is
+flipped `live`, it runs in **shadow mode**: verified and recorded, published
+nothing (§7.4).
 
-| Fixture | Source | Cadence | Where | Indicator(s) |
-|---|---|---|---|---|
-| `obr-efo.json` | OBR Economic & Fiscal Outlook | Twice a year (Spring/Autumn) | `packages/data-sources/src/fixtures/` | `cb_headroom`, `psnfl_trajectory` |
-| `housing-history.json` | MHCLG quarterly planning-consents series | Quarterly | same | `housing_trajectory`, `planning_consents` |
-| `delivery-milestones.json` | Hand-coded editorial read of departmental milestones | Quarterly | same | `new_towns_milestones`, `bics_rollout`, `industrial_strategy`, `smr_programme` |
-| `ftse-250.json` | LSEG FTSE 250 close | Weekly (editorial) | same | `ftse_250` |
+### 7.1 Reviewing the curator queue
 
-**When to refresh**
+curl + jq is the review UI. The queue lives at `CURATOR_PUBLIC_URL`
+(`https://curator.tightropetracker.uk`); the token is the curator worker's
+`ADMIN_TOKEN`.
 
-- OBR EFO: within 24h of each Spring Statement / Autumn Budget publication.
-  The `published` date and every value must be updated together — never
-  advance the date without refreshing the figures. The `obrEfo.test.ts`
-  regression test will fail if the fixture lands with the 2025-03 crunch
-  figure of 9.9bn paired with a 2026+ date.
-- MHCLG housing: within a week of each ONS live-tables update. The 2019
-  baseline denominator (11,500) is an estimate and documented as such on
-  /methodology — replace it with the true ONS 2019 average once we have
-  a reliable extraction.
-- Delivery milestones: on each ministerial milestone statement. Bump
-  `observed_at` even if the underlying state hasn't moved — this is how
-  we record that the editorial assessment was revisited.
-- ICE / LSEG fixtures: every 7 days. The `assertFixtureFresh` helper in
-  `packages/data-sources/src/lib/fixtureFreshness.ts` enforces a 14-day
-  hard stop — if a fixture is older than that, the live adapter throws
-  `AdapterError` and the source-health chip goes red.
+```bash
+# List everything awaiting review (also: status=quarantined, shadow, auto_published).
+curl -H "x-admin-token: $ADMIN_TOKEN" \
+  "https://curator.tightropetracker.uk/admin/captures?status=pending" | jq '.captures[] | {id, sourceId, indicatorId, value, confidence}'
 
-**How to refresh**
+# Full detail for one capture: the anchoring quote, gate-by-gate results, and
+# the diff against the currently-published value.
+curl -H "x-admin-token: $ADMIN_TOKEN" \
+  "https://curator.tightropetracker.uk/admin/captures/123" | jq '{quote: .capture.quote, gates: .gates, diff: .diff}'
 
-1. Edit the fixture JSON in place. Keep the `_comment` field honest about
-   which vintage is shipping.
+# Approve → runs the publish path (observation write / commitment patch /
+# timeline insert, dispatched by kind). The Tue/Wed digest emits this exact
+# curl pre-filled for every pending row.
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" \
+  "https://curator.tightropetracker.uk/admin/captures/123/approve"
+
+# Reject with a recorded reason.
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" -H "content-type: application/json" \
+  -d '{"reason":"wrong period — this is the May print, not June"}' \
+  "https://curator.tightropetracker.uk/admin/captures/123/reject"
+```
+
+Editorial kinds (`delivery_milestone`, `delivery_commitment`, `timeline_event`)
+are **never** auto-published — they always land as `pending`. Only numeric
+statistical series are auto-publish eligible, and only after shadow sign-off.
+
+### 7.2 Quarantine triage
+
+A `quarantined` capture is a value that failed the plausibility range gate
+(G3) or the max-delta gate (G4) — from either the curator sweep or the ingest
+`writeObservations` plausibility gate (`AUTOMATION_PLAN.md` §2.2). The value is
+**withheld** from `indicator_observations`; a webhook alert fires immediately
+(even under shadow, because a plausibility breach is worth surfacing).
+
+```bash
+curl -H "x-admin-token: $ADMIN_TOKEN" \
+  "https://curator.tightropetracker.uk/admin/captures?status=quarantined" | jq '.captures'
+```
+
+Triage:
+
+1. Open the detail view and read the failing gate's `detail` and the anchoring
+   quote. Confirm against the source URL in the row.
+2. **If the value is genuinely correct** (a real regime shift the bounds didn't
+   anticipate — e.g. a legitimate large revision), widen the bound in
+   `packages/shared/src/plausibility.ts` (and the mirrored `min`/`max`/`maxDelta`
+   in `apps/curator/src/sources/registry.ts` — they must not diverge), ship the
+   change, then `approve` the capture to publish it.
+3. **If the value is wrong** (extraction picked up the wrong figure, a unit
+   shift bps↔%, or an upstream typo), `reject` it with the reason. The gate did
+   its job.
+
+Never hand-widen a bound just to clear the queue — the 2026-04-29 denominator
+class of bugs is exactly what these gates exist to catch.
+
+### 7.3 Shadow-mode comparison procedure
+
+Before a source is flipped to auto-publish it runs two full weekly cycles in
+shadow. During shadow every capture is recorded with `status='shadow'` and
+`decided_by='auto:shadow(intended=...)'` — the intended (pre-shadow) decision
+is preserved so you can see what *would* have happened.
+
+Compare shadow captures against the hand-verified fixture value:
+
+```bash
+# What did the curator capture (and would it have auto-published)?
+curl -H "x-admin-token: $ADMIN_TOKEN" \
+  "https://curator.tightropetracker.uk/admin/captures?status=shadow" \
+  | jq '.captures[] | {id, sourceId, indicatorId, value, observedAt: .observedAt, confidence}'
+
+# What is currently published for that indicator (from the fixture / prior run)?
+curl -s https://api.tightropetracker.uk/api/v1/score \
+  | jq '.pillars[].indicators[] | select(.id=="services_pmi") | {value, observedAt}'
+```
+
+Sign-off criteria for a source: across both cycles the shadow value matches the
+independently hand-verified figure (same number, same `observed_at`), every
+gate passed, and the anchoring quote is verbatim-correct. A single mismatch
+resets the clock — investigate the prompt / extraction before flipping.
+Flipping is two steps, per source: set `allowAutoPublish: true` for that spec
+in `apps/curator/src/sources/registry.ts`, then flip `CURATOR_MODE` to `live`
+(see `AUTOMATION_PLAN.md` §6e rollout order).
+
+### 7.4 Corrections discipline for AI revisions
+
+Publishing a value that differs from an already-published value for the same
+`(indicator, observed_at)` **must** append a public `corrections` row — this is
+non-negotiable and the publish path does it automatically (`publish.ts` →
+`insertCorrection`, id prefix `c_ai_`). The reason string names the indicator,
+period, old→new values, the source URL, and the anchoring quote.
+
+When you `approve` a revision, confirm the correction landed:
+
+```bash
+curl -s https://api.tightropetracker.uk/api/v1/timeline | jq '.corrections[0]'
+```
+
+If a human decision reverses an auto-published value, that reversal is itself a
+correction — reject-then-republish still routes through the same corrections
+append. Never edit a published number in D1 by hand to avoid the corrections
+trail; that is the one thing the whole pipeline exists to prevent.
+
+### 7.5 When hand-editing a fixture is still correct
+
+The fixture files (`packages/data-sources/src/fixtures/*.json`) remain the
+seed/fallback tier. Hand-edit one when:
+
+- **Seed parity.** After the curator auto-publishes or you approve a
+  milestone/housing capture, the live D1 value is fresh but the fixture (which
+  seeds a *fresh* deployment) is stale. The Tue/Wed digest reminds you which
+  approved values to fold back. This is at-leisure housekeeping — publishing
+  never depends on it — but a fresh preview/prod rebuild seeds wrong until you
+  do. Follow the refresh procedure below.
+- **Curator outage / a source not yet on the curator.** If the curator is down
+  or a source has not been onboarded, refresh its fixture by hand exactly as
+  before so the fallback path stays fresh.
+
+**Refresh procedure** (unchanged from the pre-curator playbook):
+
+1. Edit the fixture JSON in place. Keep the `_comment` field honest about which
+   vintage is shipping.
 2. Run the affected adapter tests: `pnpm --filter @tightrope/data-sources test <adapter-name>`.
-3. Regenerate the seed (for SSG / fresh-database cases):
-   `pnpm tsx db/seed/generate.ts > db/seed/seed.sql`.
+3. Regenerate the seed: `pnpm tsx db/seed/generate.ts > db/seed/seed.sql`.
 4. Re-run the seed-artifact guards: `pnpm --filter @tightrope/shared test seedArtifact`.
-5. Commit with a message naming the upstream release, e.g. "Refresh OBR
-   EFO fixture for 2026-03-26 Spring Statement (headroom 23.6bn)".
+   Run `pnpm --filter @tightrope/shared test seedArtifact` after any
+   seed-adjacent change.
+5. Commit naming the upstream release, e.g. "Refresh OBR EFO fixture for
+   2026-03-26 Spring Statement (headroom 23.6bn)".
 6. After deploy, trigger a recompute so KV picks up the new values:
    `curl -H "x-admin-token: $ADMIN_TOKEN" https://ingest.tightropetracker.uk/admin/run?source=recompute`.
 
-**Detecting silent staleness**
-
-Each fixture carries a `published` date. The `assertFixtureFresh` helper
-compares that to `Date.now()` and throws `AdapterError` with
-`ingestion_audit.status = 'failure'` when the fixture crosses its
-max-age threshold. Check `/admin/health` for red chips; the methodology
-page's "Last successful ingestion" table will also surface the failure.
-Because the audit now distinguishes `success` (content changed) from
-`unchanged` (payload byte-identical), a fixture being polled against an
-unchanged upstream will show `unchanged`, not a false `success`.
+**Detecting silent staleness.** Fixtures still carry a `published` date;
+`assertFixtureFresh` throws `AdapterError` with `ingestion_audit.status =
+'failure'` past the max-age threshold. But the primary signal is now the
+cadence-state registry (`evaluateCadenceState`): amber = an upstream release
+should exist but we haven't ingested it, red = a guard tripped. Check
+`/admin/health` for red chips and the daily 07:00 staleness monitor's alerts;
+the two-tier selector guarantees a fresher `ai:%` curator row always wins over
+a stale fixture-fallback write, so a fixture going stale under a healthy
+curator degrades the *fallback*, not the live number.
 
 ---
 

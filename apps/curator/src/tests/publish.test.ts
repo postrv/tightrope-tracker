@@ -99,6 +99,21 @@ describe("decideAndPersist", () => {
     expect(calls[0]).toContain("quarantine");
   });
 
+  it("quarantine alert review curl targets CURATOR_PUBLIC_URL when set", async () => {
+    const calls: string[] = [];
+    vi.stubGlobal("fetch", async (_url: string, init: { body: string }) => {
+      calls.push(init.body);
+      return new Response("ok");
+    });
+    const db = makeFakeDb();
+    const env = makeEnv({
+      db,
+      extra: { ALERT_WEBHOOK_URL: "https://hook.test", CURATOR_PUBLIC_URL: "https://curator-preview.example.test" },
+    });
+    await decideAndPersist(env, observationSpec({ allowAutoPublish: true }), row(), report({ G4: false }));
+    expect(calls[0]).toContain("https://curator-preview.example.test/admin/captures?status=quarantined");
+  });
+
   it("writes a public corrections row when it revises a different published value", async () => {
     const db = makeFakeDb({ publishedByKey: new Map([["services_pmi|2026-06-30", 47.5]]) });
     const env = makeEnv({ db });

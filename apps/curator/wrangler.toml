@@ -10,10 +10,16 @@ compatibility_flags = ["nodejs_compat"]
 # Deliberately a separate worker from tightrope-ingest: isolates the AI
 # binding and its latency from the deterministic 5-minute ingest loop, and
 # a curator bug can never take down market ingestion.
-#
-# TODO(deploy): add a custom-domain route (e.g. curator.tightropetracker.uk)
-# once the review endpoints are implemented; workers.dev is fine for shadow
-# mode.
+
+# Custom-domain route for the review/admin surface (same pattern as
+# apps/ingest). Exposed at curator.tightropetracker.uk solely for the
+# /admin/captures review endpoints and /__healthz; the admin surface is
+# ADMIN_TOKEN-gated and everything else returns 405. The digest and
+# quarantine alerts emit ready-to-paste curls against CURATOR_PUBLIC_URL
+# (below) — keep the two in sync.
+routes = [
+  { pattern = "curator.tightropetracker.uk", custom_domain = true }
+]
 
 # Shared PRODUCTION resources — same ids as apps/ingest/wrangler.toml.
 # Local dev uses miniflare and never touches them (SEC-3 discipline applies:
@@ -60,6 +66,12 @@ ENVIRONMENT = "production"
 # after the 2-cycle shadow comparison signs a source off. Kept as a plain var
 # (not a secret) so the current mode is auditable in the committed config.
 CURATOR_MODE = "shadow"
+# Public base URL of this worker's own admin surface. Threaded into the
+# editorial digest and quarantine alerts so the ready-to-paste approve/reject
+# curls hit the right host. Must match the custom-domain route above; the
+# preview env overrides it with the workers.dev host so preview/local digests
+# emit correct curls too.
+CURATOR_PUBLIC_URL = "https://curator.tightropetracker.uk"
 # Approve-path base URL for delivery-commitment patches (AUTOMATION_PLAN 1.3).
 INGEST_ADMIN_URL = "https://ingest.tightropetracker.uk"
 # secrets (wrangler secret put <NAME>, never committed):
@@ -89,6 +101,7 @@ name = "tightrope-curator-preview"
 [env.preview.vars]
 ENVIRONMENT = "preview"
 CURATOR_MODE = "shadow"
+CURATOR_PUBLIC_URL = "https://tightrope-curator-preview.workers.dev"
 INGEST_ADMIN_URL = "https://tightrope-ingest-preview.workers.dev"
 
 [[env.preview.d1_databases]]

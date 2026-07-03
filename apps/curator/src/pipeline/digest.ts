@@ -1,6 +1,6 @@
 import { CADENCE_PERIOD_DAYS, computeSourceCadence, type ScoreSnapshot } from "@tightrope/shared";
 import { readLatestObservations } from "@tightrope/snapshot";
-import type { Env } from "../env";
+import { curatorPublicUrl, type Env } from "../env";
 import { postAlert } from "../lib/alert";
 import { listCaptures } from "../lib/captures";
 
@@ -17,7 +17,6 @@ import { listCaptures } from "../lib/captures";
  * Copy is neutral — the schedule is referred to only as the "weekly editorial
  * deadline". Best-effort throughout: a missing section never aborts the digest.
  */
-const CURATOR_ADMIN_BASE = "https://curator.tightropetracker.uk";
 const LAST_DIGEST_KEY = "curator:digest:last";
 const SNAPSHOT_KEY = "score:latest";
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -61,12 +60,13 @@ async function cadenceSection(env: Env, now: Date): Promise<string> {
 async function pendingSection(env: Env): Promise<string> {
   const pending = await listCaptures(env.DB, "pending", 50);
   if (pending.length === 0) return "*Pending review:* queue empty.";
+  const base = curatorPublicUrl(env);
   const lines = pending.map((c) => {
     const label = `${c.sourceId}/${c.indicatorId ?? c.kind} ${c.value ?? ""}`.trim();
     return [
       `  • #${c.id} ${label} (conf ${c.confidence ?? "n/a"})`,
-      `    approve: curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "${CURATOR_ADMIN_BASE}/admin/captures/${c.id}/approve"`,
-      `    reject:  curl -X POST -H "x-admin-token: $ADMIN_TOKEN" -H "content-type: application/json" -d '{"reason":"..."}' "${CURATOR_ADMIN_BASE}/admin/captures/${c.id}/reject"`,
+      `    approve: curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "${base}/admin/captures/${c.id}/approve"`,
+      `    reject:  curl -X POST -H "x-admin-token: $ADMIN_TOKEN" -H "content-type: application/json" -d '{"reason":"..."}' "${base}/admin/captures/${c.id}/reject"`,
     ].join("\n");
   });
   return [`*Pending review (${pending.length}):*`, ...lines].join("\n");

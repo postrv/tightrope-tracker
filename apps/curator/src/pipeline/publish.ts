@@ -1,6 +1,6 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { INDICATORS } from "@tightrope/shared";
-import type { Env } from "../env";
+import { curatorPublicUrl, type Env } from "../env";
 import type { CaptureRow, CaptureSpec, CaptureStatus, VerificationReport } from "../types";
 import { insertCapture, setCaptureDecision, supersedeOlderUnpublished, type CaptureDetail } from "../lib/captures";
 import {
@@ -150,7 +150,7 @@ async function alertQuarantine(env: Env, spec: CaptureSpec, row: CaptureRow, ver
     `*Tightrope curator quarantine* (${new Date().toISOString().slice(0, 16).replace("T", " ")}Z)`,
     `Source \`${spec.sourceId}\` indicator \`${row.indicatorId}\` = ${row.value} @ ${row.observedAt?.slice(0, 10) ?? "?"} withheld from indicator_observations:`,
     ...failing.map((g) => `• ${g.gate}: ${g.detail}`),
-    `Review: \`curl -H "x-admin-token: $ADMIN_TOKEN" "https://curator.tightropetracker.uk/admin/captures?status=quarantined"\``,
+    `Review: \`curl -H "x-admin-token: $ADMIN_TOKEN" "${curatorPublicUrl(env)}/admin/captures?status=quarantined"\``,
   ].join("\n");
   await postAlert(env, text);
 }

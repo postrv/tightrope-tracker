@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { eodhdHousebuildersAdapter } from "./eodhdHousebuilders.js";
 
 const CTX_WITH_KEY = { secrets: { EODHD_API_KEY: "test-key" } };
@@ -83,4 +83,19 @@ describe("eodhdHousebuildersAdapter", () => {
     );
     expect(result.observations[0]!.payloadHash).toBe("fixture-fallback");
   });
+
+  it("throws a stale-fixture AdapterError when the fixture fallback has aged past 14 days", async () => {
+    // Move the clock far past the fixture's observed_at so the 14-day guard
+    // trips. This is the "both live and fixture have rotted" alert path —
+    // it must surface loudly rather than re-emit a stale composite.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2027-01-01T00:00:00Z"));
+    await expect(
+      eodhdHousebuildersAdapter.fetch(mockFetch({}) as unknown as typeof globalThis.fetch),
+    ).rejects.toThrow(/stale/i);
+  });
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });

@@ -6,13 +6,29 @@ export class AdapterError extends Error {
   public readonly sourceId: string;
   public readonly sourceUrl: string;
   public readonly status: number | null;
+  /**
+   * True for network-class failures worth one bounded retry: a thrown fetch
+   * (transient connectivity) or an upstream 5xx. Set by `fetchOrThrow`.
+   * Parse/validation/4xx errors leave this false — a re-fetch would re-fail
+   * identically, and the audit trail should show one honest failure, so
+   * `runAdapter` must not retry them.
+   */
+  public readonly retryable: boolean;
 
-  constructor(opts: { sourceId: string; sourceUrl: string; status?: number | null; message: string; cause?: unknown }) {
+  constructor(opts: {
+    sourceId: string;
+    sourceUrl: string;
+    status?: number | null;
+    message: string;
+    cause?: unknown;
+    retryable?: boolean;
+  }) {
     super(opts.message);
     this.name = "AdapterError";
     this.sourceId = opts.sourceId;
     this.sourceUrl = opts.sourceUrl;
     this.status = opts.status ?? null;
+    this.retryable = opts.retryable ?? false;
     if (opts.cause !== undefined) {
       (this as { cause?: unknown }).cause = opts.cause;
     }
@@ -40,19 +56,23 @@ export async function fetchOrThrow(
   try {
     res = await fetchImpl(url, merged);
   } catch (cause) {
+    // Thrown fetch = transient connectivity; worth one retry.
     throw new AdapterError({
       sourceId,
       sourceUrl: url,
       message: `network error fetching ${sourceId}: ${(cause as Error)?.message ?? "unknown"}`,
       cause,
+      retryable: true,
     });
   }
   if (!res.ok) {
+    // 5xx = upstream wobble, retry once; 4xx = client/contract error, don't.
     throw new AdapterError({
       sourceId,
       sourceUrl: url,
       status: res.status,
       message: `${sourceId} returned HTTP ${res.status} ${res.statusText}`,
+      retryable: res.status >= 500,
     });
   }
   return res;

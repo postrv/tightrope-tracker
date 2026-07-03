@@ -13,10 +13,13 @@ import type { AdapterContext, AdapterResult, DataSourceAdapter, RawObservation }
 import { registerAdapter } from "../registry.js";
 import { fetchOrThrow } from "../lib/errors.js";
 import { sha256Hex } from "../lib/hash.js";
+import { assertFixtureFresh } from "../lib/fixtureFreshness.js";
 import fixture from "../fixtures/housebuilders.json" with { type: "json" };
 
 const SOURCE_ID = "eodhd_housebuilders";
 const API_BASE = "https://eodhd.com/api/eod";
+const FIXTURE_URL = "local:fixtures/housebuilders.json";
+const MAX_FIXTURE_AGE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days, fallback only
 
 interface Constituent {
   symbol: string;
@@ -45,6 +48,12 @@ interface EodhdCandle {
 
 function fetchFromFixture(): AdapterResult {
   const data = fixture as { observed_at: string; housebuilder_idx: { value: number }; source_url: string };
+  // Fallback only: tripping the freshness guard here means BOTH the live
+  // EODHD path and the editorial fixture have rotted. Surface it as a loud
+  // AdapterError rather than silently re-emitting a stale composite on every
+  // cron tick. Matches the 14-day guard on the sibling fixture-backed
+  // adapters (LSEG FTSE 250, EIA Brent).
+  assertFixtureFresh(data.observed_at, MAX_FIXTURE_AGE_MS, SOURCE_ID, FIXTURE_URL);
   return {
     observations: [{
       indicatorId: "housebuilder_idx",
@@ -53,7 +62,7 @@ function fetchFromFixture(): AdapterResult {
       sourceId: SOURCE_ID,
       payloadHash: "fixture-fallback",
     }],
-    sourceUrl: data.source_url ?? "local:fixtures/housebuilders.json",
+    sourceUrl: data.source_url ?? FIXTURE_URL,
     fetchedAt: new Date().toISOString(),
   };
 }

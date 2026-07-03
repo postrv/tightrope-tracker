@@ -1,19 +1,39 @@
-import type { DataSourceAdapter, AdapterResult, AdapterContext } from "@tightrope/data-sources";
+import { AdapterError, type DataSourceAdapter, type AdapterResult, type AdapterContext } from "@tightrope/data-sources";
 import type { Env } from "../env.js";
 import { closeAuditFailure, closeAuditSuccess, openAudit } from "../lib/audit.js";
 import { writeObservations } from "../lib/observations.js";
 import { combineHashes } from "../lib/hash.js";
 import { sanitizeForLog } from "../lib/sanitize.js";
 
+/** Spacing before the single network-class retry. ~10s (BoE/ONS rate courtesy). */
+const RETRY_DELAY_MS = 10_000;
+
+const defaultSleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+export interface RunAdapterOptions {
+  /** Delay before the one bounded retry. Defaults to RETRY_DELAY_MS. */
+  retryDelayMs?: number;
+  /** Sleep implementation — injected so tests don't actually wait. */
+  sleep?: (ms: number) => Promise<void>;
+}
+
 /**
  * Run a single adapter end-to-end:
  *   1. Open ingestion_audit row (status = 'started')
- *   2. Call adapter.fetch(globalThis.fetch) to produce observations
+ *   2. Call adapter.fetch(globalThis.fetch) to produce observations, with one
+ *      bounded retry (2 attempts total) for network-class failures only
  *   3. Batched INSERT OR REPLACE into indicator_observations
  *   4. Close audit row (success w/ rows_written + payload_hash, or failure)
  *   5. On failure, optionally enqueue to DLQ and re-throw.
+ *
+ * The audit row spans the whole operation (opened once, closed once) so a
+ * retried fetch still produces a single honest row.
  */
-export async function runAdapter(env: Env, adapter: DataSourceAdapter): Promise<AdapterResult> {
+export async function runAdapter(
+  env: Env,
+  adapter: DataSourceAdapter,
+  opts: RunAdapterOptions = {},
+): Promise<AdapterResult> {
   // We defer the sourceUrl until the adapter returns, but D1 requires a value
   // at INSERT time -- use the registry URL by convention.
   const handle = await openAudit(env.DB, { sourceId: adapter.id, sourceUrl: placeholderUrl(adapter) });
@@ -24,7 +44,7 @@ export async function runAdapter(env: Env, adapter: DataSourceAdapter): Promise<
     },
   };
   try {
-    const result = await adapter.fetch(globalThis.fetch, ctx);
+    const result = await fetchWithRetry(adapter, ctx, opts);
     const rowsWritten = await writeObservations(env.DB, result.observations);
     const payloadHash = combineHashes(result.observations.map((o) => o.payloadHash));
     await closeAuditSuccess(env.DB, handle, {
@@ -45,15 +65,45 @@ export async function runAdapter(env: Env, adapter: DataSourceAdapter): Promise<
 }
 
 /**
+ * Call `adapter.fetch` with one bounded retry for network-class failures only
+ * (a thrown fetch or an upstream 5xx, flagged `retryable` on the AdapterError
+ * by fetchOrThrow). Parse/validation/4xx errors are re-thrown immediately: a
+ * re-fetch would re-fail identically and the audit trail should show one
+ * honest failure. A second attempt's failure — retryable or not — propagates.
+ */
+async function fetchWithRetry(
+  adapter: DataSourceAdapter,
+  ctx: AdapterContext,
+  opts: RunAdapterOptions,
+): Promise<AdapterResult> {
+  try {
+    return await adapter.fetch(globalThis.fetch, ctx);
+  } catch (err) {
+    if (!isRetryable(err)) throw err;
+    const sleep = opts.sleep ?? defaultSleep;
+    await sleep(opts.retryDelayMs ?? RETRY_DELAY_MS);
+    return await adapter.fetch(globalThis.fetch, ctx);
+  }
+}
+
+function isRetryable(err: unknown): boolean {
+  return err instanceof AdapterError && err.retryable === true;
+}
+
+/**
  * Like runAdapter, but catches and logs any failure instead of propagating.
  * Used by pipeline orchestrators (market/fiscal/labour/delivery) so a single
  * upstream outage doesn't halt sibling adapters or the downstream recompute.
  * The audit row and DLQ message are still written by runAdapter; callers rely
  * on those for observability, not on the thrown exception.
  */
-export async function runAdapterSafe(env: Env, adapter: DataSourceAdapter): Promise<AdapterResult | null> {
+export async function runAdapterSafe(
+  env: Env,
+  adapter: DataSourceAdapter,
+  opts: RunAdapterOptions = {},
+): Promise<AdapterResult | null> {
   try {
-    return await runAdapter(env, adapter);
+    return await runAdapter(env, adapter, opts);
   } catch (err) {
     // SEC-14: err.message often quotes upstream response text. Sanitise.
     console.warn(`runAdapterSafe: ${adapter.id} failed -- ${sanitizeForLog((err as Error)?.message ?? String(err))}`);

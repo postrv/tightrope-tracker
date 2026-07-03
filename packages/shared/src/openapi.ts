@@ -10,7 +10,11 @@
  * every documented path is registered in the router and vice versa, so
  * the spec and the code cannot silently diverge.
  */
-import spec from "./openapi.json" with { type: "json" };
+// The JSON asset is named `openapi.spec.json`, not `openapi.json`, so this
+// module (`openapi.ts`) does not import a same-basename sibling — that
+// collision was the repo's only import cycle (module `openapi` importing
+// module `openapi`). Consumers still import `openapiSpec` from this file.
+import spec from "./openapi.spec.json" with { type: "json" };
 
 /**
  * Minimal structural type for the fields consumers and tests read. We

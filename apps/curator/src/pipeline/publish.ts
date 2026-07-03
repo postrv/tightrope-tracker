@@ -1,37 +1,37 @@
+import type { D1Database } from "@cloudflare/workers-types";
+import { INDICATORS } from "@tightrope/shared";
 import type { Env } from "../env";
-import type { CaptureRow, CaptureSpec, VerificationReport } from "../types";
+import type { CaptureRow, CaptureSpec, CaptureStatus, VerificationReport } from "../types";
+import { insertCapture, setCaptureDecision, supersedeOlderUnpublished, type CaptureDetail } from "../lib/captures";
+import {
+  insertCorrection,
+  publishObservation,
+  readPublishedValueAt,
+} from "../lib/observations";
+import { postAlert } from "../lib/alert";
+
+const TIMELINE_CACHE_KEY = "timeline:latest";
+const EDITORIAL_KINDS = new Set(["delivery_milestone", "delivery_commitment", "timeline_event"]);
+
+/** Shadow mode is default-ON: anything other than an explicit "live" stays shadow. */
+export function isShadowMode(env: Pick<Env, "CURATOR_MODE">): boolean {
+  return (env.CURATOR_MODE ?? "shadow").toLowerCase() !== "live";
+}
 
 /**
- * Stage 4 — decide + persist + (maybe) publish.
+ * Stage 4 — decide + persist + (maybe) publish, for ONE capture row produced by
+ * the sweep. Contract in the original stub header (AUTOMATION_PLAN Phase 3).
  *
- * Decide (AUTOMATION_PLAN Phase 3):
- * - kind "observation" ∧ verification.passed ∧ spec.allowAutoPublish
- *   → publish immediately, status "auto_published".
- * - Editorial kinds, failed gates, or allowAutoPublish=false
- *   → status "pending" (review queue). Gate failures on range/delta
- *   (G3/G4) → status "quarantined" + immediate alert webhook.
- * - Shadow-mode rollout: a global flag (KV or var) forces status "shadow"
- *   regardless — verified but never publishable.
- *
- * Publish (observations):
- * - INSERT OR REPLACE INTO indicator_observations with
- *   payload_hash = "ai:" + contentSha256. The "ai:" prefix keeps the row in
- *   the live tier of the two-tier latest-observation selector (not
- *   "hist:%", not "seed%") while staying traceable.
- * - Mark any older non-published capture rows for the same
- *   (indicator, observed_at) as "superseded".
- * - If a DIFFERENT value was previously published for the same
- *   (indicator_id, observed_at): append a `corrections` row (match the
- *   shape/tone of db/patches/log-2026-04-29-*.sql) — revisions are public.
- * - No KV surgery: the ingest worker's 5-minute recompute cron picks the
- *   new observation up within ≤5 minutes.
- *
- * Publish (approved editorial):
- * - delivery_commitment → POST {env.INGEST_ADMIN_URL}/admin/delivery-commitment
- *   with INGEST_ADMIN_TOKEN (endpoint lands in AUTOMATION_PLAN 1.3).
- * - timeline_event → INSERT INTO timeline_events + purge "timeline:latest".
- * - delivery_milestone → publish the observation AND flag in the next
- *   digest that the fixture should be folded back for seed parity.
+ * Decision (before the shadow override):
+ *   - editorial kind                                   → 'pending'
+ *   - observation, G3 or G4 failed                     → 'quarantined' (+ alert)
+ *   - observation, verification.passed ∧ allowAutoPublish → 'auto_published'
+ *   - observation, otherwise                           → 'pending'
+ * Shadow override (rule 6): while CURATOR_MODE ≠ "live", the persisted status is
+ * forced to 'shadow' and NOTHING publishes — but a would-be quarantine still
+ * fires its alert, because a plausibility breach is worth surfacing during the
+ * shadow-comparison window. The intended (pre-shadow) decision is recorded in
+ * decided_by for the digest/audit trail.
  */
 export async function decideAndPersist(
   env: Env,
@@ -39,9 +39,264 @@ export async function decideAndPersist(
   row: CaptureRow,
   verification: VerificationReport,
 ): Promise<CaptureRow> {
-  void env;
-  void spec;
-  void row;
-  void verification;
-  throw new Error("TODO: implement decide/persist/publish stage");
+  const intended = decideStatus(spec, verification);
+  const shadow = isShadowMode(env);
+  const finalStatus: CaptureStatus = shadow ? "shadow" : intended;
+  const willPublish = finalStatus === "auto_published";
+
+  // Deterministic observation key (indicator|observed_at) when this row can publish.
+  const canKey = row.indicatorId && row.observedAt;
+  const observationKey = canKey ? `${row.indicatorId}|${row.observedAt}` : null;
+
+  const decidedBy = shadow && intended !== "shadow" ? `auto:shadow(intended=${intended})` : "auto";
+  const persisted: CaptureRow = {
+    ...row,
+    status: finalStatus,
+    confidence: verification.confidence,
+    verification: JSON.stringify(verification.gates),
+    decidedBy,
+    decidedAt: new Date().toISOString(),
+    publishedObservationKey: willPublish ? observationKey : null,
+  };
+  const id = await insertCapture(env.DB, persisted);
+  persisted.id = id;
+
+  // A would-be quarantine alerts even under shadow.
+  if (intended === "quarantined") {
+    await alertQuarantine(env, spec, row, verification);
+  }
+
+  if (willPublish && row.indicatorId && row.observedAt && row.value !== null) {
+    await publishCapturedObservation(env.DB, {
+      indicatorId: row.indicatorId,
+      observedAt: row.observedAt,
+      value: row.value,
+      contentSha256: row.contentSha256,
+      releasedAt: row.releasedAt,
+      sourceUrl: row.sourceUrl,
+      quote: row.quote,
+      exceptCaptureId: id,
+    });
+  }
+
+  return persisted;
+}
+
+function decideStatus(spec: CaptureSpec, verification: VerificationReport): CaptureStatus {
+  if (EDITORIAL_KINDS.has(spec.kind)) return "pending";
+  const failed = (id: string) => verification.gates.some((g) => g.gate === id && !g.passed);
+  if (failed("G3") || failed("G4")) return "quarantined";
+  if (verification.passed && spec.allowAutoPublish) return "auto_published";
+  return "pending";
+}
+
+interface PublishArgs {
+  indicatorId: string;
+  observedAt: string;
+  value: number;
+  contentSha256: string;
+  releasedAt: string | null;
+  sourceUrl: string;
+  quote: string | null;
+  exceptCaptureId: number;
+}
+
+/**
+ * Publish one observation into the LIVE tier and reconcile the review queue.
+ * Shared by auto-publish (decide) and human approve. Writes a public
+ * corrections row when this revises a DIFFERENT previously-published value for
+ * the same (indicator, observed_at). Returns the observation key.
+ */
+export async function publishCapturedObservation(db: D1Database, args: PublishArgs): Promise<string> {
+  // The published observation carries the indicator's CANONICAL source id (e.g.
+  // 'mhclg', 'ons_rti') so it slots into the same source lineage / cadence the
+  // adapters use — not the capture spec's provenance id.
+  const sourceId = INDICATORS[args.indicatorId]?.sourceId ?? "curator";
+  const prev = await readPublishedValueAt(db, args.indicatorId, args.observedAt);
+
+  if (prev !== null && prev !== args.value) {
+    const sha8 = args.contentSha256.slice(0, 8);
+    const period = args.observedAt.slice(0, 10);
+    await insertCorrection(db, {
+      id: `c_ai_${args.indicatorId}_${period}_${sha8}`,
+      publishedAt: new Date().toISOString(),
+      affectedIndicator: args.indicatorId,
+      originalValue: String(prev),
+      correctedValue: String(args.value),
+      reason:
+        `Automated curation revised ${args.indicatorId} for ${period} from ${prev} to ${args.value} after ` +
+        `re-reading the primary source and re-running the verification gates. Source: ${args.sourceUrl}.` +
+        (args.quote ? ` Anchoring quote: "${truncate(args.quote, 300)}".` : ""),
+    });
+  }
+
+  await publishObservation(db, {
+    indicatorId: args.indicatorId,
+    observedAt: args.observedAt,
+    value: args.value,
+    sourceId,
+    payloadHash: `ai:${args.contentSha256}`,
+    releasedAt: args.releasedAt,
+  });
+
+  const key = `${args.indicatorId}|${args.observedAt}`;
+  await supersedeOlderUnpublished(db, args.indicatorId, args.observedAt, args.exceptCaptureId);
+  return key;
+}
+
+async function alertQuarantine(env: Env, spec: CaptureSpec, row: CaptureRow, verification: VerificationReport): Promise<void> {
+  const failing = verification.gates.filter((g) => (g.gate === "G3" || g.gate === "G4") && !g.passed);
+  const text = [
+    `*Tightrope curator quarantine* (${new Date().toISOString().slice(0, 16).replace("T", " ")}Z)`,
+    `Source \`${spec.sourceId}\` indicator \`${row.indicatorId}\` = ${row.value} @ ${row.observedAt?.slice(0, 10) ?? "?"} withheld from indicator_observations:`,
+    ...failing.map((g) => `• ${g.gate}: ${g.detail}`),
+    `Review: \`curl -H "x-admin-token: $ADMIN_TOKEN" "https://curator.tightropetracker.uk/admin/captures?status=quarantined"\``,
+  ].join("\n");
+  await postAlert(env, text);
+}
+
+/**
+ * Human-approve path for a pending/quarantined capture (the /admin/captures/:id/approve
+ * endpoint). Dispatches by kind:
+ *   - observation / delivery_milestone → publish the observation (with correction on revision)
+ *   - delivery_commitment              → POST the field patch to the ingest admin surface
+ *   - timeline_event                   → INSERT timeline_events + purge timeline:latest
+ * Returns a human-readable note (surfaced to the reviewer + digest).
+ */
+export async function approveCapture(env: Env, detail: CaptureDetail, reviewer: string): Promise<{ ok: true; note: string } | { ok: false; error: string }> {
+  const draft = detail.payload ? safeParse(detail.payload) : null;
+
+  if (detail.kind === "observation" || detail.kind === "delivery_milestone") {
+    const target = resolveObservation(detail, draft);
+    if (!target) return { ok: false, error: "capture lacks indicatorId/observedAt/value to publish" };
+    const key = await publishCapturedObservation(env.DB, {
+      indicatorId: target.indicatorId,
+      observedAt: target.observedAt,
+      value: target.value,
+      contentSha256: detail.contentSha256,
+      releasedAt: detail.releasedAt,
+      sourceUrl: detail.sourceUrl,
+      quote: detail.quote,
+      exceptCaptureId: detail.id,
+    });
+    await setCaptureDecision(env.DB, detail.id, "approved", { decidedBy: reviewer, publishedObservationKey: key });
+    const note =
+      detail.kind === "delivery_milestone"
+        ? `Published ${target.indicatorId} = ${target.value}. Fold the value back into delivery-milestones.json for seed parity.`
+        : `Published ${target.indicatorId} = ${target.value} @ ${target.observedAt.slice(0, 10)}.`;
+    return { ok: true, note };
+  }
+
+  if (detail.kind === "delivery_commitment") {
+    const patch = extractCommitmentPatch(draft);
+    if (!patch) return { ok: false, error: "commitment draft missing an `id` / updatable fields" };
+    const res = await postDeliveryCommitment(env, patch);
+    if (!res.ok) return { ok: false, error: res.error };
+    await setCaptureDecision(env.DB, detail.id, "approved", { decidedBy: reviewer });
+    return { ok: true, note: `Patched delivery commitment ${patch.id} via ingest admin.` };
+  }
+
+  if (detail.kind === "timeline_event") {
+    const ev = extractTimelineEvent(draft);
+    if (!ev) return { ok: false, error: "timeline draft missing title/eventDate" };
+    await env.DB
+      .prepare(
+        `INSERT INTO timeline_events (id, event_date, title, summary, category, source_label, source_url, score_delta)
+         VALUES (?, ?, ?, ?, ?, ?, ?, NULL)`,
+      )
+      .bind(globalThis.crypto.randomUUID(), ev.eventDate, ev.title, ev.summary, ev.category, ev.sourceLabel, ev.sourceUrl)
+      .run();
+    await env.KV.delete(TIMELINE_CACHE_KEY).catch(() => undefined);
+    await setCaptureDecision(env.DB, detail.id, "approved", { decidedBy: reviewer });
+    return { ok: true, note: `Inserted timeline event "${ev.title}" and purged timeline:latest.` };
+  }
+
+  return { ok: false, error: `unsupported kind '${detail.kind}'` };
+}
+
+function resolveObservation(
+  detail: CaptureDetail,
+  draft: Record<string, unknown> | null,
+): { indicatorId: string; observedAt: string; value: number } | null {
+  // Prefer the structured columns; a milestone draft may carry proposedValue.
+  const indicatorId = detail.indicatorId ?? (typeof draft?.indicatorId === "string" ? draft.indicatorId : null);
+  const value =
+    detail.value ?? (typeof draft?.proposedValue === "number" ? (draft.proposedValue as number) : null);
+  const observedAt = detail.observedAt ?? new Date().toISOString();
+  if (!indicatorId || value === null || !Number.isFinite(value)) return null;
+  return { indicatorId, observedAt, value };
+}
+
+export interface DeliveryCommitmentPatch {
+  id: string;
+  latest?: string;
+  status?: string;
+  notes?: string;
+  source_url?: string;
+  source_label?: string;
+}
+
+function extractCommitmentPatch(draft: Record<string, unknown> | null): DeliveryCommitmentPatch | null {
+  if (!draft || typeof draft.id !== "string" || draft.id.trim().length === 0) return null;
+  const patch: DeliveryCommitmentPatch = { id: draft.id };
+  for (const f of ["latest", "status", "notes", "source_url", "source_label"] as const) {
+    if (typeof draft[f] === "string") patch[f] = draft[f] as string;
+  }
+  // At least one updatable field beyond id.
+  if (Object.keys(patch).length < 2) return null;
+  return patch;
+}
+
+async function postDeliveryCommitment(env: Env, patch: DeliveryCommitmentPatch): Promise<{ ok: true } | { ok: false; error: string }> {
+  const base = env.INGEST_ADMIN_URL;
+  const token = env.INGEST_ADMIN_TOKEN;
+  if (!base || !token) return { ok: false, error: "INGEST_ADMIN_URL / INGEST_ADMIN_TOKEN not configured" };
+  try {
+    const res = await fetch(`${base.replace(/\/$/, "")}/admin/delivery-commitment`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-admin-token": token },
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) return { ok: false, error: `ingest admin returned HTTP ${res.status}` };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: `ingest admin call failed: ${(err as Error)?.message ?? String(err)}` };
+  }
+}
+
+interface TimelineEventDraft {
+  eventDate: string;
+  title: string;
+  summary: string;
+  category: string;
+  sourceLabel: string;
+  sourceUrl: string;
+}
+
+function extractTimelineEvent(draft: Record<string, unknown> | null): TimelineEventDraft | null {
+  if (!draft) return null;
+  const eventDate = typeof draft.eventDate === "string" ? draft.eventDate : null;
+  const title = typeof draft.title === "string" ? draft.title : null;
+  if (!eventDate || !title) return null;
+  return {
+    eventDate,
+    title,
+    summary: typeof draft.summary === "string" ? draft.summary : "",
+    category: typeof draft.category === "string" ? draft.category : "delivery",
+    sourceLabel: typeof draft.sourceLabel === "string" ? draft.sourceLabel : "gov.uk",
+    sourceUrl: typeof draft.sourceUrl === "string" ? draft.sourceUrl : "",
+  };
+}
+
+function safeParse(s: string): Record<string, unknown> | null {
+  try {
+    const o = JSON.parse(s);
+    return o && typeof o === "object" && !Array.isArray(o) ? (o as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
+function truncate(s: string, n: number): string {
+  return s.length > n ? `${s.slice(0, n)}…` : s;
 }

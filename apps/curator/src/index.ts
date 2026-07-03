@@ -1,13 +1,18 @@
 import type { ExecutionContext, ScheduledController, Request as CfRequest, Response as CfResponse } from "@cloudflare/workers-types";
 import type { Env } from "./env";
+import { runSweep } from "./lib/sweep";
+import { runStalenessMonitor } from "./pipeline/staleness";
+import { sendEditorialDigest } from "./pipeline/digest";
+import { recordCronMiss } from "./lib/audit";
+import { fireHeartbeat, postAlert } from "./lib/alert";
+import { handleFetch } from "./lib/admin";
 
 /**
  * Curator Worker — AI capture/verify/publish for non-API data sources.
  *
  * Cron dispatch mirrors the ingest worker's pattern: CRON_BRANCHES maps the
- * literal cron expression to a named job, and a test must assert this map
- * stays in sync with wrangler.toml (copy the ingest worker's
- * CRON_BRANCHES-vs-wrangler assertion test).
+ * literal cron expression to a named job, and schedule.test.ts asserts this map
+ * stays in sync with wrangler.toml.
  */
 export const CRON_BRANCHES: Record<string, "sweep" | "digest" | "poll" | "staleness"> = {
   "0 5 * * 2": "sweep",
@@ -18,43 +23,97 @@ export const CRON_BRANCHES: Record<string, "sweep" | "digest" | "poll" | "stalen
   "0 7 * * *": "staleness",
 };
 
+export type CuratorJob = (typeof CRON_BRANCHES)[keyof typeof CRON_BRANCHES];
+
+export function jobForCron(cron: string): CuratorJob | undefined {
+  return CRON_BRANCHES[cron];
+}
+
 export default {
   async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    const job = CRON_BRANCHES[controller.cron];
-    // TODO: mirror ingest's dispatch — unknown cron records an audit row
-    // (status cron_miss) rather than throwing; each job wrapped so one
-    // spec's failure never aborts the rest of the run.
-    //
-    //   sweep     -> runSweep(env, { force: true })   force = ignore the
-    //                content-hash short-circuit; full capture+verify of
-    //                every spec ahead of the weekly editorial deadline.
-    //   poll      -> runSweep(env, { force: false })  hash-poll; extract
-    //                only on change. On success, GET env.HEARTBEAT_URL.
-    //   digest    -> sendEditorialDigest(env)
-    //   staleness -> runStalenessMonitor(env)         cadence-state pass
-    //                (AUTOMATION_PLAN 2.1) + alert on amber->red.
-    void job;
-    void env;
-    void ctx;
-    throw new Error("TODO: implement scheduled dispatch (AUTOMATION_PLAN Phase 3/4)");
+    ctx.waitUntil(dispatchCron(controller.cron, env));
   },
 
-  async fetch(request: CfRequest, env: Env, ctx: ExecutionContext): Promise<CfResponse> {
-    // Review-queue surface (AUTOMATION_PLAN Phase 3), ADMIN_TOKEN-gated with
-    // the same timingSafeEqual + per-IP backoff pattern as
-    // apps/ingest/src/lib/adminBackoff.ts — reuse or copy verbatim, do not
-    // weaken:
-    //
-    //   GET  /admin/captures?status=pending
-    //   GET  /admin/captures/:id
-    //   POST /admin/captures/:id/approve
-    //   POST /admin/captures/:id/reject     body: { reason }
-    //   GET  /__healthz                     unauthenticated liveness probe
-    //
-    // Everything else: 405, matching the ingest worker's posture.
-    void request;
-    void env;
-    void ctx;
-    throw new Error("TODO: implement admin routes (AUTOMATION_PLAN Phase 3)");
+  async fetch(request: CfRequest, env: Env, _ctx: ExecutionContext): Promise<CfResponse> {
+    // The admin surface is written against the Web platform Request/Response.
+    return handleFetch(request as unknown as Request, env) as unknown as Promise<CfResponse>;
   },
 };
+
+/**
+ * Cron dispatcher. Each job is wrapped so a single spec's failure never aborts
+ * the run (the sweep runner already isolates per-spec; this guard covers the
+ * job boundary). An unknown cron records a `cron_miss` audit row + pages,
+ * matching ingest's behaviour rather than throwing.
+ *
+ *   sweep     → runSweep(force: true)   full re-capture+verify of every spec
+ *   poll      → runSweep(force: false)  hash-poll; extract only on change; then
+ *                                       fire the dead-man heartbeat on success
+ *   digest    → sendEditorialDigest
+ *   staleness → runStalenessMonitor     cadence-state pass + amber→red alerts
+ */
+export async function dispatchCron(cron: string, env: Env): Promise<void> {
+  const job = jobForCron(cron);
+  switch (job) {
+    case "sweep":
+      await guard("sweep", () => runSweep(env, { force: true }));
+      return;
+    case "poll": {
+      const summary = await guard("poll", () => runSweep(env, { force: false }));
+      // Heartbeat only on a poll that completed without throwing — a wedged
+      // poll deliberately leaves the dead-man switch silent.
+      if (summary) await fireHeartbeat(env);
+      return;
+    }
+    case "digest":
+      await guard("digest", () => sendEditorialDigest(env));
+      return;
+    case "staleness":
+      await guard("staleness", () => runStalenessMonitor(env));
+      return;
+    default:
+      console.error(`curator: unknown cron pattern '${cron}'`);
+      try {
+        await recordCronMiss(env.DB, cron);
+        await maybeAlertCronMiss(env, cron);
+      } catch (err) {
+        console.error(`curator: cron_miss handling failed: ${(err as Error)?.message ?? String(err)}`);
+      }
+  }
+}
+
+/** Run a job, swallowing + logging any throw so the scheduled handler never rejects. */
+async function guard<T>(name: string, fn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await fn();
+  } catch (err) {
+    console.error(`curator job '${name}' threw: ${(err as Error)?.message ?? String(err)}`);
+    return null;
+  }
+}
+
+const CRON_MISS_DEDUPE_TTL_SEC = 6 * 60 * 60;
+
+async function maybeAlertCronMiss(env: Env, cron: string): Promise<void> {
+  const key = `alert:cron_miss:${cron}`;
+  try {
+    if (await env.KV.get(key)) return;
+  } catch {
+    /* fall through and try to alert anyway */
+  }
+  const posted = await postAlert(
+    env,
+    [
+      `*Tightrope curator cron miss* (${new Date().toISOString().slice(0, 16).replace("T", " ")}Z)`,
+      `The scheduler fired an unrecognised cron pattern: \`${cron}\``,
+      `Reconcile wrangler.toml crons with CRON_BRANCHES in apps/curator/src/index.ts.`,
+    ].join("\n"),
+  );
+  if (posted) {
+    try {
+      await env.KV.put(key, new Date().toISOString(), { expirationTtl: CRON_MISS_DEDUPE_TTL_SEC });
+    } catch {
+      /* best-effort dedupe */
+    }
+  }
+}

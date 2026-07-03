@@ -273,6 +273,25 @@
         "published": "2026-03-19",
         "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-october-to-december-2025"
       }
+    },
+    {
+      "observed_at": "2026-03-31T00:00:00Z",
+      "period": "2026 Q1",
+      "housing_trajectory": {
+        "value": 49.6,
+        "raw_completions_sa": 37170,
+        "release": "Housing supply: indicators of new supply, England: January to March 2026",
+        "published": "2026-06-19",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-january-to-march-2026"
+      },
+      "planning_consents": {
+        "value": 58.3,
+        "raw_decisions_granted": 6700,
+        "_note": "Components: 900 major + 5,800 minor = 6,700 residential decisions granted, per the statistical release body ('900 major residential decisions were granted... and 5,800 minor residential decisions were granted').",
+        "release": "Planning applications in England: January to March 2026",
+        "published": "2026-06-19",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-january-to-march-2026"
+      }
     }
   ]
 }

@@ -4,7 +4,7 @@
     "primary_source": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount",
     "indicator": "BACS-administered direct debit failure rate, monthly, % of total direct debit transactions, total all categories, non-seasonally adjusted (NSA)",
     "release_cadence": "monthly dataset release accompanying the ONS 'Economic activity and social change in the UK, real-time indicators' bulletin (typically published mid-month, reporting data through ~6 weeks earlier)",
-    "extraction_notes": "All 21 monthly values extracted directly from sheet '1.DD Failure Rates Total NSA' of the ONS xlsx published 23 April 2026 (data coverage Jan 2021 – Mar 2026, file: directdebittransactionsandfailuresdataset230426.xlsx). Source values are decimal fractions (e.g. 0.0214 = 2.14%); rounded to one decimal in this fixture. The xlsx is republished each month with revisions, so the latest edition is the canonical source for the entire historical series — each point's URL therefore points to the dataset landing page rather than the specific edition in which the month first appeared. The 'release' / 'published' fields identify the bulletin release in which each month was first reported. ANCHOR DISCREPANCY: the live fixture packages/data-sources/src/fixtures/ons-rti.json reports 1.8% for April 2026 (observed 2026-04-10), but the ONS Total NSA series shows 2.41% for March 2026 (the most recent month available as of the 23 April 2026 release; April 2026 data is not yet published). The 1.8% figure does not correspond to any month in the Total NSA series for the period covered here — closest matches are sub-categories such as Mortgages (~0.85–1.2%) or Water (~1.0–1.2%), neither of which is the headline figure. Recommend reconciling the live fixture against this authoritative series before launch."
+    "extraction_notes": "All 21 monthly values extracted directly from sheet '1.DD Failure Rates Total NSA' of the ONS xlsx published 23 April 2026 (data coverage Jan 2021 – Mar 2026, file: directdebittransactionsandfailuresdataset230426.xlsx). Source values are decimal fractions (e.g. 0.0214 = 2.14%); rounded to one decimal in this fixture. The xlsx is republished each month with revisions, so the latest edition is the canonical source for the entire historical series — each point's URL therefore points to the dataset landing page rather than the specific edition in which the month first appeared. The 'release' / 'published' fields identify the bulletin release in which each month was first reported. ANCHOR DISCREPANCY: the live fixture packages/data-sources/src/fixtures/ons-rti.json reports 1.8% for April 2026 (observed 2026-04-10), but the ONS Total NSA series shows 2.41% for March 2026 (the most recent month available as of the 23 April 2026 release; April 2026 data is not yet published). The 1.8% figure does not correspond to any month in the Total NSA series for the period covered here — closest matches are sub-categories such as Mortgages (~0.85–1.2%) or Water (~1.0–1.2%), neither of which is the headline figure. Recommend reconciling the live fixture against this authoritative series before launch. 2026-07-03 refresh: added Apr-2026 (raw 2.34% → 2.3) and May-2026 (raw 2.34% → 2.3) from the 18 June 2026 edition (directdebittransactionsandfailuresdataset180626.xlsx); April 2026 first appeared in the 21 May 2026 real-time-indicators release, May 2026 in the 18 June 2026 release. In the 2026 edition the Total NSA series has shifted from sheet '1.DD Failure Rates Total NSA' to sheet '2.DD Failure Rates Total NSA' (a 'Total SA' sheet was inserted as sheet 1). The live fixture packages/data-sources/src/fixtures/ons-rti.json is now reconciled to this series (shipping May 2026 = 2.34%), resolving the earlier 1.8% anchor discrepancy."
   },
   "points": [
     {
@@ -152,6 +152,20 @@
       "value": 2.4,
       "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition, v4) accompanying real-time indicators bulletin, 23 April 2026",
       "published": "2026-04-23",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2026-04-30T00:00:00Z",
+      "value": 2.3,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition, v5) accompanying real-time indicators bulletin, 21 May 2026",
+      "published": "2026-05-21",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2026-05-31T00:00:00Z",
+      "value": 2.3,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition, v6) accompanying real-time indicators bulletin, 18 June 2026",
+      "published": "2026-06-18",
       "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
     }
   ]

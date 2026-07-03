@@ -1,15 +1,15 @@
 {
-  "_comment": "Editorial scorecards for four delivery-pillar indicators whose underlying data is political commitments rather than machine-readable series. Each value is an editorial interpretation of published announcements (gov.uk press releases, select-committee evidence, departmental annual reports) scored as percent-of-target-milestones-hit. The shipped values are refreshed whenever the underlying departmental announcements move, typically quarterly. The adapter enforces a 90-day freshness guard so a missed refresh surfaces in /admin/health. Every entry cites its primary source URL; the full provenance breakdown for each milestone lives in docs/DELIVERY_METHODOLOGY.md.",
-  "as_of": "2026-04-17",
-  "observed_at": "2026-04-17T00:00:00Z",
+  "_comment": "Editorial scorecards for four delivery-pillar indicators whose underlying data is political commitments rather than machine-readable series. Each value is an editorial interpretation of published announcements (gov.uk press releases, select-committee evidence, departmental annual reports) scored as percent-of-target-milestones-hit. The shipped values are refreshed whenever the underlying departmental announcements move, typically quarterly. The adapter enforces a 90-day freshness guard so a missed refresh surfaces in /admin/health. Every entry cites its primary source URL; the full provenance breakdown for each milestone lives in docs/DELIVERY_METHODOLOGY.md. 2026-07-03 revisit (RUNBOOK §7: bump observed_at even when the assessment is unchanged, to record that it was reviewed): all four values held after reviewing departmental announcements since 2026-04-17; citations refreshed for New Towns (consultation closed 19 May 2026) and SMR (Wylfa confirmed as first UK site, 13 April 2026 GBE-Nuclear/Rolls-Royce contract).",
+  "as_of": "2026-07-03",
+  "observed_at": "2026-07-03T00:00:00Z",
   "indicators": {
     "new_towns_milestones": {
       "value": 68.0,
       "unit": "%",
       "sourceId": "gov_uk",
-      "source_url": "https://www.gov.uk/government/organisations/new-towns-taskforce",
-      "source_label": "New Towns Taskforce quarterly update, March 2026",
-      "methodology": "3 of 7 designated sites at planning-consent stage, 2 at outline-design, 2 at pre-scoping. Weighted by published target dates."
+      "source_url": "https://www.gov.uk/government/consultations/new-towns-draft-programme",
+      "source_label": "MHCLG New Towns Draft Programme consultation (ran 23 March – 19 May 2026); final locations and full government response to the New Towns Taskforce expected later summer 2026",
+      "methodology": "3 of 7 shortlisted sites at planning-consent stage, 2 at outline-design, 2 at pre-scoping. Weighted by published target dates. Held at 68.0 on 2026-07-03: seven sites remain the confirmed shortlist and the consultation has closed, but final designations are still pending (no milestone advance since the April review)."
     },
     "bics_rollout": {
       "value": 81.4,
@@ -17,23 +17,23 @@
       "sourceId": "desnz",
       "source_url": "https://www.gov.uk/government/organisations/department-for-energy-security-and-net-zero",
       "source_label": "DESNZ BICS quarterly onboarding report, Q1 2026",
-      "methodology": "8,140 firms onboarded against a 10,000-firm end-2026 target. Percent = actual / target."
+      "methodology": "8,140 firms onboarded against a 10,000-firm end-2026 target. Percent = actual / target. Held at 81.4 on 2026-07-03: no newer DESNZ onboarding report published since the Q1 2026 report reviewed in April."
     },
     "industrial_strategy": {
       "value": 74.0,
       "unit": "%",
       "sourceId": "dbt",
-      "source_url": "https://www.gov.uk/government/organisations/department-for-business-and-trade",
-      "source_label": "DBT Industrial Strategy delivery dashboard, Q1 2026",
-      "methodology": "Weighted mean of milestones tagged on-track (100), slipping (50), or missed (0) across the five published strategy pillars."
+      "source_url": "https://www.gov.uk/government/topical-events/the-uks-modern-industrial-strategy",
+      "source_label": "DBT Industrial Strategy delivery dashboard, Q1 2026 quarterly update (published 9 April 2026)",
+      "methodology": "Weighted mean of milestones tagged on-track (100), slipping (50), or missed (0) across the five published strategy pillars. Held at 74.0 on 2026-07-03: the 9 April 2026 (Q1 2026) quarterly update is the latest; the next quarterly update was not yet published at revisit."
     },
     "smr_programme": {
       "value": 62.0,
       "unit": "%",
       "sourceId": "gov_uk",
-      "source_url": "https://www.gov.uk/government/organisations/great-british-nuclear",
-      "source_label": "Great British Nuclear SMR down-select progress, March 2026",
-      "methodology": "Shortlist of 3 vendors selected; site designation in progress. Weighted against published milestones for 2030 first-steel."
+      "source_url": "https://www.gov.uk/government/news/great-british-energy-nuclear-and-rolls-royce-smr-sign-contract",
+      "source_label": "Great British Energy – Nuclear / Rolls-Royce SMR contract, 13 April 2026 (Wylfa, Ynys Môn confirmed as first UK SMR site)",
+      "methodology": "Rolls-Royce SMR selected as sole vendor; Wylfa confirmed as first UK site and a site-specific design contract signed (April 2026, up to £599m from the National Wealth Fund). Weighted against published milestones for 2030 first-steel. Held at 62.0 on 2026-07-03: the design-contract/site-confirmation milestone is a genuine step, but the major delivery milestones are unchanged — final investment decision is still expected 2029 and first-steel 2030."
     }
   },
   "release_schedule": "Refreshed quarterly or on major departmental announcement."

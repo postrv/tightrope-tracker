@@ -1,9 +1,9 @@
 {
-  "_comment": "Brent crude (Europe Brent Spot Price FOB) converted to GBP. USD series sourced from EIA daily table at https://www.eia.gov/dnav/pet/hist/rbrted.htm (US federal public-domain). GBP/USD spot is the BoE 4pm daily fix (XUDLUSS). Refreshed weekly by the editorial pipeline. AUDIT 2026-04-29: refreshed forwards from 2026-04-17 ($98.63 / 72.68 GBP) to 2026-04-20 ($103.40 / 1.3524 / 76.46 GBP). The 76.46 GBP value is the authoritative number — it comes from the 2026-04-27 backfill run (apps/ingest/src/pipelines/backfill.ts), which read the EIA RBRTE print and BoE XUDLUSS fix at full precision and rounded once at the end. The displayed USD/FX/GBP triplet round-trips cleanly: 76.46 × 1.3524 = 103.4014 → rounds to 103.40, and 103.40 / 1.3524 = 76.4567 → rounds to 76.46. The live SQL selector now surfaces this same backfill row from D1, so the fixture and the served row tell the same story regardless of which path the adapter takes. AUDIT 2026-04-27: previous fixture carried 83.12 USD / 1.266 FX / 65.65 GBP for 2026-04-17 — those numbers do not match the EIA+BoE prints for that date. The April 2026 Iran-conflict-driven Brent spike (peak $138.21 on 2026-04-07, easing to $98.63 by 2026-04-17) was missing from the fixture entirely. Corrected against EIA RBRTE + BoE XUDLUSS spot fixings.",
-  "as_of": "2026-04-20",
-  "observed_at": "2026-04-20T00:00:00Z",
-  "brent_usd_per_bbl": 103.40,
-  "gbp_usd": 1.3524,
-  "brent_gbp": { "value": 76.46, "unit": "GBP/bbl" },
+  "_comment": "Brent crude (Europe Brent Spot Price FOB) converted to GBP. USD series sourced from EIA daily table at https://www.eia.gov/dnav/pet/hist/rbrted.htm (US federal public-domain). GBP/USD spot is the BoE 4pm daily fix (XUDLUSS). Refreshed weekly by the editorial pipeline. 2026-07-03 refresh: latest EIA Europe Brent Spot print is 2026-06-29 = $71.59/bbl (EIA release date 2026-07-01; 30 Jun–3 Jul not yet published), divided by the BoE XUDLUSS 4pm fix for 29 Jun 2026 = 1.3245, giving 71.59 / 1.3245 = 54.0506 → 54.05 GBP/bbl. The triplet round-trips: 54.05 × 1.3245 = 71.58 and 71.59 / 1.3245 = 54.05. This mirrors exactly the adapter derivation in adapters/eiaBrent.ts (latest EIA period ÷ nearest BoE fix, pairing skew 0 days). Brent has unwound most of the April 2026 conflict spike (peak $138.21 on 2026-04-07; $103.40 on 2026-04-20) back toward the low-70s USD.",
+  "as_of": "2026-06-29",
+  "observed_at": "2026-06-29T00:00:00Z",
+  "brent_usd_per_bbl": 71.59,
+  "gbp_usd": 1.3245,
+  "brent_gbp": { "value": 54.05, "unit": "GBP/bbl" },
   "source_url": "https://www.eia.gov/dnav/pet/hist/rbrted.htm"
 }

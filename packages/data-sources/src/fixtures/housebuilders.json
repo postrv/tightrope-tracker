@@ -1,14 +1,14 @@
 {
-  "_comment": "Equal-weighted composite index of the five largest listed UK housebuilders: Persimmon (PSN), Barratt Redrow (BTRW), Taylor Wimpey (TW), Berkeley (BKG), Vistry (VTY). The composite rebases each issuer's close to 100 at the 2019 mean and takes the simple average. Updated weekly from the LSE last-close quotes. TODO(source): LSE has no free bulk daily API; consider a paid vendor (Alpha Vantage premium, FCS API) if we want an intraday feed.",
-  "as_of": "2026-04-23",
-  "observed_at": "2026-04-23T16:30:00Z",
+  "_comment": "Equal-weighted composite index of the five largest listed UK housebuilders: Persimmon (PSN), Barratt Redrow (BTRW), Taylor Wimpey (TW), Berkeley (BKG), Vistry (VTY). The composite rebases each issuer's close to 100 at the 2019 mean and takes the simple average (rebase2019 divisors per adapters/eodhdHousebuilders.ts: PSN 2010.47, BTRW 603.15, TW 163.26, BKG 4684.43, VTY 919.61). Updated weekly from the last-close quotes. 2026-07-03 refresh: closes are the 2 July 2026 session (last completed session; Yahoo Finance LSE .L series, GBp). Rebased: PSN 1053.5/2010.47=52.4, BTRW 279.7/603.15=46.4, TW 79.9/163.26=48.9, BKG 3402.0/4684.43=72.6, VTY 257.8/919.61=28.0; simple mean = 49.7. TODO(source): LSE has no free bulk daily API; consider a paid vendor (Alpha Vantage premium, FCS API) if we want an intraday feed.",
+  "as_of": "2026-07-02",
+  "observed_at": "2026-07-02T16:30:00Z",
   "constituents": {
-    "PSN.L":  { "close": 1124.6, "rebased": 55.9 },
-    "BTRW.L": { "close":  359.7, "rebased": 59.6 },
-    "TW.L":   { "close":   95.7, "rebased": 58.6 },
-    "BKG.L":  { "close": 3600.0, "rebased": 76.9 },
-    "VTY.L":  { "close":  610.8, "rebased": 66.4 }
+    "PSN.L":  { "close": 1053.5, "rebased": 52.4 },
+    "BTRW.L": { "close":  279.7, "rebased": 46.4 },
+    "TW.L":   { "close":   79.9, "rebased": 48.9 },
+    "BKG.L":  { "close": 3402.0, "rebased": 72.6 },
+    "VTY.L":  { "close":  257.8, "rebased": 28.0 }
   },
-  "housebuilder_idx": { "value": 63.5, "unit": "index" },
+  "housebuilder_idx": { "value": 49.7, "unit": "index" },
   "source_url": "https://www.londonstockexchange.com/indices/ftse-350-household-goods-home-construction"
 }

@@ -1,6 +1,6 @@
 {
-  "_comment": "ONS direct-debit failure rate (headline Total NSA, % of attempted DD transactions). Sourced from the ONS 'Monthly Direct Debit failure rate and average transaction amount' xlsx — sheet '1.DD Failure Rates Total NSA'. AUDIT 2026-04-27: previous fixture carried 1.8% — that does not match any month in the headline Total NSA series (2024-2026 range 2.08-2.56%); appears to have been taken from a sub-category (Mortgages or Water). Corrected to March 2026 = 2.41% per the 23 April 2026 ONS bulletin. TODO(source): wire in the ONS xlsx parser — the dataset has a stable URL and clean monthly schema.",
-  "observed_at": "2026-03-31T00:00:00Z",
-  "dd_failure_rate": { "value": 2.41 },
+  "_comment": "ONS direct-debit failure rate (headline Total NSA, % of attempted DD transactions). Sourced from the ONS 'Monthly Direct Debit failure rate and average transaction amount' xlsx — sheet '2.DD Failure Rates Total NSA' (in the 2026 edition a 'Total SA' sheet was inserted as sheet 1, shifting Total NSA to sheet 2). Shipping May 2026 = 2.34% (Total NSA), the most recent month in the 18 June 2026 edition (directdebittransactionsandfailuresdataset180626.xlsx; June 2026 data not yet published). Series tail for reference: Mar 2026 = 2.41%, Apr 2026 = 2.34%, May 2026 = 2.34%. See dd-failure-rate-history.json for the full curated back-series. TODO(source): wire in the ONS xlsx parser — the dataset has a stable URL and clean monthly schema.",
+  "observed_at": "2026-05-31T00:00:00Z",
+  "dd_failure_rate": { "value": 2.34 },
   "source_url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
 }

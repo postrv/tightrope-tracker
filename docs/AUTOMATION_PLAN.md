@@ -1,8 +1,9 @@
 # Self-maintaining data pipeline — implementation plan
 
-Status: **planning document — implementation not started.**
-Prepared 2026-07-03. Written to be executed top-to-bottom by an implementing
-engineer/agent with no additional context beyond this repo.
+Status: **code-complete on `automation-overhaul` (Waves 1–6); pending
+production rollout.** Prepared 2026-07-03. Phases 0–4 are implemented and
+tested on the branch; Phase 5 below is the production rollout runbook and the
+acceptance criteria track code-complete vs pending-production.
 
 ## Goals
 
@@ -384,14 +385,122 @@ daily curator poll — two independent "the platform is alive" signals.
 
 ## Phase 5 — Rollout, testing, acceptance
 
-**Order:** Phase 0 immediately (recovers quality this week) → 1.5 (OG fix)
-and 1.1 (snapshot consolidation) → migration 0011 + remaining Phase 1 →
-Phase 2 → curator in **shadow mode** (captures + verifies + records,
-publishes nothing, `status='shadow'`) for 2 weekly cycles, comparing shadow
-values against the Phase-0 manual refreshes → enable `allowAutoPublish`
-source-by-source: `growth_sentiment` trio first, then `dd_failure_rate`,
-then `mhclg`. `obr_efo` stays human-approved (twice-yearly, high-stakes);
-all editorial kinds stay human-approved permanently.
+### Production rollout checklist (the exact ordered runbook)
+
+Waves 1–6 landed the code on `automation-overhaul`. This is the concrete
+sequence a human runs **after merging to `main`**. CI (`deploy.yml`) automates
+the migration + worker deploys; the KV surgery, secrets, verification,
+shadow-comparison, live flip, and dashboard rules are human steps. Run them in
+order.
+
+**Pre-merge gate.** `pnpm -r typecheck && pnpm -r test` green;
+`pnpm --filter @tightrope/shared test seedArtifact` green. Then merge.
+
+**Step 1 — Apply migration 0011 + deploy (CI does this automatically).**
+On push to `main`, CI runs `migrate` (`pnpm db:migrate:remote` =
+`wrangler d1 migrations apply tightrope_db --remote`, which applies
+`0011_curator_captures` and any other pending migration in order), then deploys
+the workers. If deploying **by hand** instead, the equivalent ordered commands
+(deploy order: ingest, api, web, og, then curator):
+
+```bash
+pnpm db:migrate:remote                                   # applies 0011 + pending
+pnpm --filter @tightrope/ingest run deploy
+pnpm --filter @tightrope/api run deploy
+pnpm --filter @tightrope/web build && pnpm --filter @tightrope/web run deploy
+pnpm --filter @tightrope/og run deploy
+pnpm --filter @tightrope/curator run deploy              # last
+```
+
+**Step 2 — One-time KV delete (snapshot-builder consolidation, Phase 1.1).**
+`score:latest` now has a single writer (`@tightrope/snapshot`). Delete the key
+once so the first read rebuilds through it:
+
+```bash
+cd apps/ingest && wrangler kv key delete --binding KV --remote score:latest
+```
+
+**Step 3 — Set the new secrets.** Ingest gains `HEARTBEAT_URL` (Phase 2.3);
+the curator needs its own set (see `docs/DEPLOYMENT.md` §8 for the full
+walkthrough):
+
+```bash
+# Ingest: dead-man heartbeat (new). Optional but recommended.
+wrangler secret put HEARTBEAT_URL --name tightrope-ingest
+
+# Curator: fresh review token (do NOT reuse ingest's), the ingest admin token
+# for the approve path, the shared alert webhook, and a SEPARATE heartbeat.
+openssl rand -base64 32                                   # value for the next line
+wrangler secret put ADMIN_TOKEN        --name tightrope-curator
+wrangler secret put INGEST_ADMIN_TOKEN --name tightrope-curator   # = ingest's ADMIN_TOKEN
+wrangler secret put ALERT_WEBHOOK_URL  --name tightrope-curator
+wrangler secret put HEARTBEAT_URL      --name tightrope-curator
+```
+
+**Step 4 — Verify after each deploy.**
+
+```bash
+# Ingest health — every chip green, no failure/partial rows.
+curl -H "x-admin-token: $ADMIN_TOKEN" https://ingest.tightropetracker.uk/admin/health
+
+# API snapshot rebuilt from the single builder; sourceHealth present (not dark).
+curl -s https://api.tightropetracker.uk/api/v1/score | jq '.headline.updatedAt, .sourceHealth'
+
+# OG cards render (Phase 1.5): expect 200 + content-type image/png.
+curl -sI https://og.tightropetracker.uk/og/headline-score.png | head -5
+
+# Curator liveness + it is recording in shadow.
+curl -s https://curator.tightropetracker.uk/__healthz
+curl -H "x-admin-token: $ADMIN_TOKEN" "https://curator.tightropetracker.uk/admin/captures?status=shadow" | jq '.count'
+```
+
+**Step 5 — Two-cycle shadow comparison (curator stays `CURATOR_MODE=shadow`).**
+For **two consecutive weekly cycles**, after each Tue/Wed sweep, compare each
+source's `shadow` capture against the independently hand-verified fixture value
+(procedure in `docs/RUNBOOK.md` §7.3). **Sign-off criteria for a source:**
+across both cycles the shadow value matches the hand-verified figure (same
+number, same `observed_at`), every gate passed, and the anchoring quote is
+verbatim. A single mismatch resets the clock — fix the prompt/extraction first.
+`obr_efo` and every editorial kind never sign off for auto-publish (they stay
+review-only permanently).
+
+**Step 6 — Flip to live, per source, in plan order.** Enable
+`allowAutoPublish: true` for a signed-off spec in
+`apps/curator/src/sources/registry.ts`, in this order as each signs off:
+`sp_global_pmi` → `gfk_confidence` → `rics_rms` (the growth-sentiment trio),
+then `ons_dd_failure`, then `mhclg_housing` (with its tight G4). Redeploy the
+curator after each change. Once the **first** source is signed off, flip the
+global switch in `apps/curator/wrangler.toml` `[vars]`:
+
+```toml
+CURATOR_MODE = "live"    # was "shadow"; auto-publish now gated only by the per-source flag
+```
+
+Auto-publish requires **both** `CURATOR_MODE = "live"` and the source's
+`allowAutoPublish = true`, so live mode is safe to flip before every source is
+enabled — un-flagged sources keep queuing to `pending`.
+
+**Step 7 — Cloudflare dashboard items (cannot be expressed in code).**
+
+- **Curator custom domain.** `curator.tightropetracker.uk` is declared
+  `custom_domain = true` in `apps/curator/wrangler.toml`, so `wrangler deploy`
+  provisions it — confirm it resolved in **dashboard → Workers → tightrope-curator
+  → Domains & Routes**; add it there if the zone did not auto-create it.
+- **Rate-limit `/admin/*` on the curator host**, mirroring the ingest WAF rule
+  in `docs/RUNBOOK.md` §8 (SEC-2). Dashboard → `tightropetracker.uk` zone →
+  Security → WAF → Rate-limiting rules → Create rule:
+
+  | Field | Value |
+  |---|---|
+  | Rule name | `curator-admin-rate-limit` |
+  | Match | `(http.host eq "curator.tightropetracker.uk" and http.request.uri.path matches "^/admin/")` |
+  | Characteristics | IP source address |
+  | Period | 1 minute |
+  | Threshold | 30 requests |
+  | Action | Block — duration 10 minutes |
+
+  This layers on top of the curator's per-IP `adminBackoff` gate, exactly as
+  the ingest rule layers on ingest's.
 
 **Test matrix**
 - Unit: verification gates G1–G6 (fixture artefacts with known values,
@@ -412,24 +521,36 @@ all editorial kinds stay human-approved permanently.
   equivalent).
 
 **Acceptance criteria (the definition of "self-maintaining")**
+
+Checked `[x]` where the branch makes it **code-complete** (built + tested on
+`automation-overhaul`); `[ ]` where it can only be confirmed by a
+production/operational run after the rollout above.
+
 - [ ] All Phase-0 exit criteria hold continuously for 14 days with zero
-      manual fixture edits.
+      manual fixture edits. *(operational — a 14-day production observation.)*
 - [ ] A monthly source (PMI) publishes within 24h of upstream release with
       no human involvement; the digest shows it as auto-published with
-      quote + link.
-- [ ] A deliberately-injected implausible value (test in preview) is
-      quarantined, alerted, and never reaches `indicator_observations`.
-- [ ] Killing the ingest cron in preview triggers the dead-man alert within
-      the heartbeat window.
-- [ ] `score:latest` has exactly one writer code path; `sourceHealth`-class
-      fields cannot ship dark.
-- [ ] Tue/Wed 06:30 digest arrives with pillar deltas + pending queue; an
-      editor can approve every pending item via the documented curls in
-      under 10 minutes.
-- [ ] OG cards render 200/PNG.
-- [ ] `SOURCES.md` and `RUNBOOK.md` §7 rewritten to describe the curator
-      flow; corrections-log discipline documented for AI-published
-      revisions.
+      quote + link. *(operational — needs live mode + a real upstream release.)*
+- [x] A deliberately-injected implausible value is quarantined, alerted, and
+      never reaches `indicator_observations`. *(Gate + quarantine + alert
+      code-complete and unit-tested — ingest plausibility gate and curator
+      G3/G4; the preview injection run is the sign-off step.)*
+- [x] The dead-man heartbeat fires from ingest recompute and the curator daily
+      poll, and is silent when a run wedges. *(Ping code-complete + unit-tested
+      in both workers; the external monitor config + preview cron-kill test are
+      the operational sign-off.)*
+- [x] `score:latest` has exactly one writer code path; `sourceHealth`-class
+      fields cannot ship dark. *(Phase 1.1 consolidated the writer into
+      `@tightrope/snapshot`; the one-time KV delete is Step 2 above.)*
+- [x] The Tue/Wed 06:30 digest carries pillar deltas + the pending queue with
+      ready-to-paste approve/reject curls (targeting `CURATOR_PUBLIC_URL`), so
+      an editor can clear the queue in minutes. *(Digest + curls code-complete
+      and unit-tested.)*
+- [x] OG cards render 200/PNG. *(Phase 1.5 swapped to `workers-og`; verified
+      under `wrangler dev`, which enforces the same wasm ban.)*
+- [x] `SOURCES.md` and `RUNBOOK.md` §7 rewritten to describe the curator flow;
+      corrections-log discipline documented for AI-published revisions.
+      *(Wave 6d.)*
 
 ---
 

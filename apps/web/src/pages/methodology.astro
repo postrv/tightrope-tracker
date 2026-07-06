@@ -28,6 +28,10 @@ const snapshot = await loadSnapshot(Astro.locals);
 // is overdue but within grace; red = past grace / freshness guard tripping.
 const cadenceBySource = new Map((snapshot.sourceCadence ?? []).map((c) => [c.sourceId, c]));
 const cadenceChipClass: Record<string, string> = { green: "ok", amber: "warn", red: "bad" };
+// Template-body consts must not carry generic type annotations — the Astro
+// compiler parses `<string, string>` in the HTML section as a tag (build
+// failure 2026-07-06). Keep typed lookups here in the frontmatter.
+const cadenceLabel: Record<string, string> = { green: "on schedule", amber: "release due", red: "overdue" };
 
 // Build an illustrative ECDF example: z-scores spread over a bell curve.
 const ecdfPoints = Array.from({ length: 40 }, (_, i) => {
@@ -215,7 +219,6 @@ function ecdfPath(): string {
                 row.status === "failure" ? "bad" :
                 "warn";
               const cadence = cadenceBySource.get(row.sourceId);
-              const cadenceLabel: Record<string, string> = { green: "on schedule", amber: "release due", red: "overdue" };
               return (
                 <tr>
                   <td>{SOURCES[row.sourceId]?.name ?? row.sourceId}</td>

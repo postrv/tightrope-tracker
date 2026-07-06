@@ -27,6 +27,15 @@ Two workers feed the dataset:
 | `0 2 * * *`    | fiscal + recompute                | obr_efo, ons_psf, dmo, eodhd_housebuilders |
 | `15 2 * * *`   | labour + recompute                | ons_lms, ons_rti, boe_mortgage_rates |
 | `30 2 * * *`   | delivery + recompute              | mhclg, delivery_milestones, gov_uk (timeline candidates → `curator_captures`) |
+| `30 9 * * 1-5` **(GitHub Actions, not a Worker cron)** | BoE IADB relay → `POST /admin/relay` | boe_yields, boe_fx, boe_breakevens, boe_mortgage_rates. A runner fetches each IADB CSV and replays it through the ingest relay endpoint, which runs the standard adapter machinery. See `.github/workflows/relay-boe.yml` + `scripts/relay-boe.mjs`. |
+
+The last row is **not** a Cloudflare cron: since 2026-06-10 the BoE IADB CSV
+endpoint returns HTTP 500 to Cloudflare Workers egress IPs (an ASN block —
+identical requests succeed from GitHub Actions runners), so the four BoE
+adapters' *network leg only* runs on GitHub Actions and POSTs the raw payloads
+to `POST /admin/relay?adapter=<id>` (token-gated, allowlisted to those four
+adapter ids). Everything downstream of the fetch — parse, plausibility gate,
+audit, DLQ — is identical to a live run.
 
 `recomputeScores` runs after every ingest stage; on cron-stage failure the
 recompute still fires so last-known values are carried forward with the
@@ -57,14 +66,14 @@ timed for the **weekly editorial deadline**.
 
 | Source ID | Provider / endpoint | Indicator(s) | Pillar | Adapter | Cadence | Notes |
 |-----------|---------------------|--------------|--------|---------|---------|-------|
-| `boe_yields` | Bank of England IADB CSV — `https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?SeriesCodes=IUDMNZC,IUDLNZC` | `gilt_10y` (IUDMNZC), `gilt_30y` (IUDLNZC) | market | `boeYields.ts` | T+1 trading day | Public, no key. Browser-ish UA required. |
-| `boe_fx` | BoE IADB CSV — `SeriesCodes=XUDLUSS,XUDLBK67` | `gbp_usd`, `gbp_twi` | market | `boeFx.ts` | T+1 (4pm BoE spot fix) | Same endpoint family. |
-| `boe_breakevens` | BoE IADB CSV — `SeriesCodes=IUDSNZC,IUDSIZC` | `breakeven_5y` (= nom 5y − real 5y) | market | `boeBreakevens.ts` | T+1 trading day | `sourceId` written under `boe_yields` historically; the audit row is `boe_breakevens`. |
+| `boe_yields` | Bank of England IADB CSV — `https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?SeriesCodes=IUDMNZC,IUDLNZC` | `gilt_10y` (IUDMNZC), `gilt_30y` (IUDLNZC) | market | `boeYields.ts` | T+1 trading day | Public, no key. Browser-ish UA required. **Network leg via the Actions relay since 2026-07** (Workers egress blocked upstream 2026-06-10). |
+| `boe_fx` | BoE IADB CSV — `SeriesCodes=XUDLUSS,XUDLBK67` | `gbp_usd`, `gbp_twi` | market | `boeFx.ts` | T+1 (4pm BoE spot fix) | Same endpoint family. **Network leg via the Actions relay since 2026-07** (Workers egress blocked upstream 2026-06-10). |
+| `boe_breakevens` | BoE IADB CSV — `SeriesCodes=IUDSNZC,IUDSIZC` | `breakeven_5y` (= nom 5y − real 5y) | market | `boeBreakevens.ts` | T+1 trading day | `sourceId` written under `boe_yields` historically; the audit row is `boe_breakevens`. **Network leg via the Actions relay since 2026-07** (Workers egress blocked upstream 2026-06-10). |
 | `dmo` | UK Debt Management Office — `https://www.dmo.gov.uk/data/XmlDataReport?reportCode=D1A` | `ilg_share`, `issuance_long_share` | fiscal | `dmoGiltPortfolio.ts` | Daily, late-evening UK | Public XML, no key. |
 | `ons_psf` | ONS Public Sector Finances — beta search API resolves CDID → `https://www.ons.gov.uk/{uri}/data` | `borrowing_outturn` (CDID J5II), `debt_interest` (CDID NMFX) | fiscal | `onsPsf.ts` | Monthly | Resolved via `onsCommon.ts`. Sign-flipped on borrowing. |
 | `ons_lms` | ONS Labour Market — beta search API + `/data` | `unemployment` (MGSX), `inactivity_rate` (LF2S), `inactivity_health` (LF69), `real_regular_pay` (A3WW), `vacancies_per_unemployed` (derived from AP2Y / MGSC) | labour | `onsLms.ts` | Monthly LMS bulletin | LF69 replaced retired LFK2 code. |
 | `ons_rti` | ONS RTI — beta search API + `/data` for `payroll_mom` (CDID K54L); fixture for `dd_failure_rate` | `payroll_mom`, `dd_failure_rate` | labour | `onsRti.ts` | Monthly | `payroll_mom` is actually the AWE regular-pay index, not PAYE-RTI MoM (see comment in adapter). `dd_failure_rate` is a curator-owned source (`ons_dd_failure`). |
-| `boe_mortgage_rates` | BoE IADB CSV — `SeriesCodes=IUMBV34` (effective new-business 2y fix) | `mortgage_2y_fix` | labour | `boeMortgageRates.ts` | Monthly | **Replaced `moneyfacts`** (advertised rate, fixture-fed). BoE is the canonical reference. |
+| `boe_mortgage_rates` | BoE IADB CSV — `SeriesCodes=IUMBV34` (effective new-business 2y fix) | `mortgage_2y_fix` | labour | `boeMortgageRates.ts` | Monthly | **Replaced `moneyfacts`** (advertised rate, fixture-fed). BoE is the canonical reference. **Network leg via the Actions relay since 2026-07** (Workers egress blocked upstream 2026-06-10). |
 | `eia_brent` | US EIA Open Data v2 — Europe Brent Spot (`EPCBRENT`), divided by BoE `XUDLUSS` 4pm fix | `brent_gbp` | market | `eiaBrent.ts` + `fixtures/brent.json` | Live every 5 min in market hours; fixture is a fallback | Requires `EIA_API_KEY`. `assertFixtureFresh` 14 days on fallback. |
 | `lseg` (FTSE 250) | EODHD EOD — `https://eodhd.com/api/eod/FTMC.LSE` | `ftse_250` | market | `lseFtse250.ts` + `fixtures/ftse-250.json` | Live daily ~16:35 UK; fixture is a fallback | Requires `EODHD_API_KEY`. `assertFixtureFresh` 14 days on fallback. |
 | `eodhd_housebuilders` | EODHD EOD — `https://eodhd.com/api/eod/{SYMBOL}.LSE` for PSN, BTRW, TW, BKG, VTY (rebased to 100 at 2019 mean) | `housebuilder_idx` | fiscal | `eodhdHousebuilders.ts` + `fixtures/housebuilders.json` | Daily EOD (16:30 UK) | Free-tier 20 req/day. Requires `EODHD_API_KEY`; falls back to fixture if unset. Min 3-of-5 constituents required. |

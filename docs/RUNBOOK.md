@@ -374,6 +374,37 @@ the two-tier selector guarantees a fresher `ai:%` curator row always wins over
 a stale fixture-fallback write, so a fixture going stale under a healthy
 curator degrades the *fallback*, not the live number.
 
+### 7.6 BoE relay (the Actions network leg)
+
+Since 2026-06-10 the BoE IADB CSV endpoint returns HTTP 500 to Cloudflare
+Workers egress IPs — an ASN block, not a header/UA issue (identical requests
+succeed from GitHub Actions runners and residential IPs). The four BoE adapters
+(`boe_yields`, `boe_fx`, `boe_breakevens`, `boe_mortgage_rates`) therefore run
+their **network leg on GitHub Actions**: `relay-boe.yml` (cron `30 9 * * 1-5`
+UTC) fetches each raw IADB CSV on a runner and POSTs it to `POST /admin/relay`,
+which replays it through the standard adapter machinery. Parse, plausibility
+gate, audit, and DLQ are identical to a live run — only the fetch moved off
+Cloudflare.
+
+**A red BoE chip on `/admin/health` now means something different.** Triage in
+order:
+
+1. **The relay workflow first.** `gh run list --workflow=relay-boe.yml` — did
+   the last scheduled run pass? A failed run opens/updates the "BoE relay
+   failed" issue. Re-run with `gh workflow run relay-boe.yml`.
+2. **Then the probe.** If the relay is failing on the *fetch*, the weekly
+   `probe-adapters.yml` run says whether the IADB is reachable from a runner at
+   all (upstream drift/outage) versus the ingest `/admin/relay` POST being what
+   rejects.
+3. **Then the ingest side.** Fetch OK but POST rejected → auth/token or
+   plausibility; inspect the ingest audit rows and logs as in §1.
+
+Manual dispatch: `gh workflow run relay-boe.yml`. The workflow reads the ingest
+admin token from the **`INGEST_ADMIN_TOKEN` GitHub Actions secret**, which must
+equal the ingest worker's `ADMIN_TOKEN` — rotating `ADMIN_TOKEN` (§5) means
+updating that Actions secret too. Dry-run the fetch locally without touching
+production: `node --import tsx scripts/relay-boe.mjs --dry`.
+
 ---
 
 ## 8. Cloudflare dashboard hardening checklist (SEC-2 & SEC-4)

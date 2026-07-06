@@ -35,7 +35,7 @@ export async function closeAuditSuccess(
   db: D1Database,
   handle: AuditHandle,
   opts: { rowsWritten: number; payloadHash: string; emitsNoObservations?: boolean; quarantinedCount?: number },
-): Promise<void> {
+): Promise<{ status: string }> {
   // A "success" that wrote zero rows is usually a parse regression: the
   // adapter returned 200 OK and a body that parsed into an empty array.
   // That masks silent breakage until the staleness clock trips days later.
@@ -87,6 +87,9 @@ export async function closeAuditSuccess(
     )
     .bind(status, new Date().toISOString(), opts.rowsWritten, opts.payloadHash, error, handle.id)
     .run();
+  // Returned so callers that need the honest terminal status — the relay admin
+  // endpoint surfaces it in its JSON response — don't have to re-query the row.
+  return { status };
 }
 
 /**

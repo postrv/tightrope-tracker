@@ -10,11 +10,34 @@ const RETRY_DELAY_MS = 10_000;
 
 const defaultSleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** The honest terminal outcome of a successful run, surfaced to callers that need it. */
+export interface RunAdapterOutcome {
+  /** 'success' | 'unchanged' | 'partial' — the status closeAuditSuccess wrote. */
+  status: string;
+  /** Observations that actually reached indicator_observations (survivors). */
+  rowsWritten: number;
+}
+
 export interface RunAdapterOptions {
   /** Delay before the one bounded retry. Defaults to RETRY_DELAY_MS. */
   retryDelayMs?: number;
   /** Sleep implementation — injected so tests don't actually wait. */
   sleep?: (ms: number) => Promise<void>;
+  /**
+   * The fetch implementation handed to `adapter.fetch`. Defaults to
+   * `globalThis.fetch` (a real network call). The relay admin endpoint injects
+   * a fetch that replays an already-fetched CSV payload, so the adapter runs
+   * through the identical parse / plausibility / audit / DLQ machinery while the
+   * network hop happens elsewhere (a GitHub Actions runner). The bounded retry
+   * only fires on a retryable AdapterError, which a replay fetch never produces.
+   */
+  fetchImpl?: typeof globalThis.fetch;
+  /**
+   * Called once, only on the success path, right after the audit row is closed,
+   * with the terminal status and the survivor row count. Lets a caller report
+   * the outcome without re-querying the audit table (used by the relay endpoint).
+   */
+  onOutcome?: (outcome: RunAdapterOutcome) => void;
 }
 
 /**
@@ -52,12 +75,13 @@ export async function runAdapter(
     // wrote AND quarantined closes as 'partial' so /admin/health flags it (F5b).
     const { written, quarantined } = await writeObservations(env, result.observations);
     const payloadHash = combineHashes(written.map((o) => o.payloadHash));
-    await closeAuditSuccess(env.DB, handle, {
+    const { status } = await closeAuditSuccess(env.DB, handle, {
       rowsWritten: written.length,
       payloadHash,
       emitsNoObservations: result.emitsNoObservations === true,
       quarantinedCount: quarantined,
     });
+    opts.onOutcome?.({ status, rowsWritten: written.length });
     return result;
   } catch (err) {
     await closeAuditFailure(env.DB, handle, err);
@@ -82,13 +106,14 @@ async function fetchWithRetry(
   ctx: AdapterContext,
   opts: RunAdapterOptions,
 ): Promise<AdapterResult> {
+  const fetchImpl = opts.fetchImpl ?? globalThis.fetch;
   try {
-    return await adapter.fetch(globalThis.fetch, ctx);
+    return await adapter.fetch(fetchImpl, ctx);
   } catch (err) {
     if (!isRetryable(err)) throw err;
     const sleep = opts.sleep ?? defaultSleep;
     await sleep(opts.retryDelayMs ?? RETRY_DELAY_MS);
-    return await adapter.fetch(globalThis.fetch, ctx);
+    return await adapter.fetch(fetchImpl, ctx);
   }
 }
 

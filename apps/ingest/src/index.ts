@@ -4,6 +4,7 @@ import type { DlqPayload } from "./types.js";
 import { handleAdminRun } from "./admin.js";
 import { handleCorrectionCreate } from "./corrections.js";
 import { handleDeliveryCommitmentPatch } from "./deliveryCommitment.js";
+import { handleRelay } from "./relay.js";
 import { handleAdminHealth } from "./health.js";
 import { ingestDelivery } from "./pipelines/delivery.js";
 import { ingestFiscal } from "./pipelines/fiscal.js";
@@ -29,6 +30,9 @@ export default {
     }
     if (url.pathname === "/admin/delivery-commitment") {
       return handleDeliveryCommitmentPatch(req, env);
+    }
+    if (url.pathname === "/admin/relay") {
+      return handleRelay(req, env, url);
     }
     if (url.pathname === "/admin/health") {
       return handleAdminHealth(req, env);

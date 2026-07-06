@@ -1,0 +1,64 @@
+name: BoE IADB relay
+
+# The BoE IADB CSV endpoint returns HTTP 500 to Cloudflare Workers egress IPs
+# (an ASN block confirmed 2026-06-10 — identical requests succeed from GitHub
+# Actions runners and residential IPs). This scheduled job fetches the four BoE
+# CSV payloads on a runner and POSTs each to the ingest admin relay endpoint,
+# which replays them through the existing adapter machinery (parse, plausibility
+# gate, audit, DLQ). Only the network hop moves off Cloudflare.
+#
+# BoE T+1 daily series publish by ~09:00 London; 09:30 UTC lands after that in
+# both summer (BST, 10:30 local) and winter (GMT, 09:30 local).
+#
+# SEC-11: third-party actions are pinned to full commit SHAs (see deploy.yml).
+
+on:
+  schedule:
+    - cron: "30 9 * * 1-5" # 09:30 UTC, Mon–Fri
+  workflow_dispatch:
+
+# Least-privilege: read the repo and file/annotate a single tracking issue.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  relay:
+    name: Relay BoE payloads to ingest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with: { node-version: "20", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - name: Fetch BoE CSVs and relay them to the ingest admin endpoint
+        id: relay
+        # tsx resolves the script's .ts adapter imports (node 20 can't strip
+        # types natively). Exits non-zero if any relay leg fails.
+        env:
+          RELAY_ADMIN_TOKEN: ${{ secrets.INGEST_ADMIN_TOKEN }}
+        run: node --import tsx scripts/relay-boe.mjs
+
+      - name: Open or update the relay-failure issue
+        if: failure() && steps.relay.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TITLE="BoE relay failed"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BODY=$(printf '%s\n\n%s\n\n%s' \
+            "The BoE IADB relay failed on $(date -u '+%Y-%m-%d %H:%M UTC')." \
+            "A relay leg could not fetch the CSV from the IADB or the ingest /admin/relay POST was rejected. See the run log for which adapter and the error, then check the weekly adapter probe (whether the endpoint is reachable at all) before the ingest side." \
+            "Run: ${RUN_URL}")
+          # Dedupe: reuse the open issue with this exact title if one exists.
+          EXISTING=$(gh issue list --state open --search "${TITLE} in:title" --json number,title \
+            --jq "[.[] | select(.title == \"${TITLE}\")][0].number // empty")
+          if [ -n "${EXISTING}" ]; then
+            echo "Commenting on existing issue #${EXISTING}"
+            gh issue comment "${EXISTING}" --body "${BODY}"
+          else
+            echo "Creating a new tracking issue"
+            gh issue create --title "${TITLE}" --body "${BODY}"
+          fi

@@ -31,7 +31,8 @@ import { buildBoEIadbUrl, BOE_FETCH_HEADERS } from "../lib/boe.js";
 import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "boe_mortgage_rates";
-const SERIES_CODE = "IUMBV34";
+/** Exported so the Actions relay script reuses the exact series code the adapter requests (see BoE relay note, 2026-07). */
+export const BOE_MORTGAGE_SERIES_CODE = "IUMBV34";
 
 export const boeMortgageRatesAdapter: DataSourceAdapter = {
   id: SOURCE_ID,
@@ -40,7 +41,7 @@ export const boeMortgageRatesAdapter: DataSourceAdapter = {
     // BoE IADB monthly series: a 2-year window comfortably covers the
     // most recent print plus several months of slack while staying inside
     // the URL-length budget.
-    const url = buildBoEIadbUrl(SERIES_CODE);
+    const url = buildBoEIadbUrl(BOE_MORTGAGE_SERIES_CODE);
     const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
       headers: BOE_FETCH_HEADERS,
     });
@@ -55,7 +56,7 @@ export const boeMortgageRatesAdapter: DataSourceAdapter = {
       });
     }
     const dateKey = findKey(rows[0]!, ["DATE", "Date"]);
-    const valKey = findKey(rows[0]!, [SERIES_CODE]);
+    const valKey = findKey(rows[0]!, [BOE_MORTGAGE_SERIES_CODE]);
     if (!dateKey || !valKey) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
@@ -105,7 +106,7 @@ async function fetchBoeMortgageHistorical(
   fetchImpl: typeof globalThis.fetch,
   opts: HistoricalFetchOptions,
 ): Promise<HistoricalFetchResult> {
-  const url = buildBoEIadbUrl(SERIES_CODE, { from: opts.from, to: opts.to });
+  const url = buildBoEIadbUrl(BOE_MORTGAGE_SERIES_CODE, { from: opts.from, to: opts.to });
   const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, { headers: BOE_FETCH_HEADERS });
   const body = await res.text();
   assertLooksLikeCsv(SOURCE_ID, url, body);
@@ -114,7 +115,7 @@ async function fetchBoeMortgageHistorical(
     throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: url, message: "BoE mortgage rates: no rows in CSV payload" });
   }
   const dateKey = findKey(rows[0]!, ["DATE", "Date"]);
-  const valKey = findKey(rows[0]!, [SERIES_CODE]);
+  const valKey = findKey(rows[0]!, [BOE_MORTGAGE_SERIES_CODE]);
   if (!dateKey || !valKey) {
     throw new AdapterError({
       sourceId: SOURCE_ID,

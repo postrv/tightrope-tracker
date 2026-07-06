@@ -28,7 +28,8 @@ import { buildBoEIadbUrl, BOE_FETCH_HEADERS } from "../lib/boe.js";
 import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "boe_yields";
-const SERIES_CODES = "IUDSNZC,IUDSIZC";
+/** Exported so the Actions relay script reuses the exact series codes the adapter requests (see BoE relay note, 2026-07). */
+export const BOE_BREAKEVENS_SERIES_CODES = "IUDSNZC,IUDSIZC";
 
 interface LatestRow {
   date: string;
@@ -40,7 +41,7 @@ export const boeBreakevensAdapter: DataSourceAdapter = {
   id: "boe_breakevens",
   name: "Bank of England -- 5y breakeven (IUDSNZC/IUDSIZC)",
   async fetch(fetchImpl): Promise<AdapterResult> {
-    const url = buildBoEIadbUrl(SERIES_CODES);
+    const url = buildBoEIadbUrl(BOE_BREAKEVENS_SERIES_CODES);
     const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
       headers: BOE_FETCH_HEADERS,
     });
@@ -102,7 +103,7 @@ async function fetchBoeBreakevensHistorical(
   fetchImpl: typeof globalThis.fetch,
   opts: HistoricalFetchOptions,
 ): Promise<HistoricalFetchResult> {
-  const url = buildBoEIadbUrl(SERIES_CODES, { from: opts.from, to: opts.to });
+  const url = buildBoEIadbUrl(BOE_BREAKEVENS_SERIES_CODES, { from: opts.from, to: opts.to });
   const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, { headers: BOE_FETCH_HEADERS });
   const body = await res.text();
   assertLooksLikeCsv(SOURCE_ID, url, body);

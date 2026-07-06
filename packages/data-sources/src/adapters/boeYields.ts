@@ -23,13 +23,18 @@ import { buildBoEIadbUrl, BOE_FETCH_HEADERS } from "../lib/boe.js";
 import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "boe_yields";
-const SERIES_CODES = "IUDMNZC,IUDLNZC";
+/**
+ * Exported so the Actions relay script (`scripts/relay-boe.mjs`) builds the
+ * IADB URL from the *same* series-code constant the adapter requests, and can
+ * never drift from it. See the BoE relay incident note (2026-07).
+ */
+export const BOE_YIELDS_SERIES_CODES = "IUDMNZC,IUDLNZC";
 
 export const boeYieldsAdapter: DataSourceAdapter = {
   id: SOURCE_ID,
   name: "Bank of England -- gilt yields (IUDMNZC, IUDLNZC)",
   async fetch(fetchImpl): Promise<AdapterResult> {
-    const url = buildBoEIadbUrl(SERIES_CODES);
+    const url = buildBoEIadbUrl(BOE_YIELDS_SERIES_CODES);
     const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
       headers: BOE_FETCH_HEADERS,
     });
@@ -92,7 +97,7 @@ async function fetchBoeYieldsHistorical(
   fetchImpl: typeof globalThis.fetch,
   opts: HistoricalFetchOptions,
 ): Promise<HistoricalFetchResult> {
-  const url = buildBoEIadbUrl(SERIES_CODES, { from: opts.from, to: opts.to });
+  const url = buildBoEIadbUrl(BOE_YIELDS_SERIES_CODES, { from: opts.from, to: opts.to });
   const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, { headers: BOE_FETCH_HEADERS });
   const body = await res.text();
   assertLooksLikeCsv(SOURCE_ID, url, body);

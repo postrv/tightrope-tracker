@@ -22,13 +22,14 @@ import { buildBoEIadbUrl, BOE_FETCH_HEADERS } from "../lib/boe.js";
 import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "boe_fx";
-const SERIES_CODES = "XUDLUSS,XUDLBK67";
+/** Exported so the Actions relay script reuses the exact series codes the adapter requests (see BoE relay note, 2026-07). */
+export const BOE_FX_SERIES_CODES = "XUDLUSS,XUDLBK67";
 
 export const boeFxAdapter: DataSourceAdapter = {
   id: SOURCE_ID,
   name: "Bank of England -- GBP/USD & GBP effective index",
   async fetch(fetchImpl): Promise<AdapterResult> {
-    const url = buildBoEIadbUrl(SERIES_CODES);
+    const url = buildBoEIadbUrl(BOE_FX_SERIES_CODES);
     const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
       headers: BOE_FETCH_HEADERS,
     });
@@ -83,7 +84,7 @@ async function fetchBoeFxHistorical(
   fetchImpl: typeof globalThis.fetch,
   opts: HistoricalFetchOptions,
 ): Promise<HistoricalFetchResult> {
-  const url = buildBoEIadbUrl(SERIES_CODES, { from: opts.from, to: opts.to });
+  const url = buildBoEIadbUrl(BOE_FX_SERIES_CODES, { from: opts.from, to: opts.to });
   const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, { headers: BOE_FETCH_HEADERS });
   const body = await res.text();
   assertLooksLikeCsv(SOURCE_ID, url, body);

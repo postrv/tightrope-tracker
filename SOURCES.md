@@ -59,8 +59,9 @@ timed for the **weekly editorial deadline**.
 | `0 5 * * 3`     | pre-deadline sweep (Wed) | Same, second day of the deadline window. |
 | `30 6 * * 2`    | editorial readiness digest (Tue) | Posts pillar deltas, amber/red cadence, pending queue (with ready-to-paste approve/reject curls against `CURATOR_PUBLIC_URL`), releases expected in 7 days, and auto-published-since-last-digest to `ALERT_WEBHOOK_URL`. |
 | `30 6 * * 3`    | editorial readiness digest (Wed) | Same. |
-| `0 6 * * *`     | daily change-detection poll | Fetch + hash-compare each source; extract only on change; fire `HEARTBEAT_URL` on success. The "self-maintaining" loop — event-driven sources (OBR EFO) get picked up within 24h. |
+| `0 6 * * *`     | daily change-detection poll | Fetch + hash-compare each source; extract only on change; fire `HEARTBEAT_URL` on success. The "self-maintaining" loop. **Skips `fetchVia:"relay"` specs** (`obr_efo`, `ons_dd_failure`) — they are fed by the Actions relay row below. |
 | `0 7 * * *`     | staleness monitor | Cadence-state evaluation across all indicators; alerts on amber→red transitions and `cron_miss` rows. |
+| `0 4 * * 2,3` + `15 6 * * *` **(GitHub Actions, not a Worker cron)** | curator artefact relay → `POST /admin/relay-artefact` | For `fetchVia:"relay"` specs (`obr_efo` — obr.uk 403s Workers egress; `ons_dd_failure` — xlsx-only). A runner fetches + discovers each artefact (shared `fetchArtefactParts`) and POSTs the bytes; the curator runs the same capture→extract→verify→persist pipeline. See `.github/workflows/relay-artefacts.yml` + `scripts/relay-artefacts.mjs`; RUNBOOK §7.8. |
 
 ## Live network sources (`apps/ingest`, API-backed adapters)
 

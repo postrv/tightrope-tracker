@@ -5,6 +5,7 @@ import { getCapture, listCaptures, setCaptureDecision } from "./captures";
 import { readPublishedValueAt } from "./observations";
 import { approveCapture } from "../pipeline/publish";
 import { CURATOR_JOBS, isCuratorJob, runCuratorJob } from "./jobs";
+import { handleRelayArtefact } from "./relay";
 
 /**
  * Review-queue admin surface (AUTOMATION_PLAN Phase 3), ADMIN_TOKEN-gated with
@@ -41,6 +42,12 @@ export async function handleFetch(req: Request, env: Env): Promise<Response> {
     const gate = await authorise(req, env);
     if (gate) return gate;
     return routeRun(req, env, url);
+  }
+
+  if (pathname === "/admin/relay-artefact") {
+    const gate = await authorise(req, env);
+    if (gate) return gate;
+    return handleRelayArtefact(req, env, url);
   }
 
   return new Response("method not allowed", { status: 405 });

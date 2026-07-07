@@ -1,0 +1,87 @@
+name: Curator artefact relay
+
+# Some curator capture specs are marked `fetchVia:"relay"` because the Cloudflare
+# Worker cannot fetch their artefact: obr.uk returns HTTP 403 to Workers egress
+# (same upstream-WAF class as the BoE IADB block), and the ONS DD-failure figure
+# lives only in an xlsx the Worker shouldn't fetch/parse itself. GitHub Actions
+# runners (and residential IPs) reach both. This job fetches each relay spec's
+# artefact on a runner — doing the SAME follow-link discovery the Worker would,
+# via the shared fetchArtefactParts — and POSTs the raw bytes to the curator's
+# `POST /admin/relay-artefact`, which runs the exact capture→extract→verify→
+# persist pipeline the sweep runs. The Worker-side sweep/poll SKIP these specs
+# (they would 403) and record an honest 'unchanged' note; this workflow is their
+# ingestion path.
+#
+# Schedule rationale (UTC):
+#   0 4 * * 2,3  — 04:00 Tue/Wed, ONE HOUR BEFORE the 05:00 pre-deadline sweeps,
+#                  so fresh relay captures exist ahead of the editorial day.
+#                  Runs with --force (re-extract even if unchanged), mirroring
+#                  the pre-deadline sweep's force.
+#   15 6 * * *   — 06:15 daily, just after the 06:00 daily poll (which skips
+#                  relay specs). The daily change-detection leg for obr/ons: the
+#                  endpoint's hash short-circuit means no AI unless the artefact
+#                  changed, so an event-driven OBR EFO is picked up within 24h.
+#
+# SEC-11: third-party actions are pinned to full commit SHAs (see deploy.yml).
+
+on:
+  schedule:
+    - cron: "0 4 * * 2,3"
+    - cron: "15 6 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Re-extract even if the artefact hash is unchanged"
+        type: boolean
+        default: false
+
+# Least-privilege: read the repo and file/annotate a single tracking issue.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  relay:
+    name: Relay curator artefacts to the curator admin endpoint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with: { node-version: "20", cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - name: Fetch + discover each relay artefact and POST it to the curator
+        id: relay
+        # tsx resolves the script's .ts curator imports (node 20 can't strip
+        # types natively). Exits non-zero if any relay leg fails.
+        env:
+          CURATOR_ADMIN_TOKEN: ${{ secrets.CURATOR_ADMIN_TOKEN }}
+        run: |
+          set -euo pipefail
+          FLAGS=""
+          if [ "${{ github.event.schedule }}" = "0 4 * * 2,3" ]; then FLAGS="--force"; fi
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then FLAGS="--force"; fi
+          node --import tsx scripts/relay-artefacts.mjs $FLAGS
+
+      - name: Open or update the relay-failure issue
+        if: failure() && steps.relay.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TITLE="Curator artefact relay failed"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BODY=$(printf '%s\n\n%s\n\n%s' \
+            "The curator artefact relay failed on $(date -u '+%Y-%m-%d %H:%M UTC')." \
+            "A relay leg could not fetch/discover the artefact (obr.uk / ONS) or the curator /admin/relay-artefact POST was rejected. See the run log for which spec and the error. Dry-run locally to isolate fetch vs POST: node --import tsx scripts/relay-artefacts.mjs --dry" \
+            "Run: ${RUN_URL}")
+          # Dedupe: reuse the open issue with this exact title if one exists.
+          EXISTING=$(gh issue list --state open --search "${TITLE} in:title" --json number,title \
+            --jq "[.[] | select(.title == \"${TITLE}\")][0].number // empty")
+          if [ -n "${EXISTING}" ]; then
+            echo "Commenting on existing issue #${EXISTING}"
+            gh issue comment "${EXISTING}" --body "${BODY}"
+          else
+            echo "Creating a new tracking issue"
+            gh issue create --title "${TITLE}" --body "${BODY}"
+          fi

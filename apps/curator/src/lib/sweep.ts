@@ -1,5 +1,5 @@
 import type { Env } from "../env";
-import { isEditorialKind, isRelaySpec, type CaptureRow, type CaptureSpec, type ExtractionResult } from "../types";
+import { isEditorialKind, isRelaySpec, type CaptureArtifact, type CaptureRow, type CaptureSpec, type ExtractionResult } from "../types";
 import { CAPTURE_SPECS } from "../sources/registry";
 import { captureSource } from "../pipeline/capture";
 import { extractFromArtifact, runExtraction } from "../pipeline/extract";
@@ -111,19 +111,7 @@ async function runSpec(env: Env, spec: CaptureSpec, opts: { force: boolean }): P
         audit = { status: "unchanged", opts: { payloadHash: null } };
         result = { sourceId: spec.sourceId, status: "unchanged", rows: 0 };
       } else {
-        const extraction = await extractFromArtifact(env, spec, cap);
-        const verification = await verifyExtraction(env, spec, cap, extraction);
-
-        let rows = 0;
-        if (isEditorialKind(spec.kind)) {
-          await decideAndPersist(env, spec, buildEditorialRow(spec, cap, extraction), verification);
-          rows = 1;
-        } else {
-          for (const val of extraction.values) {
-            await decideAndPersist(env, spec, buildObservationRow(spec, cap, val, extraction), verification);
-            rows++;
-          }
-        }
+        const rows = await extractVerifyPersist(env, spec, cap);
         audit = { status: "success", opts: { rowsWritten: rows, payloadHash: `ai:${cap.contentSha256}` } };
         result = { sourceId: spec.sourceId, status: "success", rows };
       }
@@ -146,6 +134,27 @@ async function runSpec(env: Env, spec: CaptureSpec, opts: { force: boolean }): P
   }
 
   return result;
+}
+
+/**
+ * Extract → verify → decide/persist a captured artefact, returning the number
+ * of capture rows persisted. Shared by the Worker sweep (runSpec) and the relay
+ * endpoint (POST /admin/relay-artefact), so a relayed artefact runs the EXACT
+ * same extract/verify/decide path as a Worker-fetched one.
+ */
+export async function extractVerifyPersist(env: Env, spec: CaptureSpec, cap: CaptureArtifact): Promise<number> {
+  const extraction = await extractFromArtifact(env, spec, cap);
+  const verification = await verifyExtraction(env, spec, cap, extraction);
+  if (isEditorialKind(spec.kind)) {
+    await decideAndPersist(env, spec, buildEditorialRow(spec, cap, extraction), verification);
+    return 1;
+  }
+  let rows = 0;
+  for (const val of extraction.values) {
+    await decideAndPersist(env, spec, buildObservationRow(spec, cap, val, extraction), verification);
+    rows++;
+  }
+  return rows;
 }
 
 function buildObservationRow(

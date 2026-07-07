@@ -167,15 +167,28 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     promptVersion: "v1",
   },
   {
-    // Event-driven (daily hash poll catches the publication). NEVER
-    // auto-publish: twice-yearly, high-stakes — always human-reviewed, so G4 is
-    // advisory here. FOLLOW-LINK: obr.uk/efo lists the EFO documents; the
-    // headroom / PSNFL figures are in the linked exec-summary PDF.
+    // Event-driven. NEVER auto-publish: twice-yearly, high-stakes — always
+    // human-reviewed, so G4 is advisory here.
+    //
+    // RELAY (2026-07-07): obr.uk returns HTTP 403 to Cloudflare Workers egress
+    // (same upstream-WAF class as the BoE IADB block) but 200 to GitHub Actions
+    // runners and residential IPs. So `fetchVia:"relay"`: a runner fetches the
+    // artefact and POSTs it to /admin/relay-artefact. FOLLOW-LINK (runner-side,
+    // shared discover.ts): obr.uk/efo lists the EFO documents; discovery follows
+    // to the newest exec-summary PDF download (verified from residential egress:
+    // obr.uk/download/economic-and-fiscal-outlook-march-2026), which the Worker
+    // converts via AI.toMarkdown.
     sourceId: "obr_efo",
     kind: "observation",
     indicatorIds: ["cb_headroom", "psnfl_trajectory"],
     urls: ["https://obr.uk/efo/"],
     format: "html",
+    fetchVia: "relay",
+    discover: {
+      linkPattern: "obr\\.uk/download/economic-and-fiscal-outlook-[a-z]+-20\\d{2}",
+      newest: "year",
+      releaseFormat: "pdf",
+    },
     cadence: "event",
     plausibility: {
       // range derived from shared PLAUSIBILITY cb_headroom [-30,80]; vintage step ~14 → maxDelta 30 (generous).
@@ -190,9 +203,18 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
   },
   {
     // ONS "Monthly Direct Debit failure rate" dataset page (the upstream cited
-    // in fixtures/ons-rti.json's _comment). HTML article/dataset landing; the
-    // headline Total-NSA % is in the page + the linked xlsx. Extract from the
-    // HTML — do NOT parse the xlsx in the worker (AUTOMATION_PLAN Phase 3).
+    // in fixtures/ons-rti.json's _comment).
+    //
+    // RELAY + XLSX (2026-07-07): the figure is XLSX-ONLY. Verified from
+    // residential egress that neither the dataset landing HTML nor the ONS APIs
+    // state it — the page `/data` JSON is metadata-only, and the beta dataset
+    // API 404s for this "statistics in development" series. The value lives
+    // solely in the monthly workbook. So `fetchVia:"relay"`: the runner
+    // discovers the newest ...dataset<ddmmyy>.xlsx link and POSTs the workbook;
+    // the Worker converts it to markdown via AI.toMarkdown (the sanctioned
+    // doc-conversion path — no hand-rolled xlsx parsing, no new deps). Review-
+    // only until a shadow sign-off (toMarkdown-on-xlsx not verifiable off-Worker;
+    // the fixture refresh path in RUNBOOK §7.5 remains the fallback).
     sourceId: "ons_dd_failure",
     kind: "observation",
     indicatorIds: ["dd_failure_rate"],
@@ -200,6 +222,12 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
       "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount",
     ],
     format: "html",
+    fetchVia: "relay",
+    discover: {
+      linkPattern: "directdebittransactionsandfailuresdataset\\d+\\.xlsx",
+      newest: "first",
+      releaseFormat: "xlsx",
+    },
     cadence: "monthly",
     plausibility: {
       // range derived from shared PLAUSIBILITY dd_failure_rate [0,5]; Appendix A Δ≤0.4.

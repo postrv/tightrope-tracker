@@ -436,6 +436,41 @@ isolation) — inspect `.results[]` for the per-source `status`. A relay-backed
 spec (`obr_efo`, `ons_dd_failure`) reports `unchanged` here because the Worker
 does not fetch it; its data path is the artefact relay (§7.8).
 
+### 7.8 Curator artefact relay (the Actions network leg for the curator)
+
+Two curator specs are marked `fetchVia:"relay"` because the Worker cannot fetch
+their artefact: **`obr_efo`** (obr.uk returns HTTP 403 to Cloudflare Workers
+egress — the same upstream-WAF class as the BoE IADB block) and
+**`ons_dd_failure`** (the figure is xlsx-only; the Worker must not fetch/parse
+the workbook itself). Their **network leg runs on GitHub Actions**:
+`relay-artefacts.yml` fetches each artefact on a runner — doing the SAME
+follow-link discovery the Worker would, via the shared `fetchArtefactParts` — and
+POSTs the raw bytes to `POST /admin/relay-artefact?spec=<id>`, which runs the
+exact capture→extract→verify→persist pipeline the sweep runs (hash short-circuit,
+R2 archive, gates, one audit row). Only the network hop moves off Cloudflare.
+
+The Worker-side sweep/poll **skip** these specs (a fetch would 403) and record an
+honest `unchanged` audit note — so a red `/admin/health` chip for `obr_efo` /
+`ons_dd_failure` means **the relay leg**, not the Worker. Triage in order:
+
+1. **The relay workflow.** `gh run list --workflow=relay-artefacts.yml` — did the
+   last scheduled run pass? A failure opens/updates the "Curator artefact relay
+   failed" issue. Re-run with `gh workflow run relay-artefacts.yml`
+   (add `-f force=true` to re-extract even if the artefact hash is unchanged).
+2. **Isolate fetch vs POST.** Dry-run locally (residential egress reaches both
+   sites): `node --import tsx scripts/relay-artefacts.mjs --dry` fetches +
+   discovers each artefact and prints the resolved URL / size, skipping the POST.
+3. **Then the curator side.** Fetch OK but POST rejected → auth/token or a
+   pipeline error; inspect the curator audit rows and the review queue (§7.1).
+
+Schedules (UTC): `0 4 * * 2,3` (04:00 Tue/Wed, one hour before the 05:00
+pre-deadline sweeps, run with `--force`) and `15 6 * * *` (06:15 daily, just
+after the 06:00 poll skips them — the daily change-detection leg; the endpoint's
+hash short-circuit means no AI unless the artefact changed, so an event-driven
+OBR EFO is picked up within 24h). The workflow reads the curator admin token from
+the **`CURATOR_ADMIN_TOKEN` GitHub Actions secret**, which must equal the curator
+worker's `ADMIN_TOKEN` — rotating it (§5) means updating that Actions secret too.
+
 ---
 
 ## 8. Cloudflare dashboard hardening checklist (SEC-2 & SEC-4)

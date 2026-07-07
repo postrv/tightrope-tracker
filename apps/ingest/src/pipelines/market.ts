@@ -1,7 +1,4 @@
 import {
-  boeBreakevensAdapter,
-  boeFxAdapter,
-  boeYieldsAdapter,
   eiaBrentAdapter,
   growthSentimentAdapter,
   lseFtse250Adapter,
@@ -16,12 +13,17 @@ import { runAdapterSafe } from "./runAdapter.js";
  * overnight. Outside market hours we still tick the recompute pipeline
  * but skip the fetches.
  *
- * Adapter ordering:
- *   1. BoE IADB live adapters (yields, FX, breakevens) -- hit the same origin
- *      so we serialise to stay polite.
- *   2. OBR-proxy adapters (Brent-in-GBP, growth sentiment composite) -- still
- *      fixture-backed. Housebuilders moved to the fiscal pipeline (daily via
- *      EODHD, free-tier rate limit).
+ * BoE adapters (yields, FX, breakevens) are NOT run here since 2026-07-07:
+ * the IADB blocks Cloudflare Workers egress (HTTP 500, since 2026-06-10), so
+ * their network leg runs on a GitHub Actions runner instead -- the relay-boe
+ * workflow POSTs the raw CSVs to /admin/relay weekdays 09:30 UTC, which
+ * replays them through the same runAdapter machinery. Running them here too
+ * only generated a guaranteed failure + DLQ entry every 5 minutes. BoE daily
+ * series are T+1, so the daily relay loses no freshness vs this cron.
+ *
+ * Remaining adapters: OBR-proxy (Brent-in-GBP, growth sentiment composite)
+ * and the FTSE 250 close. Housebuilders live in the fiscal pipeline (daily
+ * via EODHD, free-tier rate limit).
  */
 export async function ingestMarket(
   env: Env,
@@ -30,15 +32,8 @@ export async function ingestMarket(
   if (!opts.force && !isUkMarketHours(opts.now ?? new Date())) {
     return { ran: false };
   }
-  // Fire each BoE adapter serially -- they hit the same origin and a serial
-  // flow is both kinder on the origin and easier to reason about in logs.
-  // Each runs under runAdapterSafe so one upstream failure doesn't block the
-  // rest of the pipeline or the downstream recompute. runAdapter already
-  // records the failure to ingestion_audit and the DLQ; we swallow here so
-  // the caller can proceed to the next adapter and ultimately to recompute.
-  await runAdapterSafe(env, boeYieldsAdapter);
-  await runAdapterSafe(env, boeFxAdapter);
-  await runAdapterSafe(env, boeBreakevensAdapter);
+  // Each adapter runs under runAdapterSafe so one upstream failure doesn't
+  // block the rest of the pipeline or the downstream recompute.
   await runAdapterSafe(env, eiaBrentAdapter);
   await runAdapterSafe(env, growthSentimentAdapter);
   await runAdapterSafe(env, lseFtse250Adapter);

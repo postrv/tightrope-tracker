@@ -23,9 +23,9 @@ Two workers feed the dataset:
 
 | Cron (UTC)     | Pipeline                          | Adapters fired in order |
 |----------------|-----------------------------------|--------------------------|
-| `*/5 * * * *`  | market + recompute + today        | boe_yields, boe_fx, boe_breakevens, eia_brent, growth_sentiment, lseg (FTSE 250). Throttled to UK market hours (07:00–16:30 Europe/London) — outside that window only the recompute and today-strip stages run. |
+| `*/5 * * * *`  | market + recompute + today        | eia_brent, growth_sentiment, lseg (FTSE 250). BoE adapters removed from this cron 2026-07-07 — they run via the Actions relay row below. Throttled to UK market hours (07:00–16:30 Europe/London) — outside that window only the recompute and today-strip stages run. |
 | `0 2 * * *`    | fiscal + recompute                | obr_efo, ons_psf, dmo, eodhd_housebuilders |
-| `15 2 * * *`   | labour + recompute                | ons_lms, ons_rti, boe_mortgage_rates |
+| `15 2 * * *`   | labour + recompute                | ons_lms, ons_rti (boe_mortgage_rates moved to the Actions relay row below, 2026-07-07) |
 | `30 2 * * *`   | delivery + recompute              | mhclg, delivery_milestones, gov_uk (timeline candidates → `curator_captures`) |
 | `30 9 * * 1-5` **(GitHub Actions, not a Worker cron)** | BoE IADB relay → `POST /admin/relay` | boe_yields, boe_fx, boe_breakevens, boe_mortgage_rates. A runner fetches each IADB CSV and replays it through the ingest relay endpoint, which runs the standard adapter machinery. See `.github/workflows/relay-boe.yml` + `scripts/relay-boe.mjs`. |
 

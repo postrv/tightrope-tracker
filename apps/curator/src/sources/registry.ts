@@ -50,6 +50,13 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     // UK Services PMI page, an aggregator that carries the final headline +
     // revision + release date and serves server-side fetches. Cite it as a
     // MIRROR of the S&P figure, never as the primary source.
+    //
+    // 5024 ROOT CAUSE (2026-07-07): this page's htmlToText is ~40KB, which
+    // overwhelmed JSON-schema mode → "5024: JSON Model couldn't be met". The
+    // headline number IS on the landing page (verified from residential egress:
+    // "Services PMI in the United Kingdom decreased to 48.80 points in June from
+    // 49.30 points in May of 2026"), so no follow-link is needed — the
+    // capture-stage truncation-to-budget (lib/artefactText.ts) is the fix.
     sourceId: "sp_global_pmi",
     kind: "observation",
     indicatorIds: ["services_pmi"],
@@ -68,15 +75,22 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
   {
     // GfK's UK consumer-confidence business moved to NIQ (NielsenIQ). The
     // barometer landing page carries a "Latest press releases" list linking each
-    // month's article (slug encodes the number/month, e.g.
-    // /news-center/2026/consumer-confidence-stay-at-23-in-june/). HTML, serves
-    // server-side fetches. FOLLOW-LINK: the headline index sits in the linked
-    // article, not the landing page — review path until a follow step lands.
+    // month's article, newest first. FOLLOW-LINK (implemented 2026-07-07): the
+    // headline index sits in the linked article, not the landing page, so
+    // `discover` fetches the landing page and follows to the newest
+    // /news-center/YYYY/consumer-confidence-* article. Verified from residential
+    // egress: the June article states "Overall Index Score was unchanged at -23
+    // in June." Stays review-only until shadow sign-off.
     sourceId: "gfk_confidence",
     kind: "observation",
     indicatorIds: ["consumer_confidence"],
     urls: ["https://nielseniq.com/global/en/landing-page/consumer-confidence-barometer/"],
     format: "html",
+    discover: {
+      // The landing page lists articles newest-first; take the first match.
+      linkPattern: "/news-center/\\d{4}/consumer-confidence-",
+      newest: "first",
+    },
     cadence: "monthly",
     plausibility: {
       // range derived from shared PLAUSIBILITY consumer_confidence [-60,10]; Appendix A Δ≤10.
@@ -87,35 +101,30 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     modelId: DEFAULT_MODEL,
     promptVersion: "v1",
   },
-  {
-    // RICS UK Residential Market Survey landing page lists every monthly
-    // release; serves server-side fetches. FOLLOW-LINK: the house-price-balance
-    // headline lives inside the monthly PDF (filename casing varies month to
-    // month, so it must be discovered from the landing page rather than
-    // constructed) — review path until a PDF follow step lands.
-    sourceId: "rics_rms",
-    kind: "observation",
-    indicatorIds: ["rics_price_balance"],
-    urls: ["https://www.rics.org/news-insights/market-surveys/uk-residential-market-survey"],
-    format: "html",
-    cadence: "monthly",
-    plausibility: {
-      // range derived from shared PLAUSIBILITY rics_price_balance [-90,90]; Appendix A Δ≤25.
-      rics_price_balance: { maxDelta: 25 },
-    },
-    agreementTolerance: 1,
-    allowAutoPublish: false,
-    modelId: DEFAULT_MODEL,
-    promptVersion: "v1",
-  },
+  // RICS UK Residential Market Survey — DISABLED 2026-07-07 (removed from the
+  // sweep set). The rics.org site is behind Imperva/Incapsula bot protection:
+  // both the canonical survey page and a browser-UA retry return only a
+  // ~200–840-byte JS challenge stub (no article text), verified from residential
+  // egress AND with a full Chrome UA + Accept headers. A GitHub Actions runner
+  // (datacenter ASN) is challenged at least as hard, so `fetchVia:"relay"` would
+  // not help either — there is no server-side-fetchable route to the
+  // house-price-balance headline. `rics_price_balance` therefore stays on the
+  // hand-refresh fixture path (docs/RUNBOOK.md §7.5; growth-sentiment trio in
+  // Phase 0). Re-enable if RICS drops the challenge or publishes a plain-fetch
+  // release mirror. See docs/SOURCES.md.
   {
     // gov.uk collection pages for the two quarterly MHCLG releases (both HTTP
     // 200, not bot-protected). Apply the derivation formulas at the top of
-    // packages/data-sources/src/fixtures/housing-history.json. FOLLOW-LINK: a
-    // collection page lists releases; the completions / decisions-granted
-    // figures live on the individual quarterly release page it links to — HTML,
-    // NOT the ODS attachments — so this stays review-only until a follow step
-    // lands. (The plan's "tight G4" intent is captured by the Δ≤30% cap below.)
+    // packages/data-sources/src/fixtures/housing-history.json. FOLLOW-LINK
+    // (implemented 2026-07-07): each collection page lists quarterly releases
+    // newest-first; `discover` follows to the newest housing-supply /
+    // planning-applications release page (HTML, NOT the ODS attachments), where
+    // the completions / decisions-granted figures live. The single combined
+    // linkPattern matches whichever release family a given collection page
+    // carries. Newest chosen by year+quarter. Verified from residential egress:
+    // the newest links are housing-supply-…-january-to-march-2026 and
+    // planning-applications-in-england-january-to-march-2026. Stays review-only
+    // (the plan's "tight G4" intent is the Δ≤30% cap below).
     sourceId: "mhclg_housing",
     kind: "observation",
     indicatorIds: ["housing_trajectory", "planning_consents"],
@@ -124,6 +133,27 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
       "https://www.gov.uk/government/collections/planning-applications-statistics",
     ],
     format: "html",
+    discover: {
+      // Hop 1: collection page → newest quarterly release page.
+      linkPattern:
+        "/government/statistics/(housing-supply-indicators-of-new-supply-england|planning-applications-in-england)-(january-to-march|april-to-june|july-to-september|october-to-december)-20\\d{2}",
+      newest: "quarter",
+      // Hop 2: release page → the FULL HTML statistical-release document (the
+      // self-nested /…/…/…-<same slug> child), where the headline figures are
+      // inlined. The release page itself only lists ODS attachments + a summary;
+      // the `…$` anchor excludes the "-technical-notes" sibling, and requiring a
+      // second path segment (statistics/<release>/<doc>) excludes the release
+      // self-link. Verified from residential egress: the housing doc inlines
+      // "199,500 net additional homes … between 1 April 2025 and 31 March 2026".
+      then: {
+        // Housing names the full doc with the bare slug repeated
+        // (…january-to-march-2026); planning suffixes it "-statistical-release".
+        // Match either, but NOT the "-technical-notes" sibling.
+        linkPattern:
+          "/government/statistics/[a-z0-9-]+/(housing-supply-indicators-of-new-supply-england|planning-applications-in-england)-(january-to-march|april-to-june|july-to-september|october-to-december)-20\\d{2}(-statistical-release)?$",
+        newest: "first",
+      },
+    },
     cadence: "quarterly",
     plausibility: {
       // range derived from shared PLAUSIBILITY housing_trajectory [0,150]; Appendix A Δ≤30%.

@@ -52,6 +52,38 @@ describe("extract — JSON mode + validation + retry", () => {
     ).rejects.toThrow(/quote/);
   });
 
+  it("fails FAST with a distinct pre-check error, before any AI call, on a numberless artefact", async () => {
+    // A bot-challenge stub / JS-gated page: no figure can possibly be extracted,
+    // so we must NOT burn three schema-retries against it.
+    const ai = makeAi({ run: () => GOOD });
+    const spec = observationSpec();
+    await expect(
+      extractFromArtifact(makeEnv({ db: makeFakeDb(), ai: ai.AI }), spec, artifact(spec, "This page requires JavaScript. Please enable cookies to continue.")),
+    ).rejects.toThrow(/pre-check failed.*PRECHECK_NO_DIGITS/);
+    expect(ai.calls).toHaveLength(0); // zero AI spend on a hopeless artefact
+  });
+
+  it("on a 5024, retries once with a SHORTER artefact window before the next attempt", async () => {
+    const longText = [
+      ...Array.from({ length: 400 }, (_, i) => `Row ${i}: services index ${40 + (i % 20)}.${i % 10} in June 2026`),
+      "The UK Services PMI registered 48.8 in June 2026.",
+    ].join("\n");
+    let call = 0;
+    const ai = makeAi({
+      run: () => {
+        call += 1;
+        if (call === 1) throw new Error("5024: JSON Model couldn't be met");
+        return GOOD;
+      },
+    });
+    const spec = observationSpec();
+    const res = await extractFromArtifact(makeEnv({ db: makeFakeDb(), ai: ai.AI }), spec, artifact(spec, longText));
+    expect(res.values[0]!.value).toBe(48.8);
+    expect(ai.calls).toHaveLength(2);
+    const len = (c: (typeof ai.calls)[number]) => c.messages.map((m) => m.content).join("").length;
+    expect(len(ai.calls[1]!)).toBeLessThan(len(ai.calls[0]!)); // window shrank after the 5024
+  });
+
   it("extracts a cited draft for an editorial kind (values empty)", async () => {
     const spec = observationSpec({ sourceId: "delivery_milestones", kind: "delivery_milestone", indicatorIds: ["new_towns_milestones"], plausibility: {} });
     const draft = { indicatorId: "new_towns_milestones", proposedValue: 70, rationale: "consultation closed", quote: "The consultation on the New Towns programme closed on 19 May 2026.", sourceUrl: "https://gov.uk/x" };

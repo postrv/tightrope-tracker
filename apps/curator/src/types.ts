@@ -95,6 +95,14 @@ export interface DiscoverConfig {
   newest: "first" | "year" | "quarter";
   /** Artefact format of the DISCOVERED release (overrides spec.format for the follow). */
   releaseFormat?: ArtefactFormat;
+  /**
+   * Optional SECOND discovery hop, run against the page this one discovers. Some
+   * gov.uk statistical releases are two clicks deep: the collection links the
+   * quarterly release page, which in turn links the full HTML statistical-release
+   * document where the headline numbers actually live (MHCLG). The chain follows
+   * each hop until `then` is undefined, then fetches the terminal artefact.
+   */
+  then?: DiscoverConfig;
 }
 
 /**

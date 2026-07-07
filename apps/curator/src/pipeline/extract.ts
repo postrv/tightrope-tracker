@@ -2,6 +2,7 @@ import type { Env } from "../env";
 import { isEditorialKind, type CaptureArtifact, type CaptureSpec, type ExtractionResult } from "../types";
 import { runModelJson } from "../lib/ai";
 import { buildPrompt, type PromptFraming } from "../lib/prompts";
+import { isSchemaModeFailure, precheckArtefact, STRICT_MODEL_TEXT_BUDGET, truncateForModel } from "../lib/artefactText";
 
 const MAX_RETRIES = 2; // ≤2 retries on schema-invalid output → 3 attempts total.
 
@@ -29,14 +30,33 @@ export async function runExtraction(
   text: string,
   framing: PromptFraming,
 ): Promise<ExtractionResult> {
-  const { messages, schema } = buildPrompt(spec, text, framing);
+  // PRE-CHECK (numeric specs only): distinguish "the model can't comply" from
+  // "the numbers are not in this artefact" and fail FAST with a distinct string
+  // before burning three schema-retries against structurally hopeless text
+  // (a bot-challenge stub, or a dataset landing page whose figure is xlsx-only).
+  if (!isEditorialKind(spec.kind)) {
+    const pre = precheckArtefact(text);
+    if (!pre.ok) throw new Error(`extraction pre-check failed for ${spec.sourceId}: ${pre.reason}`);
+  }
+
+  // The working text shrinks on a 5024 (see below); rebuild the prompt each
+  // attempt so the shorter window actually reaches the model.
+  let workingText = text;
   let lastError = "no attempts";
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const { messages, schema } = buildPrompt(spec, workingText, framing);
     let raw: string;
     try {
       raw = await runModelJson(env, spec.modelId, messages, schema);
     } catch (err) {
-      lastError = `model call failed: ${(err as Error)?.message ?? String(err)}`;
+      const message = (err as Error)?.message ?? String(err);
+      lastError = `model call failed: ${message}`;
+      // On a 5024 ("JSON Model couldn't be met") the dominant cause is an
+      // over-long artefact, so the NEXT attempt uses a much shorter,
+      // higher-relevance window rather than re-sending the identical text.
+      if (isSchemaModeFailure(message) && workingText.length > STRICT_MODEL_TEXT_BUDGET) {
+        workingText = truncateForModel(workingText, STRICT_MODEL_TEXT_BUDGET);
+      }
       continue;
     }
     const parsed = parseAndValidate(raw, spec);

@@ -1,9 +1,20 @@
 import { fetchOrThrow } from "@tightrope/data-sources";
 import type { Env } from "../env";
-import type { CaptureArtifact, CaptureSpec } from "../types";
+import type { ArtefactFormat, CaptureArtifact, CaptureSpec, DiscoverConfig } from "../types";
 import { latestCaptureSha } from "../lib/captures";
 import { sha256HexBytes } from "../lib/hash";
-import { pdfToMarkdown } from "../lib/ai";
+import { docToMarkdown } from "../lib/ai";
+import { truncateForModel } from "../lib/artefactText";
+import { discoverReleaseUrl } from "../lib/discover";
+
+/** One fetched artefact part: raw bytes + the format to interpret them as. */
+export interface ArtefactPart {
+  url: string;
+  bytes: Uint8Array;
+  format: ArtefactFormat;
+}
+
+const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 /**
  * Stage 1 — capture. Contract in the original stub header (AUTOMATION_PLAN
@@ -32,32 +43,92 @@ export async function captureSource(
   spec: CaptureSpec,
   opts: { force: boolean },
 ): Promise<CaptureArtifact | "unchanged"> {
-  const fetchedAt = new Date().toISOString();
-  const parts: Array<{ url: string; bytes: Uint8Array }> = [];
-  for (const url of spec.urls) {
-    const res = await fetchOrThrow(fetch, spec.sourceId, url);
-    parts.push({ url, bytes: new Uint8Array(await res.arrayBuffer()) });
-  }
+  const parts = await fetchArtefactParts(spec);
+  return captureFromParts(env, spec, parts, opts);
+}
 
-  const contentSha256 = await sha256HexBytes(concatParts(parts.map((p) => p.bytes)));
+/**
+ * Fetch every artefact part for a spec, applying FOLLOW-LINK DISCOVERY where the
+ * spec declares it: each `spec.urls` entry is fetched as a discovery page, the
+ * newest matching release link is located (shared discover.ts), and THAT release
+ * is fetched and handed on — so the model reads the release, not the landing
+ * page. Without `discover` the URL is fetched directly. This is the exact
+ * function the relay runner mirrors (it re-implements the fetch, but imports the
+ * same discoverReleaseUrl), so a Worker capture and a relayed capture discover
+ * identically.
+ */
+export async function fetchArtefactParts(spec: CaptureSpec): Promise<ArtefactPart[]> {
+  const parts: ArtefactPart[] = [];
+  for (const url of spec.urls) {
+    parts.push(spec.discover ? await followDiscovery(spec, url, spec.discover) : await fetchPart(spec, url, spec.format));
+  }
+  return parts;
+}
+
+/** Fetch one URL as a raw part in the given format. */
+async function fetchPart(spec: CaptureSpec, url: string, format: ArtefactFormat): Promise<ArtefactPart> {
+  const res = await fetchOrThrow(fetch, spec.sourceId, url);
+  return { url, bytes: new Uint8Array(await res.arrayBuffer()), format };
+}
+
+/**
+ * Walk a discovery chain from `startUrl`: fetch each discovery page, pick the
+ * newest matching link (shared discover.ts), follow `then` for a second hop
+ * where the spec needs it (MHCLG: collection → release → full HTML doc), then
+ * fetch the terminal artefact. The runner script re-implements the fetch but
+ * imports the SAME discoverReleaseUrl, so the two can never disagree.
+ */
+async function followDiscovery(spec: CaptureSpec, startUrl: string, discover: DiscoverConfig): Promise<ArtefactPart> {
+  let currentUrl = startUrl;
+  let format = spec.format;
+  let cfg: DiscoverConfig | undefined = discover;
+  while (cfg) {
+    const res = await fetchOrThrow(fetch, spec.sourceId, currentUrl);
+    const html = new TextDecoder("utf-8", { fatal: false }).decode(new Uint8Array(await res.arrayBuffer()));
+    const next = discoverReleaseUrl(html, currentUrl, cfg);
+    if (!next) {
+      throw new Error(`discovery found no release link on ${currentUrl} for ${spec.sourceId} (pattern ${cfg.linkPattern})`);
+    }
+    format = cfg.releaseFormat ?? format;
+    currentUrl = next;
+    cfg = cfg.then;
+  }
+  return fetchPart(spec, currentUrl, format);
+}
+
+/**
+ * Hash → dedupe → archive → text, over already-fetched parts. Split out from
+ * captureSource so the relay endpoint (POST /admin/relay-artefact) runs the
+ * EXACT same capture stage over bytes a runner fetched on our behalf — same
+ * dedupe short-circuit, same R2 archive, same text projection.
+ */
+export async function captureFromParts(
+  env: Env,
+  spec: CaptureSpec,
+  parts: ArtefactPart[],
+  opts: { force: boolean },
+): Promise<CaptureArtifact | "unchanged"> {
+  const fetchedAt = new Date().toISOString();
+  const combined = concatParts(parts.map((p) => p.bytes));
+  const contentSha256 = await sha256HexBytes(combined);
 
   if (!opts.force) {
     const prev = await latestCaptureSha(env.DB, spec.sourceId);
     if (prev !== null && prev === contentSha256) return "unchanged";
   }
 
-  const rawR2Key = archiveKey(spec, fetchedAt, contentSha256);
+  const rawR2Key = archiveKey(spec, parts, fetchedAt, contentSha256);
   // Archive is best-effort provenance; a bucket hiccup must not lose the
   // capture, but it must be visible, so we log rather than swallow silently.
   try {
-    await env.ARCHIVE.put(rawR2Key, concatParts(parts.map((p) => p.bytes)));
+    await env.ARCHIVE.put(rawR2Key, combined);
   } catch (err) {
     console.warn(`curator archive put failed for ${rawR2Key}: ${(err as Error)?.message ?? String(err)}`);
   }
 
   const text = await toText(env, spec, parts);
 
-  return { spec, url: spec.urls[0] ?? "", fetchedAt, contentSha256, rawR2Key, text };
+  return { spec, url: parts[0]?.url ?? spec.urls[0] ?? "", fetchedAt, contentSha256, rawR2Key, text };
 }
 
 /** Length-delimited concatenation so distinct parts can't hash-collide by shifting a boundary. */
@@ -81,25 +152,47 @@ function concatParts(parts: Uint8Array[]): Uint8Array {
   return out;
 }
 
-function archiveKey(spec: CaptureSpec, fetchedAt: string, sha: string): string {
+function extFor(format: ArtefactFormat): string {
+  switch (format) {
+    case "pdf": return "pdf";
+    case "xlsx": return "xlsx";
+    case "atom": return "xml";
+    default: return "html";
+  }
+}
+
+function archiveKey(spec: CaptureSpec, parts: ArtefactPart[], fetchedAt: string, sha: string): string {
   const day = fetchedAt.slice(0, 10);
-  const ext = spec.format === "pdf" ? "pdf" : spec.format === "atom" ? "xml" : "html";
+  const ext = extFor(parts[0]?.format ?? spec.format);
   return `curator/${spec.sourceId}/${day}-${sha.slice(0, 8)}.${ext}`;
 }
 
-async function toText(env: Env, spec: CaptureSpec, parts: Array<{ url: string; bytes: Uint8Array }>): Promise<string> {
+/**
+ * Project each part to text by ITS OWN format (a discovery follow can flip an
+ * HTML spec to a PDF/XLSX release), truncate each to the documented model budget
+ * so an over-long artefact does not trigger the Workers-AI 5024, then combine.
+ * The combined result is capped again so a multi-URL spec (MHCLG) can't blow the
+ * budget by summing two large sections.
+ */
+async function toText(env: Env, spec: CaptureSpec, parts: ArtefactPart[]): Promise<string> {
   const sections: string[] = [];
   for (const p of parts) {
-    if (spec.format === "pdf") {
-      sections.push(await pdfToMarkdown(env, `${spec.sourceId}.pdf`, p.bytes.buffer as ArrayBuffer));
+    let section: string;
+    if (p.format === "pdf") {
+      section = await docToMarkdown(env, `${spec.sourceId}.pdf`, p.bytes.buffer as ArrayBuffer, "application/pdf");
+    } else if (p.format === "xlsx") {
+      section = await docToMarkdown(env, `${spec.sourceId}.xlsx`, p.bytes.buffer as ArrayBuffer, XLSX_MIME);
     } else {
-      const raw = new TextDecoder("utf-8", { fatal: false }).decode(p.bytes);
-      sections.push(htmlToText(raw));
+      section = htmlToText(new TextDecoder("utf-8", { fatal: false }).decode(p.bytes));
     }
+    sections.push(truncateForModel(section));
   }
-  if (sections.length === 1) return sections[0]!;
-  // Multi-URL: label each section by its URL so the model can attribute values.
-  return parts.map((p, i) => `=== SOURCE: ${p.url} ===\n${sections[i]}`).join("\n\n");
+  const combined =
+    sections.length === 1
+      ? sections[0]!
+      : // Multi-URL: label each section by its URL so the model can attribute values.
+        parts.map((p, i) => `=== SOURCE: ${p.url} ===\n${sections[i]}`).join("\n\n");
+  return truncateForModel(combined);
 }
 
 /**

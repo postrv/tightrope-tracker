@@ -62,11 +62,16 @@ export async function runModelJson(
 }
 
 /**
- * Convert PDF bytes to markdown via the Workers AI document-conversion utility.
- * Throws on a conversion error so the capture stage records an honest failure.
+ * Convert a binary document (PDF or XLSX) to markdown via the Workers AI
+ * document-conversion utility. Same mechanism the plan sanctions for PDFs; XLSX
+ * is handled identically (toMarkdown renders spreadsheet sheets to markdown
+ * tables) so the curator never hand-parses ODS/XLSX in the Worker (AUTOMATION_
+ * PLAN Phase 3). `name` must carry the right extension so the converter picks
+ * the format. Throws on a conversion error so the capture stage records an
+ * honest failure.
  */
-export async function pdfToMarkdown(env: Env, name: string, bytes: ArrayBuffer): Promise<string> {
-  const blob = new Blob([bytes], { type: "application/pdf" });
+export async function docToMarkdown(env: Env, name: string, bytes: ArrayBuffer, mime: string): Promise<string> {
+  const blob = new Blob([bytes], { type: mime });
   const res = await ai(env).toMarkdown({ name, blob });
   if (res.format === "error") {
     throw new Error(`AI.toMarkdown failed for ${name}: ${res.error}`);

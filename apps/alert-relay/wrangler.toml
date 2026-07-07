@@ -1,0 +1,25 @@
+name = "tightrope-alert-relay"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Webhook → email bridge. Accepts the Slack-shaped `{"text": "..."}` POST that
+# the ingest and curator workers send to ALERT_WEBHOOK_URL, and forwards it as
+# a plain-text email via the zone's Email Routing (send_email binding). Keeps
+# the webhook contract untouched — the sending workers don't know or care that
+# the destination is email.
+#
+# Auth: the hook path carries a random token (POST /hook/<RELAY_TOKEN>), which
+# is fine because ALERT_WEBHOOK_URL is itself a secret on the sending workers.
+# secret required: RELAY_TOKEN -- set via `wrangler secret put RELAY_TOKEN`.
+
+routes = [
+  { pattern = "alert-relay.tightropetracker.uk", custom_domain = true }
+]
+
+[[send_email]]
+name = "ALERT_EMAIL"
+destination_address = "laurence.avent@gmail.com"
+
+[observability]
+enabled = true

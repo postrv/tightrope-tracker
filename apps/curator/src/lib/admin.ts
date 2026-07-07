@@ -4,6 +4,7 @@ import { CAPTURE_STATUSES, type CaptureStatus } from "../types";
 import { getCapture, listCaptures, setCaptureDecision } from "./captures";
 import { readPublishedValueAt } from "./observations";
 import { approveCapture } from "../pipeline/publish";
+import { CURATOR_JOBS, isCuratorJob, runCuratorJob } from "./jobs";
 
 /**
  * Review-queue admin surface (AUTOMATION_PLAN Phase 3), ADMIN_TOKEN-gated with
@@ -36,7 +37,35 @@ export async function handleFetch(req: Request, env: Env): Promise<Response> {
     return routeCaptures(req, env, url);
   }
 
+  if (pathname === "/admin/run") {
+    const gate = await authorise(req, env);
+    if (gate) return gate;
+    return routeRun(req, env, url);
+  }
+
   return new Response("method not allowed", { status: 405 });
+}
+
+/**
+ * `POST /admin/run?job=sweep|poll|digest|staleness` — ops trigger to run a
+ * curator job outside its cron (there is otherwise no way to force a sweep).
+ * ADMIN_TOKEN-gated behind the same constant-time + per-IP backoff gate as the
+ * review endpoints, mirroring the ingest worker's `/admin/run` semantics: it
+ * runs the SAME job code a cron would (via runCuratorJob), so the ingestion_audit
+ * rows and — for `poll` — the dead-man heartbeat behave identically.
+ */
+async function routeRun(req: Request, env: Env, url: URL): Promise<Response> {
+  if (req.method !== "POST") return methodNotAllowed("POST");
+  const job = url.searchParams.get("job");
+  if (!job) return json({ error: `missing ?job= (one of: ${CURATOR_JOBS.join(", ")})` }, 400);
+  if (!isCuratorJob(job)) return json({ error: `unknown job '${job}' (one of: ${CURATOR_JOBS.join(", ")})` }, 400);
+  try {
+    const result = await runCuratorJob(env, job);
+    return json({ ok: true, ...result });
+  } catch (err) {
+    console.error(`curator admin run failed: job=${job}`, err);
+    return json({ error: "internal error" }, 500);
+  }
 }
 
 async function authorise(req: Request, env: Env): Promise<Response | null> {

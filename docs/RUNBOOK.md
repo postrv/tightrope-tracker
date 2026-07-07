@@ -405,6 +405,37 @@ equal the ingest worker's `ADMIN_TOKEN` — rotating `ADMIN_TOKEN` (§5) means
 updating that Actions secret too. Dry-run the fetch locally without touching
 production: `node --import tsx scripts/relay-boe.mjs --dry`.
 
+### 7.7 Triggering a curator job by hand
+
+The curator's four jobs (below) run on cron, but there is no way to *force* one
+outside its schedule — e.g. to re-run a sweep after fixing a spec, or to send
+the readiness digest early. `POST /admin/run?job=…` does exactly that, running
+the **same** code the cron does (per-spec `ingestion_audit` rows and all;
+`poll` also fires the dead-man heartbeat on success). It is gated by the
+curator's `ADMIN_TOKEN` behind the same constant-time + per-IP backoff as the
+review endpoints.
+
+```bash
+# Force a full re-capture + verify of every spec (ignores the hash short-circuit).
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" \
+  "https://curator.tightropetracker.uk/admin/run?job=sweep" | jq '{ran, results: [.results[] | {sourceId, status, rows}]}'
+
+# Daily change-detection poll (extract only on change) + heartbeat.
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "https://curator.tightropetracker.uk/admin/run?job=poll"
+
+# Send the editorial readiness digest now (does not wait for Tue/Wed 06:30).
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "https://curator.tightropetracker.uk/admin/run?job=digest"
+
+# Re-evaluate cadence state + fire any amber→red alerts.
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "https://curator.tightropetracker.uk/admin/run?job=staleness"
+```
+
+`?job=` accepts only `sweep | poll | digest | staleness`; anything else is a
+400. A `sweep`/`poll` returns `ok:true` even when individual specs fail (per-spec
+isolation) — inspect `.results[]` for the per-source `status`. A relay-backed
+spec (`obr_efo`, `ons_dd_failure`) reports `unchanged` here because the Worker
+does not fetch it; its data path is the artefact relay (§7.8).
+
 ---
 
 ## 8. Cloudflare dashboard hardening checklist (SEC-2 & SEC-4)

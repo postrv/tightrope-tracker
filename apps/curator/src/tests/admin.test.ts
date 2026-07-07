@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { handleFetch } from "../lib/admin";
 import { makeEnv, makeFakeDb, makeKv, type FakeCaptureRow } from "./helpers";
 
@@ -96,5 +96,48 @@ describe("admin review endpoints", () => {
   it("405s an unknown path", async () => {
     const res = await handleFetch(req("/nope"), env().env);
     expect(res.status).toBe(405);
+  });
+});
+
+describe("admin manual job trigger (POST /admin/run)", () => {
+  it("rejects a missing/wrong token with 401", async () => {
+    const res = await handleFetch(req("/admin/run?job=staleness", { method: "POST", token: "wrong" }), env().env);
+    expect(res.status).toBe(401);
+  });
+
+  it("400s a missing job param", async () => {
+    const res = await handleFetch(req("/admin/run", { method: "POST", token: TOKEN }), env().env);
+    expect(res.status).toBe(400);
+    expect((await res.json() as { error: string }).error).toContain("missing ?job=");
+  });
+
+  it("400s an unknown job", async () => {
+    const res = await handleFetch(req("/admin/run?job=frobnicate", { method: "POST", token: TOKEN }), env().env);
+    expect(res.status).toBe(400);
+    expect((await res.json() as { error: string }).error).toContain("unknown job 'frobnicate'");
+  });
+
+  it("405s a GET on /admin/run", async () => {
+    const res = await handleFetch(req("/admin/run?job=staleness", { method: "GET", token: TOKEN }), env().env);
+    expect(res.status).toBe(405);
+  });
+
+  it("runs the staleness job on the happy path", async () => {
+    const res = await handleFetch(req("/admin/run?job=staleness", { method: "POST", token: TOKEN }), env().env);
+    expect(res.status).toBe(200);
+    const body = await res.json() as { ok: boolean; job: string; evaluated: number };
+    expect(body).toMatchObject({ ok: true, job: "staleness", evaluated: 0 });
+  });
+
+  it("runs a sweep and reports per-spec results", async () => {
+    // Every fetch fails, but the JOB completes (per-spec isolation) → ok:true.
+    vi.stubGlobal("fetch", async () => { throw new Error("network down"); });
+    const res = await handleFetch(req("/admin/run?job=sweep", { method: "POST", token: TOKEN }), env().env);
+    vi.unstubAllGlobals();
+    expect(res.status).toBe(200);
+    const body = await res.json() as { ok: boolean; job: string; ran: number; results: unknown[] };
+    expect(body.ok).toBe(true);
+    expect(body.job).toBe("sweep");
+    expect(body.ran).toBeGreaterThan(0);
   });
 });

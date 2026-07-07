@@ -1,10 +1,8 @@
 import type { ExecutionContext, ScheduledController, Request as CfRequest, Response as CfResponse } from "@cloudflare/workers-types";
 import type { Env } from "./env";
-import { runSweep } from "./lib/sweep";
-import { runStalenessMonitor } from "./pipeline/staleness";
-import { sendEditorialDigest } from "./pipeline/digest";
+import { runCuratorJob } from "./lib/jobs";
 import { recordCronMiss } from "./lib/audit";
-import { fireHeartbeat, postAlert } from "./lib/alert";
+import { postAlert } from "./lib/alert";
 import { handleFetch } from "./lib/admin";
 import { sanitizeForLog } from "@tightrope/shared";
 
@@ -45,32 +43,18 @@ export default {
  * Cron dispatcher. Each job is wrapped so a single spec's failure never aborts
  * the run (the sweep runner already isolates per-spec; this guard covers the
  * job boundary). An unknown cron records a `cron_miss` audit row + pages,
- * matching ingest's behaviour rather than throwing.
- *
- *   sweep     → runSweep(force: true)   full re-capture+verify of every spec
- *   poll      → runSweep(force: false)  hash-poll; extract only on change; then
- *                                       fire the dead-man heartbeat on success
- *   digest    → sendEditorialDigest
- *   staleness → runStalenessMonitor     cadence-state pass + amber→red alerts
+ * matching ingest's behaviour rather than throwing. The job bodies live in the
+ * shared `runCuratorJob` so the manual `POST /admin/run` trigger runs the same
+ * code (including the poll's heartbeat).
  */
 export async function dispatchCron(cron: string, env: Env): Promise<void> {
   const job = jobForCron(cron);
   switch (job) {
     case "sweep":
-      await guard("sweep", () => runSweep(env, { force: true }));
-      return;
-    case "poll": {
-      const summary = await guard("poll", () => runSweep(env, { force: false }));
-      // Heartbeat only on a poll that completed without throwing — a wedged
-      // poll deliberately leaves the dead-man switch silent.
-      if (summary) await fireHeartbeat(env);
-      return;
-    }
+    case "poll":
     case "digest":
-      await guard("digest", () => sendEditorialDigest(env));
-      return;
     case "staleness":
-      await guard("staleness", () => runStalenessMonitor(env));
+      await guard(job, () => runCuratorJob(env, job));
       return;
     default:
       // SEC-14: `cron` is scheduler-controlled but sanitised defensively before

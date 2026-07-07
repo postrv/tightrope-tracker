@@ -1,11 +1,11 @@
 import type { Env } from "../env";
-import { isEditorialKind, type CaptureRow, type CaptureSpec, type ExtractionResult } from "../types";
+import { isEditorialKind, isRelaySpec, type CaptureRow, type CaptureSpec, type ExtractionResult } from "../types";
 import { CAPTURE_SPECS } from "../sources/registry";
 import { captureSource } from "../pipeline/capture";
 import { extractFromArtifact, runExtraction } from "../pipeline/extract";
 import { verifyExtraction } from "../pipeline/verify";
 import { decideAndPersist } from "../pipeline/publish";
-import { closeAudit, openAudit } from "./audit";
+import { closeAudit, type CuratorAuditStatus, type CloseAuditOpts, openAudit } from "./audit";
 import { listPending, setCaptureDecision, updatePayload } from "./captures";
 
 /** The triage spec reads staged gov.uk rows rather than fetching a URL. */
@@ -65,43 +65,87 @@ async function mapWithConcurrency<T, R>(
   return out;
 }
 
+/**
+ * Run one spec through the pipeline, guaranteeing the audit invariant.
+ *
+ * AUDIT INVARIANT (the timeline_triage defect fix). Every opened `ingestion_audit`
+ * row is closed EXACTLY ONCE, on every exit path, from a single `finally` — no
+ * success/catch pair that can double-write or, worse, skip the close and leave a
+ * dangling `started` row. The outcome (success / unchanged / skipped / failure)
+ * is resolved inside the try/catch into `audit`; the finally performs the one
+ * close. If the close itself fails (a real D1 outage, the only remaining way a
+ * row can dangle) we log LOUDLY rather than swallowing it silently — the old
+ * `.catch(() => undefined)` on the failure-close is exactly what turned a
+ * mid-sweep hiccup into an invisible `started` row.
+ *
+ * `fetchVia:"relay"` specs are NOT fetched here — the Worker's egress is
+ * upstream-WAF-blocked for them (obr_efo → HTTP 403). Their ingestion path is
+ * the GitHub Actions relay (POST /admin/relay-artefact). The sweep records an
+ * honest 'unchanged' audit note with a comment instead of a guaranteed 403
+ * failure, so /admin/health does not light up red for a source that is being
+ * fed out-of-band.
+ */
 async function runSpec(env: Env, spec: CaptureSpec, opts: { force: boolean }): Promise<SpecResult> {
   const auditUrl = spec.urls[0] ?? `curator:${spec.sourceId}`;
   const handle = await openAudit(env.DB, spec.sourceId, auditUrl);
+  // Default to failure so an unexpected early exit is honest, never a dangling row.
+  let audit: { status: CuratorAuditStatus; opts: CloseAuditOpts } = {
+    status: "failure",
+    opts: { error: "spec did not complete" },
+  };
+  let result: SpecResult = { sourceId: spec.sourceId, status: "failure", rows: 0, error: "spec did not complete" };
+
   try {
     if (spec.sourceId === TIMELINE_TRIAGE_SOURCE) {
       const n = await runTimelineTriage(env, spec);
-      await closeAudit(env.DB, handle, "success", { rowsWritten: n });
-      return { sourceId: spec.sourceId, status: "success", rows: n };
-    }
-
-    const cap = await captureSource(env, spec, opts);
-    if (cap === "unchanged") {
-      await closeAudit(env.DB, handle, "unchanged", { payloadHash: null });
-      return { sourceId: spec.sourceId, status: "unchanged", rows: 0 };
-    }
-
-    const extraction = await extractFromArtifact(env, spec, cap);
-    const verification = await verifyExtraction(env, spec, cap, extraction);
-
-    let rows = 0;
-    if (isEditorialKind(spec.kind)) {
-      await decideAndPersist(env, spec, buildEditorialRow(spec, cap, extraction), verification);
-      rows = 1;
+      audit = { status: "success", opts: { rowsWritten: n } };
+      result = { sourceId: spec.sourceId, status: "success", rows: n };
+    } else if (isRelaySpec(spec)) {
+      // Worker egress is WAF-blocked for this source; the relay endpoint owns
+      // ingestion. Skip the (guaranteed-failing) fetch and record it honestly.
+      audit = { status: "unchanged", opts: { payloadHash: null, error: "skipped: fetchVia=relay (ingested via /admin/relay-artefact)" } };
+      result = { sourceId: spec.sourceId, status: "unchanged", rows: 0 };
     } else {
-      for (const val of extraction.values) {
-        await decideAndPersist(env, spec, buildObservationRow(spec, cap, val, extraction), verification);
-        rows++;
+      const cap = await captureSource(env, spec, opts);
+      if (cap === "unchanged") {
+        audit = { status: "unchanged", opts: { payloadHash: null } };
+        result = { sourceId: spec.sourceId, status: "unchanged", rows: 0 };
+      } else {
+        const extraction = await extractFromArtifact(env, spec, cap);
+        const verification = await verifyExtraction(env, spec, cap, extraction);
+
+        let rows = 0;
+        if (isEditorialKind(spec.kind)) {
+          await decideAndPersist(env, spec, buildEditorialRow(spec, cap, extraction), verification);
+          rows = 1;
+        } else {
+          for (const val of extraction.values) {
+            await decideAndPersist(env, spec, buildObservationRow(spec, cap, val, extraction), verification);
+            rows++;
+          }
+        }
+        audit = { status: "success", opts: { rowsWritten: rows, payloadHash: `ai:${cap.contentSha256}` } };
+        result = { sourceId: spec.sourceId, status: "success", rows };
       }
     }
-    await closeAudit(env.DB, handle, "success", { rowsWritten: rows, payloadHash: `ai:${cap.contentSha256}` });
-    return { sourceId: spec.sourceId, status: "success", rows };
   } catch (err) {
     const message = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
-    await closeAudit(env.DB, handle, "failure", { error: message }).catch(() => undefined);
+    audit = { status: "failure", opts: { error: message } };
+    result = { sourceId: spec.sourceId, status: "failure", rows: 0, error: message };
     console.warn(`curator sweep: spec '${spec.sourceId}' failed: ${message}`);
-    return { sourceId: spec.sourceId, status: "failure", rows: 0, error: message };
+  } finally {
+    // Exactly one close, on every path. A throw HERE is the only remaining way a
+    // row can be left 'started', so surface it loudly instead of hiding it.
+    try {
+      await closeAudit(env.DB, handle, audit.status, audit.opts);
+    } catch (closeErr) {
+      console.error(
+        `curator sweep: FAILED to close audit row for '${spec.sourceId}' — row left 'started': ${(closeErr as Error)?.message ?? String(closeErr)}`,
+      );
+    }
   }
+
+  return result;
 }
 
 function buildObservationRow(
@@ -179,24 +223,30 @@ export async function runTimelineTriage(env: Env, spec: CaptureSpec): Promise<nu
   const pending = await listPending(env.DB, "timeline_event", "gov_uk", TIMELINE_TRIAGE_LIMIT);
   let processed = 0;
   for (const cap of pending) {
-    const candidate = cap.payload ? safeParse(cap.payload) : null;
-    const text = candidateText(candidate);
-    if (!text) continue;
-    let draft: Record<string, unknown> | null = null;
+    // PER-CANDIDATE ISOLATION — the underlying crash fix. Previously only the
+    // extraction was wrapped; the follow-up decision writes (setCaptureDecision
+    // / updatePayload) sat OUTSIDE the try, so a single candidate's write
+    // failure threw out of the whole triage job, dropping every remaining
+    // candidate and (once the audit close was compromised) leaving the sweep's
+    // audit row dangling at 'started'. The entire per-candidate unit is now
+    // self-contained — one bad row is logged and skipped, the batch continues
+    // (matching ingest's best-effort-per-item stageTimelineCandidates idiom).
     try {
+      const candidate = cap.payload ? safeParse(cap.payload) : null;
+      const text = candidateText(candidate);
+      if (!text) continue;
       const res = await runExtraction(env, spec, text, "primary");
-      draft = res.draft;
+      const draft = res.draft;
+      processed++;
+      const relevant = draft?.relevant !== false; // default keep unless explicitly false
+      if (!relevant) {
+        await setCaptureDecision(env.DB, cap.id, "rejected", { decidedBy: "auto:triage(not-material)" });
+      } else if (draft) {
+        // Merge the AI draft over the raw candidate so the reviewer sees both.
+        await updatePayload(env.DB, cap.id, JSON.stringify({ ...(candidate ?? {}), draft }));
+      }
     } catch (err) {
-      console.warn(`timeline triage extract failed for capture ${cap.id}: ${(err as Error)?.message ?? String(err)}`);
-      continue;
-    }
-    processed++;
-    const relevant = draft?.relevant !== false; // default keep unless explicitly false
-    if (!relevant) {
-      await setCaptureDecision(env.DB, cap.id, "rejected", { decidedBy: "auto:triage(not-material)" });
-    } else if (draft) {
-      // Merge the AI draft over the raw candidate so the reviewer sees both.
-      await updatePayload(env.DB, cap.id, JSON.stringify({ ...(candidate ?? {}), draft }));
+      console.warn(`timeline triage: candidate ${cap.id} failed: ${(err as Error)?.message ?? String(err)}`);
     }
   }
   return processed;

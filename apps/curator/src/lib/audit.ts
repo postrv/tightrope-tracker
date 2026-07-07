@@ -22,6 +22,14 @@ export interface CuratorAuditHandle {
 
 export type CuratorAuditStatus = "success" | "partial" | "unchanged" | "failure";
 
+/** Options accepted by `closeAudit` — exported so the sweep can resolve the
+ * outcome into a single value and close exactly once from its `finally`. */
+export interface CloseAuditOpts {
+  rowsWritten?: number;
+  payloadHash?: string | null;
+  error?: string | null;
+}
+
 export async function openAudit(db: D1Database, sourceId: string, sourceUrl: string): Promise<CuratorAuditHandle> {
   const id = globalThis.crypto.randomUUID();
   await db
@@ -38,7 +46,7 @@ export async function closeAudit(
   db: D1Database,
   handle: CuratorAuditHandle,
   status: CuratorAuditStatus,
-  opts: { rowsWritten?: number; payloadHash?: string | null; error?: string | null } = {},
+  opts: CloseAuditOpts = {},
 ): Promise<void> {
   await db
     .prepare(

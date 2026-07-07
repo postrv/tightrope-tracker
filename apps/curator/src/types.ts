@@ -53,7 +53,49 @@ export const CAPTURE_STATUSES = [
 
 export type CaptureStatus = (typeof CAPTURE_STATUSES)[number];
 
-export type ArtefactFormat = "html" | "pdf" | "atom";
+export type ArtefactFormat = "html" | "pdf" | "atom" | "xlsx";
+
+/**
+ * How a spec's artefact reaches the pipeline.
+ *   "worker" (default) — the curator Worker fetches the URL(s) itself.
+ *   "relay"            — the Worker's egress is blocked upstream (obr.uk 403s
+ *                        Cloudflare Workers IPs; ONS xlsx is doc-only), so a
+ *                        GitHub Actions runner fetches the artefact and POSTs it
+ *                        to POST /admin/relay-artefact. The Worker-side sweep
+ *                        skips the fetch for these (it would 403) and records an
+ *                        honest 'unchanged' note. Same upstream-WAF class as the
+ *                        BoE IADB relay the ingest worker already runs.
+ */
+export type FetchVia = "worker" | "relay";
+
+/**
+ * Follow-link discovery. Several publishers print the headline number one click
+ * deeper than the fixed landing/collection page (a per-month article, a
+ * quarterly release page, an exec-summary PDF). A spec with `discover` fetches
+ * the landing page, picks the NEWEST link matching `linkPattern`, then fetches
+ * THAT and hands the release — not the landing page — to the model. This logic
+ * is written once (lib/discover.ts) and shared by the Worker capture stage and
+ * the relay runner script (imported via tsx), so the two can never drift.
+ */
+export interface DiscoverConfig {
+  /**
+   * Regex SOURCE string matched (compiled `gi`) against the discovery page's
+   * `href="..."` values. The captured full href identifies a release. Relative
+   * hrefs are resolved against the discovery URL.
+   */
+  linkPattern: string;
+  /**
+   * Newest-selection strategy among the matches:
+   *   "first"   — first match in document order (publishers list newest-first).
+   *   "year"    — highest 4-digit year found in the href (ties → first).
+   *   "quarter" — gov.uk quarterly slug (…january-to-march-YYYY / …april-to-june
+   *               -YYYY / …july-to-september-YYYY / …october-to-december-YYYY);
+   *               ordered by year then quarter.
+   */
+  newest: "first" | "year" | "quarter";
+  /** Artefact format of the DISCOVERED release (overrides spec.format for the follow). */
+  releaseFormat?: ArtefactFormat;
+}
 
 /**
  * Per-indicator gate parameters on a CaptureSpec. `maxDelta` (gate G4) is local;
@@ -119,6 +161,19 @@ export interface CaptureSpec {
   modelId: string;
   /** Bumped whenever the extraction prompt changes; recorded on every capture row. */
   promptVersion: string;
+  /**
+   * Ingestion path. Defaults to "worker" when unset. "relay" specs are fed by
+   * the GitHub Actions runner (POST /admin/relay-artefact); the Worker sweep
+   * skips their fetch (it would 403). See FetchVia.
+   */
+  fetchVia?: FetchVia;
+  /** Follow-link discovery config; when set, capture follows to the newest release. */
+  discover?: DiscoverConfig;
+}
+
+/** True when this spec is fed by the relay runner rather than the Worker's own fetch. */
+export function isRelaySpec(spec: Pick<CaptureSpec, "fetchVia">): boolean {
+  return spec.fetchVia === "relay";
 }
 
 /** A fetched, hashed, archived artefact ready for extraction. */

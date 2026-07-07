@@ -16,6 +16,14 @@ export interface BackfillObservationsOptions {
   to: Date;
   dryRun: boolean;
   overwrite: boolean;
+  /**
+   * Injectable network leg, defaulting to `globalThis.fetch`. The BoE relay
+   * passes a replay fetch here (`/admin/relay?mode=backfill`): the IADB blocks
+   * Cloudflare Workers egress, so the raw CSV arrives from a runner (or an
+   * operator machine) and is replayed through the adapter's own
+   * `fetchHistorical` parse path.
+   */
+  fetchImpl?: typeof globalThis.fetch;
 }
 
 export interface BackfillObservationsResult {
@@ -63,7 +71,7 @@ export async function backfillObservations(
 
   try {
     const result: HistoricalFetchResult = await adapter.fetchHistorical(
-      globalThis.fetch,
+      opts.fetchImpl ?? globalThis.fetch,
       { from: opts.from, to: opts.to },
     );
 

@@ -25,6 +25,28 @@ const DRY = process.argv.includes("--dry");
 const INGEST_URL = (process.env.INGEST_URL ?? "https://ingest.tightropetracker.uk").replace(/\/$/, "");
 const ADMIN_TOKEN = process.env.RELAY_ADMIN_TOKEN ?? "";
 
+// --backfill --from=YYYY-MM-DD [--to=YYYY-MM-DD] [--overwrite]
+//   Replays the same fetched CSVs through the server's historical path
+//   (mode=backfill → fetchHistorical → hist: rows) instead of the live one.
+//   Used to close gaps the Workers-egress block left (e.g. 10 Jun → 4 Jul
+//   2026); the daily relay cron never passes these flags.
+const BACKFILL = process.argv.includes("--backfill");
+const OVERWRITE = process.argv.includes("--overwrite");
+const argValue = (name) => {
+  const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
+  return hit ? hit.slice(name.length + 3) : null;
+};
+const FROM = argValue("from");
+const TO = argValue("to") ?? new Date().toISOString().slice(0, 10);
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+if (BACKFILL && (!FROM || !ISO_DAY.test(FROM) || !ISO_DAY.test(TO))) {
+  console.error("--backfill requires --from=YYYY-MM-DD (and an optional valid --to=YYYY-MM-DD)");
+  process.exit(2);
+}
+const rangeOpts = BACKFILL
+  ? { from: new Date(`${FROM}T00:00:00Z`), to: new Date(`${TO}T00:00:00Z`) }
+  : {};
+
 /** The four BoE adapters, each with the exact series-code constant it requests. */
 const LEGS = [
   { id: "boe_yields", adapter: boeYieldsAdapter, seriesCodes: BOE_YIELDS_SERIES_CODES },
@@ -39,7 +61,7 @@ const replayFetchFor = (body) => async () =>
 
 /** Fetch the raw IADB CSV for one series set, using the adapter's own URL construction. */
 async function fetchCsv(seriesCodes) {
-  const url = buildBoEIadbUrl(seriesCodes);
+  const url = buildBoEIadbUrl(seriesCodes, rangeOpts);
   const res = await fetch(url, { headers: BOE_FETCH_HEADERS });
   if (!res.ok) throw new Error(`IADB fetch HTTP ${res.status} ${res.statusText}`);
   const body = await res.text();
@@ -59,7 +81,9 @@ async function relayLeg({ id, adapter, seriesCodes }) {
   let observations = null;
   let parseError = null;
   try {
-    observations = (await adapter.fetch(replayFetchFor(body))).observations;
+    observations = BACKFILL
+      ? (await adapter.fetchHistorical(replayFetchFor(body), rangeOpts)).observations
+      : (await adapter.fetch(replayFetchFor(body))).observations;
   } catch (err) {
     parseError = err;
   }
@@ -69,7 +93,8 @@ async function relayLeg({ id, adapter, seriesCodes }) {
     return { ms: Date.now() - t0, bytes: body.length, observations, dry: true };
   }
 
-  const postRes = await fetch(`${INGEST_URL}/admin/relay?adapter=${id}`, {
+  const modeQs = BACKFILL ? `&mode=backfill&from=${FROM}&to=${TO}&overwrite=${OVERWRITE}` : "";
+  const postRes = await fetch(`${INGEST_URL}/admin/relay?adapter=${id}${modeQs}`, {
     method: "POST",
     headers: { "content-type": "text/csv", "x-admin-token": ADMIN_TOKEN },
     body,
@@ -88,6 +113,10 @@ async function relayLeg({ id, adapter, seriesCodes }) {
 
 function summarise(observations) {
   if (!observations || observations.length === 0) return "(no observations)";
+  if (BACKFILL) {
+    const dates = observations.map((o) => o.observedAt.slice(0, 10)).sort();
+    return `${observations.length} hist observations ${dates[0]} → ${dates[dates.length - 1]}`;
+  }
   return observations.map((o) => `${o.indicatorId}=${o.value}@${o.observedAt.slice(0, 10)}`).join(", ");
 }
 
@@ -118,7 +147,9 @@ async function main() {
   // Kick a recompute so the relayed values reach the public snapshot immediately
   // (the 5-minute cron would do it anyway — this makes the run self-contained).
   // Non-fatal: a failed recompute must not flip an otherwise-green run red.
-  if (!DRY && failed.length < LEGS.length) {
+  // In backfill mode the caller follows up with backfill-scores, which owns
+  // recompute + KV invalidation — skip the kick.
+  if (!DRY && !BACKFILL && failed.length < LEGS.length) {
     try {
       const res = await fetch(`${INGEST_URL}/admin/run?source=recompute`, {
         method: "POST",

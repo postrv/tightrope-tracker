@@ -9,6 +9,7 @@ import type { Env } from "./env.js";
 import { timingSafeEqual } from "./admin.js";
 import { adminAuthGate } from "./lib/adminBackoff.js";
 import { runAdapter, type RunAdapterOutcome } from "./pipelines/runAdapter.js";
+import { backfillObservations } from "./pipelines/backfillObservations.js";
 import { sanitizeForLog } from "./lib/sanitize.js";
 
 /**
@@ -100,6 +101,63 @@ export async function handleRelay(req: Request, env: Env, url: URL): Promise<Res
   const replayFetch = (async () =>
     new Response(body, { status: 200, headers: { "content-type": "text/csv" } })) as unknown as typeof globalThis.fetch;
 
+  // `?mode=backfill&from=YYYY-MM-DD[&to=YYYY-MM-DD][&overwrite=true][&dryRun=true]`
+  // replays the SAME runner-fetched CSV through the adapter's `fetchHistorical`
+  // parse path instead of the live one — hist:-prefixed hashes,
+  // writeHistoricalObservations guardrails, and a `<id>:historical` audit row,
+  // exactly like `/admin/run?source=backfill-observations` (which cannot reach
+  // the IADB from Workers egress). Added 2026-07-08 to close the 10 Jun → 4 Jul
+  // gap the egress block left in the daily BoE series.
+  const mode = url.searchParams.get("mode") ?? "live";
+  if (mode !== "live" && mode !== "backfill") {
+    return json({ error: "mode must be 'live' or 'backfill'" }, 400);
+  }
+  if (mode === "backfill") {
+    const from = parseIsoDateParam(url, "from");
+    if (!from) {
+      return json({ error: "backfill mode requires ?from=YYYY-MM-DD" }, 400);
+    }
+    const to = url.searchParams.has("to") ? parseIsoDateParam(url, "to") : new Date();
+    if (!to) {
+      return json({ error: "invalid ?to= (expected YYYY-MM-DD)" }, 400);
+    }
+    if (from.getTime() >= to.getTime()) {
+      return json({ error: "'from' must be before 'to'" }, 400);
+    }
+    const overwrite = url.searchParams.get("overwrite") === "true";
+    const dryRun = url.searchParams.get("dryRun") === "true";
+    try {
+      const result = await backfillObservations(env, adapter, {
+        from,
+        to,
+        overwrite,
+        dryRun,
+        fetchImpl: replayFetch,
+      });
+      return json(
+        {
+          ok: true,
+          adapter: adapterId,
+          mode,
+          dryRun,
+          rowsAttempted: result.rowsAttempted,
+          rowsWritten: result.rowsWritten,
+          rowsRejected: result.rowsRejected.length,
+          earliestObservedAt: result.earliestObservedAt,
+          latestObservedAt: result.latestObservedAt,
+        },
+        200,
+      );
+    } catch (err) {
+      // backfillObservations has already closed the `<id>:historical` audit row
+      // as a failure before re-throwing.
+      console.warn(
+        `relay backfill: adapter '${adapterId}' failed — ${sanitizeForLog((err as Error)?.message ?? String(err))}`,
+      );
+      return json({ ok: false, adapter: adapterId, mode, status: "failure", rowsWritten: 0 }, 502);
+    }
+  }
+
   let outcome: RunAdapterOutcome | undefined;
   try {
     await runAdapter(env, adapter, {
@@ -125,6 +183,14 @@ export async function handleRelay(req: Request, env: Env, url: URL): Promise<Res
     },
     200,
   );
+}
+
+/** Strict YYYY-MM-DD → UTC-midnight Date; null on anything else. */
+function parseIsoDateParam(url: URL, name: string): Date | null {
+  const raw = url.searchParams.get(name);
+  if (!raw || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+  const d = new Date(`${raw}T00:00:00Z`);
+  return Number.isFinite(d.getTime()) ? d : null;
 }
 
 function json(body: unknown, status = 200): Response {

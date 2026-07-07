@@ -262,3 +262,62 @@ describe("handleRelay — malformed payload", () => {
     expect(runs.some((r) => r.sql.includes("INSERT OR REPLACE INTO indicator_observations"))).toBe(false);
   });
 });
+
+function makeBackfillReq(qs: string): Request {
+  return new Request(`https://ingest.example/admin/relay?adapter=boe_yields${qs}`, {
+    method: "POST",
+    headers: { "content-type": "text/csv", "x-admin-token": "test-token" },
+    body: YIELDS_CSV,
+  });
+}
+
+describe("handleRelay — backfill mode", () => {
+  it("400s an unknown mode", async () => {
+    const { env } = makeEnv();
+    const req = makeBackfillReq("&mode=nonsense");
+    const res = await handleRelay(req, env, relayUrl(req));
+    expect(res.status).toBe(400);
+  });
+
+  it("400s backfill without a from date, and rejects malformed or inverted ranges", async () => {
+    const { env } = makeEnv();
+    for (const qs of ["&mode=backfill", "&mode=backfill&from=30-06-2026", "&mode=backfill&from=2026-07-05&to=2026-06-30"]) {
+      const req = makeBackfillReq(qs);
+      const res = await handleRelay(req, env, relayUrl(req));
+      expect(res.status).toBe(400);
+    }
+  });
+
+  it("replays the CSV through fetchHistorical: hist rows written under a :historical audit row", async () => {
+    const { env, runs } = makeEnv();
+    const req = makeBackfillReq("&mode=backfill&from=2026-06-30&to=2026-07-05&overwrite=true");
+    const res = await handleRelay(req, env, relayUrl(req));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { ok: boolean; mode: string; rowsWritten: number; rowsRejected: number };
+    expect(body.ok).toBe(true);
+    expect(body.mode).toBe("backfill");
+    expect(body.rowsWritten).toBeGreaterThan(0);
+    expect(body.rowsRejected).toBe(0);
+
+    // Audit row opened under the :historical source id.
+    expect(
+      runs.some((r) => r.sql.includes("INSERT INTO ingestion_audit") && r.bindings.includes("boe_yields:historical")),
+    ).toBe(true);
+    // Observation writes are the historical tier: hist:-prefixed payload hashes.
+    const obsWrites = runs.filter((r) => r.sql.includes("INSERT OR REPLACE INTO indicator_observations"));
+    expect(obsWrites.length).toBeGreaterThan(0);
+    expect(obsWrites.every((r) => r.bindings.some((b) => typeof b === "string" && b.startsWith("hist:")))).toBe(true);
+  });
+
+  it("honours dryRun: reports without writing any observation rows", async () => {
+    const { env, runs } = makeEnv();
+    const req = makeBackfillReq("&mode=backfill&from=2026-06-30&dryRun=true");
+    const res = await handleRelay(req, env, relayUrl(req));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { ok: boolean; dryRun: boolean; rowsWritten: number };
+    expect(body.ok).toBe(true);
+    expect(body.dryRun).toBe(true);
+    expect(body.rowsWritten).toBe(0);
+    expect(runs.some((r) => r.sql.includes("INSERT OR REPLACE INTO indicator_observations"))).toBe(false);
+  });
+});

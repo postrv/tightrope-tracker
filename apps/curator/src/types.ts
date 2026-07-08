@@ -69,6 +69,20 @@ export type ArtefactFormat = "html" | "pdf" | "atom" | "xlsx";
 export type FetchVia = "worker" | "relay";
 
 /**
+ * For relay specs only: WHO runs the relay leg.
+ *   "actions" (default) — the scheduled GitHub Actions workflow
+ *                         (relay-artefacts.yml) fetches and POSTs on cron.
+ *   "manual"            — an operator machine with residential egress. obr.uk
+ *                         sits behind Cloudflare bot management, which 403s
+ *                         GitHub/Azure runner IPs as well as Workers egress
+ *                         (verified empirically 2026-07-08 — the scheduled runs
+ *                         failed while the same shared fetch code succeeded
+ *                         from a residential IP). Run on publication day:
+ *                         `node --import tsx scripts/relay-artefacts.mjs --spec=<id>`.
+ */
+export type RelayRunner = "actions" | "manual";
+
+/**
  * Follow-link discovery. Several publishers print the headline number one click
  * deeper than the fixed landing/collection page (a per-month article, a
  * quarterly release page, an exec-summary PDF). A spec with `discover` fetches
@@ -175,6 +189,12 @@ export interface CaptureSpec {
    * skips their fetch (it would 403). See FetchVia.
    */
   fetchVia?: FetchVia;
+  /**
+   * Relay specs only: who runs the relay leg. Defaults to "actions". "manual"
+   * specs are skipped by the scheduled workflow (the upstream WAF blocks
+   * runner IPs too) and relayed by an operator via --spec. See RelayRunner.
+   */
+  relayRunner?: RelayRunner;
   /** Follow-link discovery config; when set, capture follows to the newest release. */
   discover?: DiscoverConfig;
 }
@@ -182,6 +202,11 @@ export interface CaptureSpec {
 /** True when this spec is fed by the relay runner rather than the Worker's own fetch. */
 export function isRelaySpec(spec: Pick<CaptureSpec, "fetchVia">): boolean {
   return spec.fetchVia === "relay";
+}
+
+/** Who runs a relay spec's relay leg ("actions" unless the spec says otherwise); null for non-relay specs. */
+export function relayRunnerFor(spec: Pick<CaptureSpec, "fetchVia" | "relayRunner">): RelayRunner | null {
+  return isRelaySpec(spec) ? (spec.relayRunner ?? "actions") : null;
 }
 
 /** A fetched, hashed, archived artefact ready for extraction. */

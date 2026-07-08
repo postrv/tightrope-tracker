@@ -1,8 +1,8 @@
-// Curator artefact relay: fetch the relay-marked capture specs' artefacts on a
-// GitHub Actions runner (whose egress reaches upstreams that 403 Cloudflare
-// Workers — obr.uk; and the ONS xlsx the Worker shouldn't fetch itself) and
-// POST each to the curator's `POST /admin/relay-artefact`, which runs the exact
-// same capture→extract→verify→persist pipeline the sweep runs.
+// Curator artefact relay: fetch the relay-marked capture specs' artefacts off
+// Cloudflare (the upstreams 403 Workers egress, or the artefact is an xlsx the
+// Worker shouldn't fetch itself) and POST each to the curator's
+// `POST /admin/relay-artefact`, which runs the exact same
+// capture→extract→verify→persist pipeline the sweep runs.
 //
 // Discovery is SHARED, not forked: this script imports fetchArtefactParts from
 // the curator's own capture stage, so the follow-link discovery a runner does
@@ -10,17 +10,24 @@
 //
 // Run: node --import tsx scripts/relay-artefacts.mjs        (tsx resolves the
 //   script's .ts curator imports; node 20 can't strip types natively).
-//   --dry   fetch + discover the artefact(s) locally but skip every POST — proves
-//           discovery + fetch against the live sites without touching production.
+//   --dry        fetch + discover the artefact(s) locally but skip every POST —
+//                proves discovery + fetch against the live sites without
+//                touching production.
+//   --spec=a,b   relay exactly these relay specs, INCLUDING relayRunner:"manual"
+//                ones. Without --spec only "actions" specs run — obr.uk's
+//                Cloudflare bot management 403s GitHub/Azure runner IPs
+//                (verified 2026-07-08), so its leg must be run from an operator
+//                machine: `node --import tsx scripts/relay-artefacts.mjs --spec=obr_efo`.
 //
 // Exits non-zero if any relay leg failed, so CI can open a tracking issue.
 
 import { CAPTURE_SPECS } from "../apps/curator/src/sources/registry.ts";
-import { isRelaySpec } from "../apps/curator/src/types.ts";
+import { isRelaySpec, relayRunnerFor } from "../apps/curator/src/types.ts";
 import { fetchArtefactParts } from "../apps/curator/src/pipeline/capture.ts";
 
 const DRY = process.argv.includes("--dry");
 const FORCE = process.argv.includes("--force"); // Tue/Wed pre-deadline: re-extract even if unchanged.
+const SPEC_ARG = process.argv.find((a) => a.startsWith("--spec="))?.slice("--spec=".length) ?? null;
 const CURATOR_URL = (process.env.CURATOR_URL ?? "https://curator.tightropetracker.uk").replace(/\/$/, "");
 const ADMIN_TOKEN = process.env.CURATOR_ADMIN_TOKEN ?? "";
 
@@ -31,7 +38,33 @@ const CONTENT_TYPE = {
   html: "text/html",
 };
 
-const RELAY_SPECS = CAPTURE_SPECS.filter(isRelaySpec);
+const ALL_RELAY_SPECS = CAPTURE_SPECS.filter(isRelaySpec);
+
+/** Which legs to run: --spec picks explicitly (manual legs included); the
+ * default — the scheduled workflow — runs only runner-reachable ("actions") specs. */
+function selectSpecs() {
+  if (SPEC_ARG === null) {
+    const scheduled = ALL_RELAY_SPECS.filter((s) => relayRunnerFor(s) === "actions");
+    const manual = ALL_RELAY_SPECS.filter((s) => relayRunnerFor(s) === "manual");
+    if (manual.length > 0) {
+      console.log(
+        `Skipping manual relay spec(s): ${manual.map((s) => s.sourceId).join(", ")} — upstream WAF blocks runner IPs; run with --spec=<id> from an operator machine.`,
+      );
+    }
+    return scheduled;
+  }
+  const byId = new Map(ALL_RELAY_SPECS.map((s) => [s.sourceId, s]));
+  const picked = [];
+  for (const id of SPEC_ARG.split(",").map((s) => s.trim()).filter(Boolean)) {
+    const spec = byId.get(id);
+    if (!spec) {
+      console.error(`--spec=${id} is not a relay spec (relay specs: ${[...byId.keys()].join(", ")})`);
+      process.exit(2);
+    }
+    picked.push(spec);
+  }
+  return picked;
+}
 
 async function relaySpec(spec) {
   const t0 = Date.now();
@@ -76,6 +109,7 @@ async function main() {
     process.exit(2);
   }
   console.log(`Curator artefact relay ${DRY ? "(dry run — fetch + discover only, no POST)" : `→ ${CURATOR_URL}`}${FORCE ? " [force]" : ""}`);
+  const RELAY_SPECS = selectSpecs();
   console.log(`Relay specs: ${RELAY_SPECS.map((s) => s.sourceId).join(", ") || "(none)"}`);
 
   const failed = [];

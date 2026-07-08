@@ -134,6 +134,11 @@ async function main() {
       const r = await relayLeg(leg);
       if (r.dry) {
         console.log(`OK (${r.ms}ms, ${r.bytes}B) parsed: ${summarise(r.observations)}`);
+      } else if (BACKFILL) {
+        // The backfill response has no `status`; it reports the written range.
+        const from = r.server.earliestObservedAt?.slice(0, 10) ?? "?";
+        const to = r.server.latestObservedAt?.slice(0, 10) ?? "?";
+        console.log(`OK (${r.ms}ms, ${r.bytes}B) server: rowsWritten=${r.server.rowsWritten} (${from} → ${to})`);
       } else {
         console.log(`OK (${r.ms}ms, ${r.bytes}B) server: status=${r.server.status} rowsWritten=${r.server.rowsWritten}`);
         console.log(`  fetched latest: ${summarise(r.observations)}`);

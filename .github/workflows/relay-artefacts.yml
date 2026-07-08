@@ -1,16 +1,21 @@
 name: Curator artefact relay
 
 # Some curator capture specs are marked `fetchVia:"relay"` because the Cloudflare
-# Worker cannot fetch their artefact: obr.uk returns HTTP 403 to Workers egress
-# (same upstream-WAF class as the BoE IADB block), and the ONS DD-failure figure
-# lives only in an xlsx the Worker shouldn't fetch/parse itself. GitHub Actions
-# runners (and residential IPs) reach both. This job fetches each relay spec's
-# artefact on a runner — doing the SAME follow-link discovery the Worker would,
-# via the shared fetchArtefactParts — and POSTs the raw bytes to the curator's
-# `POST /admin/relay-artefact`, which runs the exact capture→extract→verify→
-# persist pipeline the sweep runs. The Worker-side sweep/poll SKIP these specs
-# (they would 403) and record an honest 'unchanged' note; this workflow is their
-# ingestion path.
+# Worker cannot fetch their artefact (upstream WAF blocks Workers egress, or the
+# figure lives only in an xlsx the Worker shouldn't fetch/parse itself). This job
+# fetches each RUNNER-REACHABLE relay spec's artefact — doing the SAME follow-link
+# discovery the Worker would, via the shared fetchArtefactParts — and POSTs the
+# raw bytes to the curator's `POST /admin/relay-artefact`, which runs the exact
+# capture→extract→verify→persist pipeline the sweep runs. The Worker-side
+# sweep/poll SKIP relay specs (they would 403) and record an honest 'unchanged'
+# note; this workflow is their ingestion path.
+#
+# NOT every relay spec runs here: obr.uk sits behind Cloudflare bot management,
+# which 403s GitHub/Azure runner IPs too (verified 2026-07-08), so `obr_efo` is
+# `relayRunner:"manual"` — the script skips it on scheduled runs, and on EFO
+# publication day (twice a year) an operator relays it from a residential
+# machine: `node --import tsx scripts/relay-artefacts.mjs --spec=obr_efo`
+# (RUNBOOK §7.8).
 #
 # Schedule rationale (UTC):
 #   0 4 * * 2,3  — 04:00 Tue/Wed, ONE HOUR BEFORE the 05:00 pre-deadline sweeps,
@@ -18,9 +23,9 @@ name: Curator artefact relay
 #                  Runs with --force (re-extract even if unchanged), mirroring
 #                  the pre-deadline sweep's force.
 #   15 6 * * *   — 06:15 daily, just after the 06:00 daily poll (which skips
-#                  relay specs). The daily change-detection leg for obr/ons: the
-#                  endpoint's hash short-circuit means no AI unless the artefact
-#                  changed, so an event-driven OBR EFO is picked up within 24h.
+#                  relay specs). The daily change-detection leg for the ONS
+#                  workbook: the endpoint's hash short-circuit means no AI
+#                  unless the artefact changed.
 #
 # SEC-11: third-party actions are pinned to full commit SHAs (see deploy.yml).
 
@@ -73,7 +78,7 @@ jobs:
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           BODY=$(printf '%s\n\n%s\n\n%s' \
             "The curator artefact relay failed on $(date -u '+%Y-%m-%d %H:%M UTC')." \
-            "A relay leg could not fetch/discover the artefact (obr.uk / ONS) or the curator /admin/relay-artefact POST was rejected. See the run log for which spec and the error. Dry-run locally to isolate fetch vs POST: node --import tsx scripts/relay-artefacts.mjs --dry" \
+            "A relay leg could not fetch/discover the artefact (ONS) or the curator /admin/relay-artefact POST was rejected. See the run log for which spec and the error. Dry-run locally to isolate fetch vs POST: node --import tsx scripts/relay-artefacts.mjs --dry (manual legs like obr_efo do not run here — see RUNBOOK §7.8)" \
             "Run: ${RUN_URL}")
           # Dedupe: reuse the open issue with this exact title if one exists.
           EXISTING=$(gh issue list --state open --search "${TITLE} in:title" --json number,title \

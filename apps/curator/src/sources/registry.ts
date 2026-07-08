@@ -170,20 +170,24 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     // Event-driven. NEVER auto-publish: twice-yearly, high-stakes — always
     // human-reviewed, so G4 is advisory here.
     //
-    // RELAY (2026-07-07): obr.uk returns HTTP 403 to Cloudflare Workers egress
-    // (same upstream-WAF class as the BoE IADB block) but 200 to GitHub Actions
-    // runners and residential IPs. So `fetchVia:"relay"`: a runner fetches the
-    // artefact and POSTs it to /admin/relay-artefact. FOLLOW-LINK (runner-side,
-    // shared discover.ts): obr.uk/efo lists the EFO documents; discovery follows
-    // to the newest exec-summary PDF download (verified from residential egress:
-    // obr.uk/download/economic-and-fiscal-outlook-march-2026), which the Worker
-    // converts via AI.toMarkdown.
+    // RELAY, MANUAL LEG (2026-07-08): obr.uk sits behind Cloudflare bot
+    // management, which 403s BOTH Cloudflare Workers egress AND GitHub/Azure
+    // runner IPs — the 2026-07-07 assumption that runners could reach it was
+    // verified only from residential egress and failed on the first scheduled
+    // runs. Only an operator machine (residential IP) can fetch it, so
+    // `relayRunner:"manual"`: the scheduled workflow skips this spec, and on
+    // EFO publication day (twice a year, March + autumn) an operator runs
+    //   `CURATOR_ADMIN_TOKEN=... node --import tsx scripts/relay-artefacts.mjs --spec=obr_efo`.
+    // FOLLOW-LINK (shared discover.ts): obr.uk/efo lists the EFO documents;
+    // discovery follows to the newest exec-summary PDF download, which the
+    // Worker converts via AI.toMarkdown.
     sourceId: "obr_efo",
     kind: "observation",
     indicatorIds: ["cb_headroom", "psnfl_trajectory"],
     urls: ["https://obr.uk/efo/"],
     format: "html",
     fetchVia: "relay",
+    relayRunner: "manual",
     discover: {
       linkPattern: "obr\\.uk/download/economic-and-fiscal-outlook-[a-z]+-20\\d{2}",
       newest: "year",

@@ -1,8 +1,8 @@
 import type { Env } from "../env";
 import { isEditorialKind, type CaptureArtifact, type CaptureSpec, type ExtractionResult } from "../types";
-import { runModelJson } from "../lib/ai";
+import { runModelJson, runModelText } from "../lib/ai";
 import { buildPrompt, type PromptFraming } from "../lib/prompts";
-import { isSchemaModeFailure, precheckArtefact, STRICT_MODEL_TEXT_BUDGET, truncateForModel } from "../lib/artefactText";
+import { biasForFormat, isSchemaModeFailure, precheckArtefact, STRICT_MODEL_TEXT_BUDGET, truncateForModel } from "../lib/artefactText";
 
 const MAX_RETRIES = 2; // ≤2 retries on schema-invalid output → 3 attempts total.
 
@@ -40,7 +40,9 @@ export async function runExtraction(
   }
 
   // The working text shrinks on a 5024 (see below); rebuild the prompt each
-  // attempt so the shorter window actually reaches the model.
+  // attempt so the shorter window actually reaches the model. The shrink keeps
+  // the end the artefact's format puts the newest data at (xlsx → tail).
+  const bias = biasForFormat(spec.discover?.releaseFormat ?? spec.format);
   let workingText = text;
   let lastError = "no attempts";
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -55,7 +57,7 @@ export async function runExtraction(
       // over-long artefact, so the NEXT attempt uses a much shorter,
       // higher-relevance window rather than re-sending the identical text.
       if (isSchemaModeFailure(message) && workingText.length > STRICT_MODEL_TEXT_BUDGET) {
-        workingText = truncateForModel(workingText, STRICT_MODEL_TEXT_BUDGET);
+        workingText = truncateForModel(workingText, STRICT_MODEL_TEXT_BUDGET, bias);
       }
       continue;
     }
@@ -63,8 +65,31 @@ export async function runExtraction(
     if (parsed.ok) return parsed.value;
     lastError = parsed.error;
   }
+
+  // Every schema-mode attempt died inside the constrained decoder itself (a
+  // 5024 is a generation give-up, not a validation miss — dense numeric tables
+  // trigger it at any window size). One rescue attempt WITHOUT response_format,
+  // with the shape stated in the prompt instead: parseAndValidate remains the
+  // gate, so this loosens generation, never acceptance.
+  if (isSchemaModeFailure(lastError)) {
+    const { messages } = buildPrompt(spec, workingText, framing);
+    messages.push({ role: "user", content: SHAPE_INSTRUCTION });
+    try {
+      const parsed = parseAndValidate(await runModelText(env, spec.modelId, messages), spec);
+      if (parsed.ok) return parsed.value;
+      lastError = `${lastError}; schema-free fallback: ${parsed.error}`;
+    } catch (err) {
+      lastError = `${lastError}; schema-free fallback: ${(err as Error)?.message ?? String(err)}`;
+    }
+  }
   throw new Error(`extraction failed after ${MAX_RETRIES + 1} attempts for ${spec.sourceId}: ${lastError}`);
 }
+
+/** Stated output shape for the schema-free rescue — normally `response_format` carries this. */
+const SHAPE_INSTRUCTION = [
+  "Respond with ONLY one JSON object — no prose, no code fences — of exactly this shape:",
+  '{"values":[{"indicatorId":"<id>","value":<number>,"unit":"<unit>","observedAt":"YYYY-MM-DD","quote":"<verbatim sentence>"}],"releasedAt":"<ISO date or null>","draft":<object for editorial drafts, else null>}',
+].join("\n");
 
 type ValidateResult = { ok: true; value: ExtractionResult } | { ok: false; error: string };
 

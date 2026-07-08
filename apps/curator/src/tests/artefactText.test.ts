@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSchemaModeFailure, MODEL_TEXT_BUDGET, precheckArtefact, truncateForModel } from "../lib/artefactText";
+import { biasForFormat, isSchemaModeFailure, MODEL_TEXT_BUDGET, precheckArtefact, truncateForModel } from "../lib/artefactText";
 
 describe("truncateForModel", () => {
   it("returns text unchanged when within budget", () => {
@@ -23,6 +23,33 @@ describe("truncateForModel", () => {
     const junk = "x".repeat(MODEL_TEXT_BUDGET * 2);
     const out = truncateForModel(junk);
     expect(out.length).toBe(MODEL_TEXT_BUDGET);
+  });
+
+  it("tail bias keeps the NEWEST rows of an all-relevant table, in document order", () => {
+    // A spreadsheet projection: every line carries digits, so the relevance
+    // heuristic keeps everything and the bias decides which end survives.
+    const rows = Array.from({ length: 300 }, (_, i) => `2022-01-01 plus ${i} months, rate ${(i % 30) / 10}`);
+    const out = truncateForModel(rows.join("\n"), 1_000, "tail");
+    expect(out.length).toBeLessThanOrEqual(1_000);
+    expect(out).toContain("plus 299 months"); // newest row survived
+    expect(out).not.toContain("plus 0 months,"); // oldest was dropped
+    // Document order preserved after the reverse-fill.
+    expect(out.indexOf("plus 298 months")).toBeLessThan(out.indexOf("plus 299 months"));
+  });
+
+  it("tail bias falls back to a tail slice when no line looks relevant", () => {
+    const junk = `${"x".repeat(500)}\n${"y".repeat(500)}`;
+    const out = truncateForModel(junk, 100, "tail");
+    expect(out).toBe(junk.slice(-100));
+  });
+});
+
+describe("biasForFormat", () => {
+  it("is tail only for xlsx (newest-last time series)", () => {
+    expect(biasForFormat("xlsx")).toBe("tail");
+    expect(biasForFormat("html")).toBe("head");
+    expect(biasForFormat("pdf")).toBe("head");
+    expect(biasForFormat("atom")).toBe("head");
   });
 });
 

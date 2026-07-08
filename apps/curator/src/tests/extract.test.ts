@@ -84,6 +84,69 @@ describe("extract — JSON mode + validation + retry", () => {
     expect(len(ai.calls[1]!)).toBeLessThan(len(ai.calls[0]!)); // window shrank after the 5024
   });
 
+  it("rescues a persistent 5024 with a schema-free attempt, hand-validated", async () => {
+    // The constrained decoder gives up on every schema-mode attempt (dense
+    // numeric artefact); the same model complies once response_format is
+    // dropped and the shape is stated in the prompt.
+    const ai = makeAi({
+      run: (_model, inputs) => {
+        if (inputs.response_format) throw new Error("5024: JSON Model couldn't be met");
+        return GOOD;
+      },
+    });
+    const res = await extractFromArtifact(makeEnv({ db: makeFakeDb(), ai: ai.AI }), observationSpec(), artifact(observationSpec()));
+    expect(res.values[0]!.value).toBe(48.8);
+    expect(ai.calls).toHaveLength(4); // 3 schema-mode attempts + 1 rescue
+    expect(ai.calls[3]!.response_format).toBeUndefined();
+    // The rescue prompt states the shape response_format used to enforce.
+    expect(ai.calls[3]!.messages.at(-1)!.content).toContain("ONLY one JSON object");
+  });
+
+  it("reports the rescue's own failure when the schema-free attempt is also invalid", async () => {
+    const ai = makeAi({
+      run: (_model, inputs) => {
+        if (inputs.response_format) throw new Error("5024: JSON Model couldn't be met");
+        return "{still broken";
+      },
+    });
+    await expect(
+      extractFromArtifact(makeEnv({ db: makeFakeDb(), ai: ai.AI }), observationSpec(), artifact(observationSpec())),
+    ).rejects.toThrow(/schema-free fallback/);
+    expect(ai.calls).toHaveLength(4);
+  });
+
+  it("does NOT run the schema-free rescue when the last failure was a validation miss, not a 5024", async () => {
+    const ai = makeAi({ run: () => "{not valid" });
+    await expect(
+      extractFromArtifact(makeEnv({ db: makeFakeDb(), ai: ai.AI }), observationSpec(), artifact(observationSpec())),
+    ).rejects.toThrow(/extraction failed after 3 attempts/);
+    expect(ai.calls).toHaveLength(3); // no fourth call — the model complied, its output was just bad
+  });
+
+  it("re-truncates from the TAIL on a 5024 for an xlsx artefact (newest rows last)", async () => {
+    // A workbook projection: every row is digit-bearing, headline in the LAST
+    // row — exactly the ons_dd_failure shape. After the first 5024 the strict
+    // window must keep the bottom of the table, not the top.
+    const longText = [
+      ...Array.from({ length: 400 }, (_, i) => `| 2022 plus ${i} months | rate ${(i % 30) / 10} | amount ${300 + (i % 50)} |`),
+      "The direct debit failure rate registered 48.8 in June 2026.",
+    ].join("\n");
+    let call = 0;
+    const ai = makeAi({
+      run: () => {
+        call += 1;
+        if (call === 1) throw new Error("5024: JSON Model couldn't be met");
+        return GOOD;
+      },
+    });
+    const spec = observationSpec({ format: "xlsx" });
+    const res = await extractFromArtifact(makeEnv({ db: makeFakeDb(), ai: ai.AI }), spec, artifact(spec, longText));
+    expect(res.values[0]!.value).toBe(48.8);
+    const secondText = ai.calls[1]!.messages.map((m) => m.content).join("");
+    expect(secondText).toContain("plus 399 months"); // tail (newest) kept
+    expect(secondText).not.toContain("plus 0 months"); // head (oldest) dropped
+  });
+
   it("extracts a cited draft for an editorial kind (values empty)", async () => {
     const spec = observationSpec({ sourceId: "delivery_milestones", kind: "delivery_milestone", indicatorIds: ["new_towns_milestones"], plausibility: {} });
     const draft = { indicatorId: "new_towns_milestones", proposedValue: 70, rationale: "consultation closed", quote: "The consultation on the New Towns programme closed on 19 May 2026.", sourceUrl: "https://gov.uk/x" };

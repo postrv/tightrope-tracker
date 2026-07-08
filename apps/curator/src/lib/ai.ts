@@ -52,6 +52,28 @@ export async function runModelJson(
     temperature: 0,
     seed: 1,
   });
+  return narrowResponse(out);
+}
+
+/**
+ * Schema-FREE text-generation call — the persistent-5024 rescue path
+ * (extract.ts). The constrained decoder behind `response_format` can give up
+ * ("5024: JSON Model couldn't be met") on dense numeric artefacts at any window
+ * size, while the same model complies happily when the shape is merely stated
+ * in the prompt. Callers hand-validate the output either way (parseAndValidate
+ * is the real gate), so dropping the decoder constraint loosens generation, not
+ * acceptance. Same deterministic decoding as runModelJson.
+ */
+export async function runModelText(
+  env: Env,
+  modelId: string,
+  messages: Array<{ role: string; content: string }>,
+): Promise<string> {
+  const out = await ai(env).run(modelId, { messages, temperature: 0, seed: 1 });
+  return narrowResponse(out);
+}
+
+function narrowResponse(out: Record<string, unknown>): string {
   const response = out.response;
   if (typeof response !== "string") {
     // Some model shapes return the JSON object directly rather than a string.

@@ -4,7 +4,7 @@ import type { ArtefactFormat, CaptureArtifact, CaptureSpec, DiscoverConfig } fro
 import { latestCaptureSha } from "../lib/captures";
 import { sha256HexBytes } from "../lib/hash";
 import { docToMarkdown } from "../lib/ai";
-import { truncateForModel } from "../lib/artefactText";
+import { biasForFormat, truncateForModel, MODEL_TEXT_BUDGET } from "../lib/artefactText";
 import { discoverReleaseUrl } from "../lib/discover";
 
 /** One fetched artefact part: raw bytes + the format to interpret them as. */
@@ -185,7 +185,9 @@ async function toText(env: Env, spec: CaptureSpec, parts: ArtefactPart[]): Promi
     } else {
       section = htmlToText(new TextDecoder("utf-8", { fatal: false }).decode(p.bytes));
     }
-    sections.push(truncateForModel(section));
+    // Bias per part: an xlsx is a newest-last time series, so over-budget
+    // truncation must keep the tail or the current month never reaches the model.
+    sections.push(truncateForModel(section, MODEL_TEXT_BUDGET, biasForFormat(p.format)));
   }
   const combined =
     sections.length === 1

@@ -16,6 +16,23 @@
 export const MODEL_TEXT_BUDGET = 20_000;
 export const STRICT_MODEL_TEXT_BUDGET = 8_000;
 
+/**
+ * Which end of an over-budget artefact survives truncation. Prose releases
+ * (HTML/PDF) print the headline figure near the top → keep the head. A
+ * spreadsheet is a time series with the NEWEST rows at the BOTTOM — and since
+ * nearly every spreadsheet line carries a digit, the relevance heuristic keeps
+ * everything and degenerates to positional truncation, so the bias decides
+ * whether the newest month ever reaches the model (the ons_dd_failure 5024s of
+ * 2026-07-08: 400KB workbook → the first 20k chars of old rows, headline never
+ * in the window).
+ */
+export type TruncationBias = "head" | "tail";
+
+/** Truncation bias for an artefact format: xlsx → tail (newest rows last), everything else → head. */
+export function biasForFormat(format: string): TruncationBias {
+  return format === "xlsx" ? "tail" : "head";
+}
+
 /** Lines carrying a digit, a month name, a quarter token, or a stats keyword — the headline number and its period live here. */
 const RELEVANT_LINE =
   /[0-9]|\b(january|february|march|april|may|june|july|august|september|october|november|december)\b|\bq[1-4]\b|per ?cent|%|index|balance|headroom|net\b/i;
@@ -30,7 +47,7 @@ const RELEVANT_LINE =
  * returned unchanged. A page with no relevant lines falls back to a head slice
  * so we never return empty.
  */
-export function truncateForModel(text: string, budget: number = MODEL_TEXT_BUDGET): string {
+export function truncateForModel(text: string, budget: number = MODEL_TEXT_BUDGET, bias: TruncationBias = "head"): string {
   if (text.length <= budget) return text;
 
   const lines = text.split("\n");
@@ -43,16 +60,22 @@ export function truncateForModel(text: string, budget: number = MODEL_TEXT_BUDGE
     }
   }
 
-  const out: string[] = [];
+  // Fill the budget from the biased end, then emit in document order either way.
+  const kept = [...keep].sort((a, b) => a - b);
+  if (bias === "tail") kept.reverse();
+  const chosen: number[] = [];
   let size = 0;
-  for (const i of [...keep].sort((a, b) => a - b)) {
+  for (const i of kept) {
     const line = lines[i]!;
     if (size + line.length + 1 > budget) break;
-    out.push(line);
+    chosen.push(i);
     size += line.length + 1;
   }
-  if (out.length === 0) return text.slice(0, budget);
-  return out.join("\n");
+  if (chosen.length === 0) return bias === "tail" ? text.slice(-budget) : text.slice(0, budget);
+  return chosen
+    .sort((a, b) => a - b)
+    .map((i) => lines[i]!)
+    .join("\n");
 }
 
 export type PrecheckResult = { ok: true } | { ok: false; reason: string };

@@ -256,16 +256,16 @@ export function makeKv(): { kv: { get: (k: string) => Promise<string | null>; pu
 // --- Workers AI -------------------------------------------------------------
 
 export interface FakeAiOptions {
-  /** Return the raw model `response` string for a run call. Inspect messages to branch primary/secondary. */
-  run?: (model: string, inputs: { messages: Array<{ role: string; content: string }> }) => string;
+  /** Return the raw model `response` string for a run call. Inspect messages to branch primary/secondary, or `response_format` to branch schema-mode vs the schema-free rescue. */
+  run?: (model: string, inputs: { messages: Array<{ role: string; content: string }>; response_format?: unknown }) => string;
   toMarkdown?: (file: { name: string }) => { format: "markdown"; data: string } | { format: "error"; error: string };
 }
 
-export function makeAi(opts: FakeAiOptions): { AI: unknown; calls: Array<{ model: string; messages: Array<{ role: string; content: string }> }> } {
-  const calls: Array<{ model: string; messages: Array<{ role: string; content: string }> }> = [];
+export function makeAi(opts: FakeAiOptions): { AI: unknown; calls: Array<{ model: string; messages: Array<{ role: string; content: string }>; response_format?: unknown }> } {
+  const calls: Array<{ model: string; messages: Array<{ role: string; content: string }>; response_format?: unknown }> = [];
   const AI = {
-    run: async (model: string, inputs: { messages: Array<{ role: string; content: string }> }) => {
-      calls.push({ model, messages: inputs.messages });
+    run: async (model: string, inputs: { messages: Array<{ role: string; content: string }>; response_format?: unknown }) => {
+      calls.push({ model, messages: inputs.messages, response_format: inputs.response_format });
       const response = opts.run ? opts.run(model, inputs) : "{}";
       return { response };
     },

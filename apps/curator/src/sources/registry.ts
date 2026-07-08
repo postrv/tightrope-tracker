@@ -188,6 +188,11 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     format: "html",
     fetchVia: "relay",
     relayRunner: "manual",
+    // The full EFO PDF's front matter (contents, charts index) is digit-dense
+    // enough to flood the model window before the headroom sentence appears
+    // mid-document (2026-07-08: the first relayed extraction returned no
+    // values). Anchor the lines that state the two figures.
+    anchorTerms: ["headroom", "net financial liabilities", "psnfl"],
     discover: {
       linkPattern: "obr\\.uk/download/economic-and-fiscal-outlook-[a-z]+-20\\d{2}",
       newest: "year",
@@ -232,6 +237,9 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
       newest: "first",
       releaseFormat: "xlsx",
     },
+    // Workbook rows are uniformly digit-dense; anchor the sheet rows that
+    // carry the target series so tail-fill starts from them.
+    anchorTerms: ["failure rate"],
     cadence: "monthly",
     plausibility: {
       // range derived from shared PLAUSIBILITY dd_failure_rate [0,5]; Appendix A Δ≤0.4.

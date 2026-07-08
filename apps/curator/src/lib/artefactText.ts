@@ -47,7 +47,12 @@ const RELEVANT_LINE =
  * returned unchanged. A page with no relevant lines falls back to a head slice
  * so we never return empty.
  */
-export function truncateForModel(text: string, budget: number = MODEL_TEXT_BUDGET, bias: TruncationBias = "head"): string {
+export function truncateForModel(
+  text: string,
+  budget: number = MODEL_TEXT_BUDGET,
+  bias: TruncationBias = "head",
+  anchors?: readonly string[],
+): string {
   if (text.length <= budget) return text;
 
   const lines = text.split("\n");
@@ -60,12 +65,36 @@ export function truncateForModel(text: string, budget: number = MODEL_TEXT_BUDGE
     }
   }
 
-  // Fill the budget from the biased end, then emit in document order either way.
-  const kept = [...keep].sort((a, b) => a - b);
-  if (bias === "tail") kept.reverse();
+  // Anchor tier: lines matching a spec-declared term (± 1 line of context) are
+  // kept BEFORE any other relevant line. In a long document nearly every line
+  // can carry a digit (an EFO's table of contents; a workbook), so positional
+  // fill alone can flood the budget before the sentence that actually states
+  // the figure — the anchor tier guarantees "headroom"-class lines survive
+  // wherever they sit in the document.
+  const anchorKeep = new Set<number>();
+  const lowered = (anchors ?? []).map((a) => a.toLowerCase()).filter((a) => a.length > 0);
+  if (lowered.length > 0) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]!.toLowerCase();
+      if (lowered.some((a) => line.includes(a))) {
+        if (i > 0) anchorKeep.add(i - 1);
+        anchorKeep.add(i);
+        if (i + 1 < lines.length) anchorKeep.add(i + 1);
+      }
+    }
+  }
+
+  // Fill the budget anchor tier first, then the rest, each from the biased
+  // end; emit in document order either way.
+  const anchored = [...anchorKeep].sort((a, b) => a - b);
+  const rest = [...keep].filter((i) => !anchorKeep.has(i)).sort((a, b) => a - b);
+  if (bias === "tail") {
+    anchored.reverse();
+    rest.reverse();
+  }
   const chosen: number[] = [];
   let size = 0;
-  for (const i of kept) {
+  for (const i of [...anchored, ...rest]) {
     const line = lines[i]!;
     if (size + line.length + 1 > budget) break;
     chosen.push(i);

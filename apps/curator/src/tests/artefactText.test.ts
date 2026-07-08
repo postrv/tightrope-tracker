@@ -42,6 +42,29 @@ describe("truncateForModel", () => {
     const out = truncateForModel(junk, 100, "tail");
     expect(out).toBe(junk.slice(-100));
   });
+
+  it("anchor terms keep the figure's line even when digit-dense front matter would flood the budget", () => {
+    // The EFO shape: a long digit-dense contents page, the headroom sentence
+    // buried mid-document. Positional head-fill would spend the whole budget
+    // on the contents; the anchor tier must keep the headroom line first.
+    const contents = Array.from({ length: 400 }, (_, i) => `Chart 1.${i} Public finances outlook ....... page ${i + 4}`);
+    const signal = "The Chancellor's headroom against the fiscal mandate is 9.9 billion in 2030-31.";
+    const text = [...contents.slice(0, 200), signal, ...contents.slice(200)].join("\n");
+    const out = truncateForModel(text, 2_000, "head", ["headroom"]);
+    expect(out.length).toBeLessThanOrEqual(2_000);
+    expect(out).toContain(signal);
+    // Without anchors the same call drops the signal — the regression this guards.
+    expect(truncateForModel(text, 2_000, "head")).not.toContain(signal);
+  });
+
+  it("anchor matching is case-insensitive and keeps one line of context", () => {
+    const filler = Array.from({ length: 300 }, (_, i) => `row ${i} value ${i} in 2026`);
+    const text = [...filler, "Table 2b", "HEADROOM (billions)", "9.9 in 2030"].join("\n");
+    const out = truncateForModel(text, 200, "head", ["headroom"]);
+    expect(out).toContain("HEADROOM (billions)");
+    expect(out).toContain("Table 2b"); // context line above
+    expect(out).toContain("9.9 in 2030"); // context line below
+  });
 });
 
 describe("biasForFormat", () => {

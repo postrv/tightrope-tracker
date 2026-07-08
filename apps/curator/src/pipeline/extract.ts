@@ -57,7 +57,7 @@ export async function runExtraction(
       // over-long artefact, so the NEXT attempt uses a much shorter,
       // higher-relevance window rather than re-sending the identical text.
       if (isSchemaModeFailure(message) && workingText.length > STRICT_MODEL_TEXT_BUDGET) {
-        workingText = truncateForModel(workingText, STRICT_MODEL_TEXT_BUDGET, bias);
+        workingText = truncateForModel(workingText, STRICT_MODEL_TEXT_BUDGET, bias, spec.anchorTerms);
       }
       continue;
     }

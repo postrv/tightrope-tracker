@@ -187,7 +187,7 @@ async function toText(env: Env, spec: CaptureSpec, parts: ArtefactPart[]): Promi
     }
     // Bias per part: an xlsx is a newest-last time series, so over-budget
     // truncation must keep the tail or the current month never reaches the model.
-    sections.push(truncateForModel(section, MODEL_TEXT_BUDGET, biasForFormat(p.format)));
+    sections.push(truncateForModel(section, MODEL_TEXT_BUDGET, biasForFormat(p.format), spec.anchorTerms));
   }
   const combined =
     sections.length === 1

@@ -195,6 +195,15 @@ export interface CaptureSpec {
    * runner IPs too) and relayed by an operator via --spec. See RelayRunner.
    */
   relayRunner?: RelayRunner;
+  /**
+   * Case-insensitive substrings whose lines (± 1 line of context) are kept
+   * FIRST when the artefact text is truncated to the model budget. For long,
+   * digit-dense documents (a full EFO PDF, a workbook) positional truncation
+   * can flood the budget before the sentence that states the figure; anchors
+   * guarantee those lines survive wherever they sit. Optional — most specs'
+   * artefacts fit the budget or lead with the headline.
+   */
+  anchorTerms?: string[];
   /** Follow-link discovery config; when set, capture follows to the newest release. */
   discover?: DiscoverConfig;
 }

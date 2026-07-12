@@ -134,7 +134,7 @@ const annotations = mapEventsToChart(history, events);
 /** Titles are abbreviated to keep the SVG legible — the full title remains
  * accessible via the tooltip and label hover/focus target.
  */
-const LABEL_MAX_CHARS = 22;
+const LABEL_MAX_CHARS = 24;
 function abbreviateEventTitle(title: string): string {
   // Prefer the leading clause, but do not reduce short actor-led titles
   // ("US, Israel and Iran agree...") to a single ambiguous token.
@@ -145,9 +145,15 @@ function abbreviateEventTitle(title: string): string {
     const keyword = normalised.match(/\b(ceasefire|budget|forecast|headroom|inflation|CPI|rates?|conflict)\b/i)?.[0];
     head = keyword ? `${head} ${keyword}` : normalised;
   }
-  return head.length > LABEL_MAX_CHARS
-    ? `${head.slice(0, LABEL_MAX_CHARS - 1)}…`
-    : head;
+  if (head.length <= LABEL_MAX_CHARS) return head;
+  // Cut at a WORD boundary, never mid-word — "Prime Minister announ…" reads
+  // worse than a shorter but whole "Prime Minister…". Trailing connective
+  // words and punctuation are stripped so the fragment ends on a content word.
+  let cut = head.slice(0, LABEL_MAX_CHARS);
+  const lastSpace = cut.lastIndexOf(" ");
+  if (lastSpace > 0) cut = cut.slice(0, lastSpace);
+  cut = cut.replace(/(?:\s+(?:and|or|of|the|to|a|an|in|on|as|for|its|his|her))+$/i, "").replace(/[,;:.\s]+$/, "");
+  return `${cut}…`;
 }
 const labelledAnnotations = annotations;
 
@@ -159,17 +165,23 @@ const labelledAnnotations = annotations;
 // — the marker dot remains, so the event is still readable on hover, but the
 // chart never collapses into stacked overlapping text.
 const LABEL_CHAR_WIDTH = 6.2; // ~10.5px monospace, conservative
-const LABEL_GAP_PX = 6;
+const LABEL_GAP_PX = 10;
+/** Horizontal room reserved for the category dot that leads each label. */
+const LABEL_DOT_SPACE = 11;
 
 interface PlacedLabel {
   annotation: typeof labelledAnnotations[number];
   cx: number;
   cy: number;
+  /** Left edge of the full label extent (dot + text). */
   labelLeft: number;
+  /** Full extent width (dot + text). */
   labelWidth: number;
-  labelX: number;
+  /** x of the text start — always rendered with text-anchor="start". */
+  textX: number;
   labelY: number;
-  anchor: "start" | "middle" | "end";
+  /** Where the connector meets the label row — the extent edge nearest the marker. */
+  connectorX: number;
   above: boolean;
   text: string;
 }
@@ -182,30 +194,17 @@ function placeLabels(
   const out: PlacedLabel[] = [];
   for (const a of sorted) {
     const text = abbreviateEventTitle(a.event.title);
-    const width = text.length * LABEL_CHAR_WIDTH;
+    const width = LABEL_DOT_SPACE + text.length * LABEL_CHAR_WIDTH;
     const cx = padL + a.xRatio * plotW;
     const cy = yFor(a.value);
-    // Default anchor: centre. Clamp the label horizontally so it doesn't run
-    // off either edge — switch to start/end anchor when the label is right
-    // up against the plot bounds.
-    const halfWidth = width / 2;
-    let labelX = cx;
-    let anchor: "start" | "middle" | "end" = "middle";
-    const minX = padL + 4;
-    const maxX = padL + plotW - 4;
-    if (cx - halfWidth < minX) {
-      labelX = minX;
-      anchor = "start";
-    } else if (cx + halfWidth > maxX) {
-      labelX = maxX;
-      anchor = "end";
-    }
-    // Compute the horizontal extent the label will occupy given the anchor.
-    const labelLeft = anchor === "start"
-      ? labelX
-      : anchor === "end"
-        ? labelX - width
-        : labelX - halfWidth;
+    // Single anchoring model: every label is a start-anchored [dot + text]
+    // block whose left edge is the marker-centred position clamped into the
+    // plot bounds. One code path means the connector target below is always
+    // derived the same way — the old middle/start/end anchor switching is
+    // what let clamped edge labels drift away from their connectors.
+    const minX = padL + 2;
+    const maxX = padL + plotW - 2;
+    const labelLeft = Math.min(Math.max(cx - width / 2, minX), Math.max(minX, maxX - width));
     const labelRight = labelLeft + width;
     let assignedLane = -1;
     for (let i = 0; i < LABEL_LANES.length; i++) {
@@ -223,9 +222,12 @@ function placeLabels(
       cy,
       labelLeft,
       labelWidth: width,
-      labelX,
+      textX: labelLeft + LABEL_DOT_SPACE,
       labelY: lane.y,
-      anchor,
+      // The connector lands on the label extent at the point nearest the
+      // marker's x — directly above/below the marker when the label wasn't
+      // clamped, at the extent's edge when it was.
+      connectorX: Math.min(Math.max(cx, labelLeft + 4), labelRight - 4),
       above: lane.above,
       text,
     });
@@ -237,15 +239,21 @@ const placedLabels = placeLabels(labelledAnnotations);
 
 // Map TimelineCategory → CSS variable. Markers stay readable on the cream
 // background and align with how the rest of the site colours each kind
-// of event.
+// of event. Five visual groups, validated (dataviz six-checks) on both
+// surfaces: the chromatic trio (orange / amber / teal) passes lightness,
+// chroma, and CVD separation; the two ink slots are deliberate achromatics
+// (geopolitical = full ink, policy/delivery = muted ink) whose identity
+// relief is the permanent label + legend + tooltip. `political` gets its
+// own teal — this window mixes Westminster and war events, and both wearing
+// ink-0 made the two kinds indistinguishable.
 const CATEGORY_COLOUR: Record<TimelineCategory, string> = {
   fiscal: "var(--band-acute)",
   monetary: "var(--band-strain)",
   market: "var(--band-strain)",
   geopolitical: "var(--ink-0)",
-  political: "var(--ink-0)",
-  policy: "var(--accent)",
-  delivery: "var(--accent)",
+  political: "var(--cat-political)",
+  policy: "var(--ink-2)",
+  delivery: "var(--ink-2)",
 };
 const CATEGORY_LABEL: Record<TimelineCategory, string> = {
   fiscal: "Fiscal",
@@ -268,14 +276,17 @@ function tooltipIdFor(eventId: string): string {
 // --- date ticks (sparse) --------------------------------------------------
 // Render at most ~6 date labels so the x-axis stays readable. We pick the
 // first, last, and a roughly-evenly-spaced set in between.
-const dateTicks: { x: number; label: string }[] = [];
+const dateTicks: { x: number; label: string; anchor: "start" | "middle" | "end" }[] = [];
 if (points.length > 0) {
   const TARGET_TICKS = Math.min(6, points.length);
   const step = points.length === 1 ? 1 : (points.length - 1) / (TARGET_TICKS - 1);
   for (let i = 0; i < TARGET_TICKS; i++) {
     const idx = Math.min(points.length - 1, Math.round(i * step));
     const x = points.length === 1 ? padL + plotW / 2 : padL + (idx / (points.length - 1)) * plotW;
-    dateTicks.push({ x, label: shortDate(points[idx]!.timestamp) });
+    // End ticks hug the plot edges: a centred label at the last point would
+    // overflow the 16px right pad and clip mid-glyph ("12 Jul 2…").
+    const anchor = i === 0 ? "start" : i === TARGET_TICKS - 1 ? "end" : "middle";
+    dateTicks.push({ x, label: shortDate(points[idx]!.timestamp), anchor });
   }
 }
 
@@ -390,7 +401,10 @@ const idScope = `chart-${width}x${height}`;
               density; this widens the actual tap area to the WCAG 2.5.8
               floor on touch devices. */}
           <circle cx={cx} cy={cy} r="14" class="marker-hit" />
-          <circle cx={cx} cy={cy} r="5" fill={colour} class="marker-dot" />
+          {/* The thin ink ring is the contrast relief for the palette's pale
+              hues (amber prints ~2:1 on cream) — every dot stays findable
+              regardless of its category colour. */}
+          <circle cx={cx} cy={cy} r="5" fill={colour} class="marker-dot" stroke="var(--ink-0)" stroke-opacity="0.35" stroke-width="1" />
           <circle cx={cx} cy={cy} r="2" fill="var(--bg-0)" class="marker-dot-inner" />
         </g>
       );
@@ -403,8 +417,18 @@ const idScope = `chart-${width}x${height}`;
         but the chart never collapses into overlapping text. */}
     {placedLabels.map((p) => {
       const colour = colourFor(p.annotation.event.category);
-      const connectorY1 = p.above ? p.cy - 6 : p.cy + 6;
-      const connectorY2 = p.above ? p.labelY + 4 : p.labelY - 10;
+      // Above-plot labels connect from the marker itself; below-plot labels
+      // connect from the plot floor — the dashed marker-guide already walks
+      // the eye from the marker down to the axis, so restarting there keeps
+      // a below label from dragging a second full-height line through the
+      // fill. When the label was clamped away from the marker's x the path
+      // takes a rounded elbow to the extent edge nearest the marker.
+      const startY = p.above ? p.cy - 6 : padT + plotH;
+      const endY = p.above ? p.labelY + 4 : p.labelY - 10;
+      const needsElbow = Math.abs(p.connectorX - p.cx) > 1;
+      const connectorD = needsElbow
+        ? `M${p.cx.toFixed(2)},${startY.toFixed(2)} V${(p.above ? endY + 8 : endY - 8).toFixed(2)} Q${p.cx.toFixed(2)},${endY.toFixed(2)} ${(p.cx + Math.sign(p.connectorX - p.cx) * 8).toFixed(2)},${endY.toFixed(2)} H${p.connectorX.toFixed(2)}`
+        : `M${p.cx.toFixed(2)},${startY.toFixed(2)} V${endY.toFixed(2)}`;
       return (
         <g
           class="event-label"
@@ -423,22 +447,26 @@ const idScope = `chart-${width}x${height}`;
             rx="3"
             class="event-label-hit"
           />
-          <line
-            x1={p.cx}
-            y1={connectorY1}
-            x2={p.cx}
-            y2={connectorY2}
+          <path
+            d={connectorD}
             class="event-label-connector"
-            stroke={colour}
-            stroke-width="1"
-            stroke-opacity="0.7"
+            fill="none"
+          />
+          {/* Identity lives in the leading dot; the text wears ink with a
+              surface-coloured halo so a connector or gridline can never
+              strike through it. */}
+          <circle
+            cx={p.labelLeft + 4}
+            cy={p.labelY - 3.5}
+            r="3.5"
+            fill={colour}
+            class="event-label-dot"
           />
           <text
-            x={p.labelX}
+            x={p.textX}
             y={p.labelY}
-            text-anchor={p.anchor}
+            text-anchor="start"
             class="event-label-text"
-            fill={colour}
           >{p.text}</text>
         </g>
       );
@@ -451,7 +479,7 @@ const idScope = `chart-${width}x${height}`;
       <text
         x={t.x}
         y={height - 10}
-        text-anchor="middle"
+        text-anchor={t.anchor}
         class="axis-label date-tick"
         data-tick-i={i}
       >{t.label}</text>
@@ -534,6 +562,24 @@ const idScope = `chart-${width}x${height}`;
 .event-label-connector {
   cursor: default;
   pointer-events: none;
+  /* Connectors are structure, not identity — they wear quiet ink so five
+     category colours don't turn the annotation layer into coloured scaffolding. */
+  stroke: var(--ink-2);
+  stroke-width: 1;
+  stroke-opacity: 0.45;
+  transition: stroke-opacity 140ms ease-out;
+}
+.event-label:hover .event-label-connector,
+.event-label:focus-visible .event-label-connector,
+.event-label[data-active="true"] .event-label-connector,
+.event-label[data-pinned="true"] .event-label-connector { stroke-opacity: 0.9; }
+.event-label-dot {
+  pointer-events: none;
+  /* Same defining ring as the plot markers, so the leading dot and the
+     marker it annotates read as the same species. */
+  stroke: var(--ink-0);
+  stroke-opacity: 0.35;
+  stroke-width: 1;
 }
 .event-label-text {
   font-family: var(--font-mono);
@@ -543,6 +589,12 @@ const idScope = `chart-${width}x${height}`;
   cursor: pointer;
   pointer-events: none;
   user-select: none;
+  /* Identity lives in the leading dot — text wears ink (never the series
+     colour) with a surface halo so crossing lines can't strike through it. */
+  fill: var(--ink-1);
+  stroke: var(--bg-1);
+  stroke-width: 3px;
+  paint-order: stroke;
 }
 .event-label:hover .event-label-text,
 .event-label:focus-visible .event-label-text,

@@ -194,10 +194,49 @@ describe("AnnotatedHeadlineChart", () => {
     expect(label!.getAttribute("data-event-id")).toBe("budget");
     expect(label!.getAttribute("role")).toBe("button");
     expect(label!.querySelector("rect.event-label-hit")).not.toBeNull();
-    expect(label!.querySelector("line.event-label-connector")).not.toBeNull();
+    expect(label!.querySelector("path.event-label-connector")).not.toBeNull();
     expect(label!.getAttribute("aria-describedby")).toBe(tooltip!.getAttribute("id"));
     expect(marker!.getAttribute("data-event-id")).toBe("budget");
     expect(marker!.getAttribute("aria-describedby")).toBe(tooltip!.getAttribute("id"));
+  });
+
+  it("carries category identity on the leading dot, never the label text", async () => {
+    // Dataviz contract: text wears ink tokens; the category hue lives in a
+    // leading dot. A regression that re-colours the text (the pre-2026-07-12
+    // design) made clustered labels read as noise.
+    const events: TimelineEvent[] = [
+      ev("budget", "2026-04-05T12:00:00Z", { title: "Spring Statement", category: "fiscal" }),
+      ev("westminster", "2026-04-10T12:00:00Z", { title: "Leadership contest", category: "political" }),
+    ];
+    const doc = await render({ history: buildHistory(), events });
+    const labels = Array.from(doc.querySelectorAll("g.event-label"));
+    expect(labels.length).toBe(2);
+    for (const label of labels) {
+      const text = label.querySelector("text.event-label-text")!;
+      expect(text.getAttribute("fill")).toBeNull(); // ink comes from the class, not a per-category attr
+      expect(label.querySelector("circle.event-label-dot")).not.toBeNull();
+    }
+    const dotFills = labels.map((l) => l.querySelector("circle.event-label-dot")!.getAttribute("fill"));
+    expect(dotFills).toContain("var(--band-acute)");
+    expect(dotFills).toContain("var(--cat-political)"); // political ≠ geopolitical ink
+  });
+
+  it("truncates at a word boundary, never mid-word", async () => {
+    const events: TimelineEvent[] = [
+      ev("pm", "2026-04-05T12:00:00Z", {
+        // No comma/colon clause to split on — forces the length cap path.
+        title: "Prime Minister announces resignation timetable",
+        category: "political",
+      }),
+    ];
+    const doc = await render({ history: buildHistory(), events });
+    const labelText = doc.querySelector("g.event-label text.event-label-text")?.textContent?.trim() ?? "";
+    expect(labelText.endsWith("…")).toBe(true);
+    // Every emitted token must be a whole word from the source title.
+    const sourceWords = new Set("Prime Minister announces resignation timetable".split(" "));
+    for (const word of labelText.replace("…", "").trim().split(/\s+/)) {
+      expect(sourceWords.has(word), `"${word}" is a truncated fragment`).toBe(true);
+    }
   });
 
   it("abbreviates long permanent-label titles", async () => {

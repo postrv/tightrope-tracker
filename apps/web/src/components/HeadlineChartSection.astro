@@ -21,12 +21,16 @@ const { history, events } = Astro.props;
 
 // Legend rows mirror the colours used by AnnotatedHeadlineChart for each
 // TimelineCategory. Kept here so the legend reads as a contract with the
-// chart — adding a category requires updating both files.
+// chart — adding a category requires updating both files. Political carries
+// its own teal (geopolitical wears ink), and policy/delivery its muted ink —
+// the old legend mapped policy/delivery to var(--accent), which is the same
+// hex as fiscal's var(--band-acute), so two categories were indistinguishable.
 const LEGEND: { label: string; cssVar: string }[] = [
   { label: "Fiscal", cssVar: "var(--band-acute)" },
   { label: "Monetary / Market", cssVar: "var(--band-strain)" },
   { label: "Geopolitical", cssVar: "var(--ink-0)" },
-  { label: "Policy / Delivery", cssVar: "var(--accent)" },
+  { label: "Political", cssVar: "var(--cat-political)" },
+  { label: "Policy / Delivery", cssVar: "var(--ink-2)" },
 ];
 
 const hasData = history.points.length > 0;

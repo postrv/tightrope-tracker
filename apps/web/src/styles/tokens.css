@@ -30,6 +30,12 @@
   --accent: #FE5500;       /* orange — primary brand */
   --accent-dim: #EE9944;   /* yellow — warm secondary */
   --accent-cool: #79CAC4;  /* blue — cool secondary */
+  /* Chart category mark for `political` events. Geopolitical wears ink, so
+     political needs its own hue: a deepened step of accent-cool, validated
+     (lightness band, chroma floor, CVD separation vs band-acute/band-strain)
+     on the cream surface. Dark mode uses accent-cool itself — dark surfaces
+     want the lighter step. */
+  --cat-political: #008A66;
 
   /* Score bands — severity ramp, aligned to brand where possible */
   --band-slack: #5FB27C;
@@ -88,6 +94,7 @@
   --accent: #FE5500;
   --accent-dim: #EE9944;
   --accent-cool: #79CAC4;
+  --cat-political: #79CAC4;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
   --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.35);

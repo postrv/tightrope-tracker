@@ -11,6 +11,12 @@
  * `methodology` block for the primary-source rationale):
  *   - housing_trajectory = completions_sa_quarterly * 4 / 300,000 * 100
  *   - planning_consents  = residential_decisions_granted_quarterly / 11,500 * 100
+ * The formulas are implemented in packages/shared/src/derivations.ts (the
+ * curator's derived-indicator capture computes with them) and drift-guarded
+ * by fixtures/housingDerivation.test.ts. This adapter deliberately still
+ * reads the hand-computed fixture values rather than computing: switching
+ * would shift published values by rounding (49.6 → 49.56) and churn the
+ * corrections log for no informational gain.
  *
  * The `fetchHistorical` path emits observations with the `hist:` payload-hash
  * convention so writeHistoricalObservations accepts them; this distinguishes

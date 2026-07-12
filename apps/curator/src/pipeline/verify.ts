@@ -20,7 +20,10 @@ import { readLatestPublishedObservations } from "../lib/observations";
  *
  *   G1  quote-anchor: each value's `quote` occurs in artifact.text after
  *       whitespace normalisation (case-insensitive). A value whose quote can't
- *       be located is unpublishable, categorically.
+ *       be located is unpublishable, categorically. DERIVED values (computed
+ *       from raw printed components by lib/derive.ts) anchor every
+ *       component's quote instead — the computed number itself is never in
+ *       the text, by construction.
  *   G2  schema/unit sanity: indicatorId is one the spec declares AND the
  *       extracted unit's family matches the indicator registry's unit family
  *       (a bps↔% shift is caught here). Unmapped units fail open on the unit
@@ -75,8 +78,24 @@ export async function verifyExtraction(
     const bound = effectivePlausibility(spec, val.indicatorId);
     const latest = latestByIndicator.get(val.indicatorId) ?? null;
 
-    const quoteLocated = normText.includes(normWs(val.quote));
-    const g1 = gate("G1", quoteLocated, `quote ${quoteLocated ? "located" : "NOT located"} in artefact for ${val.indicatorId}`);
+    // G1 — quote anchor. A derived value (val.components present) carries a
+    // computed number no release prints, so its joined quote is never itself
+    // anchored; instead EVERY component's verbatim quote must locate (AND,
+    // weakest named). A plain value anchors its own quote as before.
+    let g1: GateResult;
+    if (val.components?.length) {
+      const missing = val.components.find((c) => !normText.includes(normWs(c.quote)));
+      g1 = gate(
+        "G1",
+        !missing,
+        missing
+          ? `component quote NOT located in artefact for ${val.indicatorId}.${missing.key}`
+          : `all ${val.components.length} component quote(s) located for ${val.indicatorId}`,
+      );
+    } else {
+      const quoteLocated = normText.includes(normWs(val.quote));
+      g1 = gate("G1", quoteLocated, `quote ${quoteLocated ? "located" : "NOT located"} in artefact for ${val.indicatorId}`);
+    }
 
     const idDeclared = spec.indicatorIds.includes(val.indicatorId);
     const unitOk = unitCompatible(val.unit, def?.unit);

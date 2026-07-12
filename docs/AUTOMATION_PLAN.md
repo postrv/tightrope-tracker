@@ -285,7 +285,11 @@ to 15 min CPU; a curator bug can never take down market ingestion.
             → archive raw bytes to R2  curator/{sourceId}/{date}-{sha8}.{ext}
   extract   Workers AI, JSON-schema mode → {value(s), observed_at, released_at,
             unit, quote, context}     (retry ≤2 on schema-invalid output)
+            derived specs (§ Derived indicators, below) extract RAW printed
+            components; the ratio is computed post-validation in the same
+            call, so retries, the 5024 rescue, and G5 all inherit it
   verify    G1 quote found verbatim in artefact text (whitespace-normalised)
+            — derived values anchor EVERY component quote instead
             G2 schema + unit sanity
             G3 plausible range          (shared plausibility table, 2.2)
             G4 max-delta vs latest published observation
@@ -302,6 +306,58 @@ to 15 min CPU; a curator bug can never take down market ingestion.
             → corrections row if this revises a published value
   notify    Tue/Wed editorial digest + immediate webhook on quarantine
 ```
+
+### Derived indicators (component extraction)
+
+Added 2026-07-12, after `mhclg_housing` proved structurally impossible under
+the plain contract: both its indicators are ratios the releases never print
+(`housing_trajectory` = SA-quarterly completions × 4 ÷ 300,000 × 100;
+`planning_consents` = (major + minor residential decisions granted) ÷ 11,500
+× 100 — two separately printed figures whose total isn't reliably printed).
+Prompt rule 4 forbids emitting unstated values and G1 demands a verbatim
+quote per value, so the model could only refuse (the 2026-07-08..12 5024
+storm) or fabricate (its only two pre-derive "successes" recorded invented
+95 / 120 at confidence 0.3 — exactly what the gates exist to catch).
+
+Mechanism:
+
+- A `CaptureSpec` may carry `derive: { [indicatorId]: { components, compute } }`
+  (apps/curator/src/types.ts). Each `ComponentSpec` names one RAW printed
+  figure (`key`, prompt-brief label/unit/description, optional loose
+  `min`/`max` sanity bounds — fail-fast ergonomics; G3 on the derived scale
+  remains the real safety layer).
+- The prompt brief lists the components instead of the derived indicators, in
+  BOTH framings (or G5's second pass would have nothing derivable), plus a
+  "report only these raw figures; do NOT sum/annualise/compute ratios" block.
+- `applyDerivation` (apps/curator/src/lib/derive.ts) runs inside
+  `parseAndValidate`, so every extraction path derives identically: schema
+  retries, the 5024 shrink-window retries, the schema-free rescue, and the G5
+  second extraction. Failures are loud, distinct, component-named
+  (`DERIVE_MISSING_COMPONENT`, `DERIVE_DUPLICATE_COMPONENT`,
+  `DERIVE_OBSERVEDAT_MISMATCH`, `DERIVE_COMPONENT_OUT_OF_BOUNDS`,
+  `DERIVE_NON_FINITE`) and consume schema retries like any validation miss —
+  they are not 5024s, so they never trigger the schema-free rescue.
+- A model value carrying a derived id is DROPPED (warn-logged): the computed
+  value is the only carrier of a derived indicatorId, so a fabricated ratio
+  can never ride in on a locatable-but-unrelated quote.
+- Gate G1 anchors every component's verbatim quote (AND, weakest named); the
+  derived value's own `quote` is the components' quotes joined for human
+  reading and is never itself anchored. G2–G6 run unchanged on the derived
+  scale — G3/G4 against the shared plausibility table, G5 derived-vs-derived.
+- Capture rows persist components in the `payload` JSON
+  (`{unit, components:[{key,value,unit,observedAt,quote}]}`), so a reviewer
+  can check the computation from `GET /admin/captures/:id` alone.
+- Formulas + constants live in `packages/shared/src/derivations.ts`; a
+  drift-guard test in packages/data-sources pins the hand-maintained
+  housing.json / housing-history.json values to the same formulas.
+
+Expected day-one behaviour: while the current quarter is already published
+from the fixture path, a capture run yields **G1–G5 pass, G6 FAIL** ("not
+newer than published") at confidence 0.9 — correct, not a bug. The genuine
+end-to-end test is the next MHCLG quarterly release. Contingency if 5024s
+persist despite component extraction: split `mhclg_housing` into two specs
+(housing-supply / planning), halving the artefact and decoupling the two
+collections' publication lag.
 
 ### What ships in the skeleton (this commit) vs. what the implementer builds
 
@@ -563,7 +619,7 @@ Plausible ranges are publication gates, not forecasts — set wide.
 | `sp_global_pmi` | observation | `services_pmi` | HTML (PDF fallback) press release, UK Services PMI **final** | S&P Global press-release index page; monthly, first full week | monthly | 35–70 / Δ≤8 | yes (after shadow) |
 | `gfk_confidence` | observation | `consumer_confidence` | PDF/HTML press release, GfK/NIQ UK consumer confidence barometer | monthly, ~month-end | monthly | −55–10 / Δ≤10 | yes |
 | `rics_rms` | observation | `rics_price_balance` | PDF, RICS UK Residential Market Survey | monthly, ~2nd Thursday | monthly | −80–80 / Δ≤25 | yes |
-| `mhclg_housing` | observation | `housing_trajectory`, `planning_consents` | **HTML statistical release** (not ODS) | gov.uk housing-supply + planning live-tables release pages | quarterly | apply formulas documented in `housing-history.json`; Δ≤30% | yes, tight G4 |
+| `mhclg_housing` | observation | `housing_trajectory`, `planning_consents` | **HTML statistical release** (not ODS) | gov.uk housing-supply + planning live-tables release pages | quarterly | **component extraction** (SA completions; major+minor residential decisions granted) → shared formulas in `packages/shared/src/derivations.ts`; Δ≤30% | yes, tight G4 |
 | `obr_efo` | observation | `cb_headroom`, `psnfl_trajectory` | PDF exec summary + key-figures page | obr.uk/efo — event-driven via daily hash poll | biannual+ | headroom −20–60 £bn | **no — always review** |
 | `ons_dd_failure` | observation | `dd_failure_rate` | HTML article | upstream per `ons-rti.json` `_comment` | monthly | 0.3–3.0% / Δ≤0.4 | yes |
 | `delivery_milestones` | delivery_milestone | 4 editorial indicators | gov.uk announcements (dept-filtered), departmental dashboards | reuse `govUkRss` filtering | event | n/a — drafts with citations | **never** |

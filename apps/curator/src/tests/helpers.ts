@@ -312,3 +312,35 @@ export function observationSpec(over: Partial<CaptureSpec> = {}): CaptureSpec {
     ...over,
   };
 }
+
+/**
+ * A derive-bearing spec mirroring mhclg_housing's shape: one single-component
+ * derived indicator + one two-component (summed) derived indicator, real
+ * shared PLAUSIBILITY ids so the G3/G4 derived path is exercised for real.
+ * Formulas are simplified (÷1000×100 style) so expected values are obvious.
+ */
+export function derivedSpec(over: Partial<CaptureSpec> = {}): CaptureSpec {
+  return observationSpec({
+    sourceId: "mhclg_housing",
+    indicatorIds: ["housing_trajectory", "planning_consents"],
+    urls: ["https://example.test/housing", "https://example.test/planning"],
+    cadence: "quarterly",
+    plausibility: { housing_trajectory: { maxDelta: 30 }, planning_consents: { maxDelta: 46 } },
+    derive: {
+      housing_trajectory: {
+        components: [
+          { key: "completions_q", label: "Quarterly completions", unit: "dwellings", description: "raw quarterly count", min: 5_000, max: 100_000 },
+        ],
+        compute: (v) => (v.completions_q! * 4 / 300_000) * 100,
+      },
+      planning_consents: {
+        components: [
+          { key: "major_granted", label: "Major decisions granted", unit: "decisions", description: "major count", min: 100, max: 15_000 },
+          { key: "minor_granted", label: "Minor decisions granted", unit: "decisions", description: "minor count", min: 1_000, max: 30_000 },
+        ],
+        compute: (v) => ((v.major_granted! + v.minor_granted!) / 11_500) * 100,
+      },
+    },
+    ...over,
+  });
+}

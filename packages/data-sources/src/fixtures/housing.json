@@ -1,5 +1,5 @@
 {
-  "_comment": "MHCLG housing statistics -- latest quarterly print. Methodology: see packages/data-sources/src/fixtures/housing-history.json for the formulas and primary-source citations (housing_trajectory = completions_sa_q * 4 / 300,000 * 100; planning_consents = decisions_granted_q / 11,500 * 100). Update after each MHCLG release; the editorial convention is to stamp observed_at as the END of the reporting quarter.",
+  "_comment": "MHCLG housing statistics -- latest quarterly print. Methodology: see packages/data-sources/src/fixtures/housing-history.json for the formulas and primary-source citations; the formulas are implemented in packages/shared/src/derivations.ts and drift-guarded by housingDerivation.test.ts, so keep value and raw_* consistent (housing_trajectory = completions_sa_q * 4 / 300,000 * 100; planning_consents = decisions_granted_q / 11,500 * 100). Update after each MHCLG release; the editorial convention is to stamp observed_at as the END of the reporting quarter.",
   "period": "2026 Q1",
   "observed_at": "2026-03-31T00:00:00Z",
   "housing_trajectory": {

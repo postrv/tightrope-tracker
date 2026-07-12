@@ -214,8 +214,57 @@ export interface CaptureSpec {
    * truthful about why nothing is being captured.
    */
   disabled?: string;
+  /**
+   * Derived-indicator capture. Some indicators are ratios of raw printed
+   * statistics that no release states directly (mhclg_housing's two are the
+   * canonical case) — asking the model for them forces a choice between
+   * refusal (5024s) and fabrication, because prompt rule 4 forbids unstated
+   * values and gate G1 demands a verbatim quote per value.
+   *
+   * When set, the extraction prompt asks for the RAW printed components
+   * (each with its own verbatim quote), and applyDerivation (lib/derive.ts,
+   * run inside parseAndValidate so retries, the 5024 rescue, and G5's second
+   * pass all inherit it) computes the published value with the spec's
+   * `compute` and attaches the components to the derived value. Gate G1 then
+   * anchors every COMPONENT quote; G2–G6 run unchanged on the derived scale.
+   * A model-emitted value carrying a derived id is DROPPED — the computed
+   * value is the only carrier of a derived indicatorId, so a fabricated
+   * ratio can never ride in on a locatable-but-unrelated quote.
+   */
+  derive?: Record<string, DerivedIndicatorSpec>;
   /** Follow-link discovery config; when set, capture follows to the newest release. */
   discover?: DiscoverConfig;
+}
+
+/**
+ * One raw printed figure a derived indicator is computed from. `key` is the
+ * id the model reports the figure under (must collide with neither registry
+ * indicator ids nor the spec's declared ids — registry tests enforce this);
+ * label/unit/description feed the prompt brief. `min`/`max` are loose
+ * raw-count sanity bounds checked at derivation time — fail-fast ergonomics
+ * (a component-named, retryable error before the G5 AI spend), NOT the
+ * safety layer: gate G3 on the derived scale is what catches multiplicative
+ * misreads that survive them.
+ */
+export interface ComponentSpec {
+  key: string;
+  label: string;
+  unit: string;
+  description: string;
+  min?: number;
+  max?: number;
+}
+
+/**
+ * How one derived indicator is computed. `compute` receives the extracted
+ * component values keyed by ComponentSpec.key (every component is guaranteed
+ * present exactly once by applyDerivation before compute runs). The derived
+ * value's unit comes from the shared INDICATORS registry — deliberately no
+ * unit field here, so there is nothing to drift.
+ */
+export interface DerivedIndicatorSpec {
+  components: ComponentSpec[];
+  compute: (vals: Record<string, number>) => number;
 }
 
 /** True when this spec is fed by the relay runner rather than the Worker's own fetch. */
@@ -240,7 +289,13 @@ export interface CaptureArtifact {
   text: string;
 }
 
-/** What the extraction model must return (enforced via JSON-schema mode + validation). */
+/**
+ * What the extraction model must return (enforced via JSON-schema mode +
+ * validation), PLUS pipeline-computed enrichment: for derive-bearing specs,
+ * applyDerivation replaces the model's raw component values with computed
+ * derived values carrying `components`. The JSON schema in prompts.ts
+ * deliberately omits `components` — the model never emits it.
+ */
 export interface ExtractionResult {
   values: Array<{
     indicatorId: string;
@@ -248,8 +303,21 @@ export interface ExtractionResult {
     unit: string;
     /** Period the value refers to, ISO date. */
     observedAt: string;
-    /** Verbatim source sentence containing the value — gate G1 anchor. */
+    /**
+     * Verbatim source sentence containing the value — gate G1 anchor. For a
+     * derived value this is the components' quotes joined with newlines
+     * (human-readable provenance); G1 anchors the per-component quotes in
+     * `components`, never the joined string.
+     */
     quote: string;
+    /** Derived values only: the raw printed figures the value was computed from. */
+    components?: Array<{
+      key: string;
+      value: number;
+      unit: string;
+      observedAt: string;
+      quote: string;
+    }>;
   }>;
   /** Upstream publication instant if the artefact states one. */
   releasedAt: string | null;

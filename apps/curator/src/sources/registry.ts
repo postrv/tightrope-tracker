@@ -1,4 +1,4 @@
-import { PLAUSIBILITY } from "@tightrope/shared";
+import { PLAUSIBILITY, deriveHousingTrajectory, derivePlanningConsents } from "@tightrope/shared";
 import type { CaptureSpec, EffectivePlausibility } from "../types";
 
 /**
@@ -201,33 +201,80 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     agreementTolerance: 0.5,
     allowAutoPublish: false,
     modelId: DEFAULT_MODEL,
-    promptVersion: "v1",
-    // 5024 MITIGATION (2026-07-12): since follow-link discovery (2026-07-07)
-    // the artefact is the FULL statistical-release doc for BOTH collections —
-    // two truncated sections whose combined text still overwhelmed JSON-schema
-    // mode at every window (3 × 5024, then a non-JSON schema-free reply,
-    // daily 07-08..12). Nearly every line of a stats release carries a digit,
-    // so the relevance heuristic degenerates to positional fill; anchors
-    // guarantee the headline sentences survive truncation — the same fix
-    // that cleared obr_efo and ons_dd_failure (commit 8dbe30a). KEPT for the
-    // day the spec is re-enabled with raw-figure extraction (below).
-    anchorTerms: ["net additional", "planning applications", "granted"],
-    // DISABLED 2026-07-12 — STRUCTURAL, not an upstream block: both indicators
-    // are DERIVED ratios the release never prints (housing_trajectory =
-    // SA-quarterly completions × 4 ÷ 300,000; planning_consents = major+minor
-    // residential decisions granted ÷ 11,500 — formulas per housing.json /
-    // housing-history.json), while prompt rule 4 rightly forbids emitting a
-    // value the text doesn't state. The model therefore either gives up
-    // (the 07-08..12 5024s / unparseable rescues) or invents a ratio: the
-    // spec's only two "successes" (2026-07-07, capture ids 25/26) recorded
-    // fabricated 95 / 120 at confidence 0.3. Re-enabling needs derived-
-    // indicator capture support: extract the RAW printed figures (completions;
-    // major AND minor decisions — a two-component SUM no single quote can
-    // anchor, so G1's per-value contract needs a component-level design) and
-    // apply the formulas at publish. Until then the hand-refresh fixture
-    // (housing.json, 180-day freshness guard) owns both indicators — as it
-    // always has for the published site figures.
-    disabled: "extraction targets derived ratios the release never prints — needs raw-figure extraction + publish-time derivation; hand-refresh fixture owns housing_trajectory/planning_consents",
+    // v2 (2026-07-12): the brief now lists raw components instead of the
+    // derived indicators, plus the do-not-sum instruction block.
+    promptVersion: "v2",
+    // 5024 MITIGATION (2026-07-12): the artefact is the FULL statistical-
+    // release doc for BOTH collections. Anchors keep the component sentences
+    // in the truncation window (the same fix that cleared obr_efo and
+    // ons_dd_failure). "net additional" was deliberately DROPPED when the
+    // spec went derived — the annual net-additional-dwellings figure is now
+    // an explicit anti-target (completions is the chosen raw series); and
+    // bare "major"/"minor" are avoided because case-insensitive substring
+    // matching also hits "majority"/"minority" lines and burns the window.
+    anchorTerms: ["completions", "seasonally adjusted", "residential decisions", "granted"],
+    // DERIVED INDICATORS (re-enabled 2026-07-12, promptVersion v2). Both
+    // indicators are ratios the releases never print — asking the model for
+    // them directly forced refusal (the 07-08..12 5024 storm) or fabrication
+    // (the spec's only two pre-derive "successes", capture ids 25/26,
+    // recorded invented 95 / 120 at confidence 0.3). The spec now extracts
+    // the RAW printed figures and computes the published values with the
+    // shared formulas (packages/shared/src/derivations.ts, drift-guarded
+    // against the hand-maintained fixtures):
+    //   housing_trajectory = completions_sa × 4 ÷ 300,000 × 100
+    //   planning_consents  = (major + minor decisions granted) ÷ 11,500 × 100
+    // Gate G1 anchors every component's verbatim quote; G2–G6 run on the
+    // derived scale. EXPECTED on any run while the current quarter is
+    // already published from the fixture path: G1–G5 pass, G6 FAIL ("not
+    // newer than published") — correct behaviour, not a bug; the real
+    // end-to-end test is the next MHCLG quarterly release (~Sept 2026).
+    // CONTINGENCY if 5024s persist despite component extraction: split into
+    // two specs (mhclg_housing_supply / mhclg_planning) — halves the
+    // artefact and decouples the two collections' publication lag.
+    derive: {
+      housing_trajectory: {
+        components: [
+          {
+            key: "completions_sa_quarterly",
+            label: "New-build dwelling completions, seasonally adjusted, latest quarter (England)",
+            unit: "dwellings",
+            description:
+              "The headline 'completions (seasonally adjusted)' count for the latest quarter — the raw printed quarterly figure. NOT the annualised figure, NOT the annual 'net additional dwellings' total.",
+            // Fail-fast sanity, not the safety layer (G3 on the derived scale
+            // owns that): max 100k sits BELOW the ×4-annualised range, so an
+            // annualised misread trips here, component-named, before the G5
+            // AI spend. Quarterly SA completions have never approached 100k.
+            min: 5_000,
+            max: 100_000,
+          },
+        ],
+        compute: (v) => deriveHousingTrajectory(v.completions_sa_quarterly!),
+      },
+      planning_consents: {
+        components: [
+          {
+            key: "major_residential_decisions_granted",
+            label: "Major residential decisions granted in the quarter (England)",
+            unit: "decisions",
+            description:
+              "The printed count of MAJOR residential planning decisions granted in the quarter, e.g. '900 major residential decisions were granted'.",
+            min: 100,
+            max: 15_000,
+          },
+          {
+            key: "minor_residential_decisions_granted",
+            label: "Minor residential decisions granted in the quarter (England)",
+            unit: "decisions",
+            description:
+              "The printed count of MINOR residential planning decisions granted in the quarter, e.g. '5,800 minor residential decisions were granted'.",
+            min: 1_000,
+            max: 30_000,
+          },
+        ],
+        compute: (v) =>
+          derivePlanningConsents(v.major_residential_decisions_granted! + v.minor_residential_decisions_granted!),
+      },
+    },
   },
   {
     // Event-driven. NEVER auto-publish: twice-yearly, high-stakes — always

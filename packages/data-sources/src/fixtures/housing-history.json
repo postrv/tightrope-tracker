@@ -6,13 +6,15 @@
       "unit": "% of target",
       "rationale": "Quarterly new-build dwelling completions (seasonally adjusted) annualised by x4, expressed as a percentage of the 300,000 homes-per-year government target that OBR uses as its housing trajectory working assumption. Deliberately uses completions (not annual 'net additional dwellings') so every quarter has a primary-source number; NAD is published once a year and is not a quarterly series.",
       "primary_source": "MHCLG Housing supply: indicators of new supply quarterly releases (headline 'Completions (seasonally adjusted)' figure)",
-      "trajectory_source": "UK government 300,000/year housing target; https://www.gov.uk/government/publications/long-term-plan-for-housing"
+      "trajectory_source": "UK government 300,000/year housing target; https://www.gov.uk/government/publications/long-term-plan-for-housing",
+      "implemented_in": "Implemented in packages/shared/src/derivations.ts (single code home; drift-guarded by packages/data-sources/src/fixtures/housingDerivation.test.ts — a value/raw pair that disagrees with the formula fails CI). This prose block remains the rationale + primary-source citation record."
     },
     "planning_consents": {
       "formula": "total_residential_decisions_granted_quarterly / 11500 * 100",
       "unit": "% of 2019 quarterly baseline",
       "rationale": "Total residential decisions granted in the quarter, expressed as a percentage of an estimated 2019 pre-COVID quarterly baseline of 11,500. The 11,500 figure reflects the approximate 2019 quarterly mean for total residential decisions granted as documented in contemporary MHCLG planning-applications releases for that year. Later releases report only YoY percentage changes rather than primary Q-level figures for pre-2022 data, so we use an estimate derived from MHCLG narrative back-projections; the denominator can be tightened in a later revision once archived PDFs are manually extracted.",
-      "primary_source": "MHCLG Planning applications in England quarterly statistical releases (headline 'residential decisions granted' figure)"
+      "primary_source": "MHCLG Planning applications in England quarterly statistical releases (headline 'residential decisions granted' figure)",
+      "implemented_in": "Implemented in packages/shared/src/derivations.ts (single code home; drift-guarded by packages/data-sources/src/fixtures/housingDerivation.test.ts — a value/raw pair that disagrees with the formula fails CI). This prose block remains the rationale + primary-source citation record."
     }
   },
   "baseline_note": "Observations span 2022-Q2 through 2025-Q4 — the era in which MHCLG publishes the headline figures on HTML landing pages. Earlier releases are PDF-only and were not extracted in this iteration. ECDF normalisation against ~15 quarterly points gives a coarse but meaningful percentile ranking; more depth can be added by manually extracting older PDFs.",
@@ -68,7 +70,7 @@
         "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-january-to-march-2023"
       },
       "planning_consents": {
-        "value": 73.0,
+        "value": 73,
         "raw_decisions_granted": 8400,
         "release": "Planning applications in England: January to March 2023",
         "published": "2023-06-08",
@@ -241,7 +243,7 @@
       "observed_at": "2025-09-30T00:00:00Z",
       "period": "2025 Q3",
       "housing_trajectory": {
-        "value": 44.0,
+        "value": 44,
         "raw_completions_sa": 33020,
         "release": "Housing supply: indicators of new supply, England: July to September 2025",
         "published": "2026-01-15",
@@ -259,7 +261,7 @@
       "observed_at": "2025-12-31T00:00:00Z",
       "period": "2025 Q4",
       "housing_trajectory": {
-        "value": 49.0,
+        "value": 49,
         "raw_completions_sa": 36720,
         "release": "Housing supply: indicators of new supply, England: October to December 2025",
         "published": "2026-03-19",

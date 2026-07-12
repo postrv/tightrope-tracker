@@ -204,7 +204,10 @@ function buildObservationRow(
     observedAt: val.observedAt,
     releasedAt: extraction.releasedAt,
     value: val.value,
-    payload: JSON.stringify({ unit: val.unit }),
+    // Derived values carry their raw printed components (value + verbatim
+    // quote each) so a reviewer can check the computation from the capture
+    // row alone — the admin detail endpoint surfaces payload verbatim.
+    payload: JSON.stringify(val.components ? { unit: val.unit, components: val.components } : { unit: val.unit }),
     quote: val.quote,
     confidence: null,
     verification: null,

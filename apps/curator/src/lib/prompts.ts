@@ -51,14 +51,41 @@ function extractionSchema(): Record<string, unknown> {
   };
 }
 
+/**
+ * One brief line per extraction target. For a derive-covered indicator the
+ * model is never asked for the indicator itself (it's a computed ratio no
+ * release prints — asking forces refusal or fabrication); instead the brief
+ * lists that indicator's raw printed COMPONENTS, keyed by ComponentSpec.key.
+ * Applies identically to both framings, or gate G5's second pass would have
+ * nothing derivable to agree on.
+ */
 function indicatorBrief(spec: CaptureSpec): string {
   return spec.indicatorIds
-    .map((id) => {
+    .flatMap((id) => {
+      const d = spec.derive?.[id];
+      if (d) {
+        return d.components.map(
+          (c) => `- ${c.key}: "${c.label}" measured in ${c.unit}. ${c.description}`,
+        );
+      }
       const def = INDICATORS[id];
-      if (!def) return `- ${id}`;
-      return `- ${id}: "${def.label}" measured in ${def.unit}. ${def.description}`;
+      if (!def) return [`- ${id}`];
+      return [`- ${id}: "${def.label}" measured in ${def.unit}. ${def.description}`];
     })
     .join("\n");
+}
+
+/**
+ * Extra user-message block for derive-bearing specs. NOT part of
+ * contractRules() — that block is shared with editorial prompts, and this
+ * instruction only makes sense when the brief lists raw components.
+ */
+function deriveInstruction(spec: CaptureSpec): string[] {
+  if (!spec.derive || Object.keys(spec.derive).length === 0) return [];
+  return [
+    "",
+    "Report ONLY the raw printed figures listed above, exactly as printed, each with its verbatim sentence. Do NOT sum figures, annualise them, or compute ratios or percentages — derived measures are computed downstream. Do NOT report any figure that is not listed above.",
+  ];
 }
 
 function cadenceHint(spec: CaptureSpec): string {
@@ -134,6 +161,7 @@ function buildObservationPrompt(spec: CaptureSpec, text: string, framing: Prompt
       "",
       "Work quote-first: find the sentence that prints the number, copy it verbatim into `quote`, then read the number out of that sentence into `value`. Do not compute, round, or convert.",
       cadenceHint(spec),
+      ...deriveInstruction(spec),
       "",
       contractRules(),
       "",
@@ -153,6 +181,7 @@ function buildObservationPrompt(spec: CaptureSpec, text: string, framing: Prompt
     indicatorBrief(spec),
     "",
     cadenceHint(spec),
+    ...deriveInstruction(spec),
     "",
     contractRules(),
     "",

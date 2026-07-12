@@ -1,6 +1,7 @@
 import type { Env } from "../env";
 import { isEditorialKind, type CaptureArtifact, type CaptureSpec, type ExtractionResult } from "../types";
 import { runModelJson, runModelText } from "../lib/ai";
+import { applyDerivation } from "../lib/derive";
 import { buildPrompt, type PromptFraming } from "../lib/prompts";
 import { biasForFormat, isSchemaModeFailure, precheckArtefact, STRICT_MODEL_TEXT_BUDGET, truncateForModel } from "../lib/artefactText";
 
@@ -176,6 +177,14 @@ function parseAndValidate(raw: string, spec: CaptureSpec): ValidateResult {
     });
   }
   if (values.length === 0) return { ok: false, error: "no values extracted" };
+  // Derived-indicator specs: replace raw component values with computed
+  // derived values (lib/derive.ts). A DERIVE_* failure is a validation miss
+  // — the retry loop re-rolls it, and (not being a 5024) it never triggers
+  // the schema-free rescue. Running here means every extraction path —
+  // retries, the 5024 shrink, the rescue, and G5's second pass — derives
+  // identically.
+  const derived = applyDerivation(spec, values);
+  if (!derived.ok) return derived;
   const draft = o.draft && typeof o.draft === "object" && !Array.isArray(o.draft) ? (o.draft as Record<string, unknown>) : null;
-  return { ok: true, value: { values, releasedAt, draft } };
+  return { ok: true, value: { values: derived.values, releasedAt, draft } };
 }

@@ -6,6 +6,7 @@ export * from "./plausibility.js";
 export * from "./sanitize.js";
 export * from "./historicalSubset.js";
 export * from "./coverage.js";
+export * from "./derivations.js";
 export * from "./seedValues.js";
 export * from "./delivery.js";
 export * from "./deliveryCommitmentsSeed.js";

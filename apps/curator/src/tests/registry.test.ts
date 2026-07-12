@@ -35,6 +35,51 @@ describe("F9 — spec plausibility bounds are DERIVED from the shared table", ()
   });
 });
 
+describe("derived-indicator spec invariants", () => {
+  it("every derive key is a declared indicator with a registry entry", async () => {
+    const { INDICATORS } = await import("@tightrope/shared");
+    for (const spec of CAPTURE_SPECS) {
+      for (const derivedId of Object.keys(spec.derive ?? {})) {
+        expect(spec.indicatorIds, `${spec.sourceId}: derive key ${derivedId} must be declared`).toContain(derivedId);
+        expect(INDICATORS[derivedId], `${spec.sourceId}: derive key ${derivedId} must exist in INDICATORS (its unit is taken from there)`).toBeDefined();
+      }
+    }
+  });
+
+  it("component keys are unique and collide with neither indicator ids nor declared ids", async () => {
+    const { INDICATORS } = await import("@tightrope/shared");
+    for (const spec of CAPTURE_SPECS) {
+      const seen = new Set<string>();
+      for (const d of Object.values(spec.derive ?? {})) {
+        expect(d.components.length, `${spec.sourceId}: derived indicator needs ≥1 component`).toBeGreaterThan(0);
+        for (const c of d.components) {
+          expect(seen.has(c.key), `${spec.sourceId}: component key ${c.key} duplicated across the spec`).toBe(false);
+          seen.add(c.key);
+          expect(INDICATORS[c.key], `${spec.sourceId}: component key ${c.key} shadows a registry indicator`).toBeUndefined();
+          expect(spec.indicatorIds.includes(c.key), `${spec.sourceId}: component key ${c.key} shadows a declared indicator`).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("component bounds are sane and compute() is finite over bound midpoints", () => {
+    for (const spec of CAPTURE_SPECS) {
+      for (const [derivedId, d] of Object.entries(spec.derive ?? {})) {
+        const mid: Record<string, number> = {};
+        for (const c of d.components) {
+          if (c.min !== undefined && c.max !== undefined) {
+            expect(c.min, `${spec.sourceId}: ${derivedId}.${c.key} min<max`).toBeLessThan(c.max);
+            mid[c.key] = (c.min + c.max) / 2;
+          } else {
+            mid[c.key] = 1;
+          }
+        }
+        expect(Number.isFinite(d.compute(mid)), `${spec.sourceId}: ${derivedId}.compute must be finite over midpoints`).toBe(true);
+      }
+    }
+  });
+});
+
 describe("F10 / C5 — single source of truth for kinds and statuses", () => {
   it("isEditorialKind matches EDITORIAL_KINDS and excludes observations", () => {
     expect(isEditorialKind("delivery_milestone")).toBe(true);

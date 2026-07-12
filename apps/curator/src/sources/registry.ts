@@ -125,6 +125,35 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     // the newest links are housing-supply-…-january-to-march-2026 and
     // planning-applications-in-england-january-to-march-2026. Stays review-only
     // (the plan's "tight G4" intent is the Δ≤30% cap below).
+    // DISABLED 2026-07-07 (SOURCES.md "Disabled capture specs"): rics.org sits
+    // behind Imperva/Incapsula bot protection — a server-side fetch gets only a
+    // ~200–840-byte JS challenge stub (no article text), verified from
+    // residential egress and with full browser headers. A GitHub Actions runner
+    // (datacenter ASN) is challenged at least as hard, so `fetchVia:"relay"`
+    // cannot reach it either. `rics_price_balance` stays on the hand-refresh
+    // fixture path (growth-sentiment.json; RUNBOOK §7.5). The spec was
+    // initially DELETED, which left its final 'failure' audit row as the
+    // latest attempt forever → the >1h source-health alert re-fired every 6h
+    // for a source nothing polls. Re-added with `disabled` (2026-07-12) so the
+    // sweep records an honest skip instead. Re-enable (drop `disabled`) if
+    // RICS lifts the challenge or ships a plain-fetch release mirror.
+    sourceId: "rics_rms",
+    kind: "observation",
+    indicatorIds: ["rics_price_balance"],
+    urls: ["https://www.rics.org/news-insights/market-surveys/uk-residential-market-survey"],
+    format: "html",
+    cadence: "monthly",
+    plausibility: {
+      // range derived from shared PLAUSIBILITY rics_price_balance [-90,90]; Appendix A Δ≤25.
+      rics_price_balance: { maxDelta: 25 },
+    },
+    agreementTolerance: 1,
+    allowAutoPublish: false,
+    modelId: DEFAULT_MODEL,
+    promptVersion: "v1",
+    disabled: "rics.org Imperva bot challenge blocks all non-residential egress (verified 2026-07-07); hand-refresh fixture path owns rics_price_balance",
+  },
+  {
     sourceId: "mhclg_housing",
     kind: "observation",
     indicatorIds: ["housing_trajectory", "planning_consents"],
@@ -165,6 +194,16 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     allowAutoPublish: false,
     modelId: DEFAULT_MODEL,
     promptVersion: "v1",
+    // 5024 MITIGATION (2026-07-12): since follow-link discovery (2026-07-07)
+    // the artefact is the FULL statistical-release doc for BOTH collections —
+    // two truncated sections whose combined text still overwhelmed JSON-schema
+    // mode at every window (3 × 5024, then a non-JSON schema-free reply,
+    // daily 07-08..12). Nearly every line of a stats release carries a digit,
+    // so the relevance heuristic degenerates to positional fill; anchors
+    // guarantee the headline sentences ("199,500 net additional homes…",
+    // "…planning applications… granted…") survive truncation — the same fix
+    // that cleared obr_efo and ons_dd_failure (commit 8dbe30a).
+    anchorTerms: ["net additional", "planning applications", "granted"],
   },
   {
     // Event-driven. NEVER auto-publish: twice-yearly, high-stakes — always

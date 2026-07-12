@@ -99,6 +99,66 @@ describe("sweep audit invariant (every opened row closed exactly once)", () => {
   });
 });
 
+describe("disabled specs (rics_rms) record an honest skip, never a failure", () => {
+  it("closes the audit row 'unchanged' with the disabled reason and never fetches", async () => {
+    // fetch throws — if the sweep tried to fetch the disabled spec this test
+    // would record a failure row instead of the skip.
+    vi.stubGlobal("fetch", async () => { throw new Error("network down"); });
+    const db = makeFakeDb();
+    const env = makeEnv({ db, kv: makeKv().kv, ai: makeAi({ run: () => "{}" }).AI });
+
+    const summary = await runSweep(env, { force: true });
+    const rics = summary.results.find((r) => r.sourceId === "rics_rms")!;
+    expect(rics).toBeDefined();
+    expect(rics.status).toBe("unchanged");
+
+    const { opens, closesById } = auditLedger(db);
+    const open = opens.find((o) => o.sourceId === "rics_rms")!;
+    expect(closesById.get(open.id)).toEqual(["unchanged"]);
+    // The close note carries the human-readable disable reason.
+    const close = db.audit.find(
+      (r) => r.update && String(r.sql).includes("UPDATE ingestion_audit") && (r.bindings as unknown[])[5] === open.id,
+    )!;
+    expect(String((close.bindings as unknown[])[4])).toContain("skipped: disabled");
+  });
+});
+
+describe("sweep wall-clock budget (the dangling-'started' fix)", () => {
+  it("a spent budget closes every remaining spec 'failure' (exactly once) instead of running it", async () => {
+    vi.stubGlobal("fetch", async () => { throw new Error("must not fetch"); });
+    const db = makeFakeDb();
+    const env = makeEnv({ db, kv: makeKv().kv, ai: makeAi({ run: () => "{}" }).AI });
+
+    // Deadline already in the past: no spec may fetch or call the model.
+    const summary = await runSweep(env, { force: true, deadlineMs: 0 });
+
+    for (const r of summary.results) {
+      if (r.sourceId === "rics_rms") {
+        expect(r.status).toBe("unchanged"); // disabled check precedes the budget check
+      } else {
+        expect(r.status, r.sourceId).toBe("failure");
+        expect(r.error, r.sourceId).toContain("wall-clock budget exhausted");
+      }
+    }
+    // The audit invariant holds under budget exhaustion: one close per open.
+    const { opens, closesById } = auditLedger(db);
+    expect(opens.length).toBe(CAPTURE_SPECS.length);
+    for (const o of opens) {
+      expect(closesById.get(o.id) ?? [], `spec ${o.sourceId} closes`).toHaveLength(1);
+    }
+  });
+
+  it("runTimelineTriage defers all candidates when the deadline has passed", async () => {
+    const fake = makeFakeDb({ captures: [govUkCandidate({ id: 1 }), govUkCandidate({ id: 2, content_sha256: "b2" })] });
+    const env = makeEnv({ db: fake, kv: makeKv().kv, ai: makeAi({ run: () => JSON.stringify({ values: [], releasedAt: null, draft: RELEVANT_DRAFT }) }).AI });
+
+    const processed = await runTimelineTriage(env, triageSpec, 0);
+    expect(processed).toBe(0);
+    // Untouched — they stay pending for the next poll.
+    expect(fake.captures.every((c) => c.status === "pending")).toBe(true);
+  });
+});
+
 describe("runTimelineTriage per-candidate isolation (the underlying crash fix)", () => {
   it("one candidate's write failure does not abort the batch", async () => {
     const fake = makeFakeDb({ captures: [govUkCandidate({ id: 1 }), govUkCandidate({ id: 2, content_sha256: "b2" }), govUkCandidate({ id: 3, content_sha256: "b3" })] });

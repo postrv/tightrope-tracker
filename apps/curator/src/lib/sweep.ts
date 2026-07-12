@@ -28,6 +28,21 @@ export interface SweepSummary {
 const SWEEP_CONCURRENCY = 3;
 
 /**
+ * Wall-clock budget for one sweep/poll invocation. Cloudflare caps a cron
+ * invocation at 15 minutes; a sweep that is still mid-AI-call at the cap is
+ * KILLED — no catch, no finally — which is the one remaining way an audit row
+ * dangles at 'started' (observed daily 2026-07-08..12: timeline_triage, the
+ * LAST spec in CAPTURE_SPECS order, opened ~4 min into the poll and the
+ * isolate died somewhere in its up-to-60 model calls). 10 minutes leaves ~5
+ * minutes of headroom for in-flight specs to finish and close their rows.
+ * Specs that would START after the budget is spent get an honest 'failure'
+ * close instead ("budget exhausted"), and the triage loop checks the deadline
+ * between candidates — unprocessed candidates stay 'pending' for tomorrow's
+ * poll.
+ */
+const SWEEP_WALL_BUDGET_MS = 10 * 60_000;
+
+/**
  * Run the full capture→verify→decide pipeline across every registered spec.
  *
  * Error isolation is the invariant (mirrors ingest's dispatch): each spec is
@@ -43,8 +58,9 @@ const SWEEP_CONCURRENCY = 3;
  * index so the summary order is deterministic (CAPTURE_SPECS order) regardless
  * of completion order — the tests rely on that stability.
  */
-export async function runSweep(env: Env, opts: { force: boolean }): Promise<SweepSummary> {
-  const results = await mapWithConcurrency(CAPTURE_SPECS, SWEEP_CONCURRENCY, (spec) => runSpec(env, spec, opts));
+export async function runSweep(env: Env, opts: { force: boolean; deadlineMs?: number }): Promise<SweepSummary> {
+  const deadlineMs = opts.deadlineMs ?? Date.now() + SWEEP_WALL_BUDGET_MS;
+  const results = await mapWithConcurrency(CAPTURE_SPECS, SWEEP_CONCURRENCY, (spec) => runSpec(env, spec, opts, deadlineMs));
   return { ran: results.length, results };
 }
 
@@ -85,7 +101,7 @@ async function mapWithConcurrency<T, R>(
  * failure, so /admin/health does not light up red for a source that is being
  * fed out-of-band.
  */
-async function runSpec(env: Env, spec: CaptureSpec, opts: { force: boolean }): Promise<SpecResult> {
+async function runSpec(env: Env, spec: CaptureSpec, opts: { force: boolean }, deadlineMs: number): Promise<SpecResult> {
   const auditUrl = spec.urls[0] ?? `curator:${spec.sourceId}`;
   const handle = await openAudit(env.DB, spec.sourceId, auditUrl);
   // Default to failure so an unexpected early exit is honest, never a dangling row.
@@ -96,8 +112,22 @@ async function runSpec(env: Env, spec: CaptureSpec, opts: { force: boolean }): P
   let result: SpecResult = { sourceId: spec.sourceId, status: "failure", rows: 0, error: "spec did not complete" };
 
   try {
-    if (spec.sourceId === TIMELINE_TRIAGE_SOURCE) {
-      const n = await runTimelineTriage(env, spec);
+    if (spec.disabled) {
+      // Deliberately disabled (upstream unreachable, hand-refresh path owns the
+      // indicator). Record an honest skip — 'unchanged' keeps the health/alert
+      // surface quiet, and the note says exactly why nothing was fetched.
+      audit = { status: "unchanged", opts: { payloadHash: null, error: `skipped: disabled — ${spec.disabled}` } };
+      result = { sourceId: spec.sourceId, status: "unchanged", rows: 0 };
+    } else if (Date.now() >= deadlineMs) {
+      // The sweep's wall-clock budget is spent — starting this spec's fetch +
+      // model calls would risk the isolate being killed at the platform cap
+      // (which is what dangles rows at 'started'). Close honestly as a failure
+      // so a chronically starved spec pages rather than silently never running.
+      const error = "skipped: sweep wall-clock budget exhausted before this spec ran";
+      audit = { status: "failure", opts: { error } };
+      result = { sourceId: spec.sourceId, status: "failure", rows: 0, error };
+    } else if (spec.sourceId === TIMELINE_TRIAGE_SOURCE) {
+      const n = await runTimelineTriage(env, spec, deadlineMs);
       audit = { status: "success", opts: { rowsWritten: n } };
       result = { sourceId: spec.sourceId, status: "success", rows: n };
     } else if (isRelaySpec(spec)) {
@@ -228,10 +258,19 @@ function buildEditorialRow(
  * the drafted fields and left pending for a human. Bounded per run so the daily
  * poll's AI spend stays predictable.
  */
-export async function runTimelineTriage(env: Env, spec: CaptureSpec): Promise<number> {
+export async function runTimelineTriage(env: Env, spec: CaptureSpec, deadlineMs: number = Number.POSITIVE_INFINITY): Promise<number> {
   const pending = await listPending(env.DB, "timeline_event", "gov_uk", TIMELINE_TRIAGE_LIMIT);
   let processed = 0;
-  for (const cap of pending) {
+  for (const [i, cap] of pending.entries()) {
+    // Triage runs LAST in the sweep and makes up to TIMELINE_TRIAGE_LIMIT × 4
+    // model calls — the empirical isolate-killer (see SWEEP_WALL_BUDGET_MS).
+    // Stop between candidates when the budget is spent: the remainder stays
+    // 'pending' and tomorrow's poll picks it up; a bounded triage that closes
+    // its audit row beats a complete one that dies at 'started'.
+    if (Date.now() >= deadlineMs) {
+      console.warn(`timeline triage: sweep wall-clock budget exhausted — deferring ${pending.length - i} candidate(s) to the next poll`);
+      break;
+    }
     // PER-CANDIDATE ISOLATION — the underlying crash fix. Previously only the
     // extraction was wrapped; the follow-up decision writes (setCaptureDecision
     // / updatePayload) sat OUTSIDE the try, so a single candidate's write

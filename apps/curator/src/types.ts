@@ -204,6 +204,16 @@ export interface CaptureSpec {
    * artefacts fit the budget or lead with the headline.
    */
   anchorTerms?: string[];
+  /**
+   * When set, the sweep never fetches or extracts this spec — it records an
+   * honest 'unchanged' audit row noting the skip instead (mirroring the relay
+   * skip), so /admin/health and the alert pipeline see a deliberate disable,
+   * not a dangling failure. The string is the human-readable reason, surfaced
+   * verbatim in the audit note. Prefer this over deleting a spec: the config
+   * survives for the day the blocker lifts, and the health surface stays
+   * truthful about why nothing is being captured.
+   */
+  disabled?: string;
   /** Follow-link discovery config; when set, capture follows to the newest release. */
   discover?: DiscoverConfig;
 }

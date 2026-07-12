@@ -71,6 +71,14 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     allowAutoPublish: false, // flip per Phase 5 rollout, never before shadow sign-off
     modelId: DEFAULT_MODEL,
     promptVersion: "v1",
+    // ANCHOR (2026-07-12): the TE page embeds dynamic modules (news feed,
+    // calendar rows), so its content hash churns on every fetch and EVERY
+    // poll re-extracts — each run re-rolls the 5024 dice on however the
+    // churn lands in the truncation window (succeeded 17:05Z and 17:17Z,
+    // failed 17:31Z, same day same page). The headline sentence always
+    // contains "services pmi"; anchoring pins it in the window regardless
+    // of how the surrounding modules shift.
+    anchorTerms: ["services pmi"],
   },
   {
     // GfK's UK consumer-confidence business moved to NIQ (NielsenIQ). The

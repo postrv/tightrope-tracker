@@ -132,9 +132,11 @@ describe("sweep wall-clock budget (the dangling-'started' fix)", () => {
     // Deadline already in the past: no spec may fetch or call the model.
     const summary = await runSweep(env, { force: true, deadlineMs: 0 });
 
+    const disabledIds = new Set(CAPTURE_SPECS.filter((s) => s.disabled).map((s) => s.sourceId));
+    expect(disabledIds.size).toBeGreaterThan(0); // the registry carries disabled specs today (rics_rms, mhclg_housing)
     for (const r of summary.results) {
-      if (r.sourceId === "rics_rms") {
-        expect(r.status).toBe("unchanged"); // disabled check precedes the budget check
+      if (disabledIds.has(r.sourceId)) {
+        expect(r.status, r.sourceId).toBe("unchanged"); // disabled check precedes the budget check
       } else {
         expect(r.status, r.sourceId).toBe("failure");
         expect(r.error, r.sourceId).toContain("wall-clock budget exhausted");

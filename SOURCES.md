@@ -125,7 +125,7 @@ during the Phase 5 shadow rollout. The "auto-publish eligibility" column is the
 |---------|------|--------------|----------------------|---------|---------------------------------|-----------------------|
 | `sp_global_pmi` | observation | `services_pmi` | HTML mirror (Trading Economics) of the S&P Global UK Services PMI **final** — the canonical S&P index/press pages return 403 to a server-side fetch, so the mirror is cited as a mirror, never the primary. Headline number is on the landing page; capture-stage truncation (lib/artefactText.ts) is the 5024 fix | monthly | yes (after shadow) | off · shadow |
 | `gfk_confidence` | observation | `consumer_confidence` | HTML, NIQ (formerly GfK) consumer-confidence barometer landing → **follow-link** to newest `/news-center/YYYY/consumer-confidence-*` article (implemented) | monthly | yes | off · shadow |
-| `mhclg_housing` | observation | `housing_trajectory`, `planning_consents` | HTML gov.uk collection → **two-hop follow-link**: newest quarterly release page → the full HTML statistical-release doc (**not** the ODS attachments), where the figures are inlined; formulas per `housing-history.json`. Anchor terms (`net additional` / `planning applications` / `granted`) keep the headline sentences in the model window — the full doc 5024'd JSON-schema mode at every window 07-08..12 | quarterly | yes, tight G4 (Δ≤30%) | off · shadow |
+| `mhclg_housing` | observation | `housing_trajectory`, `planning_consents` | HTML gov.uk collection → **two-hop follow-link**: newest quarterly release page → the full HTML statistical-release doc (**not** the ODS attachments); formulas per `housing-history.json` | quarterly | yes, tight G4 (Δ≤30%) | **disabled 2026-07-12 — see below** |
 | `obr_efo` | observation | `cb_headroom`, `psnfl_trajectory` | PDF exec summary, discovered from `obr.uk/efo` → newest EFO download. **`fetchVia:"relay"`, `relayRunner:"manual"`** — obr.uk's Cloudflare bot management 403s Workers egress AND GitHub/Azure runner IPs (verified 2026-07-08); relayed from an operator machine on EFO publication day (`relay-artefacts.mjs --spec=obr_efo`), ingested via `POST /admin/relay-artefact` | event | **no — always human review** | off · shadow · relay (manual) |
 | `ons_dd_failure` | observation | `dd_failure_rate` | XLSX, newest dataset workbook discovered from the ONS DD-failure-rate dataset page (the figure is xlsx-only — no HTML/API states it). **`fetchVia:"relay"`**; the Worker converts the xlsx to markdown via `AI.toMarkdown` | monthly | yes | off · shadow · relay |
 | `delivery_milestones` | delivery_milestone | `new_towns_milestones`, `bics_rollout`, `industrial_strategy`, `smr_programme` | gov.uk announcements Atom, dept-filtered (`govUkRss` DELIVERY_DEPARTMENTS) | event | **never** — editorial | off · shadow |
@@ -146,6 +146,21 @@ the spec instead left its final `failure` row as the latest attempt forever,
 which re-fired the >1h source-health alert every 6 hours for a source nothing
 polls. Re-enable (drop `disabled`) if RICS lifts the challenge or ships a
 plain-fetch release mirror.
+
+`mhclg_housing` (`housing_trajectory`, `planning_consents`) was **disabled on
+2026-07-12** — a structural mismatch, not an upstream block. Both indicators
+are derived ratios the statistical releases never print (housing_trajectory =
+SA-quarterly completions × 4 ÷ 300,000; planning_consents = major+minor
+residential decisions granted ÷ 11,500), while the extraction contract rightly
+forbids emitting a value the text doesn't state — so the model either gave up
+(the 07-08..12 5024 failures) or invented a ratio (the spec's only two
+"successes", 2026-07-07, recorded fabricated 95 / 120 at confidence 0.3).
+Re-enabling needs derived-indicator capture support: extract the raw printed
+figures (completions; major and minor decisions granted — a two-component sum
+no single quote can anchor, so gate G1 needs a component-level design) and
+apply the documented formulas at publish time. Until then the hand-refresh
+fixture path (`housing.json`, 180-day freshness guard) owns both indicators,
+as it always has for the published site figures.
 
 ## `curator_captures` — staging / review / audit (migration 0011)
 

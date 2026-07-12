@@ -200,10 +200,26 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     // mode at every window (3 × 5024, then a non-JSON schema-free reply,
     // daily 07-08..12). Nearly every line of a stats release carries a digit,
     // so the relevance heuristic degenerates to positional fill; anchors
-    // guarantee the headline sentences ("199,500 net additional homes…",
-    // "…planning applications… granted…") survive truncation — the same fix
-    // that cleared obr_efo and ons_dd_failure (commit 8dbe30a).
+    // guarantee the headline sentences survive truncation — the same fix
+    // that cleared obr_efo and ons_dd_failure (commit 8dbe30a). KEPT for the
+    // day the spec is re-enabled with raw-figure extraction (below).
     anchorTerms: ["net additional", "planning applications", "granted"],
+    // DISABLED 2026-07-12 — STRUCTURAL, not an upstream block: both indicators
+    // are DERIVED ratios the release never prints (housing_trajectory =
+    // SA-quarterly completions × 4 ÷ 300,000; planning_consents = major+minor
+    // residential decisions granted ÷ 11,500 — formulas per housing.json /
+    // housing-history.json), while prompt rule 4 rightly forbids emitting a
+    // value the text doesn't state. The model therefore either gives up
+    // (the 07-08..12 5024s / unparseable rescues) or invents a ratio: the
+    // spec's only two "successes" (2026-07-07, capture ids 25/26) recorded
+    // fabricated 95 / 120 at confidence 0.3. Re-enabling needs derived-
+    // indicator capture support: extract the RAW printed figures (completions;
+    // major AND minor decisions — a two-component SUM no single quote can
+    // anchor, so G1's per-value contract needs a component-level design) and
+    // apply the formulas at publish. Until then the hand-refresh fixture
+    // (housing.json, 180-day freshness guard) owns both indicators — as it
+    // always has for the published site figures.
+    disabled: "extraction targets derived ratios the release never prints — needs raw-figure extraction + publish-time derivation; hand-refresh fixture owns housing_trajectory/planning_consents",
   },
   {
     // Event-driven. NEVER auto-publish: twice-yearly, high-stakes — always

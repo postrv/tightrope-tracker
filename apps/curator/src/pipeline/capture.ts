@@ -194,7 +194,14 @@ async function toText(env: Env, spec: CaptureSpec, parts: ArtefactPart[]): Promi
       ? sections[0]!
       : // Multi-URL: label each section by its URL so the model can attribute values.
         parts.map((p, i) => `=== SOURCE: ${p.url} ===\n${sections[i]}`).join("\n\n");
-  return truncateForModel(combined);
+  // The combined truncation must carry the spec's anchors too. Without them
+  // (the pre-2026-07-12 bug) two ~20k sections squeezed into one 20k budget
+  // fill head-first by digit-relevance, and the SECOND section's headline
+  // sentences never reach the model at all — mhclg_housing's planning
+  // figures were silently absent from every extraction attempt while the
+  // per-section truncation above dutifully anchored text that was then
+  // thrown away here.
+  return truncateForModel(combined, MODEL_TEXT_BUDGET, biasForFormat(spec.format), spec.anchorTerms);
 }
 
 /**

@@ -207,12 +207,20 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     // 5024 MITIGATION (2026-07-12): the artefact is the FULL statistical-
     // release doc for BOTH collections. Anchors keep the component sentences
     // in the truncation window (the same fix that cleared obr_efo and
-    // ons_dd_failure). "net additional" was deliberately DROPPED when the
-    // spec went derived — the annual net-additional-dwellings figure is now
-    // an explicit anti-target (completions is the chosen raw series); and
-    // bare "major"/"minor" are avoided because case-insensitive substring
-    // matching also hits "majority"/"minority" lines and burns the window.
-    anchorTerms: ["completions", "seasonally adjusted", "residential decisions", "granted"],
+    // ons_dd_failure) — including the COMBINED-text truncation in capture.ts,
+    // which silently dropped the whole planning section until 2026-07-12.
+    // "net additional" was deliberately DROPPED when the spec went derived —
+    // the annual net-additional-dwellings figure is now an explicit
+    // anti-target (completions is the chosen raw series). Terms are tuned
+    // against the 2026 Q1 releases' actual phrasing ("The number of
+    // dwellings completed was 37,170 (seasonally adjusted)" / "granted 6,700
+    // residential applications, down 5%…") AND against anchor-tier crowding:
+    // broad terms like "completions" / "seasonally adjusted" match dozens of
+    // housing-section lines, which fill the 8k shrink window in document
+    // order before the planning section's lines get a turn — verified
+    // offline that this set keeps BOTH headline sentences in the 20k and 8k
+    // windows.
+    anchorTerms: ["dwellings completed", "residential applications", "granted"],
     // DERIVED INDICATORS (re-enabled 2026-07-12, promptVersion v2). Both
     // indicators are ratios the releases never print — asking the model for
     // them directly forced refusal (the 07-08..12 5024 storm) or fabrication
@@ -222,7 +230,14 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     // shared formulas (packages/shared/src/derivations.ts, drift-guarded
     // against the hand-maintained fixtures):
     //   housing_trajectory = completions_sa × 4 ÷ 300,000 × 100
-    //   planning_consents  = (major + minor decisions granted) ÷ 11,500 × 100
+    //   planning_consents  = residential decisions granted ÷ 11,500 × 100
+    // (The release prints the residential-granted TOTAL as one quotable
+    // bullet — verified 2026 Q1: "granted 6,700 residential applications" —
+    // so planning_consents is a single-component derivation. The fixture
+    // note's major+minor breakdown comes from the release's tables, not a
+    // quotable sentence; multi-component sums remain supported by the derive
+    // machinery and covered by tests for the day a release only prints a
+    // breakdown.)
     // Gate G1 anchors every component's verbatim quote; G2–G6 run on the
     // derived scale. EXPECTED on any run while the current quarter is
     // already published from the fixture path: G1–G5 pass, G6 FAIL ("not
@@ -239,7 +254,7 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
             label: "New-build dwelling completions, seasonally adjusted, latest quarter (England)",
             unit: "dwellings",
             description:
-              "The headline 'completions (seasonally adjusted)' count for the latest quarter — the raw printed quarterly figure. NOT the annualised figure, NOT the annual 'net additional dwellings' total.",
+              "The seasonally adjusted count of new-build dwellings completed in the latest quarter, e.g. 'The number of dwellings completed was 37,170 (seasonally adjusted)'. NOT the annualised figure, NOT the annual 'net additional dwellings' total, NOT starts.",
             // Fail-fast sanity, not the safety layer (G3 on the derived scale
             // owns that): max 100k sits BELOW the ×4-annualised range, so an
             // annualised misread trips here, component-named, before the G5
@@ -253,26 +268,16 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
       planning_consents: {
         components: [
           {
-            key: "major_residential_decisions_granted",
-            label: "Major residential decisions granted in the quarter (England)",
+            key: "residential_decisions_granted",
+            label: "Residential planning applications granted in the quarter (England, district level)",
             unit: "decisions",
             description:
-              "The printed count of MAJOR residential planning decisions granted in the quarter, e.g. '900 major residential decisions were granted'.",
-            min: 100,
-            max: 15_000,
-          },
-          {
-            key: "minor_residential_decisions_granted",
-            label: "Minor residential decisions granted in the quarter (England)",
-            unit: "decisions",
-            description:
-              "The printed count of MINOR residential planning decisions granted in the quarter, e.g. '5,800 minor residential decisions were granted'.",
+              "The printed count of residential applications granted by district level planning authorities in the quarter, e.g. 'granted 6,700 residential applications, down 5% from the same quarter a year earlier'. The QUARTERLY figure, NOT the year-ending total.",
             min: 1_000,
-            max: 30_000,
+            max: 40_000,
           },
         ],
-        compute: (v) =>
-          derivePlanningConsents(v.major_residential_decisions_granted! + v.minor_residential_decisions_granted!),
+        compute: (v) => derivePlanningConsents(v.residential_decisions_granted!),
       },
     },
   },

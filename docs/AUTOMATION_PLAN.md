@@ -312,12 +312,16 @@ to 15 min CPU; a curator bug can never take down market ingestion.
 Added 2026-07-12, after `mhclg_housing` proved structurally impossible under
 the plain contract: both its indicators are ratios the releases never print
 (`housing_trajectory` = SA-quarterly completions × 4 ÷ 300,000 × 100;
-`planning_consents` = (major + minor residential decisions granted) ÷ 11,500
-× 100 — two separately printed figures whose total isn't reliably printed).
+`planning_consents` = residential decisions granted ÷ 11,500 × 100).
 Prompt rule 4 forbids emitting unstated values and G1 demands a verbatim
 quote per value, so the model could only refuse (the 2026-07-08..12 5024
 storm) or fabricate (its only two pre-derive "successes" recorded invented
 95 / 120 at confidence 0.3 — exactly what the gates exist to catch).
+(Both mhclg derivations turned out single-component once verified against
+the 2026 Q1 releases' real phrasing — the planning release prints the
+residential-granted total as one quotable bullet. Multi-component SUMS are
+fully supported by the machinery and pinned by tests, for releases that only
+print a breakdown.)
 
 Mechanism:
 

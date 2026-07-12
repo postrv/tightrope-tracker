@@ -70,6 +70,32 @@ describe("capture — fetch, hash, dedupe, archive", () => {
     const res = await captureSource(makeEnv({ db }), observationSpec(), { force: true });
     expect(res).not.toBe("unchanged");
   });
+
+  it("anchored lines from a LATER section survive the combined multi-URL truncation", async () => {
+    // Regression for the 2026-07-12 combiner bug: per-section truncation
+    // carried spec.anchorTerms, but the final combined truncation didn't —
+    // two ~20k sections squeezed head-first into one 20k budget dropped the
+    // second section's headline sentences entirely (mhclg_housing's planning
+    // figures never reached the model on any attempt).
+    const filler = Array.from({ length: 1400 }, (_, i) => `<p>Row ${i}: statistic ${i * 3} of table for 2026 values.</p>`).join("");
+    const sectionA = `<html><body>${filler}</body></html>`;
+    const sectionB = `<html><body><p>Authorities granted 6,700 residential applications in the quarter of 2026.</p>${filler}</body></html>`;
+    const bodies = new Map([
+      ["https://example.test/a", sectionA],
+      ["https://example.test/b", sectionB],
+    ]);
+    vi.stubGlobal("fetch", async (url: string) => new Response(bodies.get(String(url)) ?? "", { status: 200 }));
+    const spec = observationSpec({
+      urls: ["https://example.test/a", "https://example.test/b"],
+      anchorTerms: ["residential applications", "granted"],
+    });
+    const env = makeEnv({ db: makeFakeDb() });
+    const res = await captureSource(env, spec, { force: true });
+    if (res === "unchanged") throw new Error("unreachable");
+    // Both sections are ~20k+ of digit-dense filler; without anchors on the
+    // combined pass the section-B headline is crowded out by section A.
+    expect(res.text).toContain("granted 6,700 residential applications");
+  });
 });
 
 describe("htmlToText", () => {

@@ -127,7 +127,7 @@ during the Phase 5 shadow rollout. The "auto-publish eligibility" column is the
 |---------|------|--------------|----------------------|---------|---------------------------------|-----------------------|
 | `sp_global_pmi` | observation | `services_pmi` | HTML mirror (Trading Economics) of the S&P Global UK Services PMI **final** — the canonical S&P index/press pages return 403 to a server-side fetch, so the mirror is cited as a mirror, never the primary. Headline number is on the landing page; capture-stage truncation (lib/artefactText.ts) is the 5024 fix | monthly | yes (after shadow) | off · shadow |
 | `gfk_confidence` | observation | `consumer_confidence` | HTML, NIQ (formerly GfK) consumer-confidence barometer landing → **follow-link** to newest `/news-center/YYYY/consumer-confidence-*` article (implemented) | monthly | yes | off · shadow |
-| `mhclg_housing` | observation | `housing_trajectory`, `planning_consents` | HTML gov.uk collection → **two-hop follow-link**: newest quarterly release page → the full HTML statistical-release doc (**not** the ODS attachments). **Component extraction** (see below): the model reports the raw printed figures (SA completions; major+minor residential decisions granted), each quote-anchored; the pipeline computes the published ratios with `packages/shared/src/derivations.ts` | quarterly | yes, tight G4 (Δ≤30%) | off · shadow (component extraction, promptVersion v2) |
+| `mhclg_housing` | observation | `housing_trajectory`, `planning_consents` | HTML gov.uk collection → **two-hop follow-link**: newest quarterly release page → the full HTML statistical-release doc (**not** the ODS attachments). **Component extraction** (see below): the model reports the raw printed figures (SA completions; residential decisions granted), each quote-anchored; the pipeline computes the published ratios with `packages/shared/src/derivations.ts` | quarterly | yes, tight G4 (Δ≤30%) | off · shadow (component extraction, promptVersion v2) |
 | `obr_efo` | observation | `cb_headroom`, `psnfl_trajectory` | PDF exec summary, discovered from `obr.uk/efo` → newest EFO download. **`fetchVia:"relay"`, `relayRunner:"manual"`** — obr.uk's Cloudflare bot management 403s Workers egress AND GitHub/Azure runner IPs (verified 2026-07-08); relayed from an operator machine on EFO publication day (`relay-artefacts.mjs --spec=obr_efo`), ingested via `POST /admin/relay-artefact` | event | **no — always human review** | off · shadow · relay (manual) |
 | `ons_dd_failure` | observation | `dd_failure_rate` | XLSX, newest dataset workbook discovered from the ONS DD-failure-rate dataset page (the figure is xlsx-only — no HTML/API states it). **`fetchVia:"relay"`**; the Worker converts the xlsx to markdown via `AI.toMarkdown` | monthly | yes | off · shadow · relay |
 | `delivery_milestones` | delivery_milestone | `new_towns_milestones`, `bics_rollout`, `industrial_strategy`, `smr_programme` | gov.uk announcements Atom, dept-filtered (`govUkRss` DELIVERY_DEPARTMENTS) | event | **never** — editorial | off · shadow |
@@ -152,8 +152,11 @@ plain-fetch release mirror.
 **Derived-indicator capture (`mhclg_housing`).** The spec was briefly
 disabled on 2026-07-12 for a structural mismatch: both its indicators are
 derived ratios the statistical releases never print (housing_trajectory =
-SA-quarterly completions × 4 ÷ 300,000 × 100; planning_consents = (major +
-minor residential decisions granted) ÷ 11,500 × 100), while the extraction
+SA-quarterly completions × 4 ÷ 300,000 × 100; planning_consents =
+residential decisions granted ÷ 11,500 × 100 — the release prints the
+residential-granted total as one quotable bullet, verified against 2026 Q1;
+multi-component sums remain supported by the machinery for releases that
+only print a breakdown), while the extraction
 contract rightly forbids emitting a value the text doesn't state — so the
 model either gave up (the 07-08..12 5024 failures) or invented a ratio (the
 spec's only two pre-derive "successes", 2026-07-07, recorded fabricated

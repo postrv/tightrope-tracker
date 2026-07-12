@@ -46,6 +46,20 @@ export function isActiveIngestSource(sourceId: string): boolean {
 }
 
 /**
+ * How long a latest-attempt row may sit at 'started' before it counts as a
+ * failure. A 'started' row younger than this is almost always a sweep IN
+ * FLIGHT — the curator poll takes minutes per spec (model calls), and the
+ * ingest recompute ticks every 5 minutes, so without this grace every sweep
+ * window raced the recompute into a false "failure" alert for whichever specs
+ * happened to be mid-extraction (observed 2026-07-12: sp_global_pmi +
+ * gfk_confidence paged while their poll was still running). 20 minutes sits
+ * above both the platform's 15-minute cron cap and the curator's 10-minute
+ * sweep budget, so a row still 'started' past it is a genuinely dangling row
+ * (killed isolate) and must surface as a failure.
+ */
+export const STARTED_IN_FLIGHT_GRACE_MS = 20 * 60_000;
+
+/**
  * Derive the list of sources whose latest ingestion attempt did not succeed.
  *
  * Input shapes are deliberately close to what the D1 queries return, so both
@@ -56,6 +70,7 @@ export function isActiveIngestSource(sourceId: string): boolean {
 export function computeSourceHealth(
   latestAttempts: readonly LatestAttemptRow[],
   lastSuccessBySource: Readonly<Record<string, string>>,
+  nowMs: number = Date.now(),
 ): SourceHealthEntry[] {
   const out: SourceHealthEntry[] = [];
   for (const row of latestAttempts) {
@@ -65,6 +80,14 @@ export function computeSourceHealth(
     // upstream hasn't moved -- so it must not feed the failure banner.
     // Mirrors the SQL filter for `lastSuccessAt` which also accepts both.
     if (row.status === "success" || row.status === "unchanged") continue;
+    // A recent 'started' row is a run IN FLIGHT, not a failure -- the curator
+    // sweep takes minutes and the recompute ticks every 5, so classifying it
+    // as failed races every sweep into a false alert. Past the grace it's a
+    // dangling row (isolate killed before the audit close) and does surface.
+    if (row.status === "started") {
+      const startedMs = Date.parse(row.startedAt);
+      if (Number.isFinite(startedMs) && nowMs - startedMs < STARTED_IN_FLIGHT_GRACE_MS) continue;
+    }
     // The ingest worker's DLQ handler writes ingestion_audit rows with
     // source_id = 'unknown' when a dead-lettered message carries no
     // sourceId. That row is an artefact of the DLQ plumbing, not a real

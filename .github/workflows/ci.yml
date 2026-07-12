@@ -21,10 +21,25 @@ jobs:
         run: |
           # SEC-3: the wrangler.toml `[env.preview]` blocks legitimately
           # contain REPLACE_WITH_PREVIEW_*_ID placeholders until the user
-          # provisions the preview resources. Don't fail CI on those —
-          # they're an intentional fail-safe for the preview env.
-          if git grep -n 'REPLACE_WITH_' -- ':!docs/' ':!.archive/' ':!.github/' ':!apps/api/wrangler.toml' ':!apps/ingest/wrangler.toml' ':!apps/og/wrangler.toml'; then
+          # provisions the preview resources — they're an intentional
+          # fail-safe for the preview env. Encode that POLICY rather than a
+          # per-file exclusion list: the old list named api/ingest/og and
+          # silently went stale when the curator worker gained the same
+          # [env.preview] block (CI red from 2026-07-08 until this fix).
+          #
+          # Rule 1: any placeholder that is NOT the sanctioned preview kind fails.
+          bad=$(git grep -n 'REPLACE_WITH_' -- ':!docs/' ':!.archive/' ':!.github/' | grep -v 'REPLACE_WITH_PREVIEW_' || true)
+          if [ -n "$bad" ]; then
+            echo "$bad"
             echo "::error::Unfilled REPLACE_WITH_ placeholders detected"
+            exit 1
+          fi
+          # Rule 2: the preview kind is sanctioned ONLY inside a worker's
+          # wrangler.toml — anywhere else it's a placeholder that escaped.
+          stray=$(git grep -n 'REPLACE_WITH_PREVIEW_' -- ':!docs/' ':!.archive/' ':!.github/' ':!apps/*/wrangler.toml' || true)
+          if [ -n "$stray" ]; then
+            echo "$stray"
+            echo "::error::REPLACE_WITH_PREVIEW_ placeholder outside a worker wrangler.toml"
             exit 1
           fi
 

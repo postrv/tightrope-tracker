@@ -89,7 +89,27 @@ export async function runExtraction(
 const SHAPE_INSTRUCTION = [
   "Respond with ONLY one JSON object — no prose, no code fences — of exactly this shape:",
   '{"values":[{"indicatorId":"<id>","value":<number>,"unit":"<unit>","observedAt":"YYYY-MM-DD","quote":"<verbatim sentence>"}],"releasedAt":"<ISO date or null>","draft":<object for editorial drafts, else null>}',
+  "value must be a bare JSON number — no quotes, no thousands separators.",
 ].join("\n");
+
+/**
+ * Accept a JSON number or a plain numeric string. Without `response_format`
+ * (the schema-free rescue) the model tends to quote a figure exactly as the
+ * artefact prints it — `"199,500"` — which is a formatting nit, not a wrong
+ * extraction (the 2026-07-12 mhclg_housing failures died on exactly this).
+ * Coercion is deliberately narrow: optional sign, correctly-grouped thousands
+ * separators, optional decimal — anything else stays rejected. This loosens
+ * parsing, never acceptance: gates G1–G6 (quote anchor, plausible range,
+ * agreement) remain the real gates on the value itself.
+ */
+function coerceFiniteNumber(raw: unknown): number | undefined {
+  if (typeof raw === "number") return Number.isFinite(raw) ? raw : undefined;
+  if (typeof raw !== "string") return undefined;
+  const s = raw.trim();
+  if (!/^-?\d{1,3}(,\d{3})*(\.\d+)?$/.test(s) && !/^-?\d+(\.\d+)?$/.test(s)) return undefined;
+  const n = Number(s.replace(/,/g, ""));
+  return Number.isFinite(n) ? n : undefined;
+}
 
 type ValidateResult = { ok: true; value: ExtractionResult } | { ok: false; error: string };
 
@@ -142,13 +162,14 @@ function parseAndValidate(raw: string, spec: CaptureSpec): ValidateResult {
     if (!raw || typeof raw !== "object") return { ok: false, error: "value entry must be an object" };
     const v = raw as Record<string, unknown>;
     if (typeof v.indicatorId !== "string") return { ok: false, error: "value.indicatorId must be a string" };
-    if (typeof v.value !== "number" || !Number.isFinite(v.value)) return { ok: false, error: "value.value must be a finite number" };
+    const value = coerceFiniteNumber(v.value);
+    if (value === undefined) return { ok: false, error: "value.value must be a finite number" };
     if (typeof v.unit !== "string") return { ok: false, error: "value.unit must be a string" };
     if (typeof v.observedAt !== "string") return { ok: false, error: "value.observedAt must be a string" };
     if (typeof v.quote !== "string" || v.quote.trim().length === 0) return { ok: false, error: "value.quote must be a non-empty string" };
     values.push({
       indicatorId: v.indicatorId,
-      value: v.value,
+      value,
       unit: v.unit,
       observedAt: v.observedAt,
       quote: v.quote,

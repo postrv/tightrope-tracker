@@ -102,6 +102,36 @@ describe("extract — JSON mode + validation + retry", () => {
     expect(ai.calls[3]!.messages.at(-1)!.content).toContain("ONLY one JSON object");
   });
 
+  it("coerces a quoted thousands-separated value in the schema-free rescue (the mhclg_housing failure mode)", async () => {
+    // Without response_format the model quotes the figure as the artefact
+    // prints it — "199,500" — a formatting nit, not a wrong extraction.
+    const quoted = JSON.stringify({
+      values: [{ indicatorId: "services_pmi", value: "199,500", unit: "dwellings", observedAt: "2026-03-31", quote: "199,500 net additional homes were delivered." }],
+      releasedAt: null,
+      draft: null,
+    });
+    const ai = makeAi({
+      run: (_model, inputs) => {
+        if (inputs.response_format) throw new Error("5024: JSON Model couldn't be met");
+        return quoted;
+      },
+    });
+    const res = await extractFromArtifact(makeEnv({ db: makeFakeDb(), ai: ai.AI }), observationSpec(), artifact(observationSpec()));
+    expect(res.values[0]!.value).toBe(199500);
+  });
+
+  it("still rejects a non-numeric value string (coercion is narrow, not a parser)", async () => {
+    const junk = JSON.stringify({
+      values: [{ indicatorId: "services_pmi", value: "about 200k", unit: "dwellings", observedAt: "2026-03-31", quote: "roughly two hundred thousand." }],
+      releasedAt: null,
+      draft: null,
+    });
+    const ai = makeAi({ run: () => junk });
+    await expect(
+      extractFromArtifact(makeEnv({ db: makeFakeDb(), ai: ai.AI }), observationSpec(), artifact(observationSpec())),
+    ).rejects.toThrow(/value\.value must be a finite number/);
+  });
+
   it("reports the rescue's own failure when the schema-free attempt is also invalid", async () => {
     const ai = makeAi({
       run: (_model, inputs) => {

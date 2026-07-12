@@ -1,5 +1,43 @@
 import { describe, expect, it } from "vitest";
-import { computeSourceHealth } from "./sourceHealth.js";
+import { computeSourceHealth, STARTED_IN_FLIGHT_GRACE_MS } from "./sourceHealth.js";
+
+describe("computeSourceHealth — in-flight 'started' grace", () => {
+  const T0 = Date.parse("2026-07-12T17:05:34Z");
+
+  it("ignores a 'started' row younger than the grace (a sweep in flight, not a failure)", () => {
+    // The 2026-07-12 false positive: the curator poll had sp_global_pmi +
+    // gfk_confidence mid-extraction when the 5-minute recompute ticked.
+    const out = computeSourceHealth(
+      [
+        { sourceId: "sp_global_pmi", startedAt: new Date(T0).toISOString(), status: "started" },
+        { sourceId: "gfk_confidence", startedAt: new Date(T0 - 3 * 60_000).toISOString(), status: "started" },
+      ],
+      { sp_global_pmi: "2026-07-12T06:00:00Z", gfk_confidence: "2026-07-12T06:00:00Z" },
+      T0 + 60_000, // recompute ticks one minute into the sweep
+    );
+    expect(out).toHaveLength(0);
+  });
+
+  it("surfaces a 'started' row older than the grace (dangling row from a killed isolate)", () => {
+    const out = computeSourceHealth(
+      [{ sourceId: "timeline_triage", startedAt: new Date(T0).toISOString(), status: "started" }],
+      {},
+      T0 + STARTED_IN_FLIGHT_GRACE_MS + 1,
+    );
+    expect(out).toHaveLength(1);
+    expect(out[0]!.sourceId).toBe("timeline_triage");
+    expect(out[0]!.status).toBe("failure");
+  });
+
+  it("treats an unparseable startedAt as past-grace (fail loud, not silent)", () => {
+    const out = computeSourceHealth(
+      [{ sourceId: "mystery", startedAt: "not-a-date", status: "started" }],
+      {},
+      T0,
+    );
+    expect(out).toHaveLength(1);
+  });
+});
 
 describe("computeSourceHealth", () => {
   it("returns an empty list when every source's latest attempt succeeded", () => {

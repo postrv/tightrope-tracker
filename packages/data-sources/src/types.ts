@@ -68,6 +68,17 @@ export interface HistoricalFetchResult {
 /** Optional context passed to adapters at runtime (secrets, config). */
 export interface AdapterContext {
   secrets?: Record<string, string | undefined>;
+  /**
+   * Latest published observation for an indicator, provided by the ingest
+   * runner (D1-backed, the same two-tier selector the snapshot uses). Lets
+   * an adapter pair against a series another pipeline already ingests —
+   * eia_brent's USD→GBP conversion reads the relay-fed `gbp_usd` fix here
+   * instead of re-fetching the BoE IADB endpoint, whose Workers egress has
+   * been ASN-blocked since 2026-06-10 (the reason the Actions relay exists).
+   * Absent in dev/tests/probe scripts, where adapters fall back exactly as
+   * they do for a missing API key.
+   */
+  getLatestObservation?: (indicatorId: string) => Promise<{ value: number; observedAt: string } | null>;
 }
 
 /** Adapter contract -- every source must implement this. */

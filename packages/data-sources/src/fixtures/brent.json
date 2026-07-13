@@ -1,9 +1,12 @@
 {
-  "_comment": "Brent crude (Europe Brent Spot Price FOB) converted to GBP. USD series sourced from EIA daily table at https://www.eia.gov/dnav/pet/hist/rbrted.htm (US federal public-domain). GBP/USD spot is the BoE 4pm daily fix (XUDLUSS). Refreshed weekly by the editorial pipeline. 2026-07-03 refresh: latest EIA Europe Brent Spot print is 2026-06-29 = $71.59/bbl (EIA release date 2026-07-01; 30 Jun–3 Jul not yet published), divided by the BoE XUDLUSS 4pm fix for 29 Jun 2026 = 1.3245, giving 71.59 / 1.3245 = 54.0506 → 54.05 GBP/bbl. The triplet round-trips: 54.05 × 1.3245 = 71.58 and 71.59 / 1.3245 = 54.05. This mirrors exactly the adapter derivation in adapters/eiaBrent.ts (latest EIA period ÷ nearest BoE fix, pairing skew 0 days). Brent has unwound most of the April 2026 conflict spike (peak $138.21 on 2026-04-07; $103.40 on 2026-04-20) back toward the low-70s USD.",
-  "as_of": "2026-06-29",
-  "observed_at": "2026-06-29T00:00:00Z",
-  "brent_usd_per_bbl": 71.59,
-  "gbp_usd": 1.3245,
-  "brent_gbp": { "value": 54.05, "unit": "GBP/bbl" },
+  "_comment": "Brent crude (Europe Brent Spot Price FOB) converted to GBP. USD series sourced from EIA daily table at https://www.eia.gov/dnav/pet/hist/rbrted.htm (US federal public-domain). GBP/USD spot is the BoE 4pm daily fix (XUDLUSS). Refreshed weekly by the editorial pipeline. 2026-07-13 refresh: latest EIA Europe Brent Spot print is 2026-07-06 = $69.56/bbl (verified via the FRED mirror DCOILBRENTEU, which republishes the EIA series; EIA publishes the dated series with a few days' lag, so this trails the front-month futures quotes carried in news media), divided by the BoE XUDLUSS 4pm fix for 6 Jul 2026 = 1.3356 (from our own ingested gbp_usd series, relay-fed), giving 69.56 / 1.3356 = 52.0815 -> 52.08 GBP/bbl. The triplet round-trips: 52.08 x 1.3356 = 69.56. This mirrors exactly the adapter derivation in adapters/eiaBrent.ts (latest EIA period / nearest fix, pairing skew 0 days). Context for the level: Brent has continued unwinding the April 2026 conflict spike (peak $138.21 on 2026-04-07) into the high-60s USD, with a brief early-July rebound on renewed US-Iran tensions.",
+  "as_of": "2026-07-06",
+  "observed_at": "2026-07-06T00:00:00Z",
+  "brent_usd_per_bbl": 69.56,
+  "gbp_usd": 1.3356,
+  "brent_gbp": {
+    "value": 52.08,
+    "unit": "GBP/bbl"
+  },
   "source_url": "https://www.eia.gov/dnav/pet/hist/rbrted.htm"
 }

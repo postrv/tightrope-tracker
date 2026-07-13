@@ -1,4 +1,5 @@
 import { AdapterError, type DataSourceAdapter, type AdapterResult, type AdapterContext } from "@tightrope/data-sources";
+import { readLatestObservations } from "@tightrope/snapshot";
 import type { Env } from "../env.js";
 import { closeAuditFailure, closeAuditSuccess, openAudit } from "../lib/audit.js";
 import { writeObservations } from "../lib/observations.js";
@@ -64,6 +65,16 @@ export async function runAdapter(
     secrets: {
       EODHD_API_KEY: env.EODHD_API_KEY,
       EIA_API_KEY: env.EIA_API_KEY,
+    },
+    // D1-backed latest-observation lookup (the snapshot's two-tier selector).
+    // eia_brent pairs its USD print with the relay-fed gbp_usd fix through
+    // this instead of re-fetching the ASN-blocked BoE IADB endpoint.
+    getLatestObservation: async (indicatorId) => {
+      const rows = await readLatestObservations(env.DB);
+      const row = rows.find((r) => r.indicator_id === indicatorId);
+      return row && typeof row.value === "number" && Number.isFinite(row.value)
+        ? { value: row.value, observedAt: row.observed_at }
+        : null;
     },
   };
   try {

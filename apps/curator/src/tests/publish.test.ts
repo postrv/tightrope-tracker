@@ -70,8 +70,10 @@ describe("decideAndPersist", () => {
   it("F1: an EDITORIAL draft under shadow persists 'pending' and reaches the review queue (not 'shadow')", async () => {
     const db = makeFakeDb();
     const env = makeEnv({ db, extra: { CURATOR_MODE: "shadow" } });
-    const spec = observationSpec({ kind: "delivery_milestone", indicatorIds: [], plausibility: {}, allowAutoPublish: false });
-    const out = await decideAndPersist(env, spec, row({ kind: "delivery_milestone" }), report());
+    const spec = observationSpec({ kind: "delivery_milestone", indicatorIds: ["new_towns_milestones"], plausibility: {}, allowAutoPublish: false });
+    // A substantive draft — the vacuous-draft gate must let real drafts through.
+    const draft = JSON.stringify({ indicatorId: "new_towns_milestones", proposedValue: 68, rationale: "Two further sites confirmed, taking the programme to 8 of 12.", quote: "Two further new town sites were confirmed today." });
+    const out = await decideAndPersist(env, spec, row({ kind: "delivery_milestone", payload: draft }), report());
     // Shadow gates the publish action for OBSERVATIONS, not the editorial queue.
     expect(out.status).toBe("pending");
     expect(out.decidedBy).toBe("auto"); // not shadowed
@@ -79,6 +81,54 @@ describe("decideAndPersist", () => {
     // Visible to a reviewer: listCaptures('pending') returns it.
     const queue = await listCaptures(db.db, "pending");
     expect(queue.some((c) => c.id === out.id)).toBe(true);
+  });
+
+  it("auto-rejects a milestone draft whose rationale says there is nothing to extract", async () => {
+    // Verbatim production case (capture #148, 2026-07-14): invented indicator
+    // slug + "No milestones mentioned in the text".
+    const db = makeFakeDb();
+    const env = makeEnv({ db, extra: { CURATOR_MODE: "shadow" } });
+    const spec = observationSpec({ kind: "delivery_milestone", indicatorIds: ["new_towns_milestones"], plausibility: {}, allowAutoPublish: false });
+    const draft = JSON.stringify({ indicatorId: "fine-amount", proposedValue: 0, rationale: "No milestones mentioned in the text", quote: "Housing company fined £300,000." });
+    const out = await decideAndPersist(env, spec, row({ kind: "delivery_milestone", payload: draft }), report());
+    expect(out.status).toBe("rejected");
+    expect(out.decidedBy).toContain("auto:triage(vacuous-draft");
+    expect(out.decidedBy).toContain("not one the spec declares");
+    const queue = await listCaptures(db.db, "pending");
+    expect(queue.some((c) => c.id === out.id)).toBe(false);
+  });
+
+  it("auto-rejects a milestone draft with a declared indicator but a nothing-here rationale", async () => {
+    const db = makeFakeDb();
+    const env = makeEnv({ db, extra: { CURATOR_MODE: "shadow" } });
+    const spec = observationSpec({ kind: "delivery_milestone", indicatorIds: ["new_towns_milestones"], plausibility: {}, allowAutoPublish: false });
+    const draft = JSON.stringify({ indicatorId: "new_towns_milestones", proposedValue: 0, rationale: "Insufficient information to determine progress towards target", quote: "Government sets out clear path." });
+    const out = await decideAndPersist(env, spec, row({ kind: "delivery_milestone", payload: draft }), report());
+    expect(out.status).toBe("rejected");
+  });
+
+  it("auto-rejects a commitment patch with a null id and an unknown-id patch; keeps a real one", async () => {
+    const db = makeFakeDb();
+    const env = makeEnv({ db, extra: { CURATOR_MODE: "shadow" } });
+    const spec = observationSpec({ kind: "delivery_commitment", indicatorIds: [], plausibility: {}, allowAutoPublish: false });
+
+    // Production case #126: every field null.
+    const nullDraft = JSON.stringify({ id: null, latest: null, notes: null, quote: null, source_label: null, source_url: "https://www.gov.uk/", status: null });
+    const a = await decideAndPersist(env, spec, row({ kind: "delivery_commitment", indicatorId: null, payload: nullDraft }), report());
+    expect(a.status).toBe("rejected");
+    expect(a.decidedBy).toContain("no id / no updatable fields");
+
+    // Production case #146: id is the announcement slug, not a scorecard row.
+    const slugDraft = JSON.stringify({ id: "uk-export-finance-and-british-business-bank-joint-scheme", notes: "New scheme.", quote: "q" });
+    const b = await decideAndPersist(env, spec, row({ kind: "delivery_commitment", indicatorId: null, payload: slugDraft }), report());
+    expect(b.status).toBe("rejected");
+    expect(b.decidedBy).toContain("does not exist on the delivery scorecard");
+
+    // A real scorecard id with an updatable field reaches the queue.
+    const realDraft = JSON.stringify({ id: "housing_305k", notes: "Quarterly completions annualise to 149k against the 305k target.", quote: "q" });
+    const c = await decideAndPersist(env, spec, row({ kind: "delivery_commitment", indicatorId: null, payload: realDraft }), report());
+    expect(c.status).toBe("pending");
+    expect(c.decidedBy).toBe("auto");
   });
 
   it("F1: an OBSERVATION under shadow stays 'shadow' (contrast with the editorial path)", async () => {

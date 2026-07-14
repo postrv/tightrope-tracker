@@ -1,5 +1,5 @@
 import type { D1Database } from "@cloudflare/workers-types";
-import { INDICATORS } from "@tightrope/shared";
+import { DELIVERY_COMMITMENTS_SEED, INDICATORS } from "@tightrope/shared";
 import { curatorPublicUrl, type Env } from "../env";
 import { isEditorialKind, type CaptureRow, type CaptureSpec, type CaptureStatus, type VerificationReport } from "../types";
 import { insertCapture, setCaptureDecision, supersedeOlderUnpublished, type CaptureDetail } from "../lib/captures";
@@ -48,8 +48,15 @@ export async function decideAndPersist(
   const intended = decideStatus(spec, verification);
   const shadow = isShadowMode(env);
   const editorial = isEditorialKind(spec.kind);
+  // Vacuous-draft gate: an editorial draft that could never be approved (no
+  // extractable milestone, a field patch with a null/unknown commitment id)
+  // is auto-rejected with the reason recorded, instead of queuing for a human
+  // to reject by hand. The 2026-07-14 triage found 15 such rows — every
+  // delivery draft in the queue — including model rationales that literally
+  // said "No milestones mentioned in the text".
+  const vacuous = editorial ? vacuousEditorialReason(spec, row) : null;
   // Only observations are shadowed; editorial drafts always reach the queue.
-  const finalStatus: CaptureStatus = shadow && !editorial ? "shadow" : intended;
+  const finalStatus: CaptureStatus = vacuous ? "rejected" : shadow && !editorial ? "shadow" : intended;
   const willPublish = finalStatus === "auto_published";
 
   // Deterministic observation key (indicator|observed_at) when this row can publish.
@@ -57,7 +64,11 @@ export async function decideAndPersist(
   const observationKey = canKey ? `${row.indicatorId}|${row.observedAt}` : null;
 
   const shadowed = finalStatus === "shadow";
-  const decidedBy = shadowed ? `auto:shadow(intended=${intended})` : "auto";
+  const decidedBy = vacuous
+    ? `auto:triage(vacuous-draft: ${vacuous})`
+    : shadowed
+      ? `auto:shadow(intended=${intended})`
+      : "auto";
   const persisted: CaptureRow = {
     ...row,
     status: finalStatus,
@@ -97,6 +108,47 @@ function decideStatus(spec: CaptureSpec, verification: VerificationReport): Capt
   if (failed("G3") || failed("G4")) return "quarantined";
   if (verification.passed && spec.allowAutoPublish) return "auto_published";
   return "pending";
+}
+
+/** The model's honest "there is nothing here" phrasings, verbatim from production rows. */
+const VACUOUS_RATIONALE =
+  /\bno (?:specific )?(?:delivery )?milestones?\b|\binsufficient information\b|\bno specific .* mentioned\b/i;
+
+/**
+ * Reason an editorial draft is unapprovable-by-construction, or null when it
+ * deserves the review queue. Deliberately narrow: it rejects only drafts the
+ * APPROVE PATH itself would refuse (or that name entities that don't exist) —
+ * editorial judgment about borderline-but-valid drafts stays with the human.
+ */
+function vacuousEditorialReason(spec: CaptureSpec, row: CaptureRow): string | null {
+  const draft = row.payload ? safeParse(row.payload) : null;
+  if (!draft) return "no parseable draft payload";
+
+  if (row.kind === "delivery_milestone") {
+    const indicatorId = typeof draft.indicatorId === "string" ? draft.indicatorId : null;
+    if (!indicatorId || !spec.indicatorIds.includes(indicatorId)) {
+      return `milestone indicatorId '${indicatorId ?? "missing"}' is not one the spec declares`;
+    }
+    const rationale = typeof draft.rationale === "string" ? draft.rationale : "";
+    if (VACUOUS_RATIONALE.test(rationale)) {
+      return "rationale states no extractable milestone";
+    }
+    const quote = typeof draft.quote === "string" ? draft.quote.trim() : "";
+    if (quote.length === 0) return "draft has no anchoring quote";
+    return null;
+  }
+
+  if (row.kind === "delivery_commitment") {
+    const patch = extractCommitmentPatch(draft);
+    if (!patch) return "field patch has no id / no updatable fields (approve would refuse it)";
+    if (!DELIVERY_COMMITMENTS_SEED.some((c) => c.id === patch.id)) {
+      return `commitment id '${patch.id}' does not exist on the delivery scorecard`;
+    }
+    return null;
+  }
+
+  // timeline_event relevance belongs to the triage pass, not this gate.
+  return null;
 }
 
 interface PublishArgs {

@@ -37,6 +37,33 @@ function ai(env: Env): CuratorAiBinding {
  * narrow on `format`.
  */
 
+/**
+ * Hard ceiling on any single Workers AI call. A hung call (observed during
+ * the 2026-07-14 Workers AI degradation: gfk_confidence and mhclg_housing
+ * extractions never returned) otherwise pins a sweep pool-worker until the
+ * platform kills the whole isolate at the cron cap — dangling the in-flight
+ * spec's audit row at 'started' and budget-starving every spec queued behind
+ * it. With the ceiling, a hang becomes an ordinary retryable model-call
+ * failure: the extraction retry loop re-rolls it and the audit row closes
+ * honestly. 150s is ~3× the p95 for a 20k-char extraction on llama-3.3.
+ */
+const AI_CALL_TIMEOUT_MS = 150_000;
+
+async function withTimeout<T>(p: Promise<T>, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`AI_TIMEOUT: ${label} exceeded ${AI_CALL_TIMEOUT_MS / 1000}s`)),
+      AI_CALL_TIMEOUT_MS,
+    );
+  });
+  try {
+    return await Promise.race([p, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** JSON-mode text-generation call. Returns the model's raw `response` string. */
 export async function runModelJson(
   env: Env,
@@ -44,14 +71,17 @@ export async function runModelJson(
   messages: Array<{ role: string; content: string }>,
   jsonSchema: Record<string, unknown>,
 ): Promise<string> {
-  const out = await ai(env).run(modelId, {
-    messages,
-    response_format: { type: "json_schema", json_schema: jsonSchema },
-    // Deterministic decoding: extraction must be reproducible run-to-run so a
-    // re-verify of the same artefact can't drift. temperature 0 + a fixed seed.
-    temperature: 0,
-    seed: 1,
-  });
+  const out = await withTimeout(
+    ai(env).run(modelId, {
+      messages,
+      response_format: { type: "json_schema", json_schema: jsonSchema },
+      // Deterministic decoding: extraction must be reproducible run-to-run so a
+      // re-verify of the same artefact can't drift. temperature 0 + a fixed seed.
+      temperature: 0,
+      seed: 1,
+    }),
+    "json-mode model call",
+  );
   return narrowResponse(out);
 }
 
@@ -69,7 +99,10 @@ export async function runModelText(
   modelId: string,
   messages: Array<{ role: string; content: string }>,
 ): Promise<string> {
-  const out = await ai(env).run(modelId, { messages, temperature: 0, seed: 1 });
+  const out = await withTimeout(
+    ai(env).run(modelId, { messages, temperature: 0, seed: 1 }),
+    "schema-free model call",
+  );
   return narrowResponse(out);
 }
 
@@ -94,7 +127,7 @@ function narrowResponse(out: Record<string, unknown>): string {
  */
 export async function docToMarkdown(env: Env, name: string, bytes: ArrayBuffer, mime: string): Promise<string> {
   const blob = new Blob([bytes], { type: mime });
-  const res = await ai(env).toMarkdown({ name, blob });
+  const res = await withTimeout(ai(env).toMarkdown({ name, blob }), `toMarkdown(${name})`);
   if (res.format === "error") {
     throw new Error(`AI.toMarkdown failed for ${name}: ${res.error}`);
   }

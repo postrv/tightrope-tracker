@@ -132,11 +132,17 @@ describe("sweep wall-clock budget (the dangling-'started' fix)", () => {
     // Deadline already in the past: no spec may fetch or call the model.
     const summary = await runSweep(env, { force: true, deadlineMs: 0 });
 
-    const disabledIds = new Set(CAPTURE_SPECS.filter((s) => s.disabled).map((s) => s.sourceId));
-    expect(disabledIds.size).toBeGreaterThan(0); // the registry carries disabled specs today (rics_rms, mhclg_housing)
+    // Instant branches (disabled + relay-skip) cost two D1 writes each and
+    // must close honestly even with the budget spent — on 2026-07-14 the
+    // deadline branch preceded the relay branch and obr_efo's millisecond
+    // skip paged as a budget failure.
+    const instantIds = new Set(
+      CAPTURE_SPECS.filter((s) => s.disabled || s.fetchVia === "relay").map((s) => s.sourceId),
+    );
+    expect(instantIds.size).toBeGreaterThan(0); // rics_rms (disabled), obr_efo/ons_dd_failure (relay)
     for (const r of summary.results) {
-      if (disabledIds.has(r.sourceId)) {
-        expect(r.status, r.sourceId).toBe("unchanged"); // disabled check precedes the budget check
+      if (instantIds.has(r.sourceId)) {
+        expect(r.status, r.sourceId).toBe("unchanged");
       } else {
         expect(r.status, r.sourceId).toBe("failure");
         expect(r.error, r.sourceId).toContain("wall-clock budget exhausted");

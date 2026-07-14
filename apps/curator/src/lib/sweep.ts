@@ -112,11 +112,22 @@ async function runSpec(env: Env, spec: CaptureSpec, opts: { force: boolean }, de
   let result: SpecResult = { sourceId: spec.sourceId, status: "failure", rows: 0, error: "spec did not complete" };
 
   try {
+    // ORDER MATTERS: the two instant branches (disabled, relay-skip) come
+    // BEFORE the budget check. They cost two D1 writes each — on 2026-07-14
+    // the deadline branch preceded the relay branch, so when hung AI calls
+    // (Workers AI degradation) starved the pool, obr_efo's and
+    // ons_dd_failure's millisecond skips were recorded as budget failures
+    // and paged for work that was never going to cost anything.
     if (spec.disabled) {
       // Deliberately disabled (upstream unreachable, hand-refresh path owns the
       // indicator). Record an honest skip — 'unchanged' keeps the health/alert
       // surface quiet, and the note says exactly why nothing was fetched.
       audit = { status: "unchanged", opts: { payloadHash: null, error: `skipped: disabled — ${spec.disabled}` } };
+      result = { sourceId: spec.sourceId, status: "unchanged", rows: 0 };
+    } else if (isRelaySpec(spec)) {
+      // Worker egress is WAF-blocked for this source; the relay endpoint owns
+      // ingestion. Skip the (guaranteed-failing) fetch and record it honestly.
+      audit = { status: "unchanged", opts: { payloadHash: null, error: "skipped: fetchVia=relay (ingested via /admin/relay-artefact)" } };
       result = { sourceId: spec.sourceId, status: "unchanged", rows: 0 };
     } else if (Date.now() >= deadlineMs) {
       // The sweep's wall-clock budget is spent — starting this spec's fetch +
@@ -130,11 +141,6 @@ async function runSpec(env: Env, spec: CaptureSpec, opts: { force: boolean }, de
       const n = await runTimelineTriage(env, spec, deadlineMs);
       audit = { status: "success", opts: { rowsWritten: n } };
       result = { sourceId: spec.sourceId, status: "success", rows: n };
-    } else if (isRelaySpec(spec)) {
-      // Worker egress is WAF-blocked for this source; the relay endpoint owns
-      // ingestion. Skip the (guaranteed-failing) fetch and record it honestly.
-      audit = { status: "unchanged", opts: { payloadHash: null, error: "skipped: fetchVia=relay (ingested via /admin/relay-artefact)" } };
-      result = { sourceId: spec.sourceId, status: "unchanged", rows: 0 };
     } else {
       const cap = await captureSource(env, spec, opts);
       if (cap === "unchanged") {

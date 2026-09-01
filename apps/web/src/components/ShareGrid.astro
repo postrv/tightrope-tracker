@@ -1,6 +1,5 @@
 ---
 import type { ScoreSnapshot, TodayMovement, IndicatorContribution, PillarId } from "@tightrope/shared";
-import type { DeliveryCommitment } from "@tightrope/shared/delivery";
 import { BANDS, OBR_LATEST_VINTAGE_LABEL, OBR_TARGET_YEAR_LABEL } from "@tightrope/shared";
 import { shortDate } from "~/lib/format.js";
 import { mortgageDelta, formatExtra, MORTGAGE_BUDGET_BASELINE_PCT, MORTGAGE_BUDGET_BASELINE_LABEL } from "~/lib/mortgage.js";
@@ -8,10 +7,9 @@ import { mortgageDelta, formatExtra, MORTGAGE_BUDGET_BASELINE_PCT, MORTGAGE_BUDG
 interface Props {
   snapshot: ScoreSnapshot;
   movements: TodayMovement[];
-  delivery: DeliveryCommitment[];
 }
 
-const { snapshot, movements, delivery } = Astro.props;
+const { snapshot, movements } = Astro.props;
 
 const band = BANDS.find((b) => b.id === snapshot.headline.band) ?? BANDS[0];
 const scoreRounded = Math.round(snapshot.headline.value);
@@ -34,7 +32,6 @@ const inactivity = findContrib(snapshot, "labour", "inactivity_rate");
 const mortgage = findContrib(snapshot, "labour", "mortgage_2y_fix");
 const housingContrib = findContrib(snapshot, "delivery", "housing_trajectory");
 const gilt30 = movements.find((m) => m.indicatorId === "gilt_30y");
-const housingDelivery = delivery.find((d) => d.id === "housing_305k");
 
 const mortRates = mortgage
   ? mortgageDelta(MORTGAGE_BUDGET_BASELINE_PCT, mortgage.rawValue)
@@ -103,8 +100,10 @@ const allCards: (Card | null)[] = [
     id: "housing",
     variant: "",
     brand: "Tightrope Tracker · Delivery",
-    stat: housingDelivery ? `${Math.round(housingContrib.rawValue).toLocaleString("en-GB")}` : "—",
-    label: "Net additional dwellings (latest MHCLG release). Government target: 305k a year by 2030/31.",
+    // housing_trajectory is % of the 300k OBR path, not a dwelling count.
+    // Recover annualised completions (000s) the same way the OG card does.
+    stat: `${Math.round((housingContrib.rawValue / 100) * 300).toLocaleString("en-GB")}k`,
+    label: `Annualised completions vs the 300k OBR path (${housingContrib.rawValue.toFixed(1)}%). Government pledge: 305k a year by 2030/31.`,
     foot: ["Source · MHCLG", shortDate(housingContrib.observedAt)],
     ogPath: "/og/delivery-housing.png",
   } : null,
@@ -117,8 +116,8 @@ const cards = allCards.filter((c): c is Card => c !== null);
     <div class="section-head">
       <div>
         <span class="eyebrow">Spread the data</span>
-        <h2 class="sec-title" id="share-title" style="margin-top: 14px;">Shareable cards · updated nightly</h2>
-        <p class="section-sub">Every card is auto-generated from the live data and pushed to a stable OG URL. Download, tweet, embed in your Substack.</p>
+        <h2 class="sec-title" id="share-title" style="margin-top: 14px;">Shareable cards · live snapshot</h2>
+        <p class="section-sub">Every card is generated from the live snapshot. The OG PNG at each stable URL refreshes at most every 30 minutes (edge cache). Download, tweet, embed in your Substack.</p>
       </div>
     </div>
 

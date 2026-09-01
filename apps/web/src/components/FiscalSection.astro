@@ -5,6 +5,7 @@ import { signedDelta, trendDescriptor } from "~/lib/format.js";
 import { yFor, Y_AXIS_TICKS, IFS_CUSHION_BN, IFS_CUSHION_Y } from "~/lib/fiscalChart.js";
 import IllustrativeBadge from "./IllustrativeBadge.astro";
 import IndicatorTooltip from "./IndicatorTooltip.astro";
+import ProvenanceBadge from "./ProvenanceBadge.astro";
 
 interface Props {
   pillar: PillarScore;
@@ -80,10 +81,7 @@ const chartHasData = rounds.length >= 2;
       <div class="chart-card">
         <div class="card-head">
           <h3>OBR forecast headroom for {OBR_TARGET_YEAR_LABEL}, by vintage</h3>
-          <IllustrativeBadge
-            sourceSummary="Each dot is the current-budget headroom figure from one OBR Economic and Fiscal Outlook publication, drawn straight from the live cb_headroom indicator (sourced via the obrEfo adapter). Updated automatically when a new EFO lands."
-            sourceUrl="https://obr.uk/efo/"
-          />
+          <ProvenanceBadge indicatorId="cb_headroom" />
         </div>
         <p class="hint">£ billion, surplus against the stability rule at the {OBR_TARGET_YEAR_LABEL} target year. Each dot is a separate OBR forecast round.</p>
         {chartHasData ? (
@@ -141,25 +139,26 @@ const chartHasData = rounds.length >= 2;
         <div class="card-head">
           <h3>The <IndicatorTooltip label="DMO" description="UK Debt Management Office — the executive agency that issues gilts (UK government bonds) on behalf of HM Treasury. Its 'gilt stack' is the planned mix of new bonds it will sell over the financial year, by maturity bucket and type." tipId="tip-dmo" /> gilt stack (forecast)</h3>
           <IllustrativeBadge
-            sourceSummary="DMO 2026/27 Gilt Remit (published alongside the Spring Statement) and OBR EFO Table 3.8 (Spring Forecast 2026). PSND/GDP and debt-interest are OBR forecasts for FY 2026/27, not outturns."
+            sourceSummary="DMO 2026/27 financing remit (3 March 2026): gilt sales £252.1bn split short £97.3bn / medium £77.8bn / long £23.0bn / index-linked £23.5bn / unallocated £30.5bn. PSND/GDP 94.8% and debt interest £109.4bn are OBR Spring Forecast 2026 figures for FY 2026/27, not outturns."
             sourceUrl="https://www.gov.uk/government/publications/debt-management-report-2026-27/debt-management-report-2026-27"
           />
         </div>
-        <p class="hint">Planned 2026/27 issuance · £252.1bn total · GDP = £2,709bn (OBR Spring Forecast 2026)</p>
+        <p class="hint">Planned 2026/27 gilt sales · £252.1bn total · GDP = £2,709bn (DMO remit 3 Mar 2026 / OBR Spring Forecast 2026)</p>
         <table class="gilt-table">
           <thead>
             <tr><th></th><th>Nominal</th><th>% of GDP</th></tr>
           </thead>
           <tbody>
-            <tr><td>Total issuance</td><td>£252.1bn</td><td>9.3%</td></tr>
-            <tr><td>Short conventional</td><td>£72.1bn</td><td>2.7%</td></tr>
-            <tr><td>Medium conventional</td><td>£81.8bn</td><td>3.0%</td></tr>
-            <tr><td>Long conventional</td><td>£74.7bn</td><td>2.8%</td></tr>
-            <tr><td>Index-linked</td><td>£23.4bn</td><td>0.9%</td></tr>
+            <tr><td>Total gilt sales</td><td>£252.1bn</td><td>9.3%</td></tr>
+            <tr><td>Short conventional</td><td>£97.3bn</td><td>3.6%</td></tr>
+            <tr><td>Medium conventional</td><td>£77.8bn</td><td>2.9%</td></tr>
+            <tr><td>Long conventional</td><td>£23.0bn</td><td>0.8%</td></tr>
+            <tr><td>Index-linked</td><td>£23.5bn</td><td>0.9%</td></tr>
+            <tr><td>Unallocated</td><td>£30.5bn</td><td>1.1%</td></tr>
           </tbody>
         </table>
-        <div class="factrow" style="margin-top: 12px;"><span class="k"><IndicatorTooltip label="PSND / GDP (FY 2026/27 forecast)" description="Public-Sector Net Debt as a share of nominal GDP — the conventional headline UK debt-burden metric. Figure shown is OBR's forecast for FY 2026/27, not an outturn." tipId="tip-psnd" /></span><span class="v">93.1%</span></div>
-        <div class="factrow"><span class="k">Debt interest, FY 2026/27 (forecast)</span><span class="v">£111.3bn</span></div>
+        <div class="factrow" style="margin-top: 12px;"><span class="k"><IndicatorTooltip label="PSND / GDP (FY 2026/27 forecast)" description="Public-Sector Net Debt as a share of nominal GDP — the conventional headline UK debt-burden metric. Figure shown is OBR's March 2026 forecast for FY 2026/27, not an outturn." tipId="tip-psnd" /></span><span class="v">94.8%</span></div>
+        <div class="factrow"><span class="k">Debt interest, FY 2026/27 (forecast)</span><span class="v">£109.4bn</span></div>
       </div>
     </div>
   </div>

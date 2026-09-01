@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ogCacheKey } from "./cacheKey.js";
+import { OG_CACHE_EPOCH, ogCacheKey } from "./cacheKey.js";
 
 describe("ogCacheKey", () => {
   it("strips arbitrary query strings so cache-buster floods cannot create distinct keys", () => {
@@ -8,7 +8,13 @@ describe("ogCacheKey", () => {
     const c = ogCacheKey(new Request("https://og.tightropetracker.uk/og/headline-score.png"));
     expect(a.url).toBe(c.url);
     expect(b.url).toBe(c.url);
-    expect(new URL(a.url).search).toBe("");
+    expect(new URL(a.url).searchParams.get("v")).toBeTruthy();
+    expect(new URL(a.url).searchParams.get("nonce")).toBeNull();
+  });
+
+  it("applies a deploy-controlled epoch so a card refresh is not stuck behind s-maxage", () => {
+    const key = ogCacheKey(new Request("https://og.tightropetracker.uk/og/headline-score.png"));
+    expect(new URL(key.url).searchParams.get("v")).toBe(OG_CACHE_EPOCH);
   });
 
   it("preserves the pathname (different cards remain distinct cache entries)", () => {

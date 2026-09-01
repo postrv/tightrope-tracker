@@ -27,9 +27,15 @@ const currentRate = mortgageContrib?.rawValue ?? MORTGAGE_BUDGET_BASELINE_PCT;
 const m = mortgageDelta(MORTGAGE_BUDGET_BASELINE_PCT, currentRate, 250_000, 25);
 const mortgageObservedAt = mortgageContrib?.observedAt;
 
-// Dual-axis inactivity chart data: quarterly 2019-2026.
-// [label, rate %, health-related m]
-const inactivity = [
+const inactivityRateLive = pillar.contributions.find((c) => c.indicatorId === "inactivity_rate");
+const inactivityHealthLive = pillar.contributions.find((c) => c.indicatorId === "inactivity_health");
+const vuLive = pillar.contributions.find((c) => c.indicatorId === "vacancies_per_unemployed");
+const realPayLive = pillar.contributions.find((c) => c.indicatorId === "real_regular_pay");
+
+// Dual-axis inactivity chart data: annual 2019-2026.
+// [label, rate %, health-related m]. The 2026 point is the live LMS print
+// so the chart cannot lag the labour pillar's scored inputs.
+const inactivity: ReadonlyArray<readonly [string, number, number]> = [
   ["2019", 20.4, 2.00],
   ["2020", 20.8, 2.10],
   ["2021", 21.2, 2.35],
@@ -37,8 +43,8 @@ const inactivity = [
   ["2023", 21.7, 2.70],
   ["2024", 21.2, 2.78],
   ["2025", 20.9, 2.80],
-  ["2026", 20.7, 2.81],
-] as const;
+  ["2026", inactivityRateLive?.rawValue ?? 20.9, inactivityHealthLive?.rawValue ?? 2.77],
+];
 
 // VU ratio — illustrative monthly series (roughly 1.1 at peak, falling)
 const vuRatio = [1.08, 1.05, 1.00, 0.94, 0.90, 0.85, 0.82, 0.80, 0.78, 0.76, 0.74, 0.72];
@@ -94,7 +100,7 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
             sourceUrl="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours"
           />
         </div>
-        <p class="hint">CPIH-adjusted. Positive values = real wages growing.</p>
+        <p class="hint">CPIH-adjusted. Positive values = real wages growing{realPayLive ? ` · live ${realPayLive.rawValue.toFixed(1)}% YoY` : ""}. Chart is an illustrative 12-month arc; the scored input is the live print.</p>
         <svg class="chart" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Real regular pay year on year">
           <g stroke="var(--border-soft)" stroke-width="1">
             <line x1="40" y1="20" x2="380" y2="20"/>
@@ -134,7 +140,7 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
             sourceUrl="https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment"
           />
         </div>
-        <p class="hint">Rolling quarterly ratio — falling = more slack appearing in the labour market. The Tightrope methodology treats this as a worsening indicator and inverts it before it reaches the high-good pillar score.</p>
+        <p class="hint">Rolling quarterly ratio — falling = more slack. Higher V/U scores higher (rising-is-good): a tighter labour market is more room to move{vuLive ? ` · live ${vuLive.rawValue.toFixed(2)}` : ""}. Chart is an illustrative 12-month arc; the scored input is the live print.</p>
         <svg class="chart" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Vacancies per unemployed person">
           <g stroke="var(--border-soft)" stroke-width="1">
             <line x1="40" y1="20" x2="380" y2="20"/>
@@ -212,13 +218,13 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
           <g font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)">
             {inactivity.map((row, i) => {
               const x = 60 + (i / (inactivity.length - 1)) * 480;
-              return <text x={x} y={234} text-anchor="middle">{row[0] as string}</text>;
+              return <text x={x} y={234} text-anchor="middle">{row[0]}</text>;
             })}
           </g>
           <path
             d={inactivity.map((row, i) => {
               const x = 60 + (i / (inactivity.length - 1)) * 480;
-              const r = row[1] as number;
+              const r = row[1];
               const y = 220 - ((r - 20) / 2) * 180;
               return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
             }).join(" ")}
@@ -227,7 +233,7 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
           <path
             d={inactivity.map((row, i) => {
               const x = 60 + (i / (inactivity.length - 1)) * 480;
-              const v = row[2] as number;
+              const v = row[2];
               const y = 220 - ((v - 1.5) / 1.5) * 180;
               return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
             }).join(" ")}
@@ -235,7 +241,7 @@ function svgLinePath(values: readonly number[], w: number, h: number, pad = 8): 
           />
           {inactivity.map((row, i) => {
             const x = 60 + (i / (inactivity.length - 1)) * 480;
-            const r = row[1] as number;
+            const r = row[1];
             const y = 220 - ((r - 20) / 2) * 180;
             return <circle cx={x} cy={y} r="2.5" fill="var(--ink-0)" />;
           })}

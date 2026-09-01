@@ -88,7 +88,7 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
         </div>
       </div>
     </section>
-    <ShareGrid snapshot={snapshot} movements={movements} delivery={delivery} />
+    <ShareGrid snapshot={snapshot} movements={movements} />
     <ActionSection headline={snapshot.headline} />
   </main>
   <SiteFooter updatedAt={snapshot.headline.updatedAt} freshestAt={freshness.freshestAt} stale={isStale} />

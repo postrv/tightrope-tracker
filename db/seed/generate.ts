@@ -194,6 +194,48 @@ out.push("");
 type TLRow = { id: string; date: string; title: string; summary: string; category: string; sourceLabel: string; sourceUrl: string };
 const timeline: TLRow[] = [
   {
+    id: "t_2026_08_21", date: "2026-08-21",
+    title: "July borrowing prints at £1.8bn",
+    summary: "Public sector net borrowing is £1.8 billion in July 2026, £0.7 billion more than a year earlier and £2.3 billion above the OBR's monthly profile. The monthly level is nonetheless one of the smaller July prints in the comparable series, and year-to-date borrowing is £6.0 billion lower than a year earlier. The print lifts the fiscal pillar after May's £23.3 billion overshoot.",
+    category: "fiscal", sourceLabel: "ONS Public sector finances, July 2026",
+    sourceUrl: "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/bulletins/publicsectorfinances/july2026",
+  },
+  {
+    id: "t_2026_08_19", date: "2026-08-19",
+    title: "July CPI rises to 2.9% as the energy-price cap steps up",
+    summary: "Headline CPI inflation is 2.9% in the year to July, up from 2.6% in June. ONS attributes the pickup to a sharp rise in gas prices following the July energy-price-cap change — the largest gas-price increase in almost four years — with housing and household services the largest upward contribution. Core CPI is unchanged at 2.6%. The print is the first inflation release since the March 3.3% reading and sits below the Bank of England's July projection of a 3.2% peak in 2026 Q4.",
+    category: "fiscal", sourceLabel: "ONS Consumer price inflation, July 2026",
+    sourceUrl: "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/july2026",
+  },
+  {
+    id: "t_2026_08_05", date: "2026-08-05",
+    title: "UK services PMI returns to expansion at 52.1",
+    summary: "The S&P Global UK Services PMI Business Activity Index final print for July is 52.1, revised up from a 51.8 flash and recovering from 48.8 in June — the first expansion reading in three months. New work rises for the first time since February; employment continues to fall, though at a slower pace. Input-cost inflation eases to its lowest since February.",
+    category: "market", sourceLabel: "S&P Global UK Services PMI, July 2026 final",
+    sourceUrl: "https://www.pmi.spglobal.com/Public/Home/PressRelease/754c679147324e39ab67e212c7466ab3",
+  },
+  {
+    id: "t_2026_07_30", date: "2026-07-30",
+    title: "Bank of England holds Bank Rate at 3.75%, vote splits 6–3",
+    summary: "The Monetary Policy Committee votes 6–3 to maintain Bank Rate at 3.75%, with three members preferring a quarter-point rise to 4%. The accompanying July Monetary Policy Report projects CPI peaking at around 3.2% in 2026 Q4 as higher energy prices pass through. CPI has fallen to 2.6% since the previous meeting, further than expected, but the Committee judges inflation risks remain tilted to the upside while the Middle East conflict persists. Next decision 17 September.",
+    category: "monetary", sourceLabel: "Bank of England, July 2026 MPC",
+    sourceUrl: "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/july-2026",
+  },
+  {
+    id: "t_2026_07_23", date: "2026-07-23",
+    title: "GfK consumer confidence jumps six points to -17",
+    summary: "The GfK Consumer Confidence Index rises to -17 in July from -23 in June, the largest monthly gain since November 2023. The survey ran 1-14 July — after the Makerfield result and the Prime Minister's resignation announcement, and before the leadership contest concluded. GfK cites a \"Burnham bounce\", summer weather and the World Cup; all five sub-indices rise.",
+    category: "market", sourceLabel: "NIQ / GfK (July 2026 press release)",
+    sourceUrl: "https://nielseniq.com/global/en/news-center/2026/consumer-confidence-up-six-points-to-17-in-july/",
+  },
+  {
+    id: "t_2026_07_20", date: "2026-07-20",
+    title: "Andy Burnham appointed Prime Minister",
+    summary: "Andy Burnham is invited by King Charles III to form a government, succeeding Keir Starmer, after an unopposed Labour leadership election (379 nominations, 94% of the parliamentary party). He takes office pledging to restore political stability and ease the cost of living. Gilt yields and sterling are little changed on the day — the 10-year remains near 5.1% as the renewed Middle East conflict continues to dominate the rate path.",
+    category: "political", sourceLabel: "Reuters (contemporaneous report)",
+    sourceUrl: "https://www.reuters.com/world/uk/pledging-rewire-britain-king-north-burnham-becomes-pm-2026-07-19/",
+  },
+  {
     id: "t_2026_04_22", date: "2026-04-22",
     title: "March CPI rises to 3.3%, BoE path under scrutiny",
     summary: "ONS releases March 2026 CPI inflation data showing headline CPI at 3.3% YoY (up from ~3.0% in February), driven by lingering energy and petrol price effects from the Iran conflict period. Markets price in a more cautious BoE path ahead of the 30 April MPC decision; gilt yields stabilise but remain elevated.",

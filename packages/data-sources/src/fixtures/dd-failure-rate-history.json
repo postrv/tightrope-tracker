@@ -167,6 +167,20 @@
       "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition, v6) accompanying real-time indicators bulletin, 18 June 2026",
       "published": "2026-06-18",
       "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2026-06-30T00:00:00Z",
+      "value": 2.4,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition) accompanying real-time indicators bulletin, 16 July 2026",
+      "published": "2026-07-16",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2026-07-31T00:00:00Z",
+      "value": 2.4,
+      "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition) accompanying real-time indicators bulletin, 20 August 2026 (Figure 4 CSV Total NSA Jul 2026 = 2.44, rounded to 1 decimal per this file's convention)",
+      "published": "2026-08-20",
+      "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
     }
   ]
 }

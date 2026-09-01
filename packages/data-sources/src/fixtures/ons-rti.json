@@ -1,6 +1,6 @@
 {
-  "_comment": "ONS direct-debit failure rate (headline Total NSA, % of attempted DD transactions). Sourced from the ONS 'Monthly Direct Debit failure rate and average transaction amount' xlsx — sheet '2.DD Failure Rates Total NSA' (in the 2026 edition a 'Total SA' sheet was inserted as sheet 1, shifting Total NSA to sheet 2). Shipping May 2026 = 2.34% (Total NSA), the most recent month in the 18 June 2026 edition (directdebittransactionsandfailuresdataset180626.xlsx; June 2026 data not yet published). Series tail for reference: Mar 2026 = 2.41%, Apr 2026 = 2.34%, May 2026 = 2.34%. See dd-failure-rate-history.json for the full curated back-series. TODO(source): wire in the ONS xlsx parser — the dataset has a stable URL and clean monthly schema.",
-  "observed_at": "2026-05-31T00:00:00Z",
-  "dd_failure_rate": { "value": 2.34 },
+  "_comment": "ONS direct-debit failure rate (headline Total NSA, % of attempted DD transactions). Sourced from the ONS 'Monthly Direct Debit failure rate and average transaction amount' dataset — Total NSA series (Figure 4 of the accompanying real-time-indicators bulletin; in the 2026 xlsx edition a 'Total SA' sheet was inserted as sheet 1, shifting Total NSA to sheet 2). Shipping July 2026 = 2.44% (Total NSA), the most recent month in the 20 August 2026 edition (bulletin Figure 4 CSV: Jul 2026 Total 2.44). Series tail for reference: May 2026 = 2.35%, Jun 2026 = 2.39%, Jul 2026 = 2.44%. See dd-failure-rate-history.json for the full curated back-series. The curator `ons_dd_failure` spec owns live freshness via the artefact relay; this fixture is the ingest fallback / seed tier. TODO(source): wire in the ONS xlsx parser — the dataset has a stable URL and clean monthly schema.",
+  "observed_at": "2026-07-31T00:00:00Z",
+  "dd_failure_rate": { "value": 2.44 },
   "source_url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
 }

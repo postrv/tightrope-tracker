@@ -30,6 +30,7 @@
     { "observed_at": "2026-03-31T00:00:00Z", "value": 50.5, "release": "S&P Global / CIPS UK Services PMI — March 2026 final", "published": "2026-04-07", "url": "https://www.pmi.spglobal.com/Public/Home/PressRelease/de91810fcfd845e7a0ef06defdaa3b7c" },
     { "observed_at": "2026-04-30T00:00:00Z", "value": 52.7, "release": "S&P Global / CIPS UK Services PMI — April 2026 final", "published": "2026-05-06", "url": "https://investinglive.com/news/uk-april-final-services-pmi-527-vs-520-prelim-20260506/" },
     { "observed_at": "2026-05-31T00:00:00Z", "value": 49.3, "release": "S&P Global / CIPS UK Services PMI — May 2026 final", "published": "2026-06-03", "url": "https://investinglive.com/news/uk-may-final-services-pmi-493-vs-479-prelim-20260603/" },
-    { "observed_at": "2026-06-30T00:00:00Z", "value": 48.8, "release": "S&P Global / CIPS UK Services PMI — June 2026 final", "published": "2026-07-03", "url": "https://investinglive.com/news/uk-june-final-services-pmi-488-vs-487-prelim-20260703/" }
+    { "observed_at": "2026-06-30T00:00:00Z", "value": 48.8, "release": "S&P Global / CIPS UK Services PMI — June 2026 final", "published": "2026-07-03", "url": "https://investinglive.com/news/uk-june-final-services-pmi-488-vs-487-prelim-20260703/" },
+    { "observed_at": "2026-07-31T00:00:00Z", "value": 52.1, "release": "S&P Global / CIPS UK Services PMI — July 2026 final", "published": "2026-08-05", "url": "https://www.pmi.spglobal.com/Public/Home/PressRelease/754c679147324e39ab67e212c7466ab3" }
   ]
 }

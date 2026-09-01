@@ -23,7 +23,9 @@ import { runAdapterSafe } from "./runAdapter.js";
  *
  * Remaining adapters: OBR-proxy (Brent-in-GBP, growth sentiment composite)
  * and the FTSE 250 close. Housebuilders live in the fiscal pipeline (daily
- * via EODHD, free-tier rate limit).
+ * via EODHD, free-tier rate limit). FTSE 250 tries EODHD then Yahoo ^FTMC
+ * (the free-tier 20 req/day cannot survive this 5-min cron; Yahoo is the
+ * quota-free fallback that keeps the source green when EODHD 402s).
  */
 export async function ingestMarket(
   env: Env,

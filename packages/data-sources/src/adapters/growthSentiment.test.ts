@@ -38,6 +38,19 @@ describe("growthSentimentAdapter", () => {
     // All three share the same payload hash because they come from one fixture.
     expect(pmi.payloadHash).toBe(conf.payloadHash);
     expect(conf.payloadHash).toBe(rics.payloadHash);
+
+    // Mixed-vintage slots: PMI/GfK may carry a newer observed_at than RICS
+    // when the August RMS is not yet out. Each slot's date must win over
+    // the fixture-level fallback.
+    const fx = fixture as {
+      observed_at: string;
+      services_pmi?: { observed_at?: string };
+      consumer_confidence?: { observed_at?: string };
+      rics_price_balance?: { observed_at?: string };
+    };
+    expect(pmi.observedAt).toBe(fx.services_pmi?.observed_at ?? fx.observed_at);
+    expect(conf.observedAt).toBe(fx.consumer_confidence?.observed_at ?? fx.observed_at);
+    expect(rics.observedAt).toBe(fx.rics_price_balance?.observed_at ?? fx.observed_at);
   });
 
   it("throws AdapterError when the fixture has rotted past the 40-day freshness window", async () => {

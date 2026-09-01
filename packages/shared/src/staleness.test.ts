@@ -57,7 +57,7 @@ describe("maxStaleMsForIndicator", () => {
     const weeklyFixtureMs = 14 * DAY_MS;
     for (const id of ["ftse_250"]) {
       expect(INDICATORS[id]!.maxStaleMs, `${id}`).toBe(weeklyFixtureMs);
-      expect(INDICATORS[id]!.provenance, `${id}`).toBe("live");
+      expect(INDICATORS[id]!.provenance, `${id}`).toBe("live-fallback");
     }
   });
 

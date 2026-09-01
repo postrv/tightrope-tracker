@@ -1,26 +1,29 @@
 /**
  * FTSE 250 index-level adapter.
  *
- * Live path: EODHD end-of-day API for ticker `FTMC.INDX` (FTSE 250 mid-cap,
- * EODHD's indices namespace). The previous `FTMC.LSE` symbol began returning
- * HTTP 402 Payment Required on ~2026-07-02 — an EODHD plan/coverage change,
- * not a code fault (LSE equity symbols also degraded: the housebuilders
- * adapter resolves only 2/5 constituents as of 2026-07-12). If `.INDX` also
- * 402s, the EODHD subscription tier is the blocker and the editorial fixture
- * is the operative path until that's resolved.
- * Falls back to the editorial fixture when EODHD_API_KEY is not present
- * (dev, tests, probe scripts) or when the live call fails; a fixture
- * freshness failure carries the live-path failure reason in its audit error.
+ * Live path, in order:
+ *   1. EODHD end-of-day API for ticker `FTMC.INDX` (requires EODHD_API_KEY).
+ *      The previous `FTMC.LSE` symbol began returning HTTP 402 on ~2026-07-02
+ *      (plan/coverage change). `.INDX` 402s too once the free tier's 20
+ *      req/day is exhausted — the 5-minute market cron burns that quota in
+ *      the first ~100 minutes of a session, which is why this source sat in
+ *      `failure` from 2026-07-24 (fixture freshness trip) until the Yahoo
+ *      fallback landed.
+ *   2. Yahoo Finance v8 chart for `^FTMC` — the same free proxy the
+ *      historical back-series uses. No API key, no daily quota. Tried only
+ *      after EODHD fails so a missing key (dev/tests) still uses the fixture.
+ *   3. Editorial fixture, 14-day freshness guard. A stale-fixture throw
+ *      carries both live-path failure reasons in the audit error.
  *
- * EODHD ships UK index closes ~16:35 London. We pull a 7-day window and
- * take the latest close. The free tier has 20 calls/day; one call per
- * fiscal-pipeline run (02:00 UTC) costs 1 of 20.
+ * Yahoo prints can drift ~1% from the LSEG closing-auction print; the
+ * historical file documents that. For a source that has been dark for a
+ * month, a ~1% proxy beats a rotting number and a 6-hourly page.
  *
- * Historical mode still reads `ftse-250-history.json` (Yahoo ^FTMC daily
- * closes 2024-07 → 2026-04). Yahoo's prints can drift ~1% from the LSEG
- * closing-auction print on the most recent days; the live `fetch()` above
- * remains the authority for the head value, so historical rows never
- * overwrite a live row at the same observedAt.
+ * Both live legs skip the current London session until 16:35 Europe/London.
+ * EODHD and Yahoo both emit an in-progress daily bar from the open; taking
+ * `candles[0]` during market hours stamped today's incomplete print as the
+ * 16:30 close (prod 2026-09-01 11:35 UTC wrote 24477 against the 28 Aug
+ * close of 24938.8).
  */
 import fixture from "../fixtures/ftse-250.json" with { type: "json" };
 import history from "../fixtures/ftse-250-history.json" with { type: "json" };
@@ -42,6 +45,8 @@ const FIXTURE_URL = "local:fixtures/ftse-250.json";
 const HISTORY_FIXTURE_URL = "local:fixtures/ftse-250-history.json";
 const EODHD_API_BASE = "https://eodhd.com/api/eod";
 const EODHD_TICKER = "FTMC.INDX"; // .LSE alias 402s since ~2026-07-02 (plan gating)
+const YAHOO_CHART_URL =
+  "https://query1.finance.yahoo.com/v8/finance/chart/%5EFTMC?interval=1d&range=10d";
 const MAX_FIXTURE_AGE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days, fallback only
 
 interface Ftse250Fixture {
@@ -69,17 +74,63 @@ interface EodhdCandle {
   volume: number;
 }
 
+interface YahooChartResponse {
+  chart?: {
+    result?: Array<{
+      timestamp?: number[];
+      indicators?: { quote?: Array<{ close?: Array<number | null> }> };
+    }>;
+  };
+}
+
 function formatDate(d: Date): string {
   return d.toISOString().slice(0, 10);
+}
+
+const LONDON_TZ = "Europe/London";
+/** Auction print is ~16:30; wait five minutes so the daily bar is complete. */
+const LONDON_CLOSE_MINUTES = 16 * 60 + 35;
+
+function londonYmd(now: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: LONDON_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+}
+
+function londonMinutesPastMidnight(now: Date): number {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: LONDON_TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(now);
+  const hour = Number(parts.find((p) => p.type === "hour")?.value ?? "0");
+  const minute = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
+  return hour * 60 + minute;
+}
+
+/** True once `dateYmd` is a finished London cash-equity session. */
+function isCompletedLondonSession(dateYmd: string, now: Date = new Date()): boolean {
+  const today = londonYmd(now);
+  if (dateYmd < today) return true;
+  if (dateYmd > today) return false;
+  return londonMinutesPastMidnight(now) >= LONDON_CLOSE_MINUTES;
+}
+
+function sessionYmdFromUnix(tsSec: number): string {
+  return londonYmd(new Date(tsSec * 1000));
 }
 
 async function fetchFromEodhd(
   fetchImpl: typeof globalThis.fetch,
   apiKey: string,
+  now: Date = new Date(),
 ): Promise<{ observation: RawObservation } | { reason: string }> {
-  const to = new Date();
-  const from = new Date(to.getTime() - 7 * 86_400_000);
-  const url = `${EODHD_API_BASE}/${EODHD_TICKER}?api_token=${apiKey}&fmt=json&from=${formatDate(from)}&to=${formatDate(to)}&order=d`;
+  const from = new Date(now.getTime() - 7 * 86_400_000);
+  const url = `${EODHD_API_BASE}/${EODHD_TICKER}?api_token=${apiKey}&fmt=json&from=${formatDate(from)}&to=${formatDate(now)}&order=d`;
   let res: Response;
   try {
     res = await fetchOrThrow(fetchImpl, SOURCE_ID, url);
@@ -99,14 +150,75 @@ async function fetchFromEodhd(
     console.warn(`${SOURCE_ID}: no EODHD candles for ${EODHD_TICKER}`);
     return { reason: `no EODHD candles for ${EODHD_TICKER}` };
   }
-  const latest = candles[0]!;
-  const close = latest.close;
-  if (!Number.isFinite(close) || close <= 0) {
-    console.warn(`${SOURCE_ID}: invalid close for ${EODHD_TICKER}: ${close}`);
-    return { reason: `invalid close for ${EODHD_TICKER}: ${close}` };
+  const latest = candles.find((c) => {
+    const ymd = (c.date ?? "").slice(0, 10);
+    return ymd.length === 10 && isCompletedLondonSession(ymd, now)
+      && Number.isFinite(c.close) && c.close > 0;
+  });
+  if (!latest) {
+    console.warn(`${SOURCE_ID}: no completed EODHD session in window`);
+    return { reason: `no completed EODHD session in window for ${EODHD_TICKER}` };
   }
-  const observedAt = latest.date.includes("T") ? latest.date : `${latest.date}T16:30:00Z`;
+  const close = latest.close;
+  const day = latest.date.slice(0, 10);
+  const observedAt = latest.date.includes("T") ? latest.date : `${day}T16:30:00Z`;
   const payloadHash = await sha256Hex(`${EODHD_TICKER}:${latest.date}:${close}`);
+  return {
+    observation: {
+      indicatorId: "ftse_250",
+      value: Math.round(close * 10) / 10,
+      observedAt,
+      sourceId: SOURCE_ID,
+      payloadHash,
+    },
+  };
+}
+
+async function fetchFromYahoo(
+  fetchImpl: typeof globalThis.fetch,
+  now: Date = new Date(),
+): Promise<{ observation: RawObservation } | { reason: string }> {
+  let res: Response;
+  try {
+    res = await fetchOrThrow(fetchImpl, SOURCE_ID, YAHOO_CHART_URL);
+  } catch (err) {
+    const reason = `Yahoo fetch failed for ^FTMC -- ${(err as Error)?.message ?? String(err)}`;
+    console.warn(`${SOURCE_ID}: ${reason}`);
+    return { reason };
+  }
+  let body: YahooChartResponse;
+  try {
+    body = (await res.json()) as YahooChartResponse;
+  } catch {
+    console.warn(`${SOURCE_ID}: invalid JSON from Yahoo ^FTMC`);
+    return { reason: "invalid JSON from Yahoo ^FTMC" };
+  }
+  const result = body.chart?.result?.[0];
+  const timestamps = result?.timestamp;
+  const closes = result?.indicators?.quote?.[0]?.close;
+  if (!Array.isArray(timestamps) || !Array.isArray(closes) || timestamps.length === 0) {
+    console.warn(`${SOURCE_ID}: Yahoo ^FTMC chart missing timestamp/close arrays`);
+    return { reason: "Yahoo ^FTMC chart missing timestamp/close arrays" };
+  }
+  let close: number | null = null;
+  let ts: number | null = null;
+  for (let i = closes.length - 1; i >= 0; i--) {
+    const c = closes[i];
+    const stamp = timestamps[i];
+    if (typeof c !== "number" || !Number.isFinite(c) || c <= 0) continue;
+    if (typeof stamp !== "number" || !Number.isFinite(stamp)) continue;
+    if (!isCompletedLondonSession(sessionYmdFromUnix(stamp), now)) continue;
+    close = c;
+    ts = stamp;
+    break;
+  }
+  if (close === null || ts === null) {
+    console.warn(`${SOURCE_ID}: no usable completed Yahoo ^FTMC close`);
+    return { reason: "no usable completed Yahoo ^FTMC close" };
+  }
+  const day = sessionYmdFromUnix(ts);
+  const observedAt = `${day}T16:30:00Z`;
+  const payloadHash = await sha256Hex(`yahoo:^FTMC:${day}:${close}`);
   return {
     observation: {
       indicatorId: "ftse_250",
@@ -127,9 +239,9 @@ async function fixtureObservation(): Promise<{ observation: RawObservation; sour
       message: "ftse_250 fixture missing numeric value",
     });
   }
-  // Fallback only: tripping the freshness guard here means BOTH the live
-  // EODHD path and the editorial fixture have rotted. That's a legitimate
-  // alert — surface it rather than serve a stale number.
+  // Fallback only: tripping the freshness guard here means EODHD, Yahoo,
+  // AND the editorial fixture have all rotted. That's a legitimate alert
+  // — surface it rather than serve a stale number.
   assertFixtureFresh(data.observed_at, MAX_FIXTURE_AGE_MS, SOURCE_ID, FIXTURE_URL);
   const hash = await sha256Hex(JSON.stringify(data));
   return {
@@ -146,10 +258,10 @@ async function fixtureObservation(): Promise<{ observation: RawObservation; sour
 
 export const lseFtse250Adapter: DataSourceAdapter = {
   id: SOURCE_ID,
-  name: "LSEG FTSE 250 -- EODHD FTMC.INDX (fixture fallback)",
+  name: "LSEG FTSE 250 -- EODHD FTMC.INDX / Yahoo ^FTMC (fixture fallback)",
   async fetch(fetchImpl, ctx?: AdapterContext): Promise<AdapterResult> {
     const apiKey = ctx?.secrets?.EODHD_API_KEY;
-    let liveReason = "no EODHD_API_KEY in context";
+    const reasons: string[] = [];
     if (apiKey) {
       const live = await fetchFromEodhd(fetchImpl, apiKey);
       if ("observation" in live) {
@@ -159,8 +271,20 @@ export const lseFtse250Adapter: DataSourceAdapter = {
           fetchedAt: new Date().toISOString(),
         };
       }
-      liveReason = live.reason;
-      console.warn(`${SOURCE_ID}: EODHD live path failed (${liveReason}), falling back to fixture`);
+      reasons.push(live.reason);
+      console.warn(`${SOURCE_ID}: EODHD live path failed (${live.reason}), trying Yahoo ^FTMC`);
+      const yahoo = await fetchFromYahoo(fetchImpl);
+      if ("observation" in yahoo) {
+        return {
+          observations: [yahoo.observation],
+          sourceUrl: "https://query1.finance.yahoo.com/v8/finance/chart/%5EFTMC",
+          fetchedAt: new Date().toISOString(),
+        };
+      }
+      reasons.push(`Yahoo: ${yahoo.reason}`);
+      console.warn(`${SOURCE_ID}: Yahoo live path failed (${yahoo.reason}), falling back to fixture`);
+    } else {
+      reasons.push("no EODHD_API_KEY in context");
     }
     try {
       const { observation, sourceUrl } = await fixtureObservation();
@@ -177,14 +301,14 @@ export const lseFtse250Adapter: DataSourceAdapter = {
         throw new AdapterError({
           sourceId: SOURCE_ID,
           sourceUrl: FIXTURE_URL,
-          message: `${err.message}; live path: ${liveReason}`,
+          message: `${err.message}; live path: ${reasons.join("; ")}`,
         });
       }
       throw err;
     }
   },
   // Historical mode reads ftse-250-history.json (Yahoo ^FTMC daily closes
-  // 2024-07 → 2026-04). Yahoo's prints can drift ~1% from the LSEG closing-
+  // 2024-07 → 2026-08). Yahoo's prints can drift ~1% from the LSEG closing-
   // auction print on the most recent days; the live `fetch()` above remains
   // the authority for the head value, so historical rows never overwrite a
   // live row at the same observedAt.

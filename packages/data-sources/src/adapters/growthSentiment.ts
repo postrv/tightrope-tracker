@@ -47,11 +47,19 @@ const FIXTURE_URL = "local:fixtures/growth-sentiment.json";
 // for slipped press releases before we want a loud audit failure.
 const MAX_FIXTURE_AGE_MS = 40 * 24 * 60 * 60 * 1000;
 
+interface SentimentSlot {
+  value: number;
+  /** Optional per-series timestamp. Used when the trio is on mixed vintages
+   *  (e.g. August PMI/GfK out, August RICS not yet). Falls back to the
+   *  fixture-level `observed_at`, which also drives the freshness guard. */
+  observed_at?: string;
+}
+
 interface GrowthSentimentFixture {
   observed_at: string;
-  services_pmi?:        { value: number };
-  consumer_confidence?: { value: number };
-  rics_price_balance?:  { value: number };
+  services_pmi?:        SentimentSlot;
+  consumer_confidence?: SentimentSlot;
+  rics_price_balance?:  SentimentSlot;
   source_url: string;
 }
 
@@ -108,13 +116,17 @@ export const growthSentimentAdapter: DataSourceAdapter = {
     const hash = await sha256Hex(JSON.stringify(data));
     const observations: RawObservation[] = [];
     for (const b of BINDINGS) {
-      const slot = data[b.fixtureKey] as { value?: number } | undefined;
+      const slot = data[b.fixtureKey] as SentimentSlot | undefined;
       const v = slot?.value;
       if (typeof v !== "number" || !Number.isFinite(v)) continue;
+      const slotAt = slot?.observed_at;
+      const observedAt = (typeof slotAt === "string" && Number.isFinite(Date.parse(slotAt)))
+        ? slotAt
+        : data.observed_at;
       observations.push({
         indicatorId: b.indicatorId,
         value: v,
-        observedAt: data.observed_at,
+        observedAt,
         sourceId: b.sourceId,
         payloadHash: hash,
       });

@@ -249,9 +249,8 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     id: "ftse_250", pillar: "market", label: "FTSE 250", shortLabel: "FTSE 250",
     unit: "index", weight: 0.10, risingIsBad: false, sourceId: "lseg",
     description: "Mid-cap index -- cleaner domestic UK read than FTSE 100.", formatDisplay: fmtIndex(0),
-    // Fixture-backed editorial mirror of the LSE close. The adapter's
-    // freshness guard (14 days) prevents silent staleness.
-    provenance: "live",
+    // Live EODHD FTMC.INDX, then Yahoo ^FTMC, then a 14-day editorial fixture.
+    provenance: "live-fallback",
     maxStaleMs: STALE_WEEKLY_FIXTURE_MS,
   },
   // OBR-proxy extension -- see docs/OBR_PROXIES.md for the mechanism per indicator.
@@ -269,7 +268,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     unit: "GBP/bbl", weight: 0.10, risingIsBad: true, sourceId: "eia_brent",
     description: "Brent dated spot price converted to GBP -- the single largest swing input to OBR's CPI energy subcomponent and fuel-duty receipts.",
     formatDisplay: (v) => `GBP ${v.toFixed(2)}/bbl`,
-    provenance: "fixture",
+    provenance: "live-fallback",
     maxStaleMs: STALE_WEEKLY_FIXTURE_MS,
   },
   // Growth-input proxies: housebuilder composite, Services PMI, consumer confidence, RICS balance.
@@ -476,7 +475,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   bics_rollout: {
     id: "bics_rollout", pillar: "delivery", label: "BICS rollout vs. target", shortLabel: "BICS",
     unit: "%", weight: 0.15, risingIsBad: false, sourceId: "desnz",
-    description: "Firms onboarded to the British Industrial Competitiveness Scheme as a percentage of its published 10,000-firm target. See the matching delivery commitment row for the target date.", formatDisplay: fmtPct(1),
+    description: "Progress against published BICS delivery milestones toward April 2027 electricity-cost relief for more than 10,000 manufacturers. See the matching delivery commitment row for the application window and target date.", formatDisplay: fmtPct(1),
     hasHistoricalSeries: false,
     historicalExclusionReason: "Editorial judgement against the BICS rollout plan — the cumulative-firms figure is published quarterly only; intra-quarter historical days would be fabricated.",
     provenance: "editorial",
@@ -573,7 +572,7 @@ export const SOURCES: Record<string, DataSource> = {
     id: "eia_brent", name: "US EIA -- Europe Brent Spot Price (FOB)",
     homepage: "https://www.eia.gov/dnav/pet/hist/rbrted.htm",
     endpoint: "https://www.eia.gov/dnav/pet/hist_xls/RBRTEd.xls",
-    notes: "EIA Open Data API requires a registration key; the canonical daily series is also available as XLS which is not parseable from a Cloudflare Worker. Fixture-backed, refreshed weekly from the public HTML table. Licence: EIA data is U.S. public domain.",
+    notes: "Live path: EIA Open Data v2 (series facet RBRTE) divided by the ingested BoE XUDLUSS 4pm fix. Falls back to a weekly editorial fixture (14-day freshness guard) when the API key is missing or the pairing is stale. Licence: EIA data is U.S. public domain.",
     // Daily spot, but the fixture fallback refreshes weekly; ~10 days matches
     // the 14-day fixture guard.
     expectedCadence: "trading-daily", graceDays: 10,

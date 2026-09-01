@@ -3,12 +3,12 @@
 This file enumerates every upstream the Tightrope pipelines consume, how often
 we hit it, and which indicator(s) it feeds. Maintained by hand from
 `packages/data-sources/src/adapters/*`, `apps/ingest/src/pipelines/*`, and
-`apps/curator/src/sources/registry.ts`. Last regenerated on **2026-07-12**
-(evening pass: `mhclg_housing` re-enabled with derived-indicator capture
-support — component extraction + shared formulas; earlier same day:
-`rics_rms` re-added as a `disabled` spec so health stays quiet; `mhclg_housing`
-anchor terms; sweep wall-clock budget; growth-sentiment fixture → June vintage). Re-run
-the audit if you add or retire an adapter or a capture spec.
+`apps/curator/src/sources/registry.ts`. Last regenerated on **2026-09-01**
+(currency audit: 14-day market fixtures → 28 Aug close / 25 Aug Brent; FTSE
+adapter skips in-session daily bars until 16:35 London; delivery scorecard
+rows realigned to Q1 2026 housing, BICS application scheme, Wylfa/Gwyndod
+SMR contract; July MPC + July CPI timeline events). Re-run the audit if you
+add or retire an adapter or a capture spec.
 
 Two workers feed the dataset:
 
@@ -79,7 +79,7 @@ timed for the **weekly editorial deadline**.
 | `ons_rti` | ONS RTI — beta search API + `/data` for `payroll_mom` (CDID K54L); fixture for `dd_failure_rate` | `payroll_mom`, `dd_failure_rate` | labour | `onsRti.ts` | Monthly | `payroll_mom` is actually the AWE regular-pay index, not PAYE-RTI MoM (see comment in adapter). `dd_failure_rate` is a curator-owned source (`ons_dd_failure`). |
 | `boe_mortgage_rates` | BoE IADB CSV — `SeriesCodes=IUMBV34` (effective new-business 2y fix) | `mortgage_2y_fix` | labour | `boeMortgageRates.ts` | Monthly | **Replaced `moneyfacts`** (advertised rate, fixture-fed). BoE is the canonical reference. **Network leg via the Actions relay since 2026-07** (Workers egress blocked upstream 2026-06-10). |
 | `eia_brent` | US EIA Open Data v2 — Europe Brent Spot (`EPCBRENT`), divided by BoE `XUDLUSS` 4pm fix | `brent_gbp` | market | `eiaBrent.ts` + `fixtures/brent.json` | Live every 5 min in market hours; fixture is a fallback | Requires `EIA_API_KEY`. `assertFixtureFresh` 14 days on fallback. |
-| `lseg` (FTSE 250) | EODHD EOD — `https://eodhd.com/api/eod/FTMC.LSE` | `ftse_250` | market | `lseFtse250.ts` + `fixtures/ftse-250.json` | Live daily ~16:35 UK; fixture is a fallback | Requires `EODHD_API_KEY`. `assertFixtureFresh` 14 days on fallback. |
+| `lseg` (FTSE 250) | EODHD EOD — `https://eodhd.com/api/eod/FTMC.INDX`, then Yahoo `^FTMC` v8 chart | `ftse_250` | market | `lseFtse250.ts` + `fixtures/ftse-250.json` | Live daily ~16:35 UK; fixture is a fallback | Requires `EODHD_API_KEY` for the EODHD leg. EODHD 402s (plan gating + free-tier 20 req/day vs 5-min cron) fall through to Yahoo `^FTMC` (no key, no quota). `assertFixtureFresh` 14 days on the fixture last-resort. |
 | `eodhd_housebuilders` | EODHD EOD — `https://eodhd.com/api/eod/{SYMBOL}.LSE` for PSN, BTRW, TW, BKG, VTY (rebased to 100 at 2019 mean) | `housebuilder_idx` | fiscal | `eodhdHousebuilders.ts` + `fixtures/housebuilders.json` | Daily EOD (16:30 UK) | Free-tier 20 req/day. Requires `EODHD_API_KEY`; falls back to fixture if unset. Min 3-of-5 constituents required. |
 | `gov_uk` | gov.uk Atom — `https://www.gov.uk/search/news-and-communications.atom` | (timeline event candidates only — no observations) | delivery | `govUkRss.ts` → `stageTimelineCandidates` | Daily 02:30 UTC | Filters to DESNZ / DBT / MHCLG / HMT / Cabinet Office. Candidates stage into `curator_captures` (`kind='timeline_event'`, `status='pending'`) for the curator's timeline-triage pass. |
 

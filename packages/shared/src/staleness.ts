@@ -7,12 +7,32 @@ import type { IndicatorDefinition, PillarId } from "./indicators.js";
  *
  * Example: OBR EFO publishes twice a year, so a one-size-fits-all pillar
  * window would call the fiscal pillar stale between every EFO release.
- * Per-indicator values (~220d for EFO, ~90d for ONS PSF, ~5d for DMO / BoE
+ * Per-indicator values (~220d for EFO, ~90d for ONS PSF, ~7d for DMO / BoE
  * daily feeds) reflect the real cadence so the quorum check only fires
  * when an adapter has actually gone quiet.
  */
 export function maxStaleMsForIndicator(def: IndicatorDefinition): number {
   return def.maxStaleMs;
+}
+
+/**
+ * Instant the freshness clock runs from. Prefer the upstream publication
+ * date when we have one (ONS/MHCLG stamp `observed_at` at the *reference
+ * period* — quarter-end, month-start — which is 6–12 weeks before the
+ * bulletin). Cadence chips already do this; the homepage banner and
+ * pillar quorum must too, or MHCLG Q1 (observed 31 Mar, published 19 Jun)
+ * trips the stale banner in early September while the next release is
+ * still weeks away.
+ */
+export function freshnessAnchorMs(obs: {
+  observedAt: string;
+  releasedAt?: string | null;
+}): number {
+  if (obs.releasedAt) {
+    const released = Date.parse(obs.releasedAt);
+    if (Number.isFinite(released)) return released;
+  }
+  return Date.parse(obs.observedAt);
 }
 
 /**
@@ -76,7 +96,7 @@ export interface PillarFreshnessResult {
 export function evaluatePillarFreshness(
   pillarId: PillarId,
   pillarIndicators: readonly IndicatorDefinition[],
-  latestByIndicator: ReadonlyMap<string, { value: number; observedAt: string }>,
+  latestByIndicator: ReadonlyMap<string, { value: number; observedAt: string; releasedAt?: string | null }>,
   now: Date,
 ): PillarFreshnessResult {
   const nowMs = now.getTime();
@@ -89,7 +109,7 @@ export function evaluatePillarFreshness(
       missingIndicatorIds.push(def.id);
       continue;
     }
-    const ageMs = nowMs - Date.parse(latest.observedAt);
+    const ageMs = nowMs - freshnessAnchorMs(latest);
     if (Number.isFinite(ageMs) && ageMs <= maxStaleMsForIndicator(def)) {
       freshCount++;
     } else {

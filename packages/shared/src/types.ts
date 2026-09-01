@@ -57,6 +57,13 @@ export interface IndicatorContribution {
   weight: number;
   sourceId: string;
   observedAt: Iso8601;
+  /**
+   * Upstream publication instant when it differs from the reference period
+   * (ONS `updateDate`, MHCLG `published`). Freshness and cadence prefer this
+   * over `observedAt` so a Q1 print published in June is not flagged stale
+   * in September while Q2 is still unpublished.
+   */
+  releasedAt?: Iso8601 | null;
 }
 
 export type Trend = "up" | "down" | "flat";

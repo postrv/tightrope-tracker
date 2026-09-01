@@ -30,7 +30,7 @@ Two workers feed the dataset:
 | `0 2 * * *`    | fiscal + recompute                | obr_efo, ons_psf, dmo, eodhd_housebuilders |
 | `15 2 * * *`   | labour + recompute                | ons_lms, ons_rti (boe_mortgage_rates moved to the Actions relay row below, 2026-07-07) |
 | `30 2 * * *`   | delivery + recompute              | mhclg, delivery_milestones, gov_uk (timeline candidates → `curator_captures`) |
-| `30 9 * * 1-5` **(GitHub Actions, not a Worker cron)** | BoE IADB relay → `POST /admin/relay` | boe_yields, boe_fx, boe_breakevens, boe_mortgage_rates. A runner fetches each IADB CSV and replays it through the ingest relay endpoint, which runs the standard adapter machinery. See `.github/workflows/relay-boe.yml` + `scripts/relay-boe.mjs`. |
+| `30 9 * * 1-5` and `30 15 * * 1-5` **(GitHub Actions, not a Worker cron)** | BoE IADB relay → `POST /admin/relay` | boe_yields, boe_fx, boe_breakevens, boe_mortgage_rates. A runner fetches each IADB CSV and replays it through the ingest relay endpoint, which runs the standard adapter machinery. Morning hop for the usual T+1 post; afternoon hop catches late IADB prints after bank holidays. See `.github/workflows/relay-boe.yml` + `scripts/relay-boe.mjs`. |
 
 The last row is **not** a Cloudflare cron: since 2026-06-10 the BoE IADB CSV
 endpoint returns HTTP 500 to Cloudflare Workers egress IPs (an ASN block —

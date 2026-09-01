@@ -27,6 +27,7 @@ export interface IndicatorReading {
   indicatorId: string;
   value: number;
   observedAt: Iso8601;
+  releasedAt?: Iso8601 | null;
   baseline: readonly number[];
 }
 
@@ -60,6 +61,7 @@ export function computeIndicatorContribution(
     weight,
     sourceId: def.sourceId,
     observedAt: reading.observedAt,
+    ...(reading.releasedAt ? { releasedAt: reading.releasedAt } : {}),
   };
 }
 
@@ -88,6 +90,7 @@ export function computePillarScore(
       weight: contrib.weight,
       sourceId: contrib.sourceId,
       observedAt: contrib.observedAt,
+      ...(contrib.releasedAt ? { releasedAt: contrib.releasedAt } : {}),
     });
     normalisedValues.push(contrib.normalised);
     weights.push(contrib.weight);

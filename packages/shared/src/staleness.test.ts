@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { INDICATORS, indicatorsForPillar } from "./indicators.js";
-import { evaluatePillarFreshness, maxStaleMsForIndicator } from "./staleness.js";
+import { evaluatePillarFreshness, freshnessAnchorMs, maxStaleMsForIndicator } from "./staleness.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
@@ -39,6 +39,11 @@ describe("maxStaleMsForIndicator", () => {
     const q = MHCLG_QUARTER_MS;
     expect(INDICATORS.housing_trajectory!.maxStaleMs).toBeGreaterThan(q);
     expect(INDICATORS.planning_consents!.maxStaleMs).toBeGreaterThan(q);
+  });
+
+  it("mhclg housing/consents use 180d (quarter-end lag + next bulletin)", () => {
+    expect(INDICATORS.housing_trajectory!.maxStaleMs).toBe(180 * DAY_MS);
+    expect(INDICATORS.planning_consents!.maxStaleMs).toBe(180 * DAY_MS);
   });
 
   it("ons_lms indicators tolerate LFS / AWE reporting lag", () => {
@@ -116,13 +121,31 @@ function daysAgo(days: number): string {
 
 function latestMap(
   entries: readonly [string, number][],
-): Map<string, { value: number; observedAt: string }> {
-  const m = new Map<string, { value: number; observedAt: string }>();
+): Map<string, { value: number; observedAt: string; releasedAt?: string | null }> {
+  const m = new Map<string, { value: number; observedAt: string; releasedAt?: string | null }>();
   for (const [id, ageDays] of entries) {
     m.set(id, { value: 0, observedAt: daysAgo(ageDays) });
   }
   return m;
 }
+
+describe("freshnessAnchorMs", () => {
+  it("prefers a parseable releasedAt over observedAt", () => {
+    expect(freshnessAnchorMs({
+      observedAt: "2026-03-31T00:00:00Z",
+      releasedAt: "2026-06-19T00:00:00Z",
+    })).toBe(Date.parse("2026-06-19T00:00:00Z"));
+  });
+
+  it("falls back to observedAt when releasedAt is missing or unparseable", () => {
+    expect(freshnessAnchorMs({ observedAt: "2026-03-31T00:00:00Z" }))
+      .toBe(Date.parse("2026-03-31T00:00:00Z"));
+    expect(freshnessAnchorMs({ observedAt: "2026-03-31T00:00:00Z", releasedAt: null }))
+      .toBe(Date.parse("2026-03-31T00:00:00Z"));
+    expect(freshnessAnchorMs({ observedAt: "2026-03-31T00:00:00Z", releasedAt: "not-a-date" }))
+      .toBe(Date.parse("2026-03-31T00:00:00Z"));
+  });
+});
 
 describe("evaluatePillarFreshness", () => {
   it("reports fresh when every indicator's observation is inside its own window", () => {
@@ -231,5 +254,42 @@ describe("evaluatePillarFreshness", () => {
     const result = evaluatePillarFreshness("market", defs, latestMap(entries), NOW);
     expect(result.stale).toBe(false);
     expect(result.staleIndicatorIds).toEqual([]);
+  });
+
+  it("ages MHCLG housing from releasedAt so a Q1 print is fresh in early September", () => {
+    // Production 2026-09-01 banner: housing/consents observed_at = 2026-03-31
+    // (~154d, past the old 130d window) but MHCLG published 2026-06-19 (~74d).
+    const now = new Date("2026-09-01T19:20:00Z");
+    const defs = indicatorsForPillar("delivery");
+    const m = new Map<string, { value: number; observedAt: string; releasedAt?: string | null }>([
+      ["housing_trajectory", { value: 49.6, observedAt: "2026-03-31T00:00:00Z", releasedAt: "2026-06-19T00:00:00Z" }],
+      ["planning_consents", { value: 58.3, observedAt: "2026-03-31T00:00:00Z", releasedAt: "2026-06-19T00:00:00Z" }],
+    ]);
+    const result = evaluatePillarFreshness("delivery", defs, m, now);
+    expect(result.stale).toBe(false);
+    expect(result.staleIndicatorIds).toEqual([]);
+    expect(result.freshCount).toBe(2);
+  });
+
+  it("still treats an MHCLG print as fresh from observedAt alone inside the 180d window", () => {
+    const now = new Date("2026-09-01T19:20:00Z");
+    const defs = indicatorsForPillar("delivery");
+    const m = new Map<string, { value: number; observedAt: string }>([
+      ["housing_trajectory", { value: 49.6, observedAt: "2026-03-31T00:00:00Z" }],
+      ["planning_consents", { value: 58.3, observedAt: "2026-03-31T00:00:00Z" }],
+    ]);
+    const result = evaluatePillarFreshness("delivery", defs, m, now);
+    expect(result.stale).toBe(false);
+    expect(result.staleIndicatorIds).toEqual([]);
+  });
+
+  it("treats housing as stale when both observedAt and releasedAt sit past 180d", () => {
+    const now = new Date("2026-12-20T00:00:00Z");
+    const defs = indicatorsForPillar("delivery");
+    const m = new Map<string, { value: number; observedAt: string; releasedAt?: string | null }>([
+      ["housing_trajectory", { value: 49.6, observedAt: "2026-03-31T00:00:00Z", releasedAt: "2026-06-19T00:00:00Z" }],
+    ]);
+    const result = evaluatePillarFreshness("delivery", defs, m, now);
+    expect(result.staleIndicatorIds).toContain("housing_trajectory");
   });
 });

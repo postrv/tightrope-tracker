@@ -19,7 +19,7 @@ import { summariseFreshness } from "~/lib/freshness.js";
 const data = await loadHomepageData(Astro.locals);
 const { snapshot, movements, delivery, timeline, history, headroomVintages, empty } = data;
 // Stale banner triggers on quorum-failure (snapshot.headline.stale) but ALSO
-// on per-indicator staleness — a daily indicator past its 5-day window even
+// on per-indicator staleness — a daily indicator past its 7-day window even
 // when the pillar still holds quorum. Keeping the reader honest about which
 // individual prints have gone cold prevents a "this number is fresh" reading
 // of a 10-day-old fixture.

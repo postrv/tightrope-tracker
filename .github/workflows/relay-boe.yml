@@ -8,13 +8,17 @@ name: BoE IADB relay
 # gate, audit, DLQ). Only the network hop moves off Cloudflare.
 #
 # BoE T+1 daily series publish by ~09:00 London; 09:30 UTC lands after that in
-# both summer (BST, 10:30 local) and winter (GMT, 09:30 local).
+# both summer (BST, 10:30 local) and winter (GMT, 09:30 local). A second
+# weekday run at 15:30 UTC catches prints that land after the morning hop
+# (bank-holiday T+1 lag, IADB late posts) so the gilt/breakeven cards do not
+# sit on Thursday's close through a long weekend.
 #
 # SEC-11: third-party actions are pinned to full commit SHAs (see deploy.yml).
 
 on:
   schedule:
-    - cron: "30 9 * * 1-5" # 09:30 UTC, Mon–Fri
+    - cron: "30 9 * * 1-5"  # 09:30 UTC, Mon–Fri
+    - cron: "30 15 * * 1-5" # 15:30 UTC, Mon–Fri — late T+1 catch-up
   workflow_dispatch:
 
 # Least-privilege: read the repo and file/annotate a single tracking issue.

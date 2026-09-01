@@ -66,9 +66,13 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   // when its observed_at is fresher than a stale live fixture. See
   // apps/api/src/tests/snapshot-fixture-supersede.test.ts for the regression
   // cases that motivated it.
-  const latestByIndicator = new Map<string, { value: number; observedAt: string }>();
+  const latestByIndicator = new Map<string, { value: number; observedAt: string; releasedAt?: string | null }>();
   for (const row of latestLive) {
-    latestByIndicator.set(row.indicator_id, { value: row.value, observedAt: row.observed_at });
+    latestByIndicator.set(row.indicator_id, {
+      value: row.value,
+      observedAt: row.observed_at,
+      releasedAt: row.released_at,
+    });
   }
   const baselineByIndicator = new Map<string, number[]>();
   for (const row of baseline) {
@@ -121,6 +125,7 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
         indicatorId: def.id,
         value: latest.value,
         observedAt: latest.observedAt,
+        ...(latest.releasedAt ? { releasedAt: latest.releasedAt } : {}),
         baseline: baselineByIndicator.get(def.id) ?? [],
       });
     }

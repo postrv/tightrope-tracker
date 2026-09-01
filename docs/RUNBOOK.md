@@ -380,8 +380,8 @@ Since 2026-06-10 the BoE IADB CSV endpoint returns HTTP 500 to Cloudflare
 Workers egress IPs — an ASN block, not a header/UA issue (identical requests
 succeed from GitHub Actions runners and residential IPs). The four BoE adapters
 (`boe_yields`, `boe_fx`, `boe_breakevens`, `boe_mortgage_rates`) therefore run
-their **network leg on GitHub Actions**: `relay-boe.yml` (cron `30 9 * * 1-5`
-UTC) fetches each raw IADB CSV on a runner and POSTs it to `POST /admin/relay`,
+their **network leg on GitHub Actions**: `relay-boe.yml` (crons `30 9 * * 1-5`
+and `30 15 * * 1-5` UTC) fetches each raw IADB CSV on a runner and POSTs it to `POST /admin/relay`,
 which replays it through the standard adapter machinery. Parse, plausibility
 gate, audit, and DLQ are identical to a live run — only the fetch moved off
 Cloudflare.

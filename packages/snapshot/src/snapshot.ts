@@ -117,9 +117,14 @@ export async function buildSnapshotFromD1(db: D1Database): Promise<ScoreSnapshot
   ]);
 
   const now = new Date();
-  const obsByIndicator = new Map<string, { value: number; observedAt: string; sourceId: string }>();
+  const obsByIndicator = new Map<string, { value: number; observedAt: string; sourceId: string; releasedAt?: string | null }>();
   for (const r of latestObservations) {
-    obsByIndicator.set(r.indicator_id, { value: r.value, observedAt: r.observed_at, sourceId: r.source_id });
+    obsByIndicator.set(r.indicator_id, {
+      value: r.value,
+      observedAt: r.observed_at,
+      sourceId: r.source_id,
+      releasedAt: r.released_at,
+    });
   }
   const pillars = {} as Record<PillarId, PillarScore>;
   let anyPillarStale = false;
@@ -242,7 +247,7 @@ export async function buildSnapshotFromD1(db: D1Database): Promise<ScoreSnapshot
  */
 function buildContributionsForPillar(
   pillar: PillarId,
-  obs: Map<string, { value: number; observedAt: string; sourceId: string }>,
+  obs: Map<string, { value: number; observedAt: string; sourceId: string; releasedAt?: string | null }>,
   fallbackNormalised: number,
 ): IndicatorContribution[] {
   const defs = Object.values(INDICATORS).filter((d) => d.pillar === pillar);
@@ -260,6 +265,7 @@ function buildContributionsForPillar(
       weight: pillarWeightSum > 0 ? def.weight / pillarWeightSum : 0,
       sourceId: o.sourceId,
       observedAt: o.observedAt,
+      ...(o.releasedAt ? { releasedAt: o.releasedAt } : {}),
     });
   }
   return out;

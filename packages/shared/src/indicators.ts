@@ -196,12 +196,24 @@ export const OBR_LATEST_VINTAGE_LABEL = "Spring Forecast 2026";
  * homepage "stale" banner should fire for exactly that case, not for the
  * natural gap between a twice-yearly OBR release or a quarterly MHCLG print.
  */
-const STALE_DAILY_MS = 5 * DAY_MS;
+// T+1 BoE/DMO feeds: a Thursday close is the freshest print across a Friday
+// unpublished-yet + weekend + bank-holiday Monday, and is not "overdue" until
+// Tuesday evening. 5 days expired that window on the Tuesday after August
+// bank holiday 2026 (last yield 27 Aug, banner at 1 Sep). 7 days covers the
+// same gap with a day of IADB publication lag to spare.
+const STALE_DAILY_MS = 7 * DAY_MS;
 const STALE_WEEKLY_FIXTURE_MS = 14 * DAY_MS;
 const STALE_MONTHLY_FIXTURE_MS = 50 * DAY_MS;
 const STALE_RTI_MONTHLY_MS = 60 * DAY_MS;
 const STALE_ONS_PSF_MS = 90 * DAY_MS;
-const STALE_MHCLG_QUARTERLY_MS = 130 * DAY_MS;
+// MHCLG stamps observed_at at quarter-end (~80 days before the bulletin).
+// 180 days = that lag + a full quarter until the next release (~mid-month
+// of the third month after quarter-end). Matches the housing.json CI guard.
+const STALE_MHCLG_QUARTERLY_MS = 180 * DAY_MS;
+// Editorial delivery milestones are stamped at assessment time (no
+// quarter-end lag), and the deliveryMilestones adapter already enforces a
+// 90-day fixture guard. Keep this tighter than the MHCLG housing window.
+const STALE_EDITORIAL_QUARTERLY_MS = 130 * DAY_MS;
 const STALE_ONS_LMS_MS = 180 * DAY_MS;
 const STALE_OBR_SEMIANNUAL_MS = 220 * DAY_MS;
 
@@ -470,7 +482,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     // score is still a judgement call against political commitments;
     // the adapter just ensures the figure refreshes on a quarterly beat.
     provenance: "editorial",
-    maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
+    maxStaleMs: STALE_EDITORIAL_QUARTERLY_MS,
   },
   bics_rollout: {
     id: "bics_rollout", pillar: "delivery", label: "BICS rollout vs. target", shortLabel: "BICS",
@@ -479,7 +491,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     hasHistoricalSeries: false,
     historicalExclusionReason: "Editorial judgement against the BICS rollout plan — the cumulative-firms figure is published quarterly only; intra-quarter historical days would be fabricated.",
     provenance: "editorial",
-    maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
+    maxStaleMs: STALE_EDITORIAL_QUARTERLY_MS,
   },
   industrial_strategy: {
     id: "industrial_strategy", pillar: "delivery", label: "Industrial Strategy milestones", shortLabel: "Industrial",
@@ -488,7 +500,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     hasHistoricalSeries: false,
     historicalExclusionReason: "Editorial judgement against the Industrial Strategy commitments — historical days predate the current milestone list and cannot be scored against it retroactively.",
     provenance: "editorial",
-    maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
+    maxStaleMs: STALE_EDITORIAL_QUARTERLY_MS,
   },
   smr_programme: {
     id: "smr_programme", pillar: "delivery", label: "SMR fleet progress", shortLabel: "SMR",
@@ -497,7 +509,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     hasHistoricalSeries: false,
     historicalExclusionReason: "Editorial judgement against the SMR programme plan — progress assessments are episodic ministerial statements, not a time-series.",
     provenance: "editorial",
-    maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
+    maxStaleMs: STALE_EDITORIAL_QUARTERLY_MS,
   },
 };
 
@@ -535,22 +547,22 @@ export const SOURCES: Record<string, DataSource> = {
     id: "boe_yields", name: "Bank of England -- Statistical Database (gilt yields)",
     homepage: "https://www.bankofengland.co.uk/boeapps/database/",
     endpoint: "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp",
-    // IADB posts each trading day's close at T+1. graceDays 5 spans a long
-    // weekend + bank holiday before red; matches STALE_DAILY_MS.
-    expectedCadence: "trading-daily", graceDays: 5,
+    // IADB posts each trading day's close at T+1. graceDays 7 spans a long
+    // weekend + bank holiday + a day of publication lag; matches STALE_DAILY_MS.
+    expectedCadence: "trading-daily", graceDays: 7,
   },
   boe_fx: {
     id: "boe_fx", name: "Bank of England -- Exchange rates",
     homepage: "https://www.bankofengland.co.uk/statistics/exchange-rates",
     // 4pm spot fix published T+1, same rhythm as the gilt feed.
-    expectedCadence: "trading-daily", graceDays: 5,
+    expectedCadence: "trading-daily", graceDays: 7,
   },
   boe_breakevens: {
     id: "boe_breakevens", name: "Bank of England -- 5y breakeven inflation",
     homepage: "https://www.bankofengland.co.uk/boeapps/database/",
     endpoint: "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp",
     notes: "Derived from the IADB CSV endpoint (IUDSNZC/IUDSIZC). Emits 5y breakeven inflation (nominal minus real).",
-    expectedCadence: "trading-daily", graceDays: 5,
+    expectedCadence: "trading-daily", graceDays: 7,
   },
   lseg: {
     id: "lseg", name: "LSEG -- FTSE 250",
@@ -623,7 +635,7 @@ export const SOURCES: Record<string, DataSource> = {
     notes: "Flat XML list of every outstanding gilt at the most recent close-of-business date (instrument type, maturity bracket, nominal + inflation-uplifted amount). Refreshes once per working day. Methodology note: `issuance_long_share` was originally a flow-based measure (planned annual issuance share); it is now stock-based (Long / Ultra-Long share of outstanding conventional gilt stock) because the flow report (D2.1E) is behind a ShieldSquare bot-check. The stock share captures the same structural signal without intra-year seasonality. The D1A feed exposes only today's snapshot, so both DMO indicators are excluded from historical backfill quorum; see the live-only disclosure on /methodology.",
     // Refreshes once per working day (late-evening UK). Same trading-daily
     // window as the BoE feeds.
-    expectedCadence: "trading-daily", graceDays: 5,
+    expectedCadence: "trading-daily", graceDays: 7,
   },
   ons_lms: {
     id: "ons_lms", name: "ONS -- Labour Market Statistics",
@@ -661,7 +673,7 @@ export const SOURCES: Record<string, DataSource> = {
     id: "mhclg", name: "MHCLG / DLUHC -- Housing Statistics",
     homepage: "https://www.gov.uk/government/organisations/ministry-of-housing-communities-local-government",
     // Quarterly live-tables release, published ~7 weeks after the quarter.
-    // graceDays 110 = ~one quarter (92) + publication lag, inside the 130-day
+    // graceDays 110 = ~one quarter (92) + publication lag, inside the 180-day
     // maxStale so the chip warns before the guard.
     expectedCadence: "quarterly", graceDays: 110,
   },

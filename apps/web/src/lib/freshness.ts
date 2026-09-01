@@ -11,7 +11,7 @@
  * Scope: read-only, no side effects, called once per SSR render.
  */
 import type { ScoreSnapshot, TodayMovement } from "@tightrope/shared";
-import { INDICATORS } from "@tightrope/shared";
+import { INDICATORS, freshnessAnchorMs } from "@tightrope/shared";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -38,10 +38,15 @@ export interface StaleIndicatorRef {
  * Per-indicator freshness state. "fresh" = under half of maxStaleMs.
  * "ageing" = between 0.5x and 1x. "stale" = past maxStaleMs.
  */
-export function ageBand(observedAt: string, indicatorId: string, now = Date.now()): "fresh" | "ageing" | "stale" | "unknown" {
+export function ageBand(
+  observedAt: string,
+  indicatorId: string,
+  now = Date.now(),
+  releasedAt?: string | null,
+): "fresh" | "ageing" | "stale" | "unknown" {
   const def = INDICATORS[indicatorId];
   if (!def) return "unknown";
-  const ms = Date.parse(observedAt);
+  const ms = freshnessAnchorMs({ observedAt, releasedAt });
   if (!Number.isFinite(ms)) return "unknown";
   const age = now - ms;
   if (age >= def.maxStaleMs) return "stale";
@@ -71,19 +76,19 @@ export function summariseFreshness(
   movements: readonly TodayMovement[],
   now = Date.now(),
 ): FreshnessSummary {
-  const observedAtById = new Map<string, string>();
+  const latestById = new Map<string, { observedAt: string; releasedAt?: string | null }>();
   for (const pillar of Object.values(snapshot.pillars)) {
     for (const c of pillar.contributions ?? []) {
-      const existing = observedAtById.get(c.indicatorId);
-      if (!existing || Date.parse(c.observedAt) > Date.parse(existing)) {
-        observedAtById.set(c.indicatorId, c.observedAt);
+      const existing = latestById.get(c.indicatorId);
+      if (!existing || Date.parse(c.observedAt) > Date.parse(existing.observedAt)) {
+        latestById.set(c.indicatorId, { observedAt: c.observedAt, releasedAt: c.releasedAt });
       }
     }
   }
   for (const m of movements) {
-    const existing = observedAtById.get(m.indicatorId);
-    if (!existing || Date.parse(m.observedAt) > Date.parse(existing)) {
-      observedAtById.set(m.indicatorId, m.observedAt);
+    const existing = latestById.get(m.indicatorId);
+    if (!existing || Date.parse(m.observedAt) > Date.parse(existing.observedAt)) {
+      latestById.set(m.indicatorId, { observedAt: m.observedAt });
     }
   }
 
@@ -91,16 +96,16 @@ export function summariseFreshness(
   const stale: StaleIndicatorRef[] = [];
   const ageing: StaleIndicatorRef[] = [];
 
-  for (const [indicatorId, observedAt] of observedAtById) {
+  for (const [indicatorId, obs] of latestById) {
     const def = INDICATORS[indicatorId];
     if (!def) continue;
-    const ms = Date.parse(observedAt);
+    const ms = freshnessAnchorMs(obs);
     if (!Number.isFinite(ms)) continue;
     if (ms > freshestMs) freshestMs = ms;
     const ageMs = now - ms;
     const ageDays = ageMs / DAY_MS;
     const maxDays = def.maxStaleMs / DAY_MS;
-    const ref: StaleIndicatorRef = { indicatorId, label: def.shortLabel, observedAt, ageDays, maxDays };
+    const ref: StaleIndicatorRef = { indicatorId, label: def.shortLabel, observedAt: obs.observedAt, ageDays, maxDays };
     if (ageMs >= def.maxStaleMs) stale.push(ref);
     else if (ageMs >= def.maxStaleMs * 0.5) ageing.push(ref);
   }

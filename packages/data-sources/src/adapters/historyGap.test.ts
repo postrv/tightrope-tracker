@@ -3,6 +3,7 @@ import brentHistory from "../fixtures/brent-history.json" with { type: "json" };
 import brentLive from "../fixtures/brent.json" with { type: "json" };
 import ftseHistory from "../fixtures/ftse-250-history.json" with { type: "json" };
 import ftseLive from "../fixtures/ftse-250.json" with { type: "json" };
+import { londonCloseIso } from "../lib/londonClose.js";
 import { eiaBrentAdapter } from "./eiaBrent.js";
 import { lseFtse250Adapter } from "./lseFtse250.js";
 
@@ -37,5 +38,10 @@ describe("history fixtures cover the former Brent and FTSE gaps", () => {
     const seriesLast = ftseHistory.points[ftseHistory.points.length - 1]!.observed_at;
     expect(seriesLast >= ftseLive.observed_at).toBe(true);
     expect(result.latestObservedAt! >= ftseLive.observed_at).toBe(true);
+
+    const liveDay = ftseLive.observed_at.slice(0, 10);
+    const sameSession = result.observations.find((obs) => obs.observedAt.slice(0, 10) === liveDay);
+    expect(sameSession?.observedAt).toBe(londonCloseIso(liveDay));
+    expect(sameSession?.observedAt).toBe(ftseLive.observed_at);
   });
 });

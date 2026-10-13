@@ -11,6 +11,9 @@ importers:
       '@types/node':
         specifier: ^22.10.0
         version: 22.19.17
+      narsil-mcp:
+        specifier: 1.7.2
+        version: 1.7.2
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -2910,6 +2913,13 @@ packages:
   nanoid@5.1.9:
     resolution: {integrity: sha512-ZUvP7KeBLe3OZ1ypw6dI/TzYJuvHP77IM4Ry73waSQTLn8/g8rpdjfyVAh7t1/+FjBtG4lCP42MEbDxOsRpBMw==}
     engines: {node: ^18 || >=20}
+    hasBin: true
+
+  narsil-mcp@1.7.2:
+    resolution: {integrity: sha512-WVQeanBa9rI2HMXzeRpJEV/Th5ZfNXoIQG1tGxpI3MH1CRwrTf5gHnNswfzsnQfDjqs6dGb7zetZ4b7qfc3pBw==}
+    engines: {node: '>=16.0.0'}
+    cpu: [x64, arm64]
+    os: [darwin, linux, win32]
     hasBin: true
 
   neotraverse@0.6.18:
@@ -7011,6 +7021,8 @@ snapshots:
   nanoid@3.3.11: {}
 
   nanoid@5.1.9: {}
+
+  narsil-mcp@1.7.2: {}
 
   neotraverse@0.6.18: {}
 

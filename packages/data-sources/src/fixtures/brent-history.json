@@ -8,7 +8,7 @@
     "indicator": "Brent crude (Europe Brent Spot Price FOB, EIA series RBRTE) close, in GBP/bbl",
     "formula": "brent_gbp = brent_usd / gbp_usd",
     "release_cadence": "daily (UK + US trading days; both markets must have a print)",
-    "extraction_notes": "USD: EIA RBRTEd.xls (Europe Brent Spot Price FOB, $/bbl) -- US federal public-domain. FX: Bank of England Database series XUDLUSS (US$/GB pound, daily 4pm spot). Range 2024-07-04..2026-04-25 returned 9874 EIA Brent obs and 458 BoE FX obs in window; emitted 454 rows where BOTH series had a print. 4 days dropped (2026-04-21..2026-04-24) because EIA's RBRTEd table had not yet published those prints at extraction time. USD values rounded to 2dp; FX rounded to 4dp (BoE published precision); GBP/bbl computed as brent_usd / gbp_usd then rounded to 2dp. Definition consistency: USD figure is the EIA *spot* price (not a futures front-month settle); FX is the BoE 4pm spot fix. Same-day, same-definition pair."
+    "extraction_notes": "USD: EIA RBRTEd.xls (Europe Brent Spot Price FOB, $/bbl) -- US federal public-domain. FX: Bank of England Database series XUDLUSS (US$/GB pound, daily 4pm spot). Range 2024-07-04..2026-10-06. The 2026-04-25 extract emitted 454 rows and stopped at 2026-04-20 because EIA had not yet published 2026-04-21..2026-04-24. The 2026-10-13 extension appended 118 same-day pairs from 2026-04-21 through 2026-10-06, the last published RBRTEd print (later October cells were blank). Days with no same-day XUDLUSS fix are skipped. USD values rounded to 2dp; FX rounded to 4dp (BoE published precision); GBP/bbl computed as brent_usd / gbp_usd then rounded to 2dp. Definition consistency: USD figure is the EIA *spot* price (not a futures front-month settle); FX is the BoE 4pm spot fix. Same-day, same-definition pair."
   },
   "points": [
     {
@@ -3640,6 +3640,950 @@
       "value": 76.46,
       "brent_usd": 103.4,
       "gbp_usd": 1.3524,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-04-21T00:00:00Z",
+      "value": 78.57,
+      "brent_usd": 106.14,
+      "gbp_usd": 1.3509,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-04-22T00:00:00Z",
+      "value": 84.04,
+      "brent_usd": 113.44,
+      "gbp_usd": 1.3499,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-04-23T00:00:00Z",
+      "value": 83.83,
+      "brent_usd": 113.25,
+      "gbp_usd": 1.351,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-04-24T00:00:00Z",
+      "value": 82.86,
+      "brent_usd": 111.86,
+      "gbp_usd": 1.35,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-04-27T00:00:00Z",
+      "value": 84.01,
+      "brent_usd": 113.89,
+      "gbp_usd": 1.3556,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-04-28T00:00:00Z",
+      "value": 87.14,
+      "brent_usd": 117.62,
+      "gbp_usd": 1.3498,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-04-29T00:00:00Z",
+      "value": 91.96,
+      "brent_usd": 124.16,
+      "gbp_usd": 1.3501,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-04-30T00:00:00Z",
+      "value": 91.47,
+      "brent_usd": 124.24,
+      "gbp_usd": 1.3582,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-01T00:00:00Z",
+      "value": 86.8,
+      "brent_usd": 118.26,
+      "gbp_usd": 1.3624,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-05T00:00:00Z",
+      "value": 84.42,
+      "brent_usd": 114.51,
+      "gbp_usd": 1.3565,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-06T00:00:00Z",
+      "value": 76.23,
+      "brent_usd": 103.7,
+      "gbp_usd": 1.3603,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-07T00:00:00Z",
+      "value": 74.7,
+      "brent_usd": 101.82,
+      "gbp_usd": 1.3631,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-08T00:00:00Z",
+      "value": 75.94,
+      "brent_usd": 103.48,
+      "gbp_usd": 1.3626,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-11T00:00:00Z",
+      "value": 77.8,
+      "brent_usd": 106.11,
+      "gbp_usd": 1.3639,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-12T00:00:00Z",
+      "value": 82.34,
+      "brent_usd": 111.37,
+      "gbp_usd": 1.3525,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-13T00:00:00Z",
+      "value": 81.6,
+      "brent_usd": 110.28,
+      "gbp_usd": 1.3514,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-14T00:00:00Z",
+      "value": 82.25,
+      "brent_usd": 110.91,
+      "gbp_usd": 1.3485,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-15T00:00:00Z",
+      "value": 85.4,
+      "brent_usd": 113.96,
+      "gbp_usd": 1.3345,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-18T00:00:00Z",
+      "value": 87.15,
+      "brent_usd": 116.73,
+      "gbp_usd": 1.3394,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-19T00:00:00Z",
+      "value": 85.6,
+      "brent_usd": 114.64,
+      "gbp_usd": 1.3393,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-20T00:00:00Z",
+      "value": 81.09,
+      "brent_usd": 108.93,
+      "gbp_usd": 1.3433,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-21T00:00:00Z",
+      "value": 78.91,
+      "brent_usd": 105.84,
+      "gbp_usd": 1.3412,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-22T00:00:00Z",
+      "value": 79.57,
+      "brent_usd": 106.9,
+      "gbp_usd": 1.3435,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-26T00:00:00Z",
+      "value": 76.39,
+      "brent_usd": 102.75,
+      "gbp_usd": 1.345,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-27T00:00:00Z",
+      "value": 72.37,
+      "brent_usd": 97.11,
+      "gbp_usd": 1.3419,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-28T00:00:00Z",
+      "value": 71.08,
+      "brent_usd": 95.47,
+      "gbp_usd": 1.3432,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-05-29T00:00:00Z",
+      "value": 68.91,
+      "brent_usd": 92.88,
+      "gbp_usd": 1.3478,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-01T00:00:00Z",
+      "value": 73.15,
+      "brent_usd": 98.29,
+      "gbp_usd": 1.3437,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-02T00:00:00Z",
+      "value": 73.11,
+      "brent_usd": 98.49,
+      "gbp_usd": 1.3472,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-03T00:00:00Z",
+      "value": 75.68,
+      "brent_usd": 101.69,
+      "gbp_usd": 1.3437,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-04T00:00:00Z",
+      "value": 73.62,
+      "brent_usd": 98.98,
+      "gbp_usd": 1.3445,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-05T00:00:00Z",
+      "value": 72.67,
+      "brent_usd": 97.29,
+      "gbp_usd": 1.3387,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-08T00:00:00Z",
+      "value": 73.04,
+      "brent_usd": 97.46,
+      "gbp_usd": 1.3344,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-09T00:00:00Z",
+      "value": 70.27,
+      "brent_usd": 94.15,
+      "gbp_usd": 1.3398,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-10T00:00:00Z",
+      "value": 71.43,
+      "brent_usd": 95.73,
+      "gbp_usd": 1.3402,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-11T00:00:00Z",
+      "value": 69.66,
+      "brent_usd": 92.84,
+      "gbp_usd": 1.3328,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-12T00:00:00Z",
+      "value": 66.09,
+      "brent_usd": 88.64,
+      "gbp_usd": 1.3413,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-15T00:00:00Z",
+      "value": 62.76,
+      "brent_usd": 84.36,
+      "gbp_usd": 1.3441,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-16T00:00:00Z",
+      "value": 59.95,
+      "brent_usd": 80.5,
+      "gbp_usd": 1.3428,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-17T00:00:00Z",
+      "value": 59.97,
+      "brent_usd": 80.33,
+      "gbp_usd": 1.3394,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-18T00:00:00Z",
+      "value": 59.87,
+      "brent_usd": 79.35,
+      "gbp_usd": 1.3253,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-19T00:00:00Z",
+      "value": 60.81,
+      "brent_usd": 80.46,
+      "gbp_usd": 1.3231,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-22T00:00:00Z",
+      "value": 57.68,
+      "brent_usd": 76.49,
+      "gbp_usd": 1.3262,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-23T00:00:00Z",
+      "value": 57.34,
+      "brent_usd": 75.69,
+      "gbp_usd": 1.3201,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-24T00:00:00Z",
+      "value": 54.83,
+      "brent_usd": 72.09,
+      "gbp_usd": 1.3148,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-25T00:00:00Z",
+      "value": 55.86,
+      "brent_usd": 73.74,
+      "gbp_usd": 1.3202,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-26T00:00:00Z",
+      "value": 53.16,
+      "brent_usd": 70.16,
+      "gbp_usd": 1.3197,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-29T00:00:00Z",
+      "value": 54.05,
+      "brent_usd": 71.59,
+      "gbp_usd": 1.3245,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-06-30T00:00:00Z",
+      "value": 53.09,
+      "brent_usd": 70.46,
+      "gbp_usd": 1.3273,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-01T00:00:00Z",
+      "value": 52.15,
+      "brent_usd": 69.24,
+      "gbp_usd": 1.3278,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-02T00:00:00Z",
+      "value": 51.23,
+      "brent_usd": 68.53,
+      "gbp_usd": 1.3376,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-03T00:00:00Z",
+      "value": 51.42,
+      "brent_usd": 68.68,
+      "gbp_usd": 1.3356,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-06T00:00:00Z",
+      "value": 52.08,
+      "brent_usd": 69.56,
+      "gbp_usd": 1.3356,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-07T00:00:00Z",
+      "value": 53.65,
+      "brent_usd": 71.78,
+      "gbp_usd": 1.3379,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-08T00:00:00Z",
+      "value": 57.2,
+      "brent_usd": 76.5,
+      "gbp_usd": 1.3373,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-09T00:00:00Z",
+      "value": 55.6,
+      "brent_usd": 74.46,
+      "gbp_usd": 1.3391,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-10T00:00:00Z",
+      "value": 55.44,
+      "brent_usd": 74.34,
+      "gbp_usd": 1.341,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-13T00:00:00Z",
+      "value": 61.01,
+      "brent_usd": 81.62,
+      "gbp_usd": 1.3379,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-14T00:00:00Z",
+      "value": 62.43,
+      "brent_usd": 83.69,
+      "gbp_usd": 1.3405,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-15T00:00:00Z",
+      "value": 61.64,
+      "brent_usd": 83.08,
+      "gbp_usd": 1.3479,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-16T00:00:00Z",
+      "value": 60.22,
+      "brent_usd": 81.23,
+      "gbp_usd": 1.3489,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-17T00:00:00Z",
+      "value": 63.22,
+      "brent_usd": 85.01,
+      "gbp_usd": 1.3446,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-20T00:00:00Z",
+      "value": 64.72,
+      "brent_usd": 86.99,
+      "gbp_usd": 1.344,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-21T00:00:00Z",
+      "value": 70.18,
+      "brent_usd": 93.85,
+      "gbp_usd": 1.3372,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-22T00:00:00Z",
+      "value": 70.37,
+      "brent_usd": 94.12,
+      "gbp_usd": 1.3375,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-23T00:00:00Z",
+      "value": 79.07,
+      "brent_usd": 105.32,
+      "gbp_usd": 1.332,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-24T00:00:00Z",
+      "value": 75.27,
+      "brent_usd": 100.31,
+      "gbp_usd": 1.3327,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-27T00:00:00Z",
+      "value": 69.02,
+      "brent_usd": 91.82,
+      "gbp_usd": 1.3304,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-28T00:00:00Z",
+      "value": 64.33,
+      "brent_usd": 85.51,
+      "gbp_usd": 1.3292,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-29T00:00:00Z",
+      "value": 69.2,
+      "brent_usd": 91.95,
+      "gbp_usd": 1.3287,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-30T00:00:00Z",
+      "value": 68.46,
+      "brent_usd": 91.91,
+      "gbp_usd": 1.3425,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-07-31T00:00:00Z",
+      "value": 72.04,
+      "brent_usd": 96.95,
+      "gbp_usd": 1.3457,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-03T00:00:00Z",
+      "value": 66.16,
+      "brent_usd": 88.9,
+      "gbp_usd": 1.3437,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-04T00:00:00Z",
+      "value": 64.3,
+      "brent_usd": 86.47,
+      "gbp_usd": 1.3447,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-05T00:00:00Z",
+      "value": 64.29,
+      "brent_usd": 86.65,
+      "gbp_usd": 1.3479,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-06T00:00:00Z",
+      "value": 66.58,
+      "brent_usd": 89.65,
+      "gbp_usd": 1.3466,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-07T00:00:00Z",
+      "value": 64.96,
+      "brent_usd": 87.62,
+      "gbp_usd": 1.3489,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-10T00:00:00Z",
+      "value": 68.59,
+      "brent_usd": 92.74,
+      "gbp_usd": 1.3521,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-11T00:00:00Z",
+      "value": 69.04,
+      "brent_usd": 93.26,
+      "gbp_usd": 1.3509,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-12T00:00:00Z",
+      "value": 68.49,
+      "brent_usd": 92.52,
+      "gbp_usd": 1.3509,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-13T00:00:00Z",
+      "value": 68.14,
+      "brent_usd": 92.03,
+      "gbp_usd": 1.3507,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-14T00:00:00Z",
+      "value": 67.92,
+      "brent_usd": 92.02,
+      "gbp_usd": 1.3549,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-17T00:00:00Z",
+      "value": 68.2,
+      "brent_usd": 92.43,
+      "gbp_usd": 1.3553,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-18T00:00:00Z",
+      "value": 70.36,
+      "brent_usd": 95.29,
+      "gbp_usd": 1.3543,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-19T00:00:00Z",
+      "value": 67.88,
+      "brent_usd": 92.37,
+      "gbp_usd": 1.3608,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-20T00:00:00Z",
+      "value": 68.96,
+      "brent_usd": 94,
+      "gbp_usd": 1.3632,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-21T00:00:00Z",
+      "value": 71.13,
+      "brent_usd": 96.92,
+      "gbp_usd": 1.3625,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-24T00:00:00Z",
+      "value": 67.99,
+      "brent_usd": 92.71,
+      "gbp_usd": 1.3635,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-25T00:00:00Z",
+      "value": 64.73,
+      "brent_usd": 88.24,
+      "gbp_usd": 1.3633,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-26T00:00:00Z",
+      "value": 64.59,
+      "brent_usd": 87.77,
+      "gbp_usd": 1.3588,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-27T00:00:00Z",
+      "value": 66.4,
+      "brent_usd": 90.18,
+      "gbp_usd": 1.3582,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-08-28T00:00:00Z",
+      "value": 66.13,
+      "brent_usd": 89.75,
+      "gbp_usd": 1.3571,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 70.93,
+      "brent_usd": 96.02,
+      "gbp_usd": 1.3538,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-02T00:00:00Z",
+      "value": 72.26,
+      "brent_usd": 97.59,
+      "gbp_usd": 1.3506,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-03T00:00:00Z",
+      "value": 74.36,
+      "brent_usd": 100.52,
+      "gbp_usd": 1.3518,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-04T00:00:00Z",
+      "value": 75.65,
+      "brent_usd": 102.24,
+      "gbp_usd": 1.3515,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-07T00:00:00Z",
+      "value": 77.13,
+      "brent_usd": 104.47,
+      "gbp_usd": 1.3545,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-08T00:00:00Z",
+      "value": 78.3,
+      "brent_usd": 106.12,
+      "gbp_usd": 1.3553,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-09T00:00:00Z",
+      "value": 80.74,
+      "brent_usd": 109.51,
+      "gbp_usd": 1.3563,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-10T00:00:00Z",
+      "value": 89.41,
+      "brent_usd": 120.98,
+      "gbp_usd": 1.3531,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-11T00:00:00Z",
+      "value": 87.26,
+      "brent_usd": 118.06,
+      "gbp_usd": 1.353,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-14T00:00:00Z",
+      "value": 89.97,
+      "brent_usd": 121.25,
+      "gbp_usd": 1.3476,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-15T00:00:00Z",
+      "value": 96.98,
+      "brent_usd": 130.8,
+      "gbp_usd": 1.3488,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-16T00:00:00Z",
+      "value": 95.02,
+      "brent_usd": 127.84,
+      "gbp_usd": 1.3454,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-17T00:00:00Z",
+      "value": 90.75,
+      "brent_usd": 121.18,
+      "gbp_usd": 1.3353,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-18T00:00:00Z",
+      "value": 89.56,
+      "brent_usd": 119.66,
+      "gbp_usd": 1.3361,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-21T00:00:00Z",
+      "value": 86.85,
+      "brent_usd": 116.15,
+      "gbp_usd": 1.3374,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-22T00:00:00Z",
+      "value": 86.07,
+      "brent_usd": 114.89,
+      "gbp_usd": 1.3348,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-23T00:00:00Z",
+      "value": 88.54,
+      "brent_usd": 117.45,
+      "gbp_usd": 1.3265,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-24T00:00:00Z",
+      "value": 91.47,
+      "brent_usd": 120.92,
+      "gbp_usd": 1.322,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-25T00:00:00Z",
+      "value": 87.58,
+      "brent_usd": 116.01,
+      "gbp_usd": 1.3246,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-28T00:00:00Z",
+      "value": 90.54,
+      "brent_usd": 119.97,
+      "gbp_usd": 1.3251,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-29T00:00:00Z",
+      "value": 86.24,
+      "brent_usd": 113.96,
+      "gbp_usd": 1.3214,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-09-30T00:00:00Z",
+      "value": 87.25,
+      "brent_usd": 115.91,
+      "gbp_usd": 1.3285,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-01T00:00:00Z",
+      "value": 86.91,
+      "brent_usd": 114.82,
+      "gbp_usd": 1.3212,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-02T00:00:00Z",
+      "value": 102.28,
+      "brent_usd": 135.51,
+      "gbp_usd": 1.3249,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-05T00:00:00Z",
+      "value": 94.93,
+      "brent_usd": 125.51,
+      "gbp_usd": 1.3221,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-06T00:00:00Z",
+      "value": 94.46,
+      "brent_usd": 125.44,
+      "gbp_usd": 1.3279,
       "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
       "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
     }

@@ -114,7 +114,9 @@ describe("backfillObservations pipeline", () => {
     // One batch written (5 < HIST_BATCH_SIZE).
     expect(batches).toHaveLength(1);
     expect(batches[0]).toHaveLength(5);
-    expect(batches[0]![0]!.sql).toContain("INSERT OR REPLACE INTO indicator_observations");
+    expect(batches[0]![0]!.sql).toContain("ON CONFLICT(indicator_id, observed_at) DO UPDATE");
+    expect(batches[0]![0]!.sql).toContain("payload_hash LIKE 'hist:%'");
+    expect(batches[0]![0]!.sql).not.toContain("INSERT OR REPLACE");
 
     // Audit open + close. closeAuditSuccess parameterises `status = ?` so
     // it can downgrade to 'partial' for zero-row adapters; the status value

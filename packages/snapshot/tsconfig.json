@@ -3,7 +3,8 @@
   "compilerOptions": {
     "types": ["@cloudflare/workers-types"],
     "noEmit": true,
-    "rootDir": "src"
+    // ftseSession.test.ts imports the ingest writer, which lives outside src/.
+    "rootDir": "../.."
   },
   "include": ["src/**/*.ts", "src/**/*.test.ts"]
 }

@@ -276,9 +276,12 @@ export interface HistoricalWriteResult {
  *   - supports dry-run: returns the rejection list and a preview count
  *     without issuing any SQL.
  *
- * `overwrite` controls the verb: `true` → `INSERT OR REPLACE` (default, for
- * idempotent reruns); `false` → `INSERT OR IGNORE` (freeze a vintage, reject
- * later upstream revisions).
+ * `overwrite` controls a conflict on `(indicator_id, observed_at)`:
+ *   `true`  → replace an existing `hist:%` row only. A live sha, a NULL
+ *             legacy hash, or a `seed%` row stays, so a same-session
+ *             backfill cannot delete the live head (admin backfill
+ *             defaults to overwrite).
+ *   `false` → `INSERT OR IGNORE` (freeze a vintage, reject later revisions).
  */
 const HIST_BATCH_SIZE = 50;
 
@@ -317,12 +320,23 @@ export async function writeHistoricalObservations(
     return { attempted: observations.length, written: 0, rejected, dryRun: opts.dryRun };
   }
 
-  const verb = opts.overwrite ? "INSERT OR REPLACE" : "INSERT OR IGNORE";
-  const stmt = db.prepare(
-    `${verb} INTO indicator_observations
-       (indicator_id, observed_at, value, source_id, ingested_at, payload_hash, released_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  );
+  // INSERT OR REPLACE would delete the live row that shares this primary
+  // key, and the selector would then never see a same-session tie.
+  const sql = opts.overwrite
+    ? `INSERT INTO indicator_observations
+         (indicator_id, observed_at, value, source_id, ingested_at, payload_hash, released_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(indicator_id, observed_at) DO UPDATE SET
+         value = excluded.value,
+         source_id = excluded.source_id,
+         ingested_at = excluded.ingested_at,
+         payload_hash = excluded.payload_hash,
+         released_at = excluded.released_at
+       WHERE indicator_observations.payload_hash LIKE 'hist:%'`
+    : `INSERT OR IGNORE INTO indicator_observations
+         (indicator_id, observed_at, value, source_id, ingested_at, payload_hash, released_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  const stmt = db.prepare(sql);
   const now = new Date().toISOString();
   let written = 0;
   for (let i = 0; i < filtered.length; i += HIST_BATCH_SIZE) {
@@ -330,8 +344,11 @@ export async function writeHistoricalObservations(
     const batch: D1PreparedStatement[] = slice.map((o) =>
       stmt.bind(o.indicatorId, o.observedAt, o.value, o.sourceId, now, o.payloadHash, o.releasedAt ?? null),
     );
-    await db.batch(batch);
-    written += slice.length;
+    const results = await db.batch(batch);
+    // A live/seed conflict matches zero rows (changes = 0). INSERT OR IGNORE
+    // does the same. Report the database's change count, not the attempt count.
+    written += results.reduce((count, result) =>
+      count + (typeof result.meta?.changes === "number" ? result.meta.changes : Number(result.success)), 0);
   }
   return { attempted: observations.length, written, rejected, dryRun: false };
 }

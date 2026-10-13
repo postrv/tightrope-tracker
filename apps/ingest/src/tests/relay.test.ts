@@ -94,7 +94,7 @@ function makeEnv(opts: { token?: string } = {}): {
       // each so tests can assert the rows that landed.
       batch: async (stmts: Array<{ sql: string; bindings: readonly unknown[] }>) => {
         for (const s of stmts) runs.push({ sql: s.sql, bindings: s.bindings });
-        return [];
+        return stmts.map(() => ({ success: true, meta: { changes: 1 } }));
       },
     },
     DLQ: {
@@ -304,8 +304,9 @@ describe("handleRelay — backfill mode", () => {
       runs.some((r) => r.sql.includes("INSERT INTO ingestion_audit") && r.bindings.includes("boe_yields:historical")),
     ).toBe(true);
     // Observation writes are the historical tier: hist:-prefixed payload hashes.
-    const obsWrites = runs.filter((r) => r.sql.includes("INSERT OR REPLACE INTO indicator_observations"));
+    const obsWrites = runs.filter((r) => r.sql.includes("ON CONFLICT(indicator_id, observed_at) DO UPDATE"));
     expect(obsWrites.length).toBeGreaterThan(0);
+    expect(obsWrites.every((r) => r.sql.includes("payload_hash LIKE 'hist:%'"))).toBe(true);
     expect(obsWrites.every((r) => r.bindings.some((b) => typeof b === "string" && b.startsWith("hist:")))).toBe(true);
   });
 
@@ -318,6 +319,6 @@ describe("handleRelay — backfill mode", () => {
     expect(body.ok).toBe(true);
     expect(body.dryRun).toBe(true);
     expect(body.rowsWritten).toBe(0);
-    expect(runs.some((r) => r.sql.includes("INSERT OR REPLACE INTO indicator_observations"))).toBe(false);
+    expect(runs.some((r) => r.sql.includes("INTO indicator_observations"))).toBe(false);
   });
 });

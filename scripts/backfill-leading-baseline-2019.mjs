@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 import { backfillObservations } from "../apps/ingest/src/pipelines/backfillObservations.ts";
 import { guardLeadingBaselineBackfill } from "../apps/ingest/src/pipelines/leadingBaselineGuard.ts";
 import { buildHistoricalResult } from "../packages/data-sources/src/lib/historical.ts";
+import { prepareBaselineAttempt, writeBaselineSuccess, writeBaselineFailure } from "../apps/ingest/src/operations/baselineReceipt.ts";
 
 const archive = new URL("../data/exports/baseline-2019-primary-2026-10-28/", import.meta.url);
 const manifest = JSON.parse(await readFile(new URL("manifest.json", archive), "utf8"));
@@ -46,6 +47,9 @@ for (const expected of manifest.sources) {
 const observations = sources.flatMap((s) => s.observations);
 if (sources.length !== 9 || observations.length !== 8770) throw new Error("Unreviewed source/observation counts");
 guardLeadingBaselineBackfill([], observations, manifest.originalFirstReferenceDayByIndicator);
+const receiptScope = { candidateSha256: manifest.candidateSha256, candidateRows: observations.length,
+  sourceCounts: new Map(sources.map((s) => [s.id, s.observations.length])), minimumOriginalRows: manifest.referenceRawRows };
+const archivePath = fileURLToPath(archive);
 const pairEvidence = JSON.parse(await readFile(new URL("eia-pairing-review.json", archive), "utf8"));
 function verifyEiaFxPairs(existing) {
   // EIA values depend on the reviewed FX additions and retained existing FX
@@ -85,40 +89,69 @@ try {
     sourceFilesShaVerified: sources.length, eiaFxPairsVerified, candidateSha256: manifest.candidateSha256,
     productionObservationWrites: 0, productionAuditWrites: 0, scoreHistoryWrites: 0 };
   console.log(JSON.stringify(preflightReport, null, 2));
-  await writeFile(fileURLToPath(new URL("preflight.json", archive)), JSON.stringify(preflightReport, null, 2) + "\n");
+  // An already-complete --apply retry must not replace even local evidence.
+  if (!apply) await writeFile(fileURLToPath(new URL("preflight.json", archive)), JSON.stringify(preflightReport, null, 2) + "\n");
   if (!apply) process.exitCode = 0;
   else {
-    const startedAt = new Date().toISOString();
-    const results = [];
-    for (const source of sources) {
-      // Re-read before each adapter to detect unreviewed overlapping imports.
-      const current = (await proxy.env.DB.prepare(query).all()).results;
-      guardLeadingBaselineBackfill(current, observations, manifest.originalFirstReferenceDayByIndicator);
-      const sourceScope = guardLeadingBaselineBackfill(current, source.observations,
-        Object.fromEntries([...new Set(source.observations.map((o) => o.indicatorId))].map((id) => [id, manifest.originalFirstReferenceDayByIndicator[id]])));
-      if (!sourceScope.missing) { results.push({ adapter: source.id, rowsWritten: 0, alreadyPresent: sourceScope.alreadyPresent }); continue; }
-      const adapter = { id: source.id, name: `Reviewed leading-history replay ${source.id}`,
-        fetch: async () => { throw new Error("Live/network fetching is disabled"); },
-        fetchHistorical: async () => buildHistoricalResult(source.observations, source.sourceUrl,
-          ["Reviewed official current-vintage capture; missing leading reference dates only; overwrite=false; no as-known score reconstruction"]),
-      };
-      const result = await backfillObservations(proxy.env, adapter, {
-        from: new Date("2019-01-01"), to: new Date("2024-08-01"), dryRun: false, overwrite: false,
-      });
-      if (result.rowsRejected.length || result.rowsWritten !== sourceScope.missing) throw new Error(`Unexpected write result for ${source.id}; inspect audit before continuing`);
-      results.push(result);
-      console.log(JSON.stringify({ adapter: source.id, rowsWritten: result.rowsWritten, rowsRejected: result.rowsRejected.length }));
+    const attempt = await prepareBaselineAttempt(archivePath, receiptScope, { ...preflight, originalRawRows: before.length, beforeObservations: before });
+    if (attempt.kind === "already-complete") {
+      console.log(JSON.stringify({ mode: "verified-already-applied", rowsInserted: 0,
+        successfulReceiptPreserved: true, originalStartedAt: attempt.receipt.startedAt,
+        originalCompletedAt: attempt.receipt.completedAt, productionWrites: 0, localEvidenceWrites: 0 }, null, 2));
+    } else {
+      const startedAt = attempt.startedAt;
+      const results = [];
+      let sourceInProgress = null;
+      try {
+        for (const source of sources) {
+          sourceInProgress = source.id;
+          // Re-read before each adapter to detect unreviewed overlapping imports.
+          const current = (await proxy.env.DB.prepare(query).all()).results;
+          guardLeadingBaselineBackfill(current, observations, manifest.originalFirstReferenceDayByIndicator);
+          const sourceScope = guardLeadingBaselineBackfill(current, source.observations,
+            Object.fromEntries([...new Set(source.observations.map((o) => o.indicatorId))].map((id) => [id, manifest.originalFirstReferenceDayByIndicator[id]])));
+          if (sourceScope.missing !== source.observations.length || sourceScope.alreadyPresent !== 0) {
+            throw new Error(`Reviewed ${source.id} history appeared during application; stop and reconcile the retained attempt before any recovery`);
+          }
+          const adapter = { id: source.id, name: `Reviewed leading-history replay ${source.id}`,
+            fetch: async () => { throw new Error("Live/network fetching is disabled"); },
+            fetchHistorical: async () => buildHistoricalResult(source.observations, source.sourceUrl,
+              ["Reviewed official current-vintage capture; missing leading reference dates only; overwrite=false; no as-known score reconstruction"]),
+          };
+          const result = await backfillObservations(proxy.env, adapter, {
+            from: new Date("2019-01-01"), to: new Date("2024-08-01"), dryRun: false, overwrite: false,
+          });
+          if (result.rowsRejected.length || result.rowsWritten !== sourceScope.missing) throw new Error(`Unexpected write result for ${source.id}; inspect audit before continuing`);
+          results.push(result);
+          console.log(JSON.stringify({ adapter: source.id, rowsWritten: result.rowsWritten, rowsRejected: result.rowsRejected.length }));
+        }
+        sourceInProgress = null;
+        const after = (await proxy.env.DB.prepare(query).all()).results;
+        const finalScope = guardLeadingBaselineBackfill(after, observations, manifest.originalFirstReferenceDayByIndicator);
+        const afterKeys = new Map(after.map((r) => [`${r.indicator_id}|${r.observed_at}`, r]));
+        const changedExisting = before.filter((r) => JSON.stringify(afterKeys.get(`${r.indicator_id}|${r.observed_at}`)) !== JSON.stringify(r));
+        if (finalScope.missing !== 0 || changedExisting.length) throw new Error("Post-backfill verification failed; reconcile retained attempt evidence before recovery");
+        const result = { state: "COMPLETE_VERIFIED", attemptId: attempt.attemptId, startedAt, completedAt: new Date().toISOString(), originalRawRows: before.length, finalRawRows: after.length,
+          beforeSnapshotFile: attempt.beforeSnapshotFile, beforeSnapshotSha256: attempt.beforeSnapshotSha256, beforeSnapshotRows: before.length,
+          rowsInserted: results.reduce((sum, r) => sum + r.rowsWritten, 0), finalScope, originalKeysWithChangedFields: changedExisting.length,
+          changedExisting, results, candidateSha256: manifest.candidateSha256, overwrite: false, scoreHistoryWrites: 0,
+          note: "Historical inserts use INSERT OR IGNORE; any changed pre-existing fields require review for concurrent live ingestion. Recompute and public coverage disclosure are separate steps." };
+        await writeBaselineSuccess(archivePath, result, receiptScope);
+        console.log(JSON.stringify(result, null, 2));
+      } catch (error) {
+        let observedCoverage;
+        try { observedCoverage = guardLeadingBaselineBackfill((await proxy.env.DB.prepare(query).all()).results, observations, manifest.originalFirstReferenceDayByIndicator); }
+        catch (inspectionError) { observedCoverage = { inspectionError: inspectionError.message }; }
+        try {
+          await writeBaselineFailure(archivePath, { state: "FAILED_RECONCILIATION_REQUIRED", attemptId: attempt.attemptId,
+            startedAt, failedAt: new Date().toISOString(), candidateSha256: manifest.candidateSha256,
+            beforeSnapshotFile: attempt.beforeSnapshotFile, beforeSnapshotSha256: attempt.beforeSnapshotSha256, beforeSnapshotRows: before.length,
+            sourceInProgress, completedSourceResults: results, rowsReportedWritten: results.reduce((sum, r) => sum + r.rowsWritten, 0),
+            observedCoverage, error: error.message, originalRawRows: before.length,
+            instruction: "Preserve this diagnostic, attempt.json and ingestion audits. No automatic resume; review all candidate keys and source audit windows before authorized reconciliation." });
+        } catch (diagnosticError) { console.error(`Failure diagnostic was not replaced: ${diagnosticError.message}`); }
+        throw error;
+      }
     }
-    const after = (await proxy.env.DB.prepare(query).all()).results;
-    const finalScope = guardLeadingBaselineBackfill(after, observations, manifest.originalFirstReferenceDayByIndicator);
-    const afterKeys = new Map(after.map((r) => [`${r.indicator_id}|${r.observed_at}`, r]));
-    const changedExisting = before.filter((r) => JSON.stringify(afterKeys.get(`${r.indicator_id}|${r.observed_at}`)) !== JSON.stringify(r));
-    const result = { startedAt, completedAt: new Date().toISOString(), originalRawRows: before.length, finalRawRows: after.length,
-      rowsInserted: results.reduce((sum, r) => sum + r.rowsWritten, 0), finalScope, originalKeysWithChangedFields: changedExisting.length,
-      changedExisting, results, candidateSha256: manifest.candidateSha256, overwrite: false, scoreHistoryWrites: 0,
-      note: "Historical inserts use INSERT OR IGNORE; any changed pre-existing fields require review for concurrent live ingestion. Recompute and public coverage disclosure are separate steps." };
-    await writeFile(fileURLToPath(new URL("applied.json", archive)), JSON.stringify(result, null, 2) + "\n");
-    console.log(JSON.stringify(result, null, 2));
-    if (finalScope.missing !== 0 || changedExisting.length) throw new Error("Post-backfill verification requires review");
   }
 } finally { await proxy.dispose(); }

@@ -140,6 +140,16 @@ proof preserves all 8,294 original records. `applied.json` is created only
 after a verified production application; proposal files alone are not proof
 that a backfill happened.
 
+Before the first production write, the runner exclusively saves the actual
+`attempt-before-observations.json` and an `attempt.json` recording its SHA-256,
+row count and application start time. A complete
+success receipt is created exclusively only after every source and original
+field has been verified. A verified all-present retry preserves the original
+receipt and before-state bytes without production or evidence writes. An
+incomplete attempt or unreceipted partial history stops for explicit
+reconciliation; the original attempt, before-state archive and separate
+failure diagnostic are retained rather than automatically resumed or replaced.
+
 After application and a normal score recompute, run:
 
 ```bash

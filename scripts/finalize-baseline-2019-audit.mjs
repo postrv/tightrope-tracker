@@ -16,6 +16,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { BASELINE_START_ISO, COVID_EXCLUDE_START_ISO, COVID_EXCLUDE_END_ISO,
   PILLAR_ORDER, selectBaselineObservations } from "../packages/shared/src/index.ts";
+import { assertCompleteBaselineReceipt, readBaselineBeforeSnapshot } from "../apps/ingest/src/operations/baselineReceipt.ts";
 
 const run = promisify(execFile);
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -34,18 +35,10 @@ const manifest = await load(new URL("manifest.json", archive));
 const candidateBytes = await readFile(new URL(manifest.candidateFile, archive));
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const approvedSha = "bad910e7715eeba5e7b47c240a126ea4de0ff276575cd502b83305e214e322a7";
-if (manifest.candidateRows !== 8770 || digest(candidateBytes) !== approvedSha || applied.candidateSha256 !== approvedSha
-  || applied.rowsInserted !== 8770 || applied.overwrite !== false || applied.scoreHistoryWrites !== 0
-  || applied.originalRawRows < 8294 || applied.originalKeysWithChangedFields !== 0
-  || applied.finalScope?.missing !== 0 || applied.finalScope?.alreadyPresent !== 8770
-  || applied.finalRawRows !== applied.originalRawRows + 8770
-  || !Number.isFinite(Date.parse(applied.startedAt)) || !Number.isFinite(Date.parse(applied.completedAt))
-  || !applied.startedAt.endsWith("Z") || !applied.completedAt.endsWith("Z")
-  || Date.parse(applied.completedAt) < Date.parse(applied.startedAt)) throw new Error("Applied record does not prove the reviewed complete missing-only operation");
-const expectedCounts = new Map(manifest.sources.map((s) => [s.id, s.expectedCandidates]));
-if (applied.results?.length !== 9 || new Set(applied.results.map((r) => r.adapter)).size !== 9
-  || applied.results.some((r) => r.rowsWritten !== expectedCounts.get(r.adapter)
-  || r.rowsRejected?.length !== 0)) throw new Error("Applied record does not prove all nine reviewed source results");
+if (manifest.candidateRows !== 8770 || digest(candidateBytes) !== approvedSha) throw new Error("Unreviewed operation scope");
+assertCompleteBaselineReceipt(applied, { candidateSha256: approvedSha, candidateRows: 8770,
+  sourceCounts: new Map(manifest.sources.map((s) => [s.id, s.expectedCandidates])), minimumOriginalRows: 8294 });
+await readBaselineBeforeSnapshot(fileURLToPath(archive), applied);
 
 const inputBytes = await readFile(resolve(input));
 const dump = JSON.parse(inputBytes);
@@ -63,7 +56,9 @@ const snapshot = JSON.parse(snapshotBytes);
 if (!Number.isFinite(snapshot.headline?.value) || !Number.isFinite(Date.parse(snapshot.headline.updatedAt))
   || !PILLAR_ORDER.every((p) => Number.isFinite(snapshot.pillars?.[p]?.value))
   || Date.parse(snapshot.headline.updatedAt) < Date.parse(applied.completedAt)) throw new Error("A normal recompute AFTER complete application is required");
-const beforeRows = await load(new URL(manifest.referenceObservationFile, archive));
+const referenceBytes = await readFile(new URL(manifest.referenceObservationFile, archive));
+if (digest(referenceBytes) !== manifest.referenceObservationSha256) throw new Error("Frozen reference observation archive changed");
+const beforeRows = JSON.parse(referenceBytes);
 const eligible = (r) => Date.parse(r.observed_at) >= Date.parse(BASELINE_START_ISO)
   && !(Date.parse(r.observed_at) >= Date.parse(COVID_EXCLUDE_START_ISO) && Date.parse(r.observed_at) <= Date.parse(COVID_EXCLUDE_END_ISO));
 const beforeBaseline = selectBaselineObservations(beforeRows).filter(eligible);
@@ -102,6 +97,8 @@ const verified = { status: "APPLIED_SOURCE_VALUES_AND_COVERAGE_VERIFIED", starte
   referenceRows: 8294, originalRowsVerifiedUnchanged: applied.originalRawRows, finalRawRows: rows.length,
   sourceGroups: 9, registeredInputs: 17, baselineEligibleAdded: 8375, covidExcluded: 395,
   sourceValuesVerified: candidates.length, overwrite: false, publishedScoreHistoryRewritten: false,
+  actualBeforeSnapshotFile: applied.beforeSnapshotFile, actualBeforeSnapshotSha256: applied.beforeSnapshotSha256,
+  actualBeforeSnapshotRows: applied.beforeSnapshotRows,
   frozenCurrentReadingReplay: manifest.frozenReplay, earlierFrozenReplay: manifest.earlierFrozenReplay,
   actualCurrentRecompute: { headline: snapshot.headline.value, updatedAt: snapshot.headline.updatedAt,
     pillars: Object.fromEntries(PILLAR_ORDER.map((p) => [p, snapshot.pillars[p].value])), stale: snapshot.headline.stale === true },

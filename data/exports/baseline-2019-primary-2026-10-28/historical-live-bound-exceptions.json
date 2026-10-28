@@ -1,5 +1,5 @@
 {
-  "status": "VERIFIED_HISTORICAL_EXCEPTIONS_IN_CONSOLIDATED_PROPOSAL_NOT_YET_INGESTED",
+  "status": "INGESTED_AND_MATCHED_TO_POST_APPLY_RAW_RANGE_FLAGS",
   "livePlausibilityBoundsChanged": false,
   "exceptions": [
     {
@@ -613,5 +613,7 @@
   ],
   "expectedRawOutsideLiveBoundsFlagsAfterBackfill": 31,
   "expectedEligibleBaselineExceptions": 6,
-  "note": "Keep raw audit flag counts honest. These reviewed historical primary-source observations are not grounds to loosen current live range/jump gates. ONS updateDate is a current-vintage revision date, not immutable original publication time."
+  "note": "Keep raw audit flag counts honest. These reviewed historical primary-source observations are not grounds to loosen current live range/jump gates. ONS updateDate is a current-vintage revision date, not immutable original publication time.",
+  "actualRawOutsideLiveBoundsFlags": 31,
+  "unreviewedRangeFlags": []
 }

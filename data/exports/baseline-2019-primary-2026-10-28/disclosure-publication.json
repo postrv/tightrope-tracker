@@ -1,0 +1,22 @@
+{
+  "verifiedAt": "2026-10-28T23:46:47.360Z",
+  "correction": {
+    "id": "2026-10-28-baseline-history-coverage",
+    "published_at": "2026-10-28T23:40:21.145Z",
+    "affected_indicator": "2019 baseline coverage for 17 market, fiscal, labour and delivery inputs",
+    "original_value": "Shorter stored historical samples; controlled current-reading replay headline 39.4",
+    "corrected_value": "8,770 missing leading observations; 8,375 baseline-eligible and 395 excluded by the unchanged Q2 2020 policy; controlled replay headline 36.9",
+    "reason": "An audited, missing-date-only backfill added 8,770 observations across 17 inputs and nine source groups: 7,346 BoE/ONS observations, 28 MHCLG housing/planning observations derived from official ODS tables, and 1,396 EIA Brent observations converted to GBP using reviewed BoE exchange-rate pairs. Every added reference day precedes that indicator's former first stored reference day. The operation used overwrite=false and preserved every field of all 8,294 original reference records. No earlier headline or pillar scores were regenerated or overwritten. Of the new observations, 8,375 extend the scoring baseline and 395 fall within the existing Q2 2020 exclusion. Weights, score direction and exclusion policy are unchanged. A controlled replay holding the 18:35 UTC current readings constant moves the headline from 39.4 to 36.9; this measures the effect of better baseline coverage, not a Budget reaction. These are current-vintage official histories, not an archive of what was known at each historical date. ONS updateDate can reflect later revisions; BoE daily reference timestamps are not verified publication times; the MHCLG source vintage is 24 September 2026. Other inputs retain shorter histories where comparable evidence has not been prepared. All source captures, ODS cell coordinates, EIA/FX pairs, hashes and replay evidence are archived. Thirty-one added historical values lie outside current live plausibility ranges and remain honestly flagged as reviewed source exceptions; six are baseline-eligible. Current live range and jump guards were not loosened. Sources: https://www.bankofengland.co.uk/boeapps/database/ , https://www.ons.gov.uk/ , https://www.gov.uk/government/collections/house-building-statistics , https://www.gov.uk/government/collections/planning-applications-statistics and https://www.eia.gov/dnav/pet/hist/RBRTED.htm . Candidate archive SHA-256: bad910e7715eeba5e7b47c240a126ea4de0ff276575cd502b83305e214e322a7."
+  },
+  "event": {
+    "id": "t_2026_10_28_baseline_history_coverage",
+    "event_date": "2026-10-28T23:37:36.764Z",
+    "title": "Baseline coverage expanded with verified official history",
+    "summary": "Coverage began changing at this marker and the backfill completed at 2026-10-28T23:40:21.145Z. 8,770 missing leading observations extend 17 inputs towards the existing 2019 baseline: 8,375 are eligible and 395 remain excluded by the Q2 2020 policy. All 8,294 original reference records and earlier published score history are preserved. A frozen-reading replay changes 39.4 to 36.9 because baseline coverage changed; this is not a Budget market reaction.",
+    "category": "methodology",
+    "source_label": "Tightrope data-quality audit; BoE, ONS, MHCLG and EIA",
+    "source_url": "https://tightropetracker.uk/corrections",
+    "score_delta": null
+  },
+  "timelineCacheRefreshed": true
+}

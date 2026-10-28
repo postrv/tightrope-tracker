@@ -1,0 +1,15 @@
+{
+  "state": "ATTEMPT_STARTED",
+  "attemptId": "60e74bf5-8502-4a0d-8d9b-1b01b6fdcaf3",
+  "startedAt": "2026-10-28T23:37:36.764Z",
+  "candidateSha256": "bad910e7715eeba5e7b47c240a126ea4de0ff276575cd502b83305e214e322a7",
+  "candidateRows": 8770,
+  "initialMissing": 8770,
+  "initialAlreadyPresent": 0,
+  "originalRawRows": 8294,
+  "beforeSnapshotFile": "attempt-before-observations.json",
+  "beforeSnapshotSha256": "e266970689dbd9c1106533d9862f011a1495286ebbf5c0507ca52c262d92f487",
+  "beforeSnapshotRows": 8294,
+  "overwrite": false,
+  "scoreHistoryWrites": 0
+}

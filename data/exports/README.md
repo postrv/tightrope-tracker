@@ -118,9 +118,9 @@ quarters. Existing later fixture vintages remain unchanged. The estimated
 11,500 planning benchmark is retained; the workbook's exact calendar 2019
 quarterly mean is 11,174.5, which is disclosed in the indicator description.
 
-## Prepared baseline coverage and finalization
+## Verified baseline coverage and finalization
 
-Preparation status: **proposal only; no production baseline writes**.
+Application status: **APPLIED_AND_DISCLOSED**. The 8,770 observations were applied from 23:37:36.764Z to 23:40:21.145Z on 28 October 2026; the public correction and timeline were verified at 23:46:47.360Z.
 
 `baseline-2019-primary-2026-10-28/` contains the reviewed 8,770-observation
 proposal across 17 inputs, source captures and hashes, ODS cell evidence,
@@ -135,8 +135,8 @@ period, and earlier published headline/pillar scores are not regenerated.
 Run `node --import tsx scripts/backfill-leading-baseline-2019.mjs` for the
 offline plan. The production preflight only reads D1; applying the operation
 requires its separate explicit approval. The runner uses `overwrite=false`
-and checks preservation of every original observation field. The prepared
-proof preserves all 8,294 original records. `applied.json` is created only
+and checks preservation of every original observation field. The production verification
+preserves all 8,294 original records. `applied.json` is created only
 after a verified production application; proposal files alone are not proof
 that a backfill happened.
 
@@ -169,3 +169,11 @@ The timeline marks application **start**, so interim recomputes are covered;
 the correction publication and summary record **completion**. The workflow
 publishes nothing. Apply the resolved disclosure and verify its public result
 as separate authorized steps.
+
+The completed application, independent post-apply capture, before-state archive,
+public disclosure and exact executed SQL are retained in the packet.
+`proposal-manifest.json` and `proposal-review.json` preserve the preparation
+metadata unchanged. `score-history-integrity.json` confirms identical hashes
+for all 48,444 earlier headline and 216,387 earlier pillar records (264,831
+records total). The 31 reviewed historical values outside current live ranges
+remain visible in the quality audit; no live bounds were changed.

@@ -1,0 +1,99 @@
+{
+  "captureStartedAt": "2026-10-28T23:43:44.789Z",
+  "capturedAt": "2026-10-28T23:43:47.219Z",
+  "mode": "READ_ONLY_NO_PRODUCTION_WRITES",
+  "appliedStartedAt": "2026-10-28T23:37:36.764Z",
+  "appliedCompletedAt": "2026-10-28T23:40:21.145Z",
+  "actualBeforeRows": 8294,
+  "actualBeforeSha256": "e266970689dbd9c1106533d9862f011a1495286ebbf5c0507ca52c262d92f487",
+  "postApplyRawRows": 17064,
+  "insertedApprovedKeys": 8770,
+  "approvedSourceKeysVerified": 8770,
+  "mismatches": [],
+  "originalChanges": [],
+  "unexpectedAddedKeys": [],
+  "applyAudits": [
+    {
+      "sourceId": "boe_breakevens:historical",
+      "status": "success",
+      "rows": 1366,
+      "startedAt": "2026-10-28T23:39:10.899Z",
+      "completedAt": "2026-10-28T23:39:34.014Z"
+    },
+    {
+      "sourceId": "boe_fx:historical",
+      "status": "success",
+      "rows": 2732,
+      "startedAt": "2026-10-28T23:38:22.654Z",
+      "completedAt": "2026-10-28T23:39:09.015Z"
+    },
+    {
+      "sourceId": "boe_mortgage_rates:historical",
+      "status": "success",
+      "rows": 65,
+      "startedAt": "2026-10-28T23:39:35.866Z",
+      "completedAt": "2026-10-28T23:39:37.435Z"
+    },
+    {
+      "sourceId": "boe_yields:historical",
+      "status": "success",
+      "rows": 2648,
+      "startedAt": "2026-10-28T23:37:37.536Z",
+      "completedAt": "2026-10-28T23:38:20.615Z"
+    },
+    {
+      "sourceId": "eia_brent:historical",
+      "status": "success",
+      "rows": 1396,
+      "startedAt": "2026-10-28T23:39:56.655Z",
+      "completedAt": "2026-10-28T23:40:18.411Z"
+    },
+    {
+      "sourceId": "mhclg:historical",
+      "status": "success",
+      "rows": 28,
+      "startedAt": "2026-10-28T23:39:54.492Z",
+      "completedAt": "2026-10-28T23:39:55.487Z"
+    },
+    {
+      "sourceId": "ons_lms:historical",
+      "status": "success",
+      "rows": 335,
+      "startedAt": "2026-10-28T23:39:38.813Z",
+      "completedAt": "2026-10-28T23:39:44.799Z"
+    },
+    {
+      "sourceId": "ons_psf:historical",
+      "status": "success",
+      "rows": 134,
+      "startedAt": "2026-10-28T23:39:46.067Z",
+      "completedAt": "2026-10-28T23:39:49.086Z"
+    },
+    {
+      "sourceId": "ons_rti:historical",
+      "status": "success",
+      "rows": 66,
+      "startedAt": "2026-10-28T23:39:51.030Z",
+      "completedAt": "2026-10-28T23:39:52.503Z"
+    }
+  ],
+  "auditCountsVerified": true,
+  "quarantines": 0,
+  "publicScore": {
+    "headline": 36.9,
+    "updatedAt": "2026-10-28T23:41:24.923Z",
+    "pillars": {
+      "market": 34.6,
+      "fiscal": 36.6,
+      "labour": 45.7,
+      "delivery": 31.6
+    },
+    "sourceHealth": [],
+    "cadenceGroups": 18,
+    "greenCadenceGroups": 18,
+    "httpDate": "Wed, 28 Oct 2026 23:43:46 GMT"
+  },
+  "dumpSha256": "502d559a5a64a1cbf405d70936bbdf2eeeb34854218ed43bbc979a98954e5d6b",
+  "publicScoreFileSha256": "d9cdafcc9800500f308e8d525807e53a8ac6e8b66dbc13c8c80c52baab71b5dd",
+  "productionWrites": 0
+}

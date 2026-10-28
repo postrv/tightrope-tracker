@@ -1,0 +1,177 @@
+{
+  "state": "COMPLETE_VERIFIED",
+  "attemptId": "60e74bf5-8502-4a0d-8d9b-1b01b6fdcaf3",
+  "startedAt": "2026-10-28T23:37:36.764Z",
+  "completedAt": "2026-10-28T23:40:21.145Z",
+  "originalRawRows": 8294,
+  "finalRawRows": 17064,
+  "beforeSnapshotFile": "attempt-before-observations.json",
+  "beforeSnapshotSha256": "e266970689dbd9c1106533d9862f011a1495286ebbf5c0507ca52c262d92f487",
+  "beforeSnapshotRows": 8294,
+  "rowsInserted": 8770,
+  "finalScope": {
+    "missing": 0,
+    "alreadyPresent": 8770
+  },
+  "originalKeysWithChangedFields": 0,
+  "changedExisting": [],
+  "results": [
+    {
+      "adapter": "boe_yields",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDMNZC%2CIUDLNZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "fetchedAt": "2026-10-28T23:37:37.790Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 2648,
+      "rowsAttempted": 2648,
+      "rowsWritten": 2648,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-02T16:00:00Z",
+      "latestObservedAt": "2024-03-28T16:00:00Z",
+      "notes": [
+        "Reviewed official current-vintage capture; missing leading reference dates only; overwrite=false; no as-known score reconstruction"
+      ],
+      "dryRun": false
+    },
+    {
+      "adapter": "boe_fx",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=XUDLUSS%2CXUDLBK67&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "fetchedAt": "2026-10-28T23:38:22.896Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 2732,
+      "rowsAttempted": 2732,
+      "rowsWritten": 2732,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-02T16:00:00Z",
+      "latestObservedAt": "2024-05-31T16:00:00Z",
+      "notes": [
+        "Reviewed official current-vintage capture; missing leading reference dates only; overwrite=false; no as-known score reconstruction"
+      ],
+      "dryRun": false
+    },
+    {
+      "adapter": "boe_breakevens",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSIZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "fetchedAt": "2026-10-28T23:39:11.129Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 1366,
+      "rowsAttempted": 1366,
+      "rowsWritten": 1366,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-02T16:00:00Z",
+      "latestObservedAt": "2024-05-31T16:00:00Z",
+      "notes": [
+        "Reviewed official current-vintage capture; missing leading reference dates only; overwrite=false; no as-known score reconstruction"
+      ],
+      "dryRun": false
+    },
+    {
+      "adapter": "boe_mortgage_rates",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUMBV34&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "fetchedAt": "2026-10-28T23:39:36.142Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 65,
+      "rowsAttempted": 65,
+      "rowsWritten": 65,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-31T16:00:00Z",
+      "latestObservedAt": "2024-05-31T16:00:00Z",
+      "notes": [
+        "Reviewed official current-vintage capture; missing leading reference dates only; overwrite=false; no as-known score reconstruction"
+      ],
+      "dryRun": false
+    },
+    {
+      "adapter": "ons_lms",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem/data",
+      "fetchedAt": "2026-10-28T23:39:39.082Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 335,
+      "rowsAttempted": 335,
+      "rowsWritten": 335,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-01T00:00:00Z",
+      "latestObservedAt": "2024-07-01T00:00:00Z",
+      "notes": [
+        "Reviewed official current-vintage capture; missing leading reference dates only; overwrite=false; no as-known score reconstruction"
+      ],
+      "dryRun": false
+    },
+    {
+      "adapter": "ons_psf",
+      "sourceUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf/data",
+      "fetchedAt": "2026-10-28T23:39:46.396Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 134,
+      "rowsAttempted": 134,
+      "rowsWritten": 134,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-01T00:00:00Z",
+      "latestObservedAt": "2024-07-01T00:00:00Z",
+      "notes": [
+        "Reviewed official current-vintage capture; missing leading reference dates only; overwrite=false; no as-known score reconstruction"
+      ],
+      "dryRun": false
+    },
+    {
+      "adapter": "ons_rti",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/k54l/emp/data",
+      "fetchedAt": "2026-10-28T23:39:51.283Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 66,
+      "rowsAttempted": 66,
+      "rowsWritten": 66,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-01T00:00:00Z",
+      "latestObservedAt": "2024-06-01T00:00:00Z",
+      "notes": [
+        "Reviewed official current-vintage capture; missing leading reference dates only; overwrite=false; no as-known score reconstruction"
+      ],
+      "dryRun": false
+    },
+    {
+      "adapter": "mhclg",
+      "sourceUrl": "local:fixtures/housing-history.json",
+      "fetchedAt": "2026-10-28T23:39:54.741Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 28,
+      "rowsAttempted": 28,
+      "rowsWritten": 28,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-03-31T00:00:00Z",
+      "latestObservedAt": "2022-09-30T00:00:00Z",
+      "notes": [
+        "Reviewed official current-vintage capture; missing leading reference dates only; overwrite=false; no as-known score reconstruction"
+      ],
+      "dryRun": false
+    },
+    {
+      "adapter": "eia_brent",
+      "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+      "fetchedAt": "2026-10-28T23:39:56.897Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 1396,
+      "rowsAttempted": 1396,
+      "rowsWritten": 1396,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-02T00:00:00Z",
+      "latestObservedAt": "2024-07-03T00:00:00Z",
+      "notes": [
+        "Reviewed official current-vintage capture; missing leading reference dates only; overwrite=false; no as-known score reconstruction"
+      ],
+      "dryRun": false
+    }
+  ],
+  "candidateSha256": "bad910e7715eeba5e7b47c240a126ea4de0ff276575cd502b83305e214e322a7",
+  "overwrite": false,
+  "scoreHistoryWrites": 0,
+  "note": "Historical inserts use INSERT OR IGNORE; any changed pre-existing fields require review for concurrent live ingestion. Recompute and public coverage disclosure are separate steps."
+}

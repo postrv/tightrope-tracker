@@ -1,0 +1,247 @@
+{
+  "status": "APPLIED_AND_DISCLOSED",
+  "startedAt": "2026-10-28T23:37:36.764Z",
+  "completedAt": "2026-10-28T23:40:21.145Z",
+  "candidateSha256": "bad910e7715eeba5e7b47c240a126ea4de0ff276575cd502b83305e214e322a7",
+  "rowsInserted": 8770,
+  "referenceRows": 8294,
+  "originalRowsVerifiedUnchanged": 8294,
+  "finalRawRows": 17064,
+  "sourceGroups": 9,
+  "registeredInputs": 17,
+  "baselineEligibleAdded": 8375,
+  "covidExcluded": 395,
+  "sourceValuesVerified": 8770,
+  "overwrite": false,
+  "publishedScoreHistoryRewritten": false,
+  "actualBeforeSnapshotFile": "attempt-before-observations.json",
+  "actualBeforeSnapshotSha256": "e266970689dbd9c1106533d9862f011a1495286ebbf5c0507ca52c262d92f487",
+  "actualBeforeSnapshotRows": 8294,
+  "frozenCurrentReadingReplay": {
+    "after": 36.9,
+    "before": 39.4,
+    "beforePillars": {
+      "market": 34.2,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "afterPillars": {
+      "market": 34.6,
+      "fiscal": 36.6,
+      "labour": 45.7,
+      "delivery": 31.6
+    }
+  },
+  "earlierFrozenReplay": {
+    "before": 40.2,
+    "after": 37.6,
+    "beforePillars": {
+      "market": 36,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "afterPillars": {
+      "market": 36.4,
+      "fiscal": 36.6,
+      "labour": 45.7,
+      "delivery": 31.6
+    }
+  },
+  "actualCurrentRecompute": {
+    "headline": 36.9,
+    "updatedAt": "2026-10-28T23:41:24.923Z",
+    "pillars": {
+      "market": 34.6,
+      "fiscal": 36.6,
+      "labour": 45.7,
+      "delivery": 31.6
+    },
+    "stale": false
+  },
+  "rawOutsideLiveBoundsFlags": 31,
+  "reviewedHistoricalRangeFlags": 31,
+  "unreviewedRangeFlags": [],
+  "livePlausibilityBoundsChanged": false,
+  "coverage": [
+    {
+      "indicatorId": "gilt_10y",
+      "eligibleAtReference": 651,
+      "eligibleAfter": 1914,
+      "eligibleAddedByBackfill": 1263,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "gilt_30y",
+      "eligibleAtReference": 651,
+      "eligibleAfter": 1914,
+      "eligibleAddedByBackfill": 1263,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "gbp_usd",
+      "eligibleAtReference": 610,
+      "eligibleAfter": 1915,
+      "eligibleAddedByBackfill": 1305,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "gbp_twi",
+      "eligibleAtReference": 610,
+      "eligibleAfter": 1915,
+      "eligibleAddedByBackfill": 1305,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "breakeven_5y",
+      "eligibleAtReference": 609,
+      "eligibleAfter": 1914,
+      "eligibleAddedByBackfill": 1305,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "mortgage_2y_fix",
+      "eligibleAtReference": 28,
+      "eligibleAfter": 90,
+      "eligibleAddedByBackfill": 62,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "unemployment",
+      "eligibleAtReference": 24,
+      "eligibleAfter": 88,
+      "eligibleAddedByBackfill": 64,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "inactivity_rate",
+      "eligibleAtReference": 24,
+      "eligibleAfter": 88,
+      "eligibleAddedByBackfill": 64,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "inactivity_health",
+      "eligibleAtReference": 24,
+      "eligibleAfter": 88,
+      "eligibleAddedByBackfill": 64,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "real_regular_pay",
+      "eligibleAtReference": 25,
+      "eligibleAfter": 89,
+      "eligibleAddedByBackfill": 64,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "vacancies_per_unemployed",
+      "eligibleAtReference": 24,
+      "eligibleAfter": 88,
+      "eligibleAddedByBackfill": 64,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "borrowing_outturn",
+      "eligibleAtReference": 26,
+      "eligibleAfter": 90,
+      "eligibleAddedByBackfill": 64,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "debt_interest",
+      "eligibleAtReference": 26,
+      "eligibleAfter": 90,
+      "eligibleAddedByBackfill": 64,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "payroll_mom",
+      "eligibleAtReference": 26,
+      "eligibleAfter": 89,
+      "eligibleAddedByBackfill": 63,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "eligibleAtReference": 17,
+      "eligibleAfter": 29,
+      "eligibleAddedByBackfill": 12,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "planning_consents",
+      "eligibleAtReference": 15,
+      "eligibleAfter": 29,
+      "eligibleAddedByBackfill": 14,
+      "otherCanonicalChangeSinceReference": 0
+    },
+    {
+      "indicatorId": "brent_gbp",
+      "eligibleAtReference": 587,
+      "eligibleAfter": 1922,
+      "eligibleAddedByBackfill": 1335,
+      "otherCanonicalChangeSinceReference": 0
+    }
+  ],
+  "sourceVintageNote": "Current-vintage baseline history; ONS revision timestamps are not original publication times. BoE reference times are not publication times. Published historical scores are retained.",
+  "inputSha256": "502d559a5a64a1cbf405d70936bbdf2eeeb34854218ed43bbc979a98954e5d6b",
+  "actualSnapshotFileSha256": "d9cdafcc9800500f308e8d525807e53a8ac6e8b66dbc13c8c80c52baab71b5dd",
+  "disclosureSql": "data/exports/baseline-2019-primary-2026-10-28/resolved-disclosure.sql",
+  "disclosurePublished": true,
+  "nextStep": "Application, recompute, public disclosure and timeline verification are complete.",
+  "disclosurePublicationProof": "disclosure-publication.json",
+  "publishedSql": "published-disclosure.sql",
+  "independentVerification": "post-apply-independent-verification.json",
+  "sourceCapture": "post-apply-D1-dump.json",
+  "sourceCaptureSha256": "502d559a5a64a1cbf405d70936bbdf2eeeb34854218ed43bbc979a98954e5d6b",
+  "originalFieldsIndependentlyCompared": 8294,
+  "originalFieldMismatches": 0,
+  "unexpectedAddedKeys": 0,
+  "scoreHistoryIntegrity": {
+    "file": "data/exports/baseline-2019-primary-2026-10-28/score-history-integrity.json",
+    "fileSha256": "7e49afef7bf0ec1bffac3366af1af9500ed6af1510125f9a522c6e3097836783",
+    "cutoff": "2026-10-28T23:36:28.514Z",
+    "unchanged": true,
+    "headlineRows": 48444,
+    "pillarRows": 216387,
+    "totalRecords": 264831,
+    "headlineSha256": "3fee139f350ea9b746570b51b629545e9062ff14567073f1f5724dbe0d143c1b",
+    "pillarSha256": "b59c077e217ec284fa0227eae9cb8db029ca279de928d4de7347357f20629f77"
+  },
+  "disclosureSqlSha256": "e3eddd9dc38c96ad537256d0b6e7a26e840f795bc3701289f6db021d8eb96765",
+  "disclosureVerifiedAt": "2026-10-28T23:46:47.360Z",
+  "correctionPublishedAt": "2026-10-28T23:40:21.145Z",
+  "timelineEventAt": "2026-10-28T23:37:36.764Z",
+  "disclosurePublicationProofSha256": "25a7784c6363f5e8bfc8b7ed33c4ca135326e82472359a472db1908387a27413",
+  "publishedSqlSha256": "e3eddd9dc38c96ad537256d0b6e7a26e840f795bc3701289f6db021d8eb96765",
+  "resolvedSqlMatchesExecuted": true,
+  "finalLiveHealth": {
+    "file": "data/exports/baseline-2019-primary-2026-10-28/post-baseline-live-health-2026-10-28T23-47.json",
+    "fileSha256": "d6bb95cb1d96017df76398a9060b1a370e1e7475d3a24821837a5d164433c989",
+    "checkedAt": "2026-10-28T23:47:46.026Z",
+    "headline": 36.9,
+    "headlineUpdatedAt": "2026-10-28T23:45:27.237Z",
+    "registeredInputs": 31,
+    "scoreInputs": 31,
+    "budgetInputs": 31,
+    "rawRows": 17064,
+    "sourceHealth": [],
+    "activeQuarantines": 0,
+    "cadenceGroups": 18,
+    "greenCadenceGroups": 18,
+    "cacheConsistency": {
+      "publicSnapshotAt": "2026-10-28T23:45:27.237Z",
+      "kvSnapshotAt": "2026-10-28T23:45:27.237Z",
+      "d1SnapshotAt": "2026-10-28T23:45:27.237Z",
+      "budgetSnapshotAt": "2026-10-28T23:45:27.237Z"
+    },
+    "immutableBudgetReferenceSha256": "c3f1296572141f1bcd5ae5ad7ec3593530d52c39f63159159f222ac92a00d614",
+    "immutableBudgetReferenceVerified": true,
+    "budgetScoreComparable": false,
+    "budgetScoreDelta": null,
+    "findings": [],
+    "baselineProposalApplied": true
+  }
+}

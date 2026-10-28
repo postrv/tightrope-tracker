@@ -1,0 +1,35 @@
+{
+  "cutoff": "2026-10-28T23:36:28.514Z",
+  "before": {
+    "headline_scores": {
+      "rows": 48444,
+      "sha256": "3fee139f350ea9b746570b51b629545e9062ff14567073f1f5724dbe0d143c1b"
+    },
+    "pillar_scores": {
+      "rows": 216387,
+      "sha256": "b59c077e217ec284fa0227eae9cb8db029ca279de928d4de7347357f20629f77"
+    }
+  },
+  "beforeHeadline": {
+    "value": 39.4,
+    "updatedAt": "2026-10-28T23:35:27.119Z",
+    "pillars": {
+      "market": 34.2,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    }
+  },
+  "verifiedAt": "2026-10-28T23:41:49.427Z",
+  "after": {
+    "headline_scores": {
+      "rows": 48444,
+      "sha256": "3fee139f350ea9b746570b51b629545e9062ff14567073f1f5724dbe0d143c1b"
+    },
+    "pillar_scores": {
+      "rows": 216387,
+      "sha256": "b59c077e217ec284fa0227eae9cb8db029ca279de928d4de7347357f20629f77"
+    }
+  },
+  "unchanged": true
+}

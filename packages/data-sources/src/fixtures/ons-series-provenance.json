@@ -1,0 +1,602 @@
+{
+  "verifiedOn": "2026-10-28",
+  "publisher": "Office for National Statistics",
+  "license": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "captureNotes": [
+    "Primary ONS search and /data responses retrieved during the 28 October 2026 source audit. SHA-256 values identify the complete original UTF-8 response bodies; this fixture retains only selected metadata and unmodified source rows.",
+    "The replay uses these excerpts, so its payload hashes describe the excerpts, not the full upstream bodies. The original full-response hashes are provenance only.",
+    "ONS releaseDate/updateDate values are retained verbatim. Their midnight-local-time representation is not evidence of the actual intraday release time.",
+    "For MGSX, LF2S, LF69, MGSC and AP2Y the date is the centre month of a three-month average (see each row label). A3WW uses the ending month of its three-month pay-growth interval.",
+    "Scoring directions are project choices; ONS metadata establishes the measured concept, unit and sign, not a causal interpretation or economic judgment."
+  ],
+  "supportingSources": {
+    "realPayDefinition": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/averageweeklyearningsingreatbritain/october2026",
+    "borrowingSignCrossCheck": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/bulletins/publicsectorfinances/september2026"
+  },
+  "series": [
+    {
+      "cdid": "MGSX",
+      "dataset": "LMS",
+      "indicatorId": "unemployment",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms",
+      "dataUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms/data",
+      "searchUrl": "https://api.beta.ons.gov.uk/v1/search?content_type=timeseries&cdids=MGSX",
+      "originalSearchResponseSha256": "862c802de95b27dcb1bca962aa51ac297a195c48ab19098ad1cef055af2a78df",
+      "originalDataResponseSha256": "40fc03537a940c9cef14463bc167c6e4d841ad6d9396ea32ca15b0ec229aaa42",
+      "excerptDataSha256": "e28483c2cdedccd3aea1b0806405007d335e8e034dd8cba9ac9fcf7d3ef84d54",
+      "interpretation": "Seasonally adjusted unemployment rate, ages 16+, percent of the economically active population; retain the reported percent.",
+      "search": {
+        "items": [
+          {
+            "cdid": "MGSX",
+            "dataset_id": "LMS",
+            "title": "Unemployment rate (aged 16 and over, seasonally adjusted): %",
+            "uri": "/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms"
+          }
+        ]
+      },
+      "data": {
+        "description": {
+          "title": "Unemployment rate (aged 16 and over, seasonally adjusted): %",
+          "datasetId": "LMS",
+          "cdid": "MGSX",
+          "unit": "%",
+          "preUnit": "",
+          "monthLabelStyle": "three month average",
+          "releaseDate": "2026-10-19T23:00:00.000Z",
+          "nextRelease": "17 November 2026",
+          "date": "2026 JUL",
+          "number": "4.7"
+        },
+        "months": [
+          {
+            "date": "2026 JUN",
+            "value": "4.9",
+            "label": "2026 MAY-JUL",
+            "year": "2026",
+            "month": "June",
+            "quarter": "",
+            "sourceDataset": "LMS",
+            "updateDate": "2026-09-14T23:00:00.000Z"
+          },
+          {
+            "date": "2026 JUL",
+            "value": "4.7",
+            "label": "2026 JUN-AUG",
+            "year": "2026",
+            "month": "July",
+            "quarter": "",
+            "sourceDataset": "LMS",
+            "updateDate": "2026-10-19T23:00:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "cdid": "LF2S",
+      "dataset": "LMS",
+      "indicatorId": "inactivity_rate",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/economicinactivity/timeseries/lf2s/lms",
+      "dataUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/economicinactivity/timeseries/lf2s/lms/data",
+      "searchUrl": "https://api.beta.ons.gov.uk/v1/search?content_type=timeseries&cdids=LF2S",
+      "originalSearchResponseSha256": "ebf13e4a909c278df6d75ce913439cfaa11eb333e5200a1f4a3b4a8f23153a4a",
+      "originalDataResponseSha256": "dff86605f7fe56673a09bb0561b5f436093470b1565d324997b42de5747efea6",
+      "excerptDataSha256": "048f49172e4b6c6383d34c8db5ae279477cfb447adcc4445dc92f93777bb6790",
+      "interpretation": "Seasonally adjusted economic inactivity rate, ages 16–64, percent of the population; retain the reported percent.",
+      "search": {
+        "items": [
+          {
+            "cdid": "LF2S",
+            "dataset_id": "LMS",
+            "title": "LFS: Economic inactivity rate: UK: All: Aged 16-64: %: SA",
+            "uri": "/employmentandlabourmarket/peoplenotinwork/economicinactivity/timeseries/lf2s/lms"
+          }
+        ]
+      },
+      "data": {
+        "description": {
+          "title": "LFS: Economic inactivity rate: UK: All: Aged 16-64: %: SA",
+          "datasetId": "LMS",
+          "cdid": "LF2S",
+          "unit": "%",
+          "preUnit": "",
+          "monthLabelStyle": "three month average",
+          "releaseDate": "2026-10-19T23:00:00.000Z",
+          "nextRelease": "17 November 2026",
+          "date": "2026 JUL",
+          "number": "20.9"
+        },
+        "months": [
+          {
+            "date": "2026 JUN",
+            "value": "20.9",
+            "label": "2026 MAY-JUL",
+            "year": "2026",
+            "month": "June",
+            "quarter": "",
+            "sourceDataset": "LMS",
+            "updateDate": "2026-09-14T23:00:00.000Z"
+          },
+          {
+            "date": "2026 JUL",
+            "value": "20.9",
+            "label": "2026 JUN-AUG",
+            "year": "2026",
+            "month": "July",
+            "quarter": "",
+            "sourceDataset": "LMS",
+            "updateDate": "2026-10-19T23:00:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "cdid": "LF69",
+      "dataset": "LMS",
+      "indicatorId": "inactivity_health",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/economicinactivity/timeseries/lf69/lms",
+      "dataUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/economicinactivity/timeseries/lf69/lms/data",
+      "searchUrl": "https://api.beta.ons.gov.uk/v1/search?content_type=timeseries&cdids=LF69",
+      "originalSearchResponseSha256": "f2f3dc8afca09c2b23e65ebd0f78e1744a9149d8f990a72d19bc02272939599d",
+      "originalDataResponseSha256": "e1fdfd0b242ea7075ff65851ff02dd03516f136ff4291d19dc97e5f89307e6f5",
+      "excerptDataSha256": "ff3cbac75a45d48c98bb99b59b8a638362eb45a156ae0369226983a9103ab88d",
+      "interpretation": "Seasonally adjusted long-term-sick economically inactive people, ages 16–64; raw thousands divided by 1000 gives millions.",
+      "search": {
+        "items": [
+          {
+            "cdid": "LF69",
+            "dataset_id": "LMS",
+            "title": "LFS: Econ. inactivity reasons: Long Term Sick: UK: 16-64:000s:SA",
+            "uri": "/employmentandlabourmarket/peoplenotinwork/economicinactivity/timeseries/lf69/lms"
+          }
+        ]
+      },
+      "data": {
+        "description": {
+          "title": "LFS: Econ. inactivity reasons: Long Term Sick: UK: 16-64:000s:SA",
+          "datasetId": "LMS",
+          "cdid": "LF69",
+          "unit": "",
+          "preUnit": "",
+          "monthLabelStyle": "three month average",
+          "releaseDate": "2026-10-19T23:00:00.000Z",
+          "nextRelease": "17 November 2026",
+          "date": "2026 JUL",
+          "number": "2738"
+        },
+        "months": [
+          {
+            "date": "2026 JUN",
+            "value": "2780",
+            "label": "2026 MAY-JUL",
+            "year": "2026",
+            "month": "June",
+            "quarter": "",
+            "sourceDataset": "LMS",
+            "updateDate": "2026-09-14T23:00:00.000Z"
+          },
+          {
+            "date": "2026 JUL",
+            "value": "2738",
+            "label": "2026 JUN-AUG",
+            "year": "2026",
+            "month": "July",
+            "quarter": "",
+            "sourceDataset": "LMS",
+            "updateDate": "2026-10-19T23:00:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "cdid": "AP2Y",
+      "dataset": "UNEM",
+      "indicatorId": "vacancies_per_unemployed",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem",
+      "dataUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem/data",
+      "searchUrl": "https://api.beta.ons.gov.uk/v1/search?content_type=timeseries&cdids=AP2Y",
+      "originalSearchResponseSha256": "5284f5aa2c70a11d7e2232bfdfac56c6bd30f1b4e0829c9e96dbd1c560a3008c",
+      "originalDataResponseSha256": "762784791cca105539ba65c30ad3e91bb82a2c7708df5fe1abe7e25ac16dd958",
+      "excerptDataSha256": "fff269cc590e84e201233cadb7b35c3fd1e33618300d7c1e5a05daaf4cf985de",
+      "interpretation": "Vacancies in thousands; divide by MGSC unemployed people in thousands for the same three-month reference interval. The thousands cancel.",
+      "search": {
+        "items": [
+          {
+            "cdid": "AP2Y",
+            "dataset_id": "LMS",
+            "title": "UK Vacancies (thousands) - Total",
+            "uri": "/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/lms"
+          },
+          {
+            "cdid": "AP2Y",
+            "dataset_id": "UNEM",
+            "title": "UK Vacancies (thousands) - Total",
+            "uri": "/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem"
+          }
+        ]
+      },
+      "data": {
+        "description": {
+          "title": "UK Vacancies (thousands) - Total",
+          "datasetId": "UNEM",
+          "cdid": "AP2Y",
+          "unit": "",
+          "preUnit": "",
+          "monthLabelStyle": "three month average",
+          "releaseDate": "2026-10-19T23:00:00.000Z",
+          "nextRelease": "17 November 2026",
+          "date": "2026 AUG",
+          "number": "691"
+        },
+        "months": [
+          {
+            "date": "2026 JUL",
+            "value": "704",
+            "label": "2026 JUN-AUG",
+            "year": "2026",
+            "month": "July",
+            "quarter": "",
+            "sourceDataset": "UNEM",
+            "updateDate": "2026-10-19T23:00:00.000Z"
+          },
+          {
+            "date": "2026 AUG",
+            "value": "691",
+            "label": "2026 JUL-SEP",
+            "year": "2026",
+            "month": "August",
+            "quarter": "",
+            "sourceDataset": "UNEM",
+            "updateDate": "2026-10-19T23:00:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "cdid": "MGSC",
+      "dataset": "LMS",
+      "indicatorId": "vacancies_per_unemployed",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsc/lms",
+      "dataUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsc/lms/data",
+      "searchUrl": "https://api.beta.ons.gov.uk/v1/search?content_type=timeseries&cdids=MGSC",
+      "originalSearchResponseSha256": "1ab6f4cf73dca2658e51eed81291b54cc844bc52037afcd65b602d98c7cecb65",
+      "originalDataResponseSha256": "af8da2c77cd4366ed67049d999e25c7a9e5189dc91a74985e9796c0adebdee37",
+      "excerptDataSha256": "7fd4506eb6360bcc86cfa3d75afe7ed6e05fab7af0ae797dedcc08e36627f5e7",
+      "interpretation": "Seasonally adjusted unemployed people aged 16+ in thousands; denominator for AP2Y/MGSC, not the unemployment rate MGSX.",
+      "search": {
+        "items": [
+          {
+            "cdid": "MGSC",
+            "dataset_id": "LMS",
+            "title": "LFS: Unemployed: UK: All: Aged 16+: 000s: SA: Annual = 4 quarter average",
+            "uri": "/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsc/lms"
+          },
+          {
+            "cdid": "MGSC",
+            "dataset_id": "UNEM",
+            "title": "LFS: Unemployed: UK: All: Aged 16+: 000s: SA: Annual = 4 quarter average",
+            "uri": "/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsc/unem"
+          },
+          {
+            "cdid": "MGSC",
+            "dataset_id": "BB",
+            "title": "LFS: Unemployed: UK: All: Aged 16+: 000s: SA: Annual = 4 quarter average",
+            "uri": "/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsc/bb"
+          }
+        ]
+      },
+      "data": {
+        "description": {
+          "title": "LFS: Unemployed: UK: All: Aged 16+: 000s: SA: Annual = 4 quarter average",
+          "datasetId": "LMS",
+          "cdid": "MGSC",
+          "unit": "000's",
+          "preUnit": "",
+          "monthLabelStyle": "three month average",
+          "releaseDate": "2026-10-19T23:00:00.000Z",
+          "nextRelease": "17 November 2026",
+          "date": "2026 JUL",
+          "number": "1712"
+        },
+        "months": [
+          {
+            "date": "2026 JUN",
+            "value": "1778",
+            "label": "2026 MAY-JUL",
+            "year": "2026",
+            "month": "June",
+            "quarter": "",
+            "sourceDataset": "LMS",
+            "updateDate": "2026-09-14T23:00:00.000Z"
+          },
+          {
+            "date": "2026 JUL",
+            "value": "1712",
+            "label": "2026 JUN-AUG",
+            "year": "2026",
+            "month": "July",
+            "quarter": "",
+            "sourceDataset": "LMS",
+            "updateDate": "2026-10-19T23:00:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "cdid": "A3WW",
+      "dataset": "EMP",
+      "indicatorId": "real_regular_pay",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/a3ww/emp",
+      "dataUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/a3ww/emp/data",
+      "searchUrl": "https://api.beta.ons.gov.uk/v1/search?content_type=timeseries&cdids=A3WW",
+      "originalSearchResponseSha256": "e7aa7a98c89cae1886d064213561c33541651291db548d6912e4e0399d715447",
+      "originalDataResponseSha256": "c2a0ec2f7c9c730f2454e8c7503f99c5a000961d36f98aee8cba5396fe3cc7fa",
+      "excerptDataSha256": "28d0b446bdb20b8c0738ea5b3651805176bc1b367acbbce3f9a25873267d3bd9",
+      "interpretation": "CPIH-adjusted total pay including bonuses, seasonally adjusted year-on-year growth in the three-month average; retain percent. The legacy indicator ID does not change the source definition.",
+      "search": {
+        "items": [
+          {
+            "cdid": "A3WW",
+            "dataset_id": "EMP",
+            "title": "AWE: Whole Economy Real Terms Year on Year Three Month Growth (%): Seasonally Adjusted Total Pay",
+            "uri": "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/a3ww/emp"
+          },
+          {
+            "cdid": "A3WW",
+            "dataset_id": "LMS",
+            "title": "AWE: Whole Economy Real Terms Year on Year Three Month Growth (%): Seasonally Adjusted Total Pay",
+            "uri": "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/a3ww/lms"
+          }
+        ]
+      },
+      "data": {
+        "description": {
+          "title": "AWE: Whole Economy Real Terms Year on Year Three Month Growth (%): Seasonally Adjusted Total Pay",
+          "datasetId": "EMP",
+          "cdid": "A3WW",
+          "unit": "",
+          "preUnit": "",
+          "releaseDate": "2026-10-19T23:00:00.000Z",
+          "nextRelease": "17 November 2026",
+          "date": "2026 AUG",
+          "number": "0.7"
+        },
+        "months": [
+          {
+            "date": "2026 JUL",
+            "value": "1.0",
+            "label": "2026 JUL",
+            "year": "2026",
+            "month": "July",
+            "quarter": "",
+            "sourceDataset": "EMP",
+            "updateDate": "2026-10-19T23:00:00.000Z"
+          },
+          {
+            "date": "2026 AUG",
+            "value": "0.7",
+            "label": "2026 AUG",
+            "year": "2026",
+            "month": "August",
+            "quarter": "",
+            "sourceDataset": "EMP",
+            "updateDate": "2026-10-19T23:00:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "cdid": "K54L",
+      "dataset": "EMP",
+      "indicatorId": "payroll_mom",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/k54l/emp",
+      "dataUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/k54l/emp/data",
+      "searchUrl": "https://api.beta.ons.gov.uk/v1/search?content_type=timeseries&cdids=K54L",
+      "originalSearchResponseSha256": "8b9721f5e5a02e576ff0cc594829cb27bf9be950d5ff83c3af78f6c11246d20d",
+      "originalDataResponseSha256": "efb5ac0ee0bca90babecb0a4c80626a4e639194dddd35c42157a4d0c8b5d2036",
+      "excerptDataSha256": "5013698cf286251a55c0e3209b53218123b39d841bd631912279c047b74c1e85",
+      "interpretation": "Nominal whole-economy regular-pay index, seasonally adjusted, excluding arrears; annual 2000=100, not 2015=100, a payroll count, or a monthly percentage change.",
+      "search": {
+        "items": [
+          {
+            "cdid": "K54L",
+            "dataset_id": "EMP",
+            "title": "AWE: Whole Economy Index: Seasonally Adjusted Regular Pay Excluding Arrears",
+            "uri": "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/k54l/emp"
+          }
+        ]
+      },
+      "data": {
+        "description": {
+          "title": "AWE: Whole Economy Index: Seasonally Adjusted Regular Pay Excluding Arrears",
+          "datasetId": "EMP",
+          "cdid": "K54L",
+          "unit": "",
+          "preUnit": "",
+          "releaseDate": "2026-10-19T23:00:00.000Z",
+          "nextRelease": "17 November 2026",
+          "date": "2026 AUG",
+          "number": "238.3"
+        },
+        "months": [
+          {
+            "date": "2026 JUL",
+            "value": "237.9",
+            "label": "2026 JUL",
+            "year": "2026",
+            "month": "July",
+            "quarter": "",
+            "sourceDataset": "EMP",
+            "updateDate": "2026-10-19T23:00:00.000Z"
+          },
+          {
+            "date": "2026 AUG",
+            "value": "238.3",
+            "label": "2026 AUG",
+            "year": "2026",
+            "month": "August",
+            "quarter": "",
+            "sourceDataset": "EMP",
+            "updateDate": "2026-10-19T23:00:00.000Z"
+          }
+        ],
+        "years": [
+          {
+            "date": "2000",
+            "value": "100.0",
+            "label": "2000",
+            "year": "2000",
+            "month": "",
+            "quarter": "",
+            "sourceDataset": "EMP",
+            "updateDate": "2015-10-13T23:00:00.000Z"
+          },
+          {
+            "date": "2015",
+            "value": "152.7",
+            "label": "2015",
+            "year": "2015",
+            "month": "",
+            "quarter": "",
+            "sourceDataset": "EMP",
+            "updateDate": "2019-01-22T00:00:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "cdid": "J5II",
+      "dataset": "PUSF",
+      "indicatorId": "borrowing_outturn",
+      "sourceUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf",
+      "dataUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf/data",
+      "searchUrl": "https://api.beta.ons.gov.uk/v1/search?content_type=timeseries&cdids=J5II",
+      "originalSearchResponseSha256": "d22bf4887fbf85a039d93a5c8fa8dc3771e14c1161f3ff00109ce142b423c6b5",
+      "originalDataResponseSha256": "7c67f94e7780369ed9dab6342d1b3370f86e5bd2eed8aa5d6f5e94e67067dd3b",
+      "excerptDataSha256": "016acbe0893883d4dfcf3b90a4e9c30db2b35668fee626749b51b3f8ae3838a6",
+      "interpretation": "Current-price, non-seasonally-adjusted public-sector net borrowing excluding banks, raw £m. The raw sign is negative for borrowing; multiply by -1/1000 to store positive borrowing in £bn. Surpluses remain negative.",
+      "search": {
+        "items": [
+          {
+            "cdid": "J5II",
+            "dataset_id": "PUSF",
+            "title": "PS: Net Borrowing (excluding public sector banks): £m: CPNSA",
+            "uri": "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf"
+          }
+        ]
+      },
+      "data": {
+        "description": {
+          "title": "PS: Net Borrowing (excluding public sector banks): £m: CPNSA",
+          "datasetId": "PUSF",
+          "cdid": "J5II",
+          "unit": "m",
+          "preUnit": "£",
+          "releaseDate": "2026-10-20T23:00:00.000Z",
+          "nextRelease": "20 November 2026",
+          "date": "2026 SEP",
+          "number": "-24520"
+        },
+        "months": [
+          {
+            "date": "2026 JAN",
+            "value": "31960",
+            "label": "2026 JAN",
+            "year": "2026",
+            "month": "January",
+            "quarter": "",
+            "sourceDataset": "PUSF",
+            "updateDate": "2026-10-20T23:00:00.000Z"
+          },
+          {
+            "date": "2026 AUG",
+            "value": "-17252",
+            "label": "2026 AUG",
+            "year": "2026",
+            "month": "August",
+            "quarter": "",
+            "sourceDataset": "PUSF",
+            "updateDate": "2026-10-20T23:00:00.000Z"
+          },
+          {
+            "date": "2026 SEP",
+            "value": "-24520",
+            "label": "2026 SEP",
+            "year": "2026",
+            "month": "September",
+            "quarter": "",
+            "sourceDataset": "PUSF",
+            "updateDate": "2026-10-20T23:00:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "cdid": "NMFX",
+      "dataset": "PUSF",
+      "indicatorId": "debt_interest",
+      "sourceUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf",
+      "dataUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf/data",
+      "searchUrl": "https://api.beta.ons.gov.uk/v1/search?content_type=timeseries&cdids=NMFX",
+      "originalSearchResponseSha256": "6ad35b9b62a644fc3fcb3291b66478b55c5b56771f211a6f945dade10a0ceefd",
+      "originalDataResponseSha256": "56e3bf137fbb764fb5ea198af5644816c5e7da756e1b818631a8b2aafd9dc620",
+      "excerptDataSha256": "5744146ffe9998ef0d70228713d8d0a4b4b09447b0c848e2a1236f4f7f9ca8aa",
+      "interpretation": "Current-price, non-seasonally-adjusted central-government net interest payable, raw £m divided by 1000 to £bn without a sign flip. This is central-government net interest, not gross all-public-sector debt interest.",
+      "search": {
+        "items": [
+          {
+            "cdid": "NMFX",
+            "dataset_id": "PUSF",
+            "title": "CG: Current expenditure: Net Interest payable: £m CPNSA",
+            "uri": "/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf"
+          }
+        ]
+      },
+      "data": {
+        "description": {
+          "title": "CG: Current expenditure: Net Interest payable: £m CPNSA",
+          "datasetId": "PUSF",
+          "cdid": "NMFX",
+          "unit": "m",
+          "preUnit": "£",
+          "releaseDate": "2026-10-20T23:00:00.000Z",
+          "nextRelease": "20 November 2026",
+          "date": "2026 SEP",
+          "number": "10933"
+        },
+        "months": [
+          {
+            "date": "2026 JAN",
+            "value": "1502",
+            "label": "2026 JAN",
+            "year": "2026",
+            "month": "January",
+            "quarter": "",
+            "sourceDataset": "PUSF",
+            "updateDate": "2026-09-21T23:00:00.000Z"
+          },
+          {
+            "date": "2026 AUG",
+            "value": "8883",
+            "label": "2026 AUG",
+            "year": "2026",
+            "month": "August",
+            "quarter": "",
+            "sourceDataset": "PUSF",
+            "updateDate": "2026-10-20T23:00:00.000Z"
+          },
+          {
+            "date": "2026 SEP",
+            "value": "10933",
+            "label": "2026 SEP",
+            "year": "2026",
+            "month": "September",
+            "quarter": "",
+            "sourceDataset": "PUSF",
+            "updateDate": "2026-10-20T23:00:00.000Z"
+          }
+        ]
+      }
+    }
+  ]
+}

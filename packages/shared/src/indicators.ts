@@ -256,7 +256,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   gbp_twi: {
     id: "gbp_twi", pillar: "market", label: "GBP trade-weighted index", shortLabel: "GBP TWI",
     unit: "index", weight: 0.07, risingIsBad: false, sourceId: "boe_fx",
-    description: "Broad effective exchange rate index for sterling.", formatDisplay: fmtIndex(2),
+    description: "Sterling effective exchange rate index (BoE XUDLBK67, January 2005 = 100). This is the standard index; the separate broad index is XUDLBK82.", formatDisplay: fmtIndex(2),
     provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
   },
@@ -273,7 +273,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   breakeven_5y: {
     id: "breakeven_5y", pillar: "market", label: "5y breakeven inflation", shortLabel: "5y BE",
     unit: "%", weight: 0.12, risingIsBad: true, sourceId: "boe_yields",
-    description: "5y nominal minus 5y real gilt yield -- market-implied CPI/RPI 5y ahead, a direct proxy for OBR's CPI inflation path over the forecast horizon.",
+    description: "BoE five-year inflation zero-coupon rate (IUDSIZC): average RPI-linked gilt-market inflation compensation over the next five years. Includes risk and liquidity premia; it is not a pure CPI forecast.",
     formatDisplay: fmtBp,
     provenance: "live",
     maxStaleMs: STALE_DAILY_MS,
@@ -290,7 +290,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   housebuilder_idx: {
     id: "housebuilder_idx", pillar: "market", label: "UK housebuilder composite", shortLabel: "Housebuilders",
     unit: "index", weight: 0.08, risingIsBad: false, sourceId: "eodhd_housebuilders",
-    description: "Equal-weighted price index of the five largest listed UK housebuilders (rebased 100 = 2019 avg) -- leads OBR's residential investment and construction GVA lines by 3-6 months. Pulled from EODHD's daily EOD feed; falls back to a weekly editorial fixture if the EODHD free-tier daily quota is exhausted.",
+    description: "Equal-weighted price index of five listed UK housebuilders, rebased to their 2019 average. Completed-session closes come from EODHD. When the feed is unavailable or lacks a common completed session, ingestion retains the last verified reading and reports degraded source health.",
     formatDisplay: fmtIndex(1),
     provenance: "live-fallback",
     maxStaleMs: STALE_DAILY_MS,
@@ -306,7 +306,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   consumer_confidence: {
     id: "consumer_confidence", pillar: "market", label: "GfK consumer confidence", shortLabel: "Cons. conf.",
     unit: "index", weight: 0.04, risingIsBad: false, sourceId: "gfk_confidence",
-    description: "GfK/NIESR consumer confidence headline index -- leading signal for household-consumption growth, the largest single expenditure line in OBR's GDP decomposition.",
+    description: "GfK Consumer Confidence Barometer headline index, jointly published by GfK and NIM through NielsenIQ's news centre. A signed monthly survey of household sentiment, not a measured change in consumption.",
     formatDisplay: fmtIndex(0),
     provenance: "fixture",
     maxStaleMs: STALE_MONTHLY_FIXTURE_MS,
@@ -332,8 +332,8 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   psnfl_trajectory: {
     id: "psnfl_trajectory", pillar: "fiscal", label: "PSNFL trajectory deviation (forecast)", shortLabel: "PSNFL dev",
     unit: "pp", weight: 0.15, risingIsBad: true, sourceId: "obr_efo",
-    description: "OBR forecast: deviation of PSNFL path from OBR baseline, percentage points of GDP.",
-    formatDisplay: fmtPct(2),
+    description: "PSNFL forecast-path deviation from its baseline, in percentage points of GDP. The retained forecast vintages use their own baseline, so this input is currently zero; it does not report the debt-rule margin or the year-on-year change in PSNFL.",
+    formatDisplay: (v) => `${v.toFixed(2)} pp`,
     provenance: "fixture",
     maxStaleMs: STALE_OBR_SEMIANNUAL_MS,
   },
@@ -417,7 +417,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     // displayed unit/format now match what the number actually is.
     id: "payroll_mom", pillar: "labour", label: "AWE regular pay index", shortLabel: "Regular pay",
     unit: "index", weight: 0.10, risingIsBad: false, sourceId: "ons_rti",
-    description: "Average Weekly Earnings -- whole economy regular-pay index (2015=100, SA, excl. arrears). Rising means earnings are growing.",
+    description: "Average Weekly Earnings -- whole economy regular-pay index (ONS K54L, 2000=100, seasonally adjusted, excluding arrears). Rising means nominal earnings are growing; this is an index level, not a payroll count.",
     formatDisplay: fmtIndex(1),
     provenance: "live",
     // K54L is published mid-month for the data two months prior, so the
@@ -428,19 +428,19 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     maxStaleMs: STALE_ONS_LMS_MS,
   },
   real_regular_pay: {
-    id: "real_regular_pay", pillar: "labour", label: "Real regular pay growth, YoY", shortLabel: "Real pay",
+    id: "real_regular_pay", pillar: "labour", label: "Real total pay growth, YoY", shortLabel: "Real pay",
     unit: "%", weight: 0.10, risingIsBad: false, sourceId: "ons_lms",
-    description: "CPIH-adjusted regular pay, year-on-year.", formatDisplay: fmtPct(1),
+    description: "ONS A3WW: CPIH-adjusted total pay including bonuses, seasonally adjusted, year-on-year growth in the three-month average. Legacy indicator ID real_regular_pay is retained for continuity.", formatDisplay: fmtPct(1),
     provenance: "live",
     maxStaleMs: STALE_ONS_LMS_MS,
   },
   mortgage_2y_fix: {
-    id: "mortgage_2y_fix", pillar: "labour", label: "Effective 2y fix mortgage rate", shortLabel: "2y fix",
+    id: "mortgage_2y_fix", pillar: "labour", label: "Quoted 2y fix mortgage rate", shortLabel: "2y fix",
     unit: "%", weight: 0.12, risingIsBad: true, sourceId: "boe_mortgage_rates",
-    description: "BoE IADB IUMBV34: monthly effective rate on new fixed-rate 2-year mortgages to households at 75% LTV. The canonical economist's reference (interest income ÷ balance, not advertised front-book rate).",
+    description: "BoE IADB IUMBV34: quoted 2-year fixed mortgage rate for households at 75% loan-to-value, published monthly. This measures quoted product rates, not effective interest paid on outstanding balances.",
     formatDisplay: fmtPct(2),
     provenance: "live",
-    // BoE IUMBV34 prints monthly with ~3-week lag — match the RTI window.
+    // BoE IUMBV34 is a monthly quoted-rate series; retain the monthly window.
     maxStaleMs: STALE_RTI_MONTHLY_MS,
   },
   dd_failure_rate: {
@@ -455,9 +455,9 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
 
   // Growth Delivery (10%) -- inverted
   housing_trajectory: {
-    id: "housing_trajectory", pillar: "delivery", label: "Net housing additions vs. trajectory", shortLabel: "Housing",
+    id: "housing_trajectory", pillar: "delivery", label: "Annualised new-build completions vs. benchmark", shortLabel: "Housing",
     unit: "%", weight: 0.25, risingIsBad: false, sourceId: "mhclg",
-    description: "Latest net additions as % of OBR trajectory for the year.", formatDisplay: fmtPct(1),
+    description: "Quarterly seasonally adjusted new-build dwelling completions in England, annualised by multiplying by four, as a percentage of the tracker's fixed 300,000-homes annual benchmark. This is not net additional dwellings or an OBR forecast.", formatDisplay: fmtPct(1),
     provenance: "fixture",
     maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
@@ -564,7 +564,7 @@ export const SOURCES: Record<string, DataSource> = {
     id: "boe_breakevens", name: "Bank of England -- 5y breakeven inflation",
     homepage: "https://www.bankofengland.co.uk/boeapps/database/",
     endpoint: "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp",
-    notes: "Derived from the IADB CSV endpoint (IUDSNZC/IUDSIZC). Emits 5y breakeven inflation (nominal minus real).",
+    notes: "Direct IADB series IUDSIZC: five-year inflation zero-coupon rate. RPI-linked gilt inflation compensation, including risk and liquidity premia. IUDSIZC is already an inflation series; IUDSRZC is the real-yield series.",
     expectedCadence: "trading-daily", graceDays: 7,
   },
   lseg: {
@@ -601,9 +601,9 @@ export const SOURCES: Record<string, DataSource> = {
     expectedCadence: "monthly", graceDays: 45,
   },
   gfk_confidence: {
-    id: "gfk_confidence", name: "GfK / NIESR -- Consumer Confidence Barometer",
-    homepage: "https://www.niesr.ac.uk/our-work/consumer-confidence",
-    notes: "Transferred from GfK to NIESR in 2025. Headline index published monthly as a press release; sub-indices are subscription-gated. Fixture-backed, headline-only.",
+    id: "gfk_confidence", name: "GfK / NIM -- Consumer Confidence Barometer (NIQ)",
+    homepage: "https://nielseniq.com/global/en/news-center/",
+    notes: "GfK Consumer Confidence Barometer powered by NIM, published jointly by GfK and the Nuremberg Institute for Market Decisions since October 2023. NielsenIQ's news centre hosts the releases. The fixture retains the monthly public headline and release URL; this is not a NIESR series.",
     // Monthly, ~month-end; same fixture-mirror lag as the PMI.
     expectedCadence: "monthly", graceDays: 45,
   },
@@ -659,8 +659,8 @@ export const SOURCES: Record<string, DataSource> = {
     id: "boe_mortgage_rates", name: "Bank of England -- 2y fix mortgage rate (IUMBV34)",
     homepage: "https://www.bankofengland.co.uk/boeapps/database/",
     endpoint: "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp",
-    notes: "IADB IUMBV34: monthly effective rate on new fixed-rate 2-year mortgages to households at 75% LTV. Replaced the retired Moneyfacts fixture in 2026-04.",
-    // Monthly effective-rate print with ~3-week lag; matches STALE_RTI_MONTHLY_MS.
+    notes: "IADB IUMBV34: monthly quoted 2-year fixed mortgage rate for households at 75% LTV. This belongs to BoE quoted household interest rates, not effective rates. Replaced the retired Moneyfacts fixture in 2026-04.",
+    // Monthly quoted-rate print; retains STALE_RTI_MONTHLY_MS.
     expectedCadence: "monthly", graceDays: 50,
   },
   moneyfacts: {

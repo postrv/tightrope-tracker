@@ -202,7 +202,7 @@ export const LEVERS: readonly LeverDefinition[] = [
     key: "pay",
     indicatorId: "real_regular_pay",
     pillar: "labour",
-    label: "Real regular pay growth (YoY)",
+    label: "Real total pay growth (YoY)",
     shortLabel: "Real pay",
     unit: "%",
     min: -3,

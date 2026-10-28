@@ -146,9 +146,9 @@ interface OnsMonthPoint {
   /**
    * ISO-8601 string stamped by ONS for when this month's row was last
    * published or revised. Populated in live timeseries JSON for every
-   * month; reading it lets us persist a true publication date alongside
-   * the reference period (`observed_at`) and so eliminate lookahead bias
-   * in the historical backfill.
+   * month. It may be a later revision date rather than first publication;
+   * retaining it avoids presenting revised values before their recorded
+   * release, but does not reconstruct an as-known historical vintage.
    */
   updateDate?: string;
 }
@@ -159,6 +159,14 @@ export interface OnsMonthlyPoint {
   observedAt: string;
   /** Publication date from the upstream `updateDate` field, if present. */
   releasedAt?: string;
+}
+
+/** Missing ONS cells are not zero. Number("") and Number(null) would silently
+ * fabricate observations, including plausible-looking zero pay growth. */
+function numericOnsValue(value: unknown): number {
+  if (typeof value !== "string" && typeof value !== "number") return NaN;
+  if (typeof value === "string" && value.trim() === "") return NaN;
+  return Number(value);
 }
 
 /**
@@ -183,7 +191,7 @@ export function parseOnsMonthlySeries(body: string, sourceId: string, url: strin
   }
   const out: OnsMonthlyPoint[] = [];
   for (const point of months) {
-    const value = Number(point.value);
+    const value = numericOnsValue(point.value);
     if (!Number.isFinite(value)) continue;
     let observedAt: string;
     try {
@@ -218,7 +226,7 @@ export function parseOnsMonthly(body: string, sourceId: string, url: string): On
   }
   // ONS `date` is like "2026 FEB" or "2026 M02" depending on dataset.
   const latest = months[months.length - 1]!;
-  const value = Number(latest.value);
+  const value = numericOnsValue(latest.value);
   if (!Number.isFinite(value)) {
     throw new AdapterError({ sourceId, sourceUrl: url, message: `ONS: latest value '${latest.value}' not numeric` });
   }

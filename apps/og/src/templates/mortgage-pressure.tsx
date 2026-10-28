@@ -45,7 +45,7 @@ export function MortgagePressureCard(props: MortgagePressureProps): JsxNode {
       <div style={{ display: "flex", flexDirection: "column" }}>
         <BigStat value={amount} unit="/mo" tint={tint} />
         <Caption>
-          Change in the monthly cost of a £250k mortgage since the {baselineLabel}. The effective 2-year fix now averages {twoYearFixPct.toFixed(2)}%, {spreadAbs}bp {spreadDirection} the comparator rate.
+          Change in the monthly cost of a £250k mortgage since the {baselineLabel}. The quoted 2-year fix at 75% LTV is {twoYearFixPct.toFixed(2)}%, {spreadAbs}bp {spreadDirection} the comparator rate.
         </Caption>
       </div>
     </CardShell>

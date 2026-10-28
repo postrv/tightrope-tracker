@@ -1,17 +1,17 @@
 /**
- * Bank of England IADB -- effective rate on new 2-year fixed-rate mortgages
+ * Bank of England IADB -- quoted 2-year fixed-rate mortgages
  * to households at 75% LTV.
  *
  * Series code:
- *   IUMBV34  -- Monthly effective rate on new fixed-rate 2-year mortgages
+ *   IUMBV34  -- Monthly quoted 2-year fixed mortgage rate
  *               to households at 75% loan-to-value (in percent).
  *
  * Replaces the Moneyfacts editorial fixture for the `mortgage_2y_fix`
- * indicator. Note the semantic shift: BoE publishes the *effective rate
- * paid on new lending* (interest income ÷ balance), whereas Moneyfacts
- * publishes the *advertised rate* on new fixed-rate products. The two
- * typically diverge by 30-80bp; the BoE series is the canonical reference
- * an economist or rate-setter would cite.
+ * indicator. Both are quoted-rate sources with different product samples;
+ * neither should be described as interest income divided by balances.
+ * Keep baseline and current readings in this same BoE series.
+ * Economic definition: BoE's "Historical sources of mortgage interest rate
+ * statistics" (2015), Chart E, lists IUMBV34 under quoted 2-year fixed rates.
  *
  * The IADB CSV endpoint returns one row per month with `IUMBV34` as the
  * column header; we take the most recent row that has a non-null value.

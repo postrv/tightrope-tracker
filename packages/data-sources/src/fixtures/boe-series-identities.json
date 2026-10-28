@@ -1,0 +1,18 @@
+{
+  "verified_on": "2026-10-28",
+  "purpose": "Independent economic definitions checked against primary BoE catalogues and the mortgage-statistics article; not inferred from the adapter output.",
+  "sources": {
+    "yields": "https://www.bankofengland.co.uk/boeapps/database/FromShowColumns.asp?searchText=yield",
+    "exchange_rates": "https://www.bankofengland.co.uk/boeapps/database/FromShowColumns.asp?searchText=exchange+rates",
+    "mortgage_catalogue": "https://www.bankofengland.co.uk/boeapps/database/FromShowColumns.asp?searchText=mortgage",
+    "mortgage_definitions": "https://www.bankofengland.co.uk/-/media/boe/files/statistics/bankstats-articles/2015/historical-sources-of-mortgage-interest-rate-statistics---bankstats-article.pdf"
+  },
+  "series": {
+    "IUDMNZC": { "concept": "nominal_zero_coupon", "maturity_years": 10, "unit": "percent", "source": "yields" },
+    "IUDLNZC": { "concept": "nominal_zero_coupon", "maturity_years": 20, "unit": "percent", "source": "yields" },
+    "XUDLUSS": { "concept": "sterling_usd_spot", "unit": "USD_per_GBP", "source": "exchange_rates" },
+    "XUDLBK67": { "concept": "sterling_effective_exchange_index", "coverage": "standard", "base": "January_2005_100", "source": "exchange_rates" },
+    "XUDLBK82": { "concept": "sterling_effective_exchange_index", "coverage": "broad", "base": "January_2005_100", "source": "exchange_rates" },
+    "IUMBV34": { "concept": "quoted_mortgage_rate", "fixed_years": 2, "ltv_percent": 75, "unit": "percent", "source": "mortgage_catalogue", "definition_evidence": "mortgage_definitions_Chart_E" }
+  }
+}

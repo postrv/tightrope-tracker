@@ -131,6 +131,57 @@ describe("eodhdHousebuildersAdapter", () => {
     expect(result.sourceUrl).toBe("local:fixtures/housebuilders.json");
   });
 
+  it("bounds stalled fetches, aborts each request and preserves the fixture's original close", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-28T18:10:00Z"));
+    const signals: AbortSignal[] = [];
+    // Deliberately ignore abort: the deadline must still settle the adapter
+    // even if an injected fetch implementation never resolves or rejects.
+    const stalledFetch = vi.fn((_input: RequestInfo | URL, init?: RequestInit) => {
+      signals.push(init!.signal!);
+      return new Promise<Response>(() => {});
+    });
+    let settled = false;
+    const pending = eodhdHousebuildersAdapter.fetch(stalledFetch, CTX_WITH_KEY)
+      .then(result => { settled = true; return result; });
+
+    await vi.advanceTimersByTimeAsync(49_999);
+    expect(settled).toBe(false);
+    expect(stalledFetch).toHaveBeenCalledTimes(5);
+    await vi.advanceTimersByTimeAsync(1);
+    const result = await pending;
+
+    expect(signals.every(signal => signal.aborted)).toBe(true);
+    expect(result.fallbackReason).toContain("PSN: request timed out after 10000ms");
+    expect(result.fallbackReason).toContain("VTY: request timed out after 10000ms");
+    expect(result.observations[0]).toMatchObject({
+      value: housebuilders.housebuilder_idx.value,
+      observedAt: housebuilders.observed_at,
+      payloadHash: "fixture-fallback",
+    });
+    expect(result.sourceUrl).toBe("local:fixtures/housebuilders.json");
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("also bounds a stalled response body after successful HTTP headers", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-28T18:10:00Z"));
+    const stalledBodyFetch = vi.fn(async () => {
+      const response = new Response("", { status: 200 });
+      response.json = () => new Promise(() => {});
+      return response;
+    });
+    const pending = eodhdHousebuildersAdapter.fetch(stalledBodyFetch, CTX_WITH_KEY);
+    await vi.advanceTimersByTimeAsync(50_000);
+    const result = await pending;
+
+    expect(stalledBodyFetch).toHaveBeenCalledTimes(5);
+    expect(result.fallbackReason).toContain("request timed out after 10000ms");
+    expect(result.observations[0]!.payloadHash).toBe("fixture-fallback");
+    expect(result.observations[0]!.observedAt).toBe(housebuilders.observed_at);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it("tolerates missing constituents if >= 3 resolve", async () => {
     const responses = {
       PSN: eodResponse(1248.5),

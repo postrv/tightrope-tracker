@@ -3,14 +3,11 @@ import type { JsxNode } from "../jsx/jsx-runtime.js";
 import { CardShell, SERIF, TOKENS, formatDate } from "./components.js";
 
 export interface DeliveryHousingProps {
-  /** Most recent annualised net additions, in thousands. */
+  /** Most recent annualised seasonally adjusted new-build completions, in thousands. */
   currentThousands: number;
   /**
-   * Target thousands. As of the 2026-04-29 audit fix this is 300k —
-   * the OBR 2030 working assumption that `housing_trajectory` is
-   * computed against. Labour's 305k political pledge is described on
-   * the homepage delivery card; the OG headline uses the indicator's
-   * own denominator so the percentage matches the indicator value.
+   * Fixed annual benchmark in thousands. This uses the indicator's
+   * own 300k denominator, rather than claiming an OBR forecast path.
    */
   targetThousands: number;
   updatedAt: string;
@@ -34,8 +31,8 @@ export function DeliveryHousingCard(props: DeliveryHousingProps): JsxNode {
       variant="rope"
       eyebrow="Tightrope Tracker · Delivery"
       meta={formatDate(updatedAt)}
-      source="Source · MHCLG housing statistics · OBR trajectory"
-      footerRight="Net additions, annualised"
+      source="Source · MHCLG quarterly new-build completions"
+      footerRight="Seasonally adjusted · annualised ×4"
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "48px" }}>
         {/* Rope viz */}
@@ -51,9 +48,9 @@ export function DeliveryHousingCard(props: DeliveryHousingProps): JsxNode {
             }}
           >
             <span style={{ color: TOKENS.accent, marginLeft: `${Math.max(0, Math.round(progress * 100) - 6)}%` }}>
-              {Math.round(currentThousands)}k today
+              {Math.round(currentThousands)}k annualised
             </span>
-            <span style={{ color: TOKENS.ink0 }}>{Math.round(targetThousands)}k · OBR 2030 path</span>
+            <span style={{ color: TOKENS.ink0 }}>{Math.round(targetThousands)}k · annual benchmark</span>
           </div>
           <svg width="1056" height="60" viewBox="0 0 1056 60" preserveAspectRatio="none" style={{ display: "block" }}>
             <defs>
@@ -82,7 +79,7 @@ export function DeliveryHousingCard(props: DeliveryHousingProps): JsxNode {
             maxWidth: "85%",
           }}
         >
-          Housing: {pct}% of the way to the target
+          Housing: {pct}% of the annual benchmark
         </div>
       </div>
     </CardShell>

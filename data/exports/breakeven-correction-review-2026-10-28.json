@@ -1,0 +1,108 @@
+{
+  "generatedAt": "2026-10-28T18:11:28.087Z",
+  "status": "APPLIED_VERIFIED_AND_DISCLOSED",
+  "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSIZC%2CIUDSNZC%2CIUDSRZC&Datefrom=01%2FJan%2F2024&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+  "sourceCsvSha256": "183bfd76cbc5d2cd13a508a5600cdf2a7b0a94afa09e580d161c61cfd9207473",
+  "beforeArchive": "data/exports/breakeven-before-correction-2026-10-28.json",
+  "beforeRowDigest": "1e34a817d4fd2bd602cec8188f93827e68d3d686047e5cbc8118b1b9153500c6",
+  "rawRowsBefore": 8293,
+  "existingKeysToCorrect": 1066,
+  "historicalKeys": 961,
+  "liveKeys": 105,
+  "canonicalReferenceDaysBefore": 609,
+  "canonicalReferenceDaysAfter": 609,
+  "firstExisting": "2024-06-03T16:00:00Z",
+  "lastExisting": "2026-10-26T16:00:00Z",
+  "newDatesAdded": 0,
+  "valuesChanged": 1066,
+  "minCorrected": 2.8457,
+  "maxCorrected": 3.949,
+  "negativeCorrected": 0,
+  "latestCorrected": {
+    "observedAt": "2026-10-26T16:00:00Z",
+    "value": 3.6941
+  },
+  "replayReference": {
+    "snapshotAt": "2026-10-28T18:00:27.291Z",
+    "publishedHeadline": 39.1,
+    "method": "Freeze every snapshot current reading except confirmed BE replacement; same current canonical coverage and baseline policy; only BE raw history is replaced."
+  },
+  "before": {
+    "headline": 39.1,
+    "pillars": {
+      "market": 33.6,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "breakeven": {
+      "indicatorId": "breakeven_5y",
+      "rawValue": 1.2673,
+      "rawValueUnit": "%",
+      "zScore": 1.8181405123765932,
+      "normalised": 1.8883415435139606,
+      "weight": 0.12,
+      "sourceId": "boe_yields",
+      "observedAt": "2026-10-26T16:00:00Z"
+    }
+  },
+  "after": {
+    "headline": 40.2,
+    "pillars": {
+      "market": 36.1,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "breakeven": {
+      "indicatorId": "breakeven_5y",
+      "rawValue": 3.6941,
+      "rawValueUnit": "%",
+      "zScore": 0.8605336214652656,
+      "normalised": 22.906403940886698,
+      "weight": 0.12,
+      "sourceId": "boe_yields",
+      "observedAt": "2026-10-26T16:00:00Z"
+    }
+  },
+  "headlineChange": 1.1000000000000014,
+  "limitations": [
+    "Existing original observed/released timestamps are retained; daily BoE publication time is not known.",
+    "Source CSV is the current official vintage; this repair does not reconstruct as-known historical releases.",
+    "Published headline/pillar history is untouched. Change at apply/recompute is a source correction, not a Budget market response.",
+    "FTSE Oct28 close arrived after this frozen snapshot and is deliberately held constant in isolated repair sensitivity."
+  ],
+  "automaticApprovalReview": {
+    "action": "Atomic correction of1066existingproductionbreakevenkeys plus normal auditedlivehead",
+    "result": "initially rejected; explicit user approval then supplied and accepted before execution",
+    "reason": "Initial review required explicit user authorization for the exact large correction. The user subsequently approved the1,066-row correction and disclosure; the same reviewed command then executed successfully."
+  },
+  "atomicSqliteReplay": {
+    "mode": "IN_MEMORY_SQLITE_ONLY_NO_PRODUCTION_WRITES",
+    "rowsWritten": 1066,
+    "appliedAt": "2026-10-28T18:15:24.784Z",
+    "durationMs": 204,
+    "rawRowsBefore": 8293,
+    "rawRowsAfter": 8293,
+    "correctedRows": 1066,
+    "mismatches": 0,
+    "unrelatedRowsUnchanged": 7227
+  },
+  "userApproval": {
+    "received": true,
+    "text": "Approve the 1,066-row correction and publish the disclosure"
+  },
+  "productionResult": {
+    "appliedAt": "2026-10-28T18:17:34.568Z",
+    "existingRowsCorrected": 1066,
+    "rowsVerified": 1066,
+    "mismatches": 0,
+    "normalLiveHeadWrites": 1,
+    "actualHeadline": 40.2,
+    "actualMarketPillar": 36,
+    "publishedCorrectionAt": "2026-10-28T18:17:35.521Z",
+    "rawRowsBefore": 8293,
+    "rawRowsAfter": 8293
+  },
+  "productionVerification": "data/exports/breakeven-correction-production-verification-2026-10-28.json"
+}

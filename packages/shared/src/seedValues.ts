@@ -46,7 +46,7 @@ export const CURRENT_SEED_VALUES: Record<string, number> = {
   inactivity_health: 2.81,
   unemployment: 4.6,
   vacancies_per_unemployed: 0.82,
-  // AWE regular-pay index (2015=100). MUST be an index-scale value — a MoM%
+  // AWE regular-pay index (2000=100). MUST be an index-scale value — a MoM%
   // value (~-0.02) here would produce a ~130x sparkline step at the live
   // boundary. Enforced by seedValues.test.ts.
   payroll_mom: 232.8,

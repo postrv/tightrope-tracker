@@ -10,13 +10,13 @@
  * Editorial baseline: the BoE IADB IUMBV34 monthly print for March 2025 (the
  * month of the Spring Statement 2025, 26 March 2025). Anchors the "since the
  * Spring Statement" mortgage delta in the same units the live indicator
- * publishes — effective rate paid on new lending, 75% LTV, 2-year fix.
+ * publishes — quoted mortgage rate, 75% LTV, 2-year fix.
  *
  * Apples-to-apples is critical: when this site sourced the indicator from
- * Moneyfacts (advertised front-book rates) the baseline was 5.18%; that value
- * is no longer comparable to the live BoE effective-rate series, which runs
- * 30-80bp lower. Update on the next fiscal event that resets the comparator,
- * and only with another IUMBV34 print — never a Moneyfacts/advertised number.
+ * Moneyfacts the baseline was 5.18%; that value uses a different product
+ * sample and is not a same-series comparator. Both sources describe quoted
+ * rates. Update a comparator only with another IUMBV34 print, keeping the
+ * reference month and source explicit.
  */
 export const MORTGAGE_BUDGET_BASELINE_PCT = 4.54;
 export const MORTGAGE_BUDGET_BASELINE_LABEL = "Spring Statement 2025";

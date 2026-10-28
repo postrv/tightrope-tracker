@@ -1,0 +1,14 @@
+{
+  "source_url": "https://www.bankofengland.co.uk/boeapps/database/FromShowColumns.asp?searchText=yield",
+  "captured_at": "2026-10-28T18:05:10.758Z",
+  "source_html_sha256": "066e10f15aea371960fa208a9d693295887207dcef6c6e1fd191c1cc00eeb381",
+  "series": {
+    "IUDSIZC": "Yield from British Government Securities, 5 year Inflation Zero Coupon",
+    "IUDSNZC": "Yield from British Government Securities, 5 year Nominal Zero Coupon",
+    "IUDSRZC": "Yield from British Government Securities, 5 year Real Zero Coupon"
+  },
+  "interpretation_sources": [
+    "https://www.bankofengland.co.uk/statistics/details/further-details-about-yields-data",
+    "https://www.bankofengland.co.uk/statistics/yield-curves"
+  ]
+}

@@ -6,6 +6,16 @@ function mockJson(body: string, status = 200): Response {
 }
 
 describe("parseOnsMonthlySeries", () => {
+  it.each(["", "   ", null, false, "..", "N/A"])("does not turn missing cell %j into zero", value => {
+    const body = JSON.stringify({ months: [{ date: "2026 JUL", year: "2026", month: "JUL", value }] });
+    expect(parseOnsMonthlySeries(body, "x", "u")).toEqual([]);
+    expect(() => parseOnsMonthly(body, "x", "u")).toThrow("not numeric");
+  });
+  it("retains a published numeric zero", () => {
+    const body = JSON.stringify({ months: [{ date: "2026 JUL", year: "2026", month: "JUL", value: "0" }] });
+    expect(parseOnsMonthlySeries(body, "x", "u")[0]?.value).toBe(0);
+    expect(parseOnsMonthly(body, "x", "u").value).toBe(0);
+  });
   it("returns every parseable month in ascending order", () => {
     const body = JSON.stringify({
       months: [

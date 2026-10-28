@@ -1,0 +1,2 @@
+# Preserve the exact primary-source response bytes used by the correction hash.
+data/exports/boe-inflation-source-2026-10-28.csv -text whitespace=cr-at-eol

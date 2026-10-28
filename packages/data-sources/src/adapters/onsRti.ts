@@ -40,7 +40,7 @@ function publishedToIso(published: string): string {
   return published.includes("T") ? published : `${published}T00:00:00Z`;
 }
 
-const PAYROLL = { cdid: "K54L", dataset: "EMP" } as const; // PAYE payroll, MoM %
+const PAYROLL = { cdid: "K54L", dataset: "EMP" } as const; // AWE regular-pay index, 2000=100
 
 interface RtiFixture {
   observed_at: string;

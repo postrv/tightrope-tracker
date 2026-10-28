@@ -21,6 +21,9 @@ const SOURCE_ID = "eodhd_housebuilders";
 const API_BASE = "https://eodhd.com/api/eod";
 const FIXTURE_URL = "local:fixtures/housebuilders.json";
 const MAX_FIXTURE_AGE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days, fallback only
+// Bound both connection/header latency and the response body. A stalled
+// issuer must not leave the daily ingest audit open indefinitely.
+const CONSTITUENT_TIMEOUT_MS = 10_000;
 
 interface Constituent {
   symbol: string;
@@ -83,22 +86,35 @@ async function fetchConstituent(
   const from = new Date(to.getTime() - 7 * 86_400_000);
   const url = `${API_BASE}/${symbol}.LSE?api_token=${apiKey}&fmt=json&from=${formatDate(from)}&to=${formatDate(to)}&order=d`;
 
-  let res: Response;
-  try {
-    res = await fetchOrThrow(fetchImpl, SOURCE_ID, url);
-  } catch (err) {
-    console.warn(`${SOURCE_ID}: fetch failed for ${symbol}`);
-    failures.push(`${symbol}: ${err instanceof AdapterError && err.status ? `HTTP ${err.status}` : "network fetch failed"}`);
-    return [];
-  }
-
+  const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let readingBody = false;
   let candles: EodhdCandle[];
   try {
-    candles = await res.json() as EodhdCandle[];
-  } catch {
-    console.warn(`${SOURCE_ID}: invalid JSON for ${symbol}`);
-    failures.push(`${symbol}: invalid JSON`);
+    const timeout = new Promise<never>((_resolve, reject) => {
+      timeoutId = setTimeout(() => {
+        controller.abort();
+        reject(new Error("constituent request timed out"));
+      }, CONSTITUENT_TIMEOUT_MS);
+    });
+    candles = await Promise.race([
+      (async () => {
+        const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, { signal: controller.signal });
+        readingBody = true;
+        return await res.json() as EodhdCandle[];
+      })(),
+      timeout,
+    ]);
+  } catch (err) {
+    const reason = controller.signal.aborted
+      ? `request timed out after ${CONSTITUENT_TIMEOUT_MS}ms`
+      : readingBody ? "invalid JSON"
+        : err instanceof AdapterError && err.status ? `HTTP ${err.status}` : "network fetch failed";
+    console.warn(`${SOURCE_ID}: ${symbol}: ${reason}`);
+    failures.push(`${symbol}: ${reason}`);
     return [];
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
   }
 
   if (!Array.isArray(candles) || candles.length === 0) {

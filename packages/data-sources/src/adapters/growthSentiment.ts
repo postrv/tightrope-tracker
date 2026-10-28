@@ -6,21 +6,21 @@
  * investment):
  *
  *   services_pmi         -- S&P Global / CIPS UK Services PMI headline
- *   consumer_confidence  -- GfK / NIESR Consumer Confidence Barometer headline
+ *   consumer_confidence  -- NielsenIQ / GfK Consumer Confidence Barometer headline
  *   rics_price_balance   -- RICS UK Residential Market Survey price balance
  *
  * Each source is licensed to its publisher; their full back-sets are behind a
  * paywall. We mirror only the monthly headline figures from each publisher's
  * press release, which is a lawful fair-dealing summary. The fixture is
  * refreshed manually when a release drops (S&P Global publishes Flash PMI near
- * the 3rd working day of the following month; GfK/NIESR publishes last Friday;
+ * the 3rd working day of the following month; NielsenIQ/GfK publishes monthly;
  * RICS publishes mid-month).
  *
  * Each observation carries its own sourceId so the UI can attribute cleanly.
  *
  * TODO(source):
  *   - https://www.pmi.spglobal.com/Public/Home/PressRelease
- *   - https://www.niesr.ac.uk/our-work/consumer-confidence
+ *   - https://nielseniq.com/global/en/news-center/
  *   - https://www.rics.org/news-insights/market-surveys/uk-residential-market-survey
  */
 import fixture from "../fixtures/growth-sentiment.json" with { type: "json" };

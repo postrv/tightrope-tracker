@@ -2,16 +2,18 @@
  * Bank of England IADB -- 5-year breakeven inflation.
  *
  * Series codes:
- *   IUDSNZC  -- 5-year nominal zero-coupon yield
- *   IUDSIZC  -- 5-year real (index-linked) zero-coupon yield
+ *   IUDSIZC  -- 5-year inflation zero-coupon rate, already derived by BoE
  *
- * We pull both in one IADB CSV request, take the most recent row where
- * both series have a numeric value, and emit one indicator:
+ * The BoE catalogue distinguishes IUDSIZC (inflation) from IUDSRZC (real).
+ * Subtracting IUDSIZC from the nominal yield would recover a real-rate-like
+ * quantity, not inflation compensation. Use the published inflation series
+ * directly, taking the most recent populated row:
  *
- *   breakeven_5y = nominal 5y - real 5y   (market-implied CPI 5y)
+ *   breakeven_5y = IUDSIZC
  *
- * This is an OBR-proxy indicator: the 5y breakeven leads the OBR's CPI
- * inflation forecast. See docs/OBR_PROXIES.md.
+ * This is RPI-linked gilt-market inflation compensation over five years,
+ * including risk/liquidity premia, not a pure CPI forecast. The reference
+ * series and interpretation are documented in docs/OBR_PROXIES.md.
  */
 import type {
   AdapterResult,
@@ -29,17 +31,16 @@ import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "boe_yields";
 /** Exported so the Actions relay script reuses the exact series codes the adapter requests (see BoE relay note, 2026-07). */
-export const BOE_BREAKEVENS_SERIES_CODES = "IUDSNZC,IUDSIZC";
+export const BOE_BREAKEVENS_SERIES_CODES = "IUDSIZC";
 
 interface LatestRow {
   date: string;
-  nom5: number;
-  real5: number;
+  inflation5: number;
 }
 
 export const boeBreakevensAdapter: DataSourceAdapter = {
   id: "boe_breakevens",
-  name: "Bank of England -- 5y breakeven (IUDSNZC/IUDSIZC)",
+  name: "Bank of England -- 5y RPI inflation compensation (IUDSIZC)",
   async fetch(fetchImpl): Promise<AdapterResult> {
     const url = buildBoEIadbUrl(BOE_BREAKEVENS_SERIES_CODES);
     const res = await fetchOrThrow(fetchImpl, SOURCE_ID, url, {
@@ -57,11 +58,8 @@ export const boeBreakevensAdapter: DataSourceAdapter = {
     }
     const first = rows[0]!;
     const dateKey = "DATE" in first ? "DATE" : "Date" in first ? "Date" : null;
-    const keys = {
-      nom5: "IUDSNZC" in first ? "IUDSNZC" : null,
-      real5: "IUDSIZC" in first ? "IUDSIZC" : null,
-    };
-    if (!dateKey || !keys.nom5 || !keys.real5) {
+    const inflationKey = "IUDSIZC" in first ? "IUDSIZC" : null;
+    if (!dateKey || !inflationKey) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
         sourceUrl: url,
@@ -72,23 +70,22 @@ export const boeBreakevensAdapter: DataSourceAdapter = {
     let latest: LatestRow | null = null;
     for (let i = rows.length - 1; i >= 0; i--) {
       const row = rows[i]!;
-      const nom5 = parseNum(row[keys.nom5]);
-      const real5 = parseNum(row[keys.real5]);
-      if (nom5 === null || real5 === null) continue;
-      latest = { date: row[dateKey]!, nom5, real5 };
+      const inflation5 = parseNum(row[inflationKey]);
+      if (inflation5 === null) continue;
+      latest = { date: row[dateKey]!, inflation5 };
       break;
     }
     if (!latest) {
       throw new AdapterError({
         sourceId: SOURCE_ID,
         sourceUrl: url,
-        message: "BoE breakevens: no row with both 5y yields populated",
+        message: "BoE breakevens: no populated 5y inflation zero-coupon rate",
       });
     }
 
     const observedAt = boeDateToIso(latest.date);
     const payloadHash = await sha256Hex(body);
-    const be5 = latest.nom5 - latest.real5;
+    const be5 = latest.inflation5;
     const observations: RawObservation[] = [
       { indicatorId: "breakeven_5y", value: be5, observedAt, sourceId: SOURCE_ID, payloadHash },
     ];
@@ -113,11 +110,8 @@ async function fetchBoeBreakevensHistorical(
   }
   const first = rows[0]!;
   const dateKey = "DATE" in first ? "DATE" : "Date" in first ? "Date" : null;
-  const keys = {
-    nom5: "IUDSNZC" in first ? "IUDSNZC" : null,
-    real5: "IUDSIZC" in first ? "IUDSIZC" : null,
-  };
-  if (!dateKey || !keys.nom5 || !keys.real5) {
+  const inflationKey = "IUDSIZC" in first ? "IUDSIZC" : null;
+  if (!dateKey || !inflationKey) {
     throw new AdapterError({
       sourceId: SOURCE_ID,
       sourceUrl: url,
@@ -136,13 +130,12 @@ async function fetchBoeBreakevensHistorical(
     const rowMs = Date.parse(observedAt);
     if (!Number.isFinite(rowMs) || rowMs < fromMs || rowMs > toMs) continue;
 
-    const nom5 = parseNum(row[keys.nom5]);
-    const real5 = parseNum(row[keys.real5]);
-    if (nom5 === null || real5 === null) {
+    const inflation5 = parseNum(row[inflationKey]);
+    if (inflation5 === null) {
       skippedIncomplete++;
       continue;
     }
-    const be5 = nom5 - real5;
+    const be5 = inflation5;
     observations.push({
       indicatorId: "breakeven_5y",
       value: be5,
@@ -153,7 +146,7 @@ async function fetchBoeBreakevensHistorical(
   }
 
   const notes: string[] = [];
-  if (skippedIncomplete > 0) notes.push(`${skippedIncomplete} rows skipped (incomplete yield pair)`);
+  if (skippedIncomplete > 0) notes.push(`${skippedIncomplete} rows skipped (missing inflation rate)`);
   return buildHistoricalResult(observations, url, notes);
 }
 

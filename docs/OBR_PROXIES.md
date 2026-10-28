@@ -19,11 +19,23 @@ All sit in the **Market Stability** pillar (40% of headline).
 | `breakeven_10y`      | OBR long-horizon CPI, debt-interest forecast | daily                  |
 | `brent_gbp`          | OBR CPI energy subcomponent, fuel-duty line  | daily                  |
 
-**Mechanism.** The 5y breakeven is the 5-year nominal zero-coupon yield minus
-the 5-year real (index-linked) zero-coupon yield, both from the BoE IADB CSV
-endpoint. By the Fisher identity it is the RPI inflation priced into gilts over
-the next five years, which maps closely to the CPI profile OBR uses with a
-small wedge. Brent in GBP feeds directly into the CPI energy subcomponent and
+**Mechanism.** The five-year breakeven reads the BoE's published inflation
+zero-coupon series **IUDSIZC** directly. The Bank has already derived this
+inflation curve from nominal and real curves. The distinct real-yield series
+is **IUDSRZC**; subtracting IUDSIZC from a nominal yield is an incorrect way
+to measure inflation compensation. This definition was corrected on
+28 October 2026; earlier stored derived readings require an explicit data
+correction and must not be interpreted as market moves.
+
+The measure is average **RPI-linked inflation compensation** over the next
+five years. Risk and liquidity premia and the RPI/CPI basis mean it is not a
+pure inflation expectation or a direct CPI forecast. The BoE also notes that
+RPI alignment with CPIH from February 2030 affects interpretation across that
+date. Sources: [BoE series catalogue](https://www.bankofengland.co.uk/boeapps/database/FromShowColumns.asp?searchText=yield),
+[yield-curve definitions](https://www.bankofengland.co.uk/statistics/details/further-details-about-yields-data),
+and [yield-curve caveats](https://www.bankofengland.co.uk/statistics/yield-curves).
+
+Brent in GBP feeds directly into the CPI energy subcomponent and
 into fuel-duty receipts -- OBR's medium-term CPI profile bakes in a Brent path
 pulled from the futures curve at forecast close, so a large move in Brent
 between EFOs signals that the pre-baked profile is wrong.
@@ -67,9 +79,9 @@ OBR sees.
 | `breakeven_10y`      | Live -- BoE IADB CSV         | As above.                                                     |
 | `gilt_il_10y_real`   | Live -- BoE IADB CSV         | As above.                                                     |
 | `brent_gbp`          | Fixture (weekly refresh)     | EIA data is US federal public domain; GBP/USD conversion uses BoE XUDLUSS. Source XLS is not Worker-parseable. |
-| `housebuilder_idx`   | Fixture (weekly refresh)     | Issuer closing prices are public; the composite calculation is ours. No free bulk LSE feed reachable from a Cloudflare Worker. |
+| `housebuilder_idx`   | EODHD completed-session closes | The composite calculation is ours. Missing or incomplete source data keeps the last verified reading and produces a degraded audit status. |
 | `services_pmi`       | Fixture (monthly)            | S&P Global licensed series; we mirror only the headline press-release figure as fair-dealing summary. |
-| `consumer_confidence`| Fixture (monthly)            | GfK series transferred to NIESR in 2025; headline-only reuse. |
+| `consumer_confidence`| Fixture (monthly)            | NielsenIQ publishes the GfK barometer headline; release links are retained per point. |
 | `rics_price_balance` | Fixture (monthly)            | RICS subscription-gated; headline net balance only.           |
 
 ## Seasonal-adjustment gotchas
@@ -78,7 +90,7 @@ OBR sees.
   re-adjust it in the methodology layer.
 - RICS price balances are sometimes republished seasonally adjusted the month
   after initial release -- prefer the SA series when both are available.
-- GfK/NIESR consumer confidence is reported as a signed index with no SA; read
+- NielsenIQ/GfK consumer confidence is reported as a signed index; read
   month-on-month changes rather than the absolute level during shocks.
 - Breakevens carry a liquidity premium and an inflation-risk premium that move
   with rates volatility; do not interpret small daily moves as pure CPI moves.

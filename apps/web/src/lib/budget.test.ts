@@ -6,6 +6,15 @@ function row(id: string, value: number, observed: string, released: string | nul
   return { indicator_id: id, value, observed_at: observed, released_at: released, source_id: "obr_efo", ingested_at: "2026-10-28T17:00:00Z" };
 }
 describe("Budget comparison credibility", () => {
+  it.each(["breakeven_5y", "vacancies_per_unemployed"])("withdraws the invalid %s reference even when a newer post-Budget reading exists", id => {
+    const result = compareBudgetIndicator(id, row(id, 1.2, "2026-10-27T16:00:00Z"), row(id, 3.7, "2026-10-29T16:00:00Z"));
+    expect(result.status).toBe("baseline_invalidated");
+    expect(result.baselineNotice).toBeTruthy();
+    expect(result.before).toBeNull();
+    expect(result.latest?.value).toBe(3.7);
+    expect(result.delta).toBeNull();
+    expect(result.deltaDisplay).toBeNull();
+  });
   it("does not mistake a month-end period label for a post-Budget observation when the survey was released earlier", () => {
     const survey = row("consumer_confidence", -24, "2026-10-31T00:00:00Z", "2026-10-23T00:00:00Z");
     const result = compareBudgetIndicator("consumer_confidence", survey, survey);

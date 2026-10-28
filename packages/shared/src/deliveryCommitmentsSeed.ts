@@ -30,12 +30,12 @@ export const DELIVERY_COMMITMENTS_SEED: readonly DeliveryCommitmentSeed[] = [
     // Two measures, side by side. The live indicator uses (1); (2) is the
     // annual NAD print readers will see in news. Both are vs the same
     // 305k-by-2030/31 OBR path. Migration 0009 keeps prod in sync.
-    latest: "Live indicator: Q1 2026 completions × 4 = 148,680 vs 300k OBR working assumption (49.6%). Annual NAD FY25/26: 199,500 vs 305k Labour target (65%).",
+    latest: "Reference snapshot: Q1 2026 completions × 4 = 148,680 vs the fixed 300k annual tracker benchmark (49.6%). Annual NAD FY25/26: 199,500 vs this card's 305k comparison (65%).",
     target: "OBR path: 305k by 2030/31",
     status: "slipping",
     sourceUrl: "https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building",
     sourceLabel: "MHCLG live tables",
-    notes: "Two complementary measures of housing delivery. (1) The live indicator uses 'Completions, seasonally adjusted' from the MHCLG Housing supply quarterly release — a quarterly cadence we annualise (×4) and compare against the 300,000-per-year OBR working assumption documented in the EFO supplementary tables. Q1 2026 SA completions were 37,170. (2) The annual headline figure is 'Net additional dwellings' from the same release's NAD estimates (FY25/26 199,500; FY24/25 restated 208,600). The 305k-by-2030/31 path target is the Labour Government's headline pledge; OBR's 300k working assumption is what the live indicator benchmarks against to keep continuity with pre-Labour trajectory analysis. Showing both because they tell the same story at different sampling rates and at slightly different scope.",
+    notes: "Two measures with different scopes. The scored indicator annualises MHCLG quarterly seasonally adjusted new-build completions (×4) and divides by this tracker's fixed 300,000-home annual benchmark. It is not a net-additional-dwellings measure or an OBR forecast. The annual delivery card separately reports net additional dwellings, which also accounts for conversions, changes of use and demolitions. The benchmark denominator is preserved for series continuity; it does not establish that either measure meets a government pledge.",
     sortOrder: 10,
   },
   {

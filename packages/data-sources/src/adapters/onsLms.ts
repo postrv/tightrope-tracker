@@ -8,13 +8,13 @@
  *   |-----------------------------|--------|---------|
  *   | unemployment (16+)          | MGSX   | LMS     |
  *   | inactivity rate (16-64)     | LF2S   | LMS     |
- *   | health inactivity (count,m) | LFK2   | LMS     |
+ *   | health inactivity (count,m) | LF69   | LMS     |
  *   | vacancies (level, 000s)     | AP2Y   | UNEM    |  (used for V/U ratio)
  *   | unemployed (level, 000s)    | MGSC   | LMS     |  (used for V/U ratio)
- *   | real regular pay (YoY %)    | A3WW   | EMP     |
+ *   | real total pay (3m YoY %)   | A3WW   | EMP     |
  *
- * TODO(source): confirm CDIDs against the current ONS LMS release -- these are
- * the canonical codes in the LMS bulletin as of this file's authorship. The
+ * Series definitions checked against ONS metadata on 28 October 2026. A3WW
+ * measures total pay including bonuses, despite the legacy indicator ID. The
  * adapter is resilient to missing values (it emits observations only for
  * series that returned a numeric latest point).
  */

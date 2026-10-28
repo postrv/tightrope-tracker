@@ -75,6 +75,7 @@ function ecdfPath(): string {
       <h3>Baseline samples and the 28 October 2026 correction</h3>
       <p>Each indicator contributes one sample per reference day. Genuine earlier live publications remain in the baseline. When multiple rows describe the same day, the latest-ingested revision wins; an ingestion-time tie uses the later observation timestamp. Superseded, incorrectly future-dated live snapshots are excluded. Live scoring and the public baseline summaries used by Explore apply the same selection.</p>
       <p>On 28 October 2026 we corrected a filter that had discarded valid earlier live observations, and removed duplicate midnight/close representations of the same daily publication. A replay with identical current readings changed the headline from 38.3 to 42.8. This was a calculation correction, not a Budget reaction. Weights, score direction and schema v2 are unchanged; earlier score snapshots remain as published, so comparisons across the correction include this calculation change. See the <a href="/corrections">dated corrections log</a> for the evidence and affected values.</p>
+      <p>A subsequent source-definition audit found that the inflation adapter had subtracted BoE series <code>IUDSIZC</code> from a nominal yield. IUDSIZC is already the five-year inflation zero-coupon series; it is now used directly. It represents RPI-linked inflation compensation, including risk and liquidity premia, rather than a pure CPI forecast. We also corrected a vacancies/unemployment ratio that had mixed reference months. The original Budget reference archive is preserved, but those two invalid inputs are withdrawn from the before/after comparison. Data corrections and baseline extensions are marked separately from economic events on the chart.</p>
 
       <div class="band-table">
         <h3>Score bands</h3>
@@ -281,7 +282,7 @@ function ecdfPath(): string {
 
     <section class="block">
       <h2>Licensing &amp; attribution</h2>
-      <p>UK public-sector data on this site (Bank of England, OBR, ONS, DMO, MHCLG, DESNZ, gov.uk, parliament.uk, legislation.gov.uk) is reproduced under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" rel="noopener" target="_blank">Open Government Licence v3.0</a>. Per-source terms — including non-OGL feeds (S&amp;P Global PMI, EODHD, Moneyfacts, RICS, GfK / NIESR) — are listed on the <a href="/sources#licensing">sources page</a>. The application code is MIT-licensed.</p>
+      <p>UK public-sector data on this site (Bank of England, OBR, ONS, DMO, MHCLG, DESNZ, gov.uk, parliament.uk, legislation.gov.uk) is reproduced under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" rel="noopener" target="_blank">Open Government Licence v3.0</a>. Per-source terms — including non-OGL feeds (S&amp;P Global PMI, EODHD, Moneyfacts, RICS, GfK / NIM) — are listed on the <a href="/sources#licensing">sources page</a>. The application code is MIT-licensed.</p>
     </section>
   </main>
   <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={Boolean(snapshot.headline.stale)} />

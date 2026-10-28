@@ -116,7 +116,7 @@ describe("maxStaleMsForIndicator", () => {
 
   it("mortgage_2y_fix uses the BoE monthly window now that the source is IUMBV34", () => {
     // The series moved from Moneyfacts (advertised, monthly press release)
-    // to BoE IADB IUMBV34 (effective new-business, monthly). The freshness
+    // to BoE IADB IUMBV34 (quoted 2y fixed at 75% LTV, monthly). The freshness
     // window is now ONS-monthly-equivalent (60 days), matching the RTI
     // monthly cadence. If anyone moves it back to a daily window, the BoE
     // monthly print will trip the staleness banner the day after it lands.

@@ -35,7 +35,7 @@ const realPayLive = pillar.contributions.find((c) => c.indicatorId === "real_reg
 // Only actual scored observations appear here. Historical-looking illustrative
 // arcs previously mixed invented points and latest readings on the same axes.
 const readings = [
-  { id: "real_regular_pay", title: "Real regular pay growth", contribution: realPayLive, note: "Annual growth in regular pay after CPIH inflation. Positive means purchasing power is rising." },
+  { id: "real_regular_pay", title: "Real total pay growth", contribution: realPayLive, note: "Annual growth in the three-month average of total pay, including bonuses, after CPIH inflation. Positive means purchasing power is rising." },
   { id: "vacancies_per_unemployed", title: "Vacancies per unemployed person", contribution: vuLive, note: "Vacancies divided by the number unemployed. Higher values indicate a tighter labour market." },
   { id: "inactivity_rate", title: "Economic inactivity rate", contribution: inactivityRateLive, note: "Share of people aged 16–64 outside the labour force. Lower means more people available to work." },
   { id: "inactivity_health", title: "Inactive due to long-term sickness", contribution: inactivityHealthLive, note: "People aged 16–64 outside the labour force due to long-term sickness." },
@@ -89,14 +89,14 @@ const readings = [
         <div class="card-head">
           <h3>Mortgage translator</h3>
           <IllustrativeBadge
-            sourceSummary={`Live indicator: mortgage_2y_fix (BoE IADB IUMBV34 — monthly effective rate on new 2-year fixes at 75% LTV). Baseline ${MORTGAGE_BUDGET_BASELINE_PCT.toFixed(2)}% is the IUMBV34 print for the ${MORTGAGE_BUDGET_BASELINE_LABEL}. £250k / 25-year is the worked example.`}
+            sourceSummary={`Live indicator: mortgage_2y_fix (BoE IADB IUMBV34 — monthly quoted 2-year fixed mortgage rate at 75% LTV). Baseline ${MORTGAGE_BUDGET_BASELINE_PCT.toFixed(2)}% is the IUMBV34 print for the ${MORTGAGE_BUDGET_BASELINE_LABEL}. £250k / 25-year is the worked example.`}
             sourceUrl="https://www.bankofengland.co.uk/statistics/visual-summaries/effective-interest-rates"
           />
         </div>
         <p class="hint">What the 2-year fixed-rate move means on a £250,000, 25-year repayment mortgage.</p>
         <div class="mortgage-big">{m ? formatExtra(m.extraPerMonth) : "—"}<span class="mortgage-sub"> / month</span></div>
         <p class="mortgage-caption">{m ? `Change vs. the rate at the ${MORTGAGE_BUDGET_BASELINE_LABEL} (${m.baselineRate.toFixed(2)}% → ${m.currentRate.toFixed(2)}%). Payment: £${m.currentPayment.toLocaleString("en-GB")} vs. £${m.baselinePayment.toLocaleString("en-GB")}.` : "A current mortgage-rate observation is required for this worked example."}</p>
-        <p class="mortgage-note">The rate series is the Bank of England's IUMBV34 monthly effective rate on new 2-year fixes at 75% LTV{mortgageObservedAt ? ` · latest reading ${shortDate(mortgageObservedAt)}` : ""}.</p>
+        <p class="mortgage-note">The rate series is the Bank of England's IUMBV34 monthly quoted 2-year fixed mortgage rate at 75% LTV{mortgageObservedAt ? ` · latest reading ${shortDate(mortgageObservedAt)}` : ""}. The payment is a worked example, not a measure of actual household repayments.</p>
       </div>
 
       <div class="chart-card labour-context">

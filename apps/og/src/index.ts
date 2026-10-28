@@ -187,14 +187,9 @@ async function renderGilt30y(env: Env): Promise<Response> {
 }
 
 /**
- * `housing_trajectory` is computed as annualised completions ÷ 300k OBR
- * working assumption × 100. The card uses the same 300k denominator so
- * the headline percentage and the indicator value match exactly (audit
- * 2026-04-29). Labour's 305k political pledge is surfaced on the
- * homepage delivery-commitment card prose, where both denominators are
- * explained side by side; on a single OG card we prefer arithmetic
- * coherence over political-headline framing — a viewer punching the
- * displayed numbers into a calculator must land on the same percentage.
+ * `housing_trajectory` is annualised SA new-build completions ÷ the
+ * fixed 300k annual tracker benchmark × 100. The card uses the same
+ * denominator so the displayed percentage matches the indicator.
  */
 const HOUSING_TARGET_THOUSANDS = 300;
 

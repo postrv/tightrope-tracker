@@ -19,9 +19,9 @@
  */
 
 /**
- * The 300,000 homes-per-year government target the OBR uses as its housing
- * trajectory working assumption. See housing-history.json → methodology →
- * housing_trajectory (trajectory_source: the long-term plan for housing).
+ * Fixed annual benchmark used by this tracker for annualised quarterly
+ * new-build completions. It is not a claim about an OBR forecast or the
+ * scope of the net-additional-dwellings measure.
  */
 export const HOUSING_TRAJECTORY_ANNUAL_TARGET = 300_000;
 

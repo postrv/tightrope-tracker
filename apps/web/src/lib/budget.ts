@@ -6,6 +6,13 @@ import recordedBaseline from "../../../../packages/data-sources/src/fixtures/bud
  * not an assertion about the precise start of the Chancellor's statement. */
 export const BUDGET_COMPARISON_AT = "2026-10-28T12:30:00Z";
 
+// The original snapshot stays immutable. These captured inputs were later
+// found to be invalid, so they cannot serve as a before/after denominator.
+const INVALIDATED_BASELINES: Record<string, string> = {
+  breakeven_5y: "The archived reference subtracted the BoE inflation series from a nominal yield. IUDSIZC already measures inflation compensation; the original reference is invalid and no Budget change is calculated.",
+  vacancies_per_unemployed: "The archived reference combined vacancies and unemployment from different months. The corrected reading uses their latest common period; no Budget change is calculated from the invalid reference.",
+};
+
 export interface BudgetReading {
   value: number;
   display: string;
@@ -23,7 +30,8 @@ export interface BudgetIndicatorComparison {
   pillar: string;
   before: BudgetReading | null;
   latest: BudgetReading | null;
-  status: "post_budget_observation" | "budget_day_observation" | "forecast_revision" | "awaiting_post_budget_data" | "baseline_unavailable" | "unavailable";
+  status: "post_budget_observation" | "budget_day_observation" | "forecast_revision" | "awaiting_post_budget_data" | "baseline_unavailable" | "baseline_invalidated" | "unavailable";
+  baselineNotice: string | null;
   delta: number | null;
   deltaDisplay: string | null;
 }
@@ -71,7 +79,8 @@ function reading(row: LatestObservationRow | undefined, id: string): BudgetReadi
 
 export function compareBudgetIndicator(id: string, beforeRow?: LatestObservationRow, latestRow?: LatestObservationRow): BudgetIndicatorComparison {
   const definition = INDICATORS[id]!;
-  const before = reading(beforeRow, id);
+  const baselineNotice = INVALIDATED_BASELINES[id] ?? null;
+  const before = baselineNotice ? null : reading(beforeRow, id);
   const latest = reading(latestRow, id);
   // A later ingest/release of an older reference period is not a post-Budget
   // economic outcome. OBR is explicitly a forecast-vintage comparison.
@@ -82,7 +91,7 @@ export function compareBudgetIndicator(id: string, beforeRow?: LatestObservation
   const isBudgetDay = latest && latest.observedAt.slice(0, 10) === BUDGET_COMPARISON_AT.slice(0, 10)
     && /T00:00:00(?:\.000)?Z$/.test(latest.observedAt)
     && (!latest.releasedAt || Date.parse(latest.releasedAt) >= Date.parse(BUDGET_COMPARISON_AT));
-  const status = !latest ? "unavailable" : !before ? "baseline_unavailable"
+  const status = !latest ? "unavailable" : baselineNotice ? "baseline_invalidated" : !before ? "baseline_unavailable"
     : hasNewForecast ? "forecast_revision" : hasNewReference ? "post_budget_observation"
     : isBudgetDay ? "budget_day_observation" : "awaiting_post_budget_data";
   // Do not manufacture a zero change for a feed that still predates the event.
@@ -91,7 +100,7 @@ export function compareBudgetIndicator(id: string, beforeRow?: LatestObservation
   const unit = definition.unit;
   const formattedDelta = delta === null ? null : unit === "%" ? (["gilt_10y", "gilt_30y", "breakeven_5y", "mortgage_2y_fix"].includes(id) ? `${Math.abs(delta * 100).toFixed(1)} bp` : `${Math.abs(delta).toFixed(2)} pp`)
     : unit === "GBPbn" ? `£${Math.abs(delta).toFixed(1)}bn` : `${Math.abs(delta).toFixed(2)} ${unit}`;
-  return { id, label: definition.label, unit, pillar: definition.pillar, before, latest, status, delta,
+  return { id, label: definition.label, unit, pillar: definition.pillar, before, latest, status, baselineNotice, delta,
     deltaDisplay: delta === null ? null : `${delta > 0 ? "+" : delta < 0 ? "−" : ""}${formattedDelta}` };
 }
 

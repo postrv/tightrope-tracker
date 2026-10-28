@@ -100,10 +100,10 @@ const allCards: (Card | null)[] = [
     id: "housing",
     variant: "",
     brand: "Tightrope Tracker · Delivery",
-    // housing_trajectory is % of the 300k OBR path, not a dwelling count.
+    // housing_trajectory is % of the fixed 300k annual benchmark, not a dwelling count.
     // Recover annualised completions (000s) the same way the OG card does.
     stat: `${Math.round((housingContrib.rawValue / 100) * 300).toLocaleString("en-GB")}k`,
-    label: `Annualised completions vs the 300k OBR path (${housingContrib.rawValue.toFixed(1)}%). Government pledge: 305k a year by 2030/31.`,
+    label: `Annualised seasonally adjusted new-build completions vs the fixed 300k annual benchmark (${housingContrib.rawValue.toFixed(1)}%).`,
     foot: ["Source · MHCLG", shortDate(housingContrib.observedAt)],
     ogPath: "/og/delivery-housing.png",
   } : null,

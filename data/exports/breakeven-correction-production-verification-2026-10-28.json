@@ -1,0 +1,72 @@
+{
+  "checkedAt": "2026-10-28T18:19:50.944Z",
+  "appliedAt": "2026-10-28T18:17:34.568Z",
+  "beforePublished": {
+    "observed_at": "2026-10-28T18:15:27.758Z",
+    "value": 39.1
+  },
+  "after": {
+    "headline": 40.2,
+    "updatedAt": "2026-10-28T18:18:54.547Z",
+    "pillars": {
+      "market": 36,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "breakeven": {
+      "indicatorId": "breakeven_5y",
+      "rawValue": 3.6941,
+      "rawValueUnit": "%",
+      "zScore": 0.8605336214652656,
+      "normalised": 22.906403940886698,
+      "weight": 0.12,
+      "sourceId": "boe_yields",
+      "observedAt": "2026-10-26T16:00:00Z"
+    },
+    "sourceHealth": []
+  },
+  "disclosurePublished": true,
+  "timelinePublished": true,
+  "correctionTime": "2026-10-28T18:17:35.521Z",
+  "timelineTime": "2026-10-28T18:17:35.521Z",
+  "rawRows": 8293,
+  "latestAudits": [
+    {
+      "source_id": "boe_breakevens",
+      "started_at": "2026-10-28T18:17:35.755Z",
+      "completed_at": "2026-10-28T18:17:36.950Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSIZC%2CIUDSNZC%2CIUDSRZC&Datefrom=01%2FJan%2F2024&Dateto=28%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "boe_breakevens:correction",
+      "started_at": "2026-10-28T18:17:34.286Z",
+      "completed_at": "2026-10-28T18:17:35.521Z",
+      "status": "success",
+      "rows_written": 1066,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSIZC%2CIUDSNZC%2CIUDSRZC&Datefrom=01%2FJan%2F2024&Dateto=28%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "eodhd_housebuilders",
+      "started_at": "2026-10-28T18:05:30.247Z",
+      "completed_at": null,
+      "status": "started",
+      "rows_written": 0,
+      "error": null,
+      "source_url": "adapter:eodhd_housebuilders"
+    },
+    {
+      "source_id": "lseg",
+      "started_at": "2026-10-28T18:05:28.957Z",
+      "completed_at": "2026-10-28T18:05:30.117Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "adapter:lseg"
+    }
+  ]
+}

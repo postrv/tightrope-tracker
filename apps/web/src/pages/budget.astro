@@ -17,12 +17,14 @@ const newObservations = comparison.indicators.filter(row => row.status === "post
 const budgetDayReadings = comparison.indicators.filter(row => row.status === "budget_day_observation").length;
 const forecasts = comparison.indicators.filter(row => row.status === "forecast_revision").length;
 const waiting = comparison.indicators.filter(row => row.status === "awaiting_post_budget_data").length;
+const withdrawn = comparison.indicators.filter(row => row.status === "baseline_invalidated").length;
 const statusLabel = {
   post_budget_observation: "New observation",
   budget_day_observation: "Budget-day reading · time unavailable",
   forecast_revision: "Forecast revision",
   awaiting_post_budget_data: "Awaiting new data",
   baseline_unavailable: "Baseline not retained",
+  baseline_invalidated: "Reference corrected · not comparable",
   unavailable: "Reading unavailable",
 };
 function stamp(iso: string | null | undefined): string {
@@ -56,7 +58,7 @@ const scoreDelta = comparison.score.delta;
     <section class="readings-section" aria-labelledby="readings-heading">
       <div class="section-head"><div><span class="eyebrow">Recorded inputs · before and after</span><h2 id="readings-heading">what has actually printed?</h2></div><span class="updated">Checked {stamp(comparison.generatedAt)}</span></div>
       <p class="section-intro">The earlier reference readings come from an archived snapshot timestamped <strong>12:55 UTC on 28 October</strong> (saved at 12:56 UTC), before the OBR’s 13:29 publication but after Parliament’s announced approximate 12:30 statement start. These inputs were already published before that boundary; some surveys use month-end reference labels. These are earlier published readings, not market quotes at 12:55. The exact statement start is not independently verified.</p>
-      <div class="reading-key" aria-label="Reading status legend"><span><i class="new"></i><strong>{newObservations}</strong> observations after the cutoff</span><span><i class="day"></i><strong>{budgetDayReadings}</strong> Budget-day readings · time unavailable</span><span><i class="forecast"></i><strong>{forecasts}</strong> forecast revisions</span><span><i class="waiting"></i><strong>{waiting}</strong> awaiting new data</span></div>
+      <div class="reading-key" aria-label="Reading status legend"><span><i class="new"></i><strong>{newObservations}</strong> observations after the cutoff</span><span><i class="day"></i><strong>{budgetDayReadings}</strong> Budget-day readings · time unavailable</span><span><i class="forecast"></i><strong>{forecasts}</strong> forecast revisions</span><span><i class="waiting"></i><strong>{waiting}</strong> awaiting new data</span>{withdrawn ? <span><i class="waiting"></i><strong>{withdrawn}</strong> invalid references withdrawn</span> : null}</div>
       {comparison.unavailable ? <div class="notice" role="status">Live comparison data is unavailable. The official forecast above remains source-linked; no market changes have been filled in.</div> : (
         <>
           <div class="reading-controls"><div class="filter-buttons" aria-label="Filter readings"><button type="button" data-budget-filter="all" aria-pressed="true">All readings</button><button type="button" data-budget-filter="market" aria-pressed="false">Markets</button><button type="button" data-budget-filter="new" aria-pressed="false">New readings</button><button type="button" data-budget-filter="awaiting_post_budget_data" aria-pressed="false">Waiting</button></div><label class="search-label">Find an input<input type="search" data-budget-search placeholder="e.g. gilt, pay, housing" /></label></div>
@@ -65,7 +67,7 @@ const scoreDelta = comparison.score.delta;
             {comparison.indicators.map(row => (
               <tr data-budget-row data-pillar={row.pillar} data-status={row.status} data-search={`${row.label} ${row.id}`.toLowerCase()}>
                 <th scope="row"><span class="input-name">{row.label}</span><span class="pillar-label">{row.pillar}</span>{row.latest?.sourceUrl ? <a class="row-source" href={row.latest.sourceUrl} target="_blank" rel="noopener noreferrer">{row.latest.sourceLabel} ↗</a> : null}</th>
-                <td>{row.before ? <><strong class="reading-value">{row.before.display}</strong><time datetime={row.before.observedAt}>{stamp(row.before.observedAt)}</time>{row.before.releasedAt && row.before.releasedAt !== row.before.observedAt ? <span class="release-stamp">Released {stamp(row.before.releasedAt)}</span> : null}</> : <span class="missing">Not retained</span>}</td>
+                <td>{row.before ? <><strong class="reading-value">{row.before.display}</strong><time datetime={row.before.observedAt}>{stamp(row.before.observedAt)}</time>{row.before.releasedAt && row.before.releasedAt !== row.before.observedAt ? <span class="release-stamp">Released {stamp(row.before.releasedAt)}</span> : null}</> : <span class="missing">{row.baselineNotice ? "Invalid reference withdrawn" : "Not retained"}</span>}{row.baselineNotice ? <span class="release-stamp">{row.baselineNotice} <a href="/corrections">Correction details ↗</a></span> : null}</td>
                 <td>{row.latest ? <><strong class="reading-value">{row.latest.display}</strong><time datetime={row.latest.observedAt}>{stamp(row.latest.observedAt)}</time>{row.latest.releasedAt && row.latest.releasedAt !== row.latest.observedAt ? <span class="release-stamp">Released {stamp(row.latest.releasedAt)}</span> : null}</> : <span class="missing">Unavailable</span>}</td>
                 <td><span class={`status-badge ${row.status}`}>{statusLabel[row.status]}</span>{row.deltaDisplay !== null ? <strong class="reading-delta">{row.deltaDisplay}</strong> : <span class="no-delta">Change not shown</span>}</td>
               </tr>

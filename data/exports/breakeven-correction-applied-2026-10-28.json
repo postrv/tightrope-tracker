@@ -1,0 +1,22 @@
+{
+  "rowsWritten": 1066,
+  "appliedAt": "2026-10-28T18:17:34.568Z",
+  "liveOutcome": {
+    "status": "success",
+    "rowsWritten": 1
+  },
+  "rowsVerified": 1066,
+  "mismatches": 0,
+  "latest": {
+    "indicator_id": "breakeven_5y",
+    "source_id": "boe_yields",
+    "observed_at": "2026-10-26T16:00:00Z",
+    "value": 3.6941,
+    "released_at": null,
+    "payload_hash": "183bfd76cbc5d2cd13a508a5600cdf2a7b0a94afa09e580d161c61cfd9207473",
+    "ingested_at": "2026-10-28T18:17:36.342Z"
+  },
+  "sourceCsvSha256": "183bfd76cbc5d2cd13a508a5600cdf2a7b0a94afa09e580d161c61cfd9207473",
+  "beforeSha256": "1e34a817d4fd2bd602cec8188f93827e68d3d686047e5cbc8118b1b9153500c6",
+  "scoreHistoryWrites": 0
+}

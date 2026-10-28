@@ -4,9 +4,9 @@
     "housing_trajectory": {
       "formula": "completions_sa_quarterly * 4 / 300000 * 100",
       "unit": "% of target",
-      "rationale": "Quarterly new-build dwelling completions (seasonally adjusted) annualised by x4, expressed as a percentage of the 300,000 homes-per-year government target that OBR uses as its housing trajectory working assumption. Deliberately uses completions (not annual 'net additional dwellings') so every quarter has a primary-source number; NAD is published once a year and is not a quarterly series.",
+      "rationale": "Quarterly new-build dwelling completions (seasonally adjusted), annualised by x4 and expressed as a percentage of this tracker's fixed 300,000-homes annual benchmark. This is a benchmark ratio, not an OBR forecast. It uses new-build completions rather than the broader annual net-additional-dwellings measure.",
       "primary_source": "MHCLG Housing supply: indicators of new supply quarterly releases (headline 'Completions (seasonally adjusted)' figure)",
-      "trajectory_source": "UK government 300,000/year housing target; https://www.gov.uk/government/publications/long-term-plan-for-housing",
+      "trajectory_source": "Fixed tracker benchmark of 300,000 homes per year, preserved for series continuity. It is not a measured annual outturn or an OBR forecast.",
       "implemented_in": "Implemented in packages/shared/src/derivations.ts (single code home; drift-guarded by packages/data-sources/src/fixtures/housingDerivation.test.ts — a value/raw pair that disagrees with the formula fails CI). This prose block remains the rationale + primary-source citation record."
     },
     "planning_consents": {

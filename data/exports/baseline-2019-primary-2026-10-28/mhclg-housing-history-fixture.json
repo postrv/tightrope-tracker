@@ -1,0 +1,990 @@
+{
+  "_comment": "Curated quarterly MHCLG delivery history. Each point cites its source document and raw upstream figure. Leading 2019–2022 points use the 24 September 2026 official live-table vintage, with archived workbooks and cell-level provenance; existing later components retain their original vintages and values.",
+  "methodology": {
+    "housing_trajectory": {
+      "formula": "completions_sa_quarterly * 4 / 300000 * 100",
+      "unit": "% of target",
+      "rationale": "Quarterly new-build dwelling completions (seasonally adjusted), annualised by x4 and expressed as a percentage of this tracker's fixed 300,000-homes annual benchmark. This is a benchmark ratio, not an OBR forecast. It uses new-build completions rather than the broader annual net-additional-dwellings measure.",
+      "primary_source": "MHCLG Housing supply: indicators of new supply quarterly releases (headline 'Completions (seasonally adjusted)' figure)",
+      "trajectory_source": "Fixed tracker benchmark of 300,000 homes per year, preserved for series continuity. It is not a measured annual outturn or an OBR forecast.",
+      "implemented_in": "Implemented in packages/shared/src/derivations.ts (single code home; drift-guarded by packages/data-sources/src/fixtures/housingDerivation.test.ts — a value/raw pair that disagrees with the formula fails CI). This prose block remains the rationale + primary-source citation record."
+    },
+    "planning_consents": {
+      "formula": "total_residential_decisions_granted_quarterly / 11500 * 100",
+      "unit": "% of fixed estimated 11,500 quarterly benchmark",
+      "rationale": "Major plus minor residential planning applications granted in the quarter, expressed as a percentage of the tracker's fixed estimated 11,500 quarterly benchmark. The September 2026 official P120A workbook gives exact calendar 2019 quarter counts 11,201, 10,900, 11,464 and 11,133 (mean 11,174.5). The original 11,500 approximation is preserved for continuity; it is not the exact official mean. Applications are not dwelling units.",
+      "primary_source": "MHCLG Planning applications in England quarterly releases and live Table P120A, major applications granted (column D) plus minor applications granted (column L).",
+      "implemented_in": "Implemented in packages/shared/src/derivations.ts (single code home; drift-guarded by packages/data-sources/src/fixtures/housingDerivation.test.ts — a value/raw pair that disagrees with the formula fails CI). This prose block remains the rationale + primary-source citation record."
+    }
+  },
+  "baseline_note": "Each indicator covers 2019 Q1 through 2026 Q2. Leading 13 housing and 15 planning observations were extracted from the official 24 September 2026 current-vintage workbooks. Existing 2022–2026 components retain their previously recorded values and publication metadata. Source vintages are mixed; this is current-revision baseline history, not an as-known-at-the-time archive. COVID 2020 Q2 remains excluded from scoring baselines by existing policy.",
+  "points": [
+    {
+      "observed_at": "2019-03-31T00:00:00Z",
+      "period": "2019 Q1",
+      "housing_trajectory": {
+        "value": 57.7,
+        "raw_completions_sa": 43280,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 82,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I82": 43280
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 97.4,
+        "raw_decisions_granted": 11201,
+        "raw_major_decisions_granted": 1586,
+        "raw_minor_decisions_granted": 9615,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 50,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D50": 1586,
+            "L50": 9615
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2019-06-30T00:00:00Z",
+      "period": "2019 Q2",
+      "housing_trajectory": {
+        "value": 59.4,
+        "raw_completions_sa": 44560,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 83,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I83": 44560
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 94.8,
+        "raw_decisions_granted": 10900,
+        "raw_major_decisions_granted": 1400,
+        "raw_minor_decisions_granted": 9500,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 52,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D52": 1400,
+            "L52": 9500
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2019-09-30T00:00:00Z",
+      "period": "2019 Q3",
+      "housing_trajectory": {
+        "value": 60.8,
+        "raw_completions_sa": 45630,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 84,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I84": 45630
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 99.7,
+        "raw_decisions_granted": 11464,
+        "raw_major_decisions_granted": 1423,
+        "raw_minor_decisions_granted": 10041,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 53,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D53": 1423,
+            "L53": 10041
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2019-12-31T00:00:00Z",
+      "period": "2019 Q4",
+      "housing_trajectory": {
+        "value": 59.2,
+        "raw_completions_sa": 44390,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 85,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I85": 44390
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 96.8,
+        "raw_decisions_granted": 11133,
+        "raw_major_decisions_granted": 1531,
+        "raw_minor_decisions_granted": 9602,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 54,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D54": 1531,
+            "L54": 9602
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2020-03-31T00:00:00Z",
+      "period": "2020 Q1",
+      "housing_trajectory": {
+        "value": 53.8,
+        "raw_completions_sa": 40320,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 86,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I86": 40320
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 88.7,
+        "raw_decisions_granted": 10204,
+        "raw_major_decisions_granted": 1310,
+        "raw_minor_decisions_granted": 8894,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 55,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D55": 1310,
+            "L55": 8894
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2020-06-30T00:00:00Z",
+      "period": "2020 Q2",
+      "housing_trajectory": {
+        "value": 21.5,
+        "raw_completions_sa": 16100,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 87,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I87": 16100
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 79.1,
+        "raw_decisions_granted": 9093,
+        "raw_major_decisions_granted": 1018,
+        "raw_minor_decisions_granted": 8075,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 57,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D57": 1018,
+            "L57": 8075
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2020-09-30T00:00:00Z",
+      "period": "2020 Q3",
+      "housing_trajectory": {
+        "value": 59.5,
+        "raw_completions_sa": 44600,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 88,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I88": 44600
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 86.2,
+        "raw_decisions_granted": 9917,
+        "raw_major_decisions_granted": 1323,
+        "raw_minor_decisions_granted": 8594,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 58,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D58": 1323,
+            "L58": 8594
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2020-12-31T00:00:00Z",
+      "period": "2020 Q4",
+      "housing_trajectory": {
+        "value": 61.3,
+        "raw_completions_sa": 46010,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 89,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I89": 46010
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 88.1,
+        "raw_decisions_granted": 10132,
+        "raw_major_decisions_granted": 1322,
+        "raw_minor_decisions_granted": 8810,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 59,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D59": 1322,
+            "L59": 8810
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2021-03-31T00:00:00Z",
+      "period": "2021 Q1",
+      "housing_trajectory": {
+        "value": 65.6,
+        "raw_completions_sa": 49230,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 90,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I90": 49230
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 85.4,
+        "raw_decisions_granted": 9817,
+        "raw_major_decisions_granted": 1282,
+        "raw_minor_decisions_granted": 8535,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 60,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D60": 1282,
+            "L60": 8535
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2021-06-30T00:00:00Z",
+      "period": "2021 Q2",
+      "housing_trajectory": {
+        "value": 56.7,
+        "raw_completions_sa": 42490,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 91,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I91": 42490
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 83.5,
+        "raw_decisions_granted": 9597,
+        "raw_major_decisions_granted": 1216,
+        "raw_minor_decisions_granted": 8381,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 62,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D62": 1216,
+            "L62": 8381
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2021-09-30T00:00:00Z",
+      "period": "2021 Q3",
+      "housing_trajectory": {
+        "value": 57.8,
+        "raw_completions_sa": 43330,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 92,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I92": 43330
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 83.9,
+        "raw_decisions_granted": 9644,
+        "raw_major_decisions_granted": 1123,
+        "raw_minor_decisions_granted": 8521,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 63,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D63": 1123,
+            "L63": 8521
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2021-12-31T00:00:00Z",
+      "period": "2021 Q4",
+      "housing_trajectory": {
+        "value": 54.5,
+        "raw_completions_sa": 40890,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 93,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I93": 40890
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 82.1,
+        "raw_decisions_granted": 9447,
+        "raw_major_decisions_granted": 1191,
+        "raw_minor_decisions_granted": 8256,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 64,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D64": 1191,
+            "L64": 8256
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2022-03-31T00:00:00Z",
+      "period": "2022 Q1",
+      "housing_trajectory": {
+        "value": 60.1,
+        "raw_completions_sa": 45080,
+        "release": "MHCLG Table 222: new-build completions, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+          "source_sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+          "sheet": "LT_222a",
+          "row": 94,
+          "columns": [
+            "I"
+          ],
+          "cells": {
+            "I94": 45080
+          }
+        }
+      },
+      "planning_consents": {
+        "value": 80.2,
+        "raw_decisions_granted": 9219,
+        "raw_major_decisions_granted": 1228,
+        "raw_minor_decisions_granted": 7991,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 65,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D65": 1228,
+            "L65": 7991
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2022-06-30T00:00:00Z",
+      "period": "2022 Q2",
+      "housing_trajectory": {
+        "value": 59.9,
+        "raw_completions_sa": 44940,
+        "release": "Housing supply: indicators of new supply, England: April to June 2022",
+        "published": "2022-09-15",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2022"
+      },
+      "planning_consents": {
+        "value": 75.4,
+        "raw_decisions_granted": 8668,
+        "raw_major_decisions_granted": 1005,
+        "raw_minor_decisions_granted": 7663,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 67,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D67": 1005,
+            "L67": 7663
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2022-09-30T00:00:00Z",
+      "period": "2022 Q3",
+      "housing_trajectory": {
+        "value": 57.3,
+        "raw_completions_sa": 42950,
+        "release": "Housing supply: indicators of new supply, England: July to September 2022",
+        "published": "2022-12-14",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-july-to-september-2022"
+      },
+      "planning_consents": {
+        "value": 76.8,
+        "raw_decisions_granted": 8833,
+        "raw_major_decisions_granted": 1011,
+        "raw_minor_decisions_granted": 7822,
+        "release": "MHCLG Table P120A: residential applications granted, September 2026 current-vintage back-series",
+        "published": "2026-09-24",
+        "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+        "publication_note": "Current-vintage workbook publication date, not the original quarter release date. Midnight is a date-only storage convention.",
+        "provenance": {
+          "source_archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+          "source_sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+          "sheet": "LT_P120A",
+          "row": 68,
+          "columns": [
+            "D",
+            "L"
+          ],
+          "cells": {
+            "D68": 1011,
+            "L68": 7822
+          }
+        }
+      }
+    },
+    {
+      "observed_at": "2022-12-31T00:00:00Z",
+      "period": "2022 Q4",
+      "housing_trajectory": {
+        "value": 61.4,
+        "raw_completions_sa": 46080,
+        "release": "Housing supply: indicators of new supply, England: October to December 2022",
+        "published": "2023-03-23",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-october-to-december-2022"
+      },
+      "planning_consents": {
+        "value": 76.5,
+        "raw_decisions_granted": 8800,
+        "release": "Planning applications in England: October to December 2022",
+        "published": "2023-03-30",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-october-to-december-2022"
+      }
+    },
+    {
+      "observed_at": "2023-03-31T00:00:00Z",
+      "period": "2023 Q1",
+      "housing_trajectory": {
+        "value": 53.3,
+        "raw_completions_sa": 39970,
+        "release": "Housing supply: indicators of new supply, England: January to March 2023",
+        "published": "2023-06-29",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-january-to-march-2023"
+      },
+      "planning_consents": {
+        "value": 73,
+        "raw_decisions_granted": 8400,
+        "release": "Planning applications in England: January to March 2023",
+        "published": "2023-06-08",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-january-to-march-2023"
+      }
+    },
+    {
+      "observed_at": "2023-06-30T00:00:00Z",
+      "period": "2023 Q2",
+      "housing_trajectory": {
+        "value": 52.8,
+        "raw_completions_sa": 39620,
+        "release": "Housing supply: indicators of new supply, England: April to June 2023",
+        "published": "2023-09-28",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2023"
+      },
+      "planning_consents": {
+        "value": 69.6,
+        "raw_decisions_granted": 8000,
+        "release": "Planning applications in England: April to June 2023",
+        "published": "2023-09-07",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-april-to-june-2023"
+      }
+    },
+    {
+      "observed_at": "2023-09-30T00:00:00Z",
+      "period": "2023 Q3",
+      "housing_trajectory": {
+        "value": 53.3,
+        "raw_completions_sa": 39990,
+        "release": "Housing supply: indicators of new supply, England: July to September 2023",
+        "published": "2024-01-24",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-july-to-september-2023"
+      },
+      "planning_consents": {
+        "value": 68.7,
+        "raw_decisions_granted": 7900,
+        "release": "Planning applications in England: July to September 2023",
+        "published": "2023-12-07",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-july-to-september-2023"
+      }
+    },
+    {
+      "observed_at": "2023-12-31T00:00:00Z",
+      "period": "2023 Q4",
+      "housing_trajectory": {
+        "value": 52.9,
+        "raw_completions_sa": 39650,
+        "release": "Housing supply: indicators of new supply, England: October to December 2023",
+        "published": "2024-03-28",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-october-to-december-2023"
+      },
+      "planning_consents": {
+        "value": 70.4,
+        "raw_decisions_granted": 8100,
+        "release": "Planning applications in England: October to December 2023",
+        "published": "2024-03-15",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-october-to-december-2023"
+      }
+    },
+    {
+      "observed_at": "2024-03-31T00:00:00Z",
+      "period": "2024 Q1",
+      "housing_trajectory": {
+        "value": 46.2,
+        "raw_completions_sa": 34630,
+        "release": "Housing supply: indicators of new supply, England: January to March 2024",
+        "published": "2024-06-27",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-january-to-march-2024"
+      },
+      "planning_consents": {
+        "value": 67.8,
+        "raw_decisions_granted": 7800,
+        "release": "Planning applications in England: January to March 2024",
+        "published": "2024-06-13",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-january-to-march-2024"
+      }
+    },
+    {
+      "observed_at": "2024-06-30T00:00:00Z",
+      "period": "2024 Q2",
+      "housing_trajectory": {
+        "value": 57.4,
+        "raw_completions_sa": 43030,
+        "release": "Housing supply: indicators of new supply, England: April to June 2024",
+        "published": "2024-09-27",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2024"
+      },
+      "planning_consents": {
+        "value": 66.1,
+        "raw_decisions_granted": 7600,
+        "release": "Planning applications in England: April to June 2024",
+        "published": "2024-09-24",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-april-to-june-2024"
+      }
+    },
+    {
+      "observed_at": "2024-09-30T00:00:00Z",
+      "period": "2024 Q3",
+      "housing_trajectory": {
+        "value": 48.8,
+        "raw_completions_sa": 36580,
+        "release": "Housing supply: indicators of new supply, England: July to September 2024",
+        "published": "2025-01-23",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-july-to-september-2024"
+      },
+      "planning_consents": {
+        "value": 63.5,
+        "raw_decisions_granted": 7300,
+        "release": "Planning applications in England: July to September 2024",
+        "published": "2025-01-16",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-july-to-september-2024"
+      }
+    },
+    {
+      "observed_at": "2024-12-31T00:00:00Z",
+      "period": "2024 Q4",
+      "housing_trajectory": {
+        "value": 49.1,
+        "raw_completions_sa": 36830,
+        "release": "Housing supply: indicators of new supply, England: October to December 2024",
+        "published": "2025-03-27",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-october-to-december-2024"
+      },
+      "planning_consents": {
+        "value": 64.3,
+        "raw_decisions_granted": 7400,
+        "release": "Planning applications in England: October to December 2024",
+        "published": "2025-03-20",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-october-to-december-2024"
+      }
+    },
+    {
+      "observed_at": "2025-03-31T00:00:00Z",
+      "period": "2025 Q1",
+      "housing_trajectory": {
+        "value": 48.2,
+        "raw_completions_sa": 36180,
+        "release": "Housing supply: indicators of new supply, England: January to March 2025",
+        "published": "2025-06-20",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-january-to-march-2025"
+      },
+      "planning_consents": {
+        "value": 60.9,
+        "raw_decisions_granted": 7000,
+        "_note": "The statistical release reports 900 major and 6,100 minor residential decisions granted, totalling 7,000.",
+        "release": "Planning applications in England: January to March 2025",
+        "published": "2025-06-19",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-january-to-march-2025/planning-applications-in-england-january-to-march-2025-statistical-release--2"
+      }
+    },
+    {
+      "observed_at": "2025-06-30T00:00:00Z",
+      "period": "2025 Q2",
+      "housing_trajectory": {
+        "value": 46.7,
+        "raw_completions_sa": 34990,
+        "release": "Housing supply: indicators of new supply, England: April to June 2025",
+        "published": "2025-09-19",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2025"
+      },
+      "planning_consents": {
+        "value": 60.9,
+        "raw_decisions_granted": 7000,
+        "release": "Planning applications in England: April to June 2025",
+        "published": "2025-09-18",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-april-to-june-2025"
+      }
+    },
+    {
+      "observed_at": "2025-09-30T00:00:00Z",
+      "period": "2025 Q3",
+      "housing_trajectory": {
+        "value": 44,
+        "raw_completions_sa": 33020,
+        "release": "Housing supply: indicators of new supply, England: July to September 2025",
+        "published": "2026-01-15",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-july-to-september-2025"
+      },
+      "planning_consents": {
+        "value": 61.7,
+        "raw_decisions_granted": 7100,
+        "release": "Planning applications in England: July to September 2025",
+        "published": "2025-12-18",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-july-to-september-2025"
+      }
+    },
+    {
+      "observed_at": "2025-12-31T00:00:00Z",
+      "period": "2025 Q4",
+      "housing_trajectory": {
+        "value": 49,
+        "raw_completions_sa": 36720,
+        "release": "Housing supply: indicators of new supply, England: October to December 2025",
+        "published": "2026-03-19",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-october-to-december-2025"
+      },
+      "planning_consents": {
+        "value": 62.6,
+        "raw_decisions_granted": 7200,
+        "_note": "Components: 900 major + 6,300 minor = 7,200. The release landing page's rounded summary reported 7,300; the major+minor breakdown from the statistical release body sums to 7,200, which is authoritative.",
+        "release": "Planning applications in England: October to December 2025",
+        "published": "2026-03-19",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-october-to-december-2025"
+      }
+    },
+    {
+      "observed_at": "2026-03-31T00:00:00Z",
+      "period": "2026 Q1",
+      "housing_trajectory": {
+        "value": 49.6,
+        "raw_completions_sa": 37170,
+        "release": "Housing supply: indicators of new supply, England: January to March 2026",
+        "published": "2026-06-19",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-january-to-march-2026"
+      },
+      "planning_consents": {
+        "value": 58.3,
+        "raw_decisions_granted": 6700,
+        "_note": "Components: 900 major + 5,800 minor = 6,700 residential decisions granted, per the statistical release body ('900 major residential decisions were granted... and 5,800 minor residential decisions were granted').",
+        "release": "Planning applications in England: January to March 2026",
+        "published": "2026-06-19",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-january-to-march-2026"
+      }
+    },
+    {
+      "observed_at": "2026-06-30T00:00:00Z",
+      "period": "2026 Q2",
+      "housing_trajectory": {
+        "value": 47.7,
+        "raw_completions_sa": 35800,
+        "release": "Housing supply: indicators of new supply, England: April to June 2026",
+        "published": "2026-09-24",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2026/housing-supply-indicators-of-new-supply-england-april-to-june-2026"
+      },
+      "planning_consents": {
+        "value": 60,
+        "raw_decisions_granted": 6900,
+        "release": "Planning applications in England: April to June 2026",
+        "published": "2026-09-24",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-april-to-june-2026/planning-applications-in-england-april-to-june-2026-statistical-release"
+      }
+    }
+  ]
+}

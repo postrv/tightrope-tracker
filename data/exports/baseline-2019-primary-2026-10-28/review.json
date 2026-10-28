@@ -1,0 +1,75 @@
+{
+  "generatedAt": "2026-10-28T18:36:34.213Z",
+  "status": "CONSOLIDATED_REVIEW_PROPOSAL_REQUIRES_EXPLICIT_USER_APPROVAL",
+  "referenceRawRows": 8294,
+  "referenceSnapshotAt": "2026-10-28T18:35:27.192Z",
+  "candidateRows": 8770,
+  "registeredInputs": 17,
+  "sourceGroups": 9,
+  "baselineEligible": 8375,
+  "covidExcluded": 395,
+  "candidateSha256": "bad910e7715eeba5e7b47c240a126ea4de0ff276575cd502b83305e214e322a7",
+  "overwrite": false,
+  "scoreHistoryWrites": 0,
+  "frozenReplay": {
+    "after": 36.9,
+    "before": 39.4,
+    "beforePillars": {
+      "market": 34.2,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "afterPillars": {
+      "market": 34.6,
+      "fiscal": 36.6,
+      "labour": 45.7,
+      "delivery": 31.6
+    }
+  },
+  "componentProofs": {
+    "boeOns": "review-7346.json",
+    "mhclg": "mhclg-leading-source-evidence.json",
+    "eia": "eia-pairing-review.json"
+  },
+  "provenance": "Seven parsed official-source adapter captures plus reviewed MHCLG ODS-derived observations and independently paired EIA/BoE observations. Original ODS/HTML and source-cell/pairing evidence are archived; original raw BoE/ONS HTTP bodies are unavailable except explicitly archived evidence.",
+  "expectedOutsideLiveBoundsFlags": 31,
+  "existingExceptions": "historical-live-bound-exceptions.json",
+  "limitations": [
+    "Only dates strictly before each indicator's current canonical first reference day are proposed. No existing observations are replaced, and no headline or pillar history rows are rewritten.",
+    "Frozen current readings are identical across sensitivity scenarios. Any score change is baseline coverage, not a new market move or Budget attribution.",
+    "Direct official IUDSIZC is used for five-year implied inflation; old nominal-minus-IUDSIZC derived capture is excluded.",
+    "Historical writer guards dates/non-finite/hash only. Passing guards does not independently establish economic meaning; definitions were checked against primary catalogues.",
+    "BoE publication timestamps are unavailable. Observed 16:00 is the existing daily series convention, not a verified release time.",
+    "ONS updateDate may reflect later source revisions. These are current-vintage historical indicators for baseline distributions, not as-known-at-the-time score history.",
+    "COVID Q2 2020 rows remain possible source observations but are excluded from baseline using unchanged policy.",
+    "Current global baseline eligibility begins in 2019, but other indicators remain shorter where comparable official history is not yet prepared. This proposal does not make every indicator complete from 2019.",
+    "Production application would need explicit reviewed approval, audited idempotent writes, public coverage/correction disclosure and cache generation refresh after current-score recomputation."
+  ],
+  "priorApprovalReview": {
+    "operation": 7346,
+    "result": "Rejected before execution; no baseline rows were written. That operation was replaced by this consolidated 8,770-row proposal."
+  },
+  "note": "The controlled replay freezes the 18:35 UTC readings, including the independently ingested 28 October housebuilder close. The earlier 40.2 to 37.6 replay is preserved separately. Neither comparison establishes a Budget effect.",
+  "earlierFrozenReplay": {
+    "before": 40.2,
+    "after": 37.6,
+    "beforePillars": {
+      "market": 36,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "afterPillars": {
+      "market": 36.4,
+      "fiscal": 36.6,
+      "labour": 45.7,
+      "delivery": 31.6
+    }
+  },
+  "completeOfflineVerification": "complete-offline-verification.json",
+  "currentHousebuilder": {
+    "value": 52.6,
+    "observedAt": "2026-10-28T16:30:00Z"
+  }
+}

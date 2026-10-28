@@ -106,6 +106,7 @@ export async function backfillObservations(
     await closeAuditSuccess(env.DB, handle, {
       rowsWritten: write.written,
       payloadHash,
+      sourceUrl: result.sourceUrl,
     });
 
     return {

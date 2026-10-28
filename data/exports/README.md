@@ -95,3 +95,67 @@ and in `SOURCES.md` at the repo root. Every figure has a primary source
 URL and a corrections-log entry if it has ever been restated.
 
 — Archive captured 2026-04-29; guidance reviewed 2026-10-28.
+
+## MHCLG source workbooks, September 2026 vintage
+
+`mhclg-housebuilding-table222-2026-09-24.ods` and
+`mhclg-planning-p120-p138-2026-09-24.ods` preserve the original official
+workbooks downloaded on 28 October 2026. Both covers give 24 September 2026
+as the publication date. Source URLs, SHA-256 hashes and the 28 extracted
+leading indicator quarters are recorded in
+`mhclg-leading-2019-2022-evidence-2026-10-28.json`.
+
+Housing uses Table 222a, column I: seasonally adjusted new-build completions
+in England. Table 222b is an index and is unsuitable for that count formula.
+Planning uses Table P120A, columns D plus L: major and minor residential
+applications granted. These are application counts, not dwelling units.
+
+The leading fixture extension adds 13 housing quarters and 15 planning
+quarters from 2019, preserving all existing later components and current
+47.7 / 60 readings. New rows carry the workbook's current-vintage publication
+date; they do not claim to recover what was originally published in those
+quarters. Existing later fixture vintages remain unchanged. The estimated
+11,500 planning benchmark is retained; the workbook's exact calendar 2019
+quarterly mean is 11,174.5, which is disclosed in the indicator description.
+
+## Prepared baseline coverage and finalization
+
+Preparation status: **proposal only; no production baseline writes**.
+
+`baseline-2019-primary-2026-10-28/` contains the reviewed 8,770-observation
+proposal across 17 inputs, source captures and hashes, ODS cell evidence,
+1,396 EIA/FX pair checks, and a disposable SQLite application/retry proof.
+The proposal adds 8,375 baseline-eligible observations and retains the existing
+Q2 2020 exclusion for 395 observations. Its controlled replay holds the
+18:35 UTC current readings constant: **39.4 to 36.9**. This measures baseline
+coverage sensitivity. The earlier 40.2 to 37.6 replay is preserved separately.
+Current-vintage histories do not reconstruct what was known in each earlier
+period, and earlier published headline/pillar scores are not regenerated.
+
+Run `node --import tsx scripts/backfill-leading-baseline-2019.mjs` for the
+offline plan. The production preflight only reads D1; applying the operation
+requires its separate explicit approval. The runner uses `overwrite=false`
+and checks preservation of every original observation field. The prepared
+proof preserves all 8,294 original records. `applied.json` is created only
+after a verified production application; proposal files alone are not proof
+that a backfill happened.
+
+After application and a normal score recompute, run:
+
+```bash
+node --import tsx scripts/finalize-baseline-2019-audit.mjs \
+  --input=/absolute/post-apply-D1-dump.json \
+  --snapshot=/absolute/current-score.json \
+  --sql-output=/absolute/resolved-baseline-disclosure.sql
+```
+
+This local workflow verifies all 8,770 inserted source values, the application
+record and 8,375 eligible additions, regenerates the structural quality audit,
+and retains all reviewed historical range flags. It resolves the draft
+`db/patches/correct-2026-10-28-baseline-coverage.sql` from actual application
+timestamps. The unresolved draft fails before inserting anything; the resolved
+SQL also requires nine successful historical audits totaling 8,770 rows.
+The timeline marks application **start**, so interim recomputes are covered;
+the correction publication and summary record **completion**. The workflow
+publishes nothing. Apply the resolved disclosure and verify its public result
+as separate authorized steps.

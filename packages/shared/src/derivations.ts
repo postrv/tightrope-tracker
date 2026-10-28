@@ -26,10 +26,10 @@
 export const HOUSING_TRAJECTORY_ANNUAL_TARGET = 300_000;
 
 /**
- * Estimated 2019 pre-COVID quarterly baseline for residential planning
- * decisions granted. An estimate reconstructed from MHCLG pre-COVID archives
- * (see housing-history.json → methodology → planning_consents) — deliberately
- * loose; revisit if the archived PDFs are ever manually extracted.
+ * Fixed estimated benchmark retained for residential planning decisions
+ * granted. The September 2026 P120A workbook gives an exact calendar 2019
+ * quarterly mean of 11,174.5; 11,500 preserves the original approximation.
+ * Changing the denominator requires a separate reviewed methodology change.
  */
 export const PLANNING_CONSENTS_QUARTERLY_BASELINE_2019 = 11_500;
 

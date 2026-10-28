@@ -3,9 +3,11 @@
  *
  * MHCLG releases are XLSX/ODS attachments behind gov.uk collection pages --
  * no stable CSV-over-HTTP endpoint. Live and historical paths are both
- * fixture-backed: each MHCLG quarterly release is manually extracted from the
- * HTML statistical release page and added to `housing.json` (live, just the
- * latest quarter) and `housing-history.json` (curated quarterly back-series).
+ * fixture-backed: MHCLG statistical releases and their official live-table
+ * workbooks are manually extracted into `housing.json` (latest quarter) and
+ * `housing-history.json` (curated back-series). Leading 2019–2022 quarters
+ * come from the 24 September 2026 current-vintage workbooks, with archived raw
+ * files and cell-level provenance; they are not original-release vintages.
  *
  * Methodology (both paths use the same formulas; see housing-history.json's
  * `methodology` block for the primary-source rationale):
@@ -47,7 +49,7 @@ const HISTORY_FIXTURE_URL = "local:fixtures/housing-history.json";
 /** One indicator's figure inside a housing fixture: value plus the MHCLG release date. */
 interface HousingComponent {
   value: number;
-  /** MHCLG statistical-release publication date (bare YYYY-MM-DD in the fixture). */
+  /** Source document's publication date; historical revisions may be later than the original release. */
   published?: string;
 }
 
@@ -71,8 +73,9 @@ interface HistoryPoint {
 
 /**
  * Normalise a fixture publication date to a UTC instant. The MHCLG fixtures
- * store a bare `YYYY-MM-DD` release date; released_at is stored as an ISO-8601
- * timestamp, so append the midnight-UTC time when no time component is present.
+ * store a bare `YYYY-MM-DD` source-document date; released_at uses the
+ * existing midnight-UTC date-only convention. This is not a verified time
+ * of day, nor the original release date for current-vintage revisions.
  */
 function publishedToIso(published: string): string {
   return published.includes("T") ? published : `${published}T00:00:00Z`;

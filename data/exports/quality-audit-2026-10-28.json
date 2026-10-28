@@ -5964,5 +5964,694 @@
       "latestStatus": "started",
       "note": "Unfinished pre-timeout-deployment request; do not claim latest completed close or recovered flow."
     }
+  },
+  "proposedLeadingBaselineCoverage": {
+    "status": "Prepared proposal only; not applied to production. Explicit approval for the 8,770-row operation is pending.",
+    "manifest": "data/exports/baseline-2019-primary-2026-10-28/manifest.json",
+    "review": "data/exports/baseline-2019-primary-2026-10-28/review.json",
+    "candidateRows": 8770,
+    "registeredInputs": 17,
+    "sourceGroups": 9,
+    "baselineEligible": 8375,
+    "covidExcluded": 395,
+    "existingCurrentReferenceRows": 8294,
+    "currentReferenceSnapshotAt": "2026-10-28T18:35:27.192Z",
+    "newExistingRowOverwrites": 0,
+    "scoreHistoryWrites": 0,
+    "frozenHeadlineReplay": {
+      "after": 36.9,
+      "before": 39.4,
+      "beforePillars": {
+        "market": 34.2,
+        "fiscal": 37.8,
+        "labour": 59.2,
+        "delivery": 34.6
+      },
+      "afterPillars": {
+        "market": 34.6,
+        "fiscal": 36.6,
+        "labour": 45.7,
+        "delivery": 31.6
+      }
+    },
+    "earlierFrozenReplay": {
+      "before": 40.2,
+      "after": 37.6,
+      "beforePillars": {
+        "market": 36,
+        "fiscal": 37.8,
+        "labour": 59.2,
+        "delivery": 34.6
+      },
+      "afterPillars": {
+        "market": 36.4,
+        "fiscal": 36.6,
+        "labour": 45.7,
+        "delivery": 31.6
+      }
+    },
+    "reviewedHistoricalOutsideLiveBounds": {
+      "status": "VERIFIED_HISTORICAL_EXCEPTIONS_IN_CONSOLIDATED_PROPOSAL_NOT_YET_INGESTED",
+      "livePlausibilityBoundsChanged": false,
+      "exceptions": [
+        {
+          "indicatorId": "borrowing_outturn",
+          "observedAt": "2020-04-01T00:00:00Z",
+          "value": 48.983,
+          "cdid": "J5II",
+          "rawValueMillions": -48983,
+          "transform": "negate then divide by1000",
+          "covidExcludedFromBaseline": true,
+          "explanation": "Official current-vintage COVID borrowing exceeds the current live40GBPbn upper guard. Retain the actual source observation; unchanged Q2-2020 policy excludes it from baseline.",
+          "sourceUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf/data",
+          "primaryBodyFile": "ons-j5ii-exception-primary-body.json",
+          "primaryBodySha256": "7c67f94e7780369ed9dab6342d1b3370f86e5bd2eed8aa5d6f5e94e67067dd3b",
+          "primaryCapturedAt": "2026-10-28T18:30:04.737Z",
+          "seriesTitle": "PS: Net Borrowing (excluding public sector banks): £m: CPNSA",
+          "originalMonthlyRecord": {
+            "date": "2020 APR",
+            "value": "-48983",
+            "label": "2020 APR",
+            "year": "2020",
+            "month": "April",
+            "quarter": "",
+            "sourceDataset": "PUSF",
+            "updateDate": "2026-09-21T23:00:00.000Z"
+          }
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "observedAt": "2020-05-01T00:00:00Z",
+          "value": 51.103,
+          "cdid": "J5II",
+          "rawValueMillions": -51103,
+          "transform": "negate then divide by1000",
+          "covidExcludedFromBaseline": true,
+          "explanation": "Official current-vintage COVID borrowing exceeds the current live40GBPbn upper guard. Retain the actual source observation; unchanged Q2-2020 policy excludes it from baseline.",
+          "sourceUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf/data",
+          "primaryBodyFile": "ons-j5ii-exception-primary-body.json",
+          "primaryBodySha256": "7c67f94e7780369ed9dab6342d1b3370f86e5bd2eed8aa5d6f5e94e67067dd3b",
+          "primaryCapturedAt": "2026-10-28T18:30:04.737Z",
+          "seriesTitle": "PS: Net Borrowing (excluding public sector banks): £m: CPNSA",
+          "originalMonthlyRecord": {
+            "date": "2020 MAY",
+            "value": "-51103",
+            "label": "2020 MAY",
+            "year": "2020",
+            "month": "May",
+            "quarter": "",
+            "sourceDataset": "PUSF",
+            "updateDate": "2026-09-21T23:00:00.000Z"
+          }
+        },
+        {
+          "indicatorId": "debt_interest",
+          "observedAt": "2019-03-01T00:00:00Z",
+          "value": -0.125,
+          "cdid": "NMFX",
+          "rawValueMillions": -125,
+          "transform": "divide by1000",
+          "covidExcludedFromBaseline": false,
+          "explanation": "Official net interest payable can be negative. The contemporaneous March2019ONS bulletin explains negative accrued interest from downward RPI index-linked gilt revaluation; this is not cash income. The current-vintage series value is -125GBPmillion.",
+          "explanationUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/bulletins/publicsectorfinances/march2019/pdf",
+          "sourceUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf/data",
+          "primaryBodyFile": "ons-nmfx-exception-primary-body.json",
+          "primaryBodySha256": "56e3bf137fbb764fb5ea198af5644816c5e7da756e1b818631a8b2aafd9dc620",
+          "primaryCapturedAt": "2026-10-28T18:30:04.620Z",
+          "seriesTitle": "CG: Current expenditure: Net Interest payable: £m CPNSA",
+          "originalMonthlyRecord": {
+            "date": "2019 MAR",
+            "value": "-125",
+            "label": "2019 MAR",
+            "year": "2019",
+            "month": "March",
+            "quarter": "",
+            "sourceDataset": "PUSF",
+            "updateDate": "2026-09-21T23:00:00.000Z"
+          }
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 19.37,
+          "observedAt": "2020-03-18T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:78338a74d60e3f780ec2a5e9818f73176066060ebae9cbcb47eddc8be1982653",
+          "covidExcludedFromBaseline": false,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-03-18",
+            "usdPerBarrel": 22.79,
+            "gbpUsd": 1.1763,
+            "fxObservedAt": "2020-03-18T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 19.37
+          },
+          "explanation": "Verified March2020 dated Brent price in GBP is below current live20GBP/bbl lower guard. March is outside the policy Q2-2020 exclusion and remains baseline-eligible; no new exclusion is invented."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 19.41,
+          "observedAt": "2020-03-26T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:fc8c95fccebe8d92baf4c180df4c06d152a70133e87ee8e3fe538d02f9532015",
+          "covidExcludedFromBaseline": false,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-03-26",
+            "usdPerBarrel": 23.55,
+            "gbpUsd": 1.2135,
+            "fxObservedAt": "2020-03-26T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 19.41
+          },
+          "explanation": "Verified March2020 dated Brent price in GBP is below current live20GBP/bbl lower guard. March is outside the policy Q2-2020 exclusion and remains baseline-eligible; no new exclusion is invented."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 18.12,
+          "observedAt": "2020-03-27T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:d9dcee6e7b0b64ad9fb1207f9c6c608ba41a5f74a2edb121c397e735093d190a",
+          "covidExcludedFromBaseline": false,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-03-27",
+            "usdPerBarrel": 22.39,
+            "gbpUsd": 1.2359,
+            "fxObservedAt": "2020-03-27T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 18.12
+          },
+          "explanation": "Verified March2020 dated Brent price in GBP is below current live20GBP/bbl lower guard. March is outside the policy Q2-2020 exclusion and remains baseline-eligible; no new exclusion is invented."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 15.46,
+          "observedAt": "2020-03-30T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:916b91417b67fd80cfeb6f365c0ae7162cf5f5327ed1a7b895fa405ce923e1cd",
+          "covidExcludedFromBaseline": false,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-03-30",
+            "usdPerBarrel": 19.19,
+            "gbpUsd": 1.2416,
+            "fxObservedAt": "2020-03-30T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 15.46
+          },
+          "explanation": "Verified March2020 dated Brent price in GBP is below current live20GBP/bbl lower guard. March is outside the policy Q2-2020 exclusion and remains baseline-eligible; no new exclusion is invented."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 11.97,
+          "observedAt": "2020-03-31T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:3e0a3c2d70bc28661aa5f68781e531ae9ba907a0a89cd966d7aee561dc851838",
+          "covidExcludedFromBaseline": false,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-03-31",
+            "usdPerBarrel": 14.85,
+            "gbpUsd": 1.2403,
+            "fxObservedAt": "2020-03-31T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 11.97
+          },
+          "explanation": "Verified March2020 dated Brent price in GBP is below current live20GBP/bbl lower guard. March is outside the policy Q2-2020 exclusion and remains baseline-eligible; no new exclusion is invented."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 12.05,
+          "observedAt": "2020-04-01T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:714ebeeb8bfcca0af71ae6242e5b62878f0af7409626e95b037af8ed4b837ab9",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-01",
+            "usdPerBarrel": 14.97,
+            "gbpUsd": 1.2424,
+            "fxObservedAt": "2020-04-01T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 12.05
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 16.35,
+          "observedAt": "2020-04-02T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:c742c658b0ec85f6f3fab2e11dce7d990174a366d8f124c0f9d667892c86da58",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-02",
+            "usdPerBarrel": 20.24,
+            "gbpUsd": 1.2377,
+            "fxObservedAt": "2020-04-02T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 16.35
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 19.85,
+          "observedAt": "2020-04-03T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:7d87794d3ce56e8177624d3cfafa9c5b40fa74a1096bc2ebc9f5a3bbfbb75860",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-03",
+            "usdPerBarrel": 24.33,
+            "gbpUsd": 1.2258,
+            "fxObservedAt": "2020-04-03T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 19.85
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 18.43,
+          "observedAt": "2020-04-06T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:c7f155029fda5838d2cfb19133f2e96e49b0db981e607af5ad4d71ff40a6b981",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-06",
+            "usdPerBarrel": 22.58,
+            "gbpUsd": 1.2255,
+            "fxObservedAt": "2020-04-06T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 18.43
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 17.96,
+          "observedAt": "2020-04-07T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:c3ba1f9e691ec5c70073b05e8d00070a3a98ed9e60927104d1756eb7f5af662c",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-07",
+            "usdPerBarrel": 22.1,
+            "gbpUsd": 1.2304,
+            "fxObservedAt": "2020-04-07T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 17.96
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 16.22,
+          "observedAt": "2020-04-09T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:a4c0a495fc8b8e7996c186259ac2a55f07c98478b07d591578d6654fc42ccb04",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-09",
+            "usdPerBarrel": 20.23,
+            "gbpUsd": 1.247,
+            "fxObservedAt": "2020-04-09T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 16.22
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 17.26,
+          "observedAt": "2020-04-14T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:d76de2ee562ca73d918fe6aca346ca1279bee129956aa916e0079ed694d5da1b",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-14",
+            "usdPerBarrel": 21.74,
+            "gbpUsd": 1.2594,
+            "fxObservedAt": "2020-04-14T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 17.26
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 15.84,
+          "observedAt": "2020-04-15T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:bb2b3122006ba94b2fd67d7aac233c833401ed6f517e4ef6db6c08b899676ec5",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-15",
+            "usdPerBarrel": 19.8,
+            "gbpUsd": 1.2498,
+            "fxObservedAt": "2020-04-15T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 15.84
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 15.01,
+          "observedAt": "2020-04-16T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:6b73260b31db422e758403466e1ca6bf336f728cadfff80b471f67753f82dd2a",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-16",
+            "usdPerBarrel": 18.69,
+            "gbpUsd": 1.2451,
+            "fxObservedAt": "2020-04-16T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 15.01
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 15.79,
+          "observedAt": "2020-04-17T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:330f6830490fe7d97a0f64027c6318a256aa1cb8af6db387cb6b4eb87c5c81a6",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-17",
+            "usdPerBarrel": 19.75,
+            "gbpUsd": 1.2504,
+            "fxObservedAt": "2020-04-17T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 15.79
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 13.92,
+          "observedAt": "2020-04-20T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:9e0356e6b01d4154479f4f73f3b7e891c796a1cf20a5419f3c071a70f7c0591c",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-20",
+            "usdPerBarrel": 17.36,
+            "gbpUsd": 1.2473,
+            "fxObservedAt": "2020-04-20T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 13.92
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 7.43,
+          "observedAt": "2020-04-21T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:8f2c2b0095540f8e4459940bf02a74e17e3ab865730fb7e6a37e28c967c39199",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-21",
+            "usdPerBarrel": 9.12,
+            "gbpUsd": 1.2273,
+            "fxObservedAt": "2020-04-21T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 7.43
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 11.17,
+          "observedAt": "2020-04-22T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:23465a9737feeb42798ec79d8a717999c7f16bd66a1a81fe64192bd5ece8e8c9",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-22",
+            "usdPerBarrel": 13.77,
+            "gbpUsd": 1.2329,
+            "fxObservedAt": "2020-04-22T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 11.17
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 12.16,
+          "observedAt": "2020-04-23T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:0d8d27991af292335255ef42f60d6689f1e02f8e0f1b8a7e13992f6cec9112a1",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-23",
+            "usdPerBarrel": 15.06,
+            "gbpUsd": 1.2386,
+            "fxObservedAt": "2020-04-23T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 12.16
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 12.86,
+          "observedAt": "2020-04-24T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:bdd190b83a670ff9ef683a3172c7bbb228ebc462819137b956e767d51236e398",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-24",
+            "usdPerBarrel": 15.87,
+            "gbpUsd": 1.2338,
+            "fxObservedAt": "2020-04-24T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 12.86
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 12.22,
+          "observedAt": "2020-04-27T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:ebacfb6a35b2d78f164273eecb4d5cb38222ae5063b7353382b653cd8b42ce4d",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-27",
+            "usdPerBarrel": 15.17,
+            "gbpUsd": 1.2409,
+            "fxObservedAt": "2020-04-27T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 12.22
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 12.54,
+          "observedAt": "2020-04-28T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:270cc38a06ff4bcca10be4d02a98b5344932d9980047c9b4316f647798f1a07e",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-28",
+            "usdPerBarrel": 15.6,
+            "gbpUsd": 1.2436,
+            "fxObservedAt": "2020-04-28T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 12.54
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 14.36,
+          "observedAt": "2020-04-29T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:038b1fbb7ee4b2cfcb56c6b51333e45b2c59cec835a144382047df49a4cbcbf6",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-29",
+            "usdPerBarrel": 17.86,
+            "gbpUsd": 1.2436,
+            "fxObservedAt": "2020-04-29T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 14.36
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 14.36,
+          "observedAt": "2020-04-30T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:7edb69757cb09ac438fbbc76a3d853055e39b406ad59bd5d4881540c17075f02",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-04-30",
+            "usdPerBarrel": 18.11,
+            "gbpUsd": 1.2613,
+            "fxObservedAt": "2020-04-30T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 14.36
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 14.74,
+          "observedAt": "2020-05-01T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:667504432ce3c30ca5a3f5a8da03f724a284af461aade3444d4b4e3a08ba9aee",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-05-01",
+            "usdPerBarrel": 18.49,
+            "gbpUsd": 1.2547,
+            "fxObservedAt": "2020-05-01T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 14.74
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 16.42,
+          "observedAt": "2020-05-04T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:56a66c79a92f49d70db6c567f28a90c5af54eea5cb8ad5056271f8f4480568d9",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-05-04",
+            "usdPerBarrel": 20.4,
+            "gbpUsd": 1.2421,
+            "fxObservedAt": "2020-05-04T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 16.42
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 19.58,
+          "observedAt": "2020-05-06T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:770e87525eecfb3af7e53de7141e12a9cd719e921627eaec520f2545ada4bf0e",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-05-06",
+            "usdPerBarrel": 24.2,
+            "gbpUsd": 1.2362,
+            "fxObservedAt": "2020-05-06T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 19.58
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 19.72,
+          "observedAt": "2020-05-07T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:50c519beb3efa47999ee5a19bc5edd578c4c2258d18b33fc792995c246d3b278",
+          "covidExcludedFromBaseline": true,
+          "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+          "primaryHtmlSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+          "independentPair": {
+            "period": "2020-05-07",
+            "usdPerBarrel": 24.23,
+            "gbpUsd": 1.2287,
+            "fxObservedAt": "2020-05-07T16:00:00Z",
+            "fxLagCalendarDays": 0,
+            "gbpPerBarrel": 19.72
+          },
+          "explanation": "Verified low COVID-period dated Brent price in GBP is below current live20GBP/bbl lower guard; this Q2-2020 observation is excluded by the unchanged baseline policy."
+        }
+      ],
+      "expectedRawOutsideLiveBoundsFlagsAfterBackfill": 31,
+      "expectedEligibleBaselineExceptions": 6,
+      "note": "Keep raw audit flag counts honest. These reviewed historical primary-source observations are not grounds to loosen current live range/jump gates. ONS updateDate is a current-vintage revision date, not immutable original publication time."
+    }
+  },
+  "latestLiveHealth": {
+    "checkedAt": "2026-10-28T18:50:39.087Z",
+    "mode": "READ_ONLY_NO_PRODUCTION_WRITES",
+    "evidence": "data/exports/live-health-2026-10-28T18-50.json",
+    "evidenceSha256": "e8ce127b999d0bde64132669af4752364ca14f94abbccabc497f402fd3a15bd0",
+    "registeredIndicators": 31,
+    "scoreInputs": 31,
+    "budgetInputs": 31,
+    "missingInputs": [],
+    "valueMismatches": [],
+    "latestRegisteredFailures": [],
+    "activeQuarantines": 0,
+    "publicHealthOk": true,
+    "cadenceGroups": 18,
+    "greenCadenceGroups": 18,
+    "storedCounts": {
+      "raw_rows": 8294,
+      "indicator_count": 35
+    },
+    "headline": 39.4,
+    "headlineUpdatedAt": "2026-10-28T18:45:28.116Z",
+    "housebuilderRecovery": "The latest run began at 18:33:52.895Z, completed successfully at 18:33:54.429Z, and wrote one official LSE close: 52.6, observed 28 October at 16:30Z. The older 18:05:30.247Z run remains unfinished; it is not the latest source outcome.",
+    "cadenceInterpretation": "All 18 public cadence groups are green. Green means within the configured publication grace period, not that every input has a same-day observation.",
+    "baselineProposalApplied": false,
+    "baselineProposalNote": "The 8,770-row baseline proposal remains pending according to the current authorized work state. Production contains 8,294 raw rows, consistent with the earlier 8,293 plus one verified 28 October housebuilder close. This audit performed no baseline writes."
   }
 }

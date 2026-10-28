@@ -1,0 +1,400 @@
+{
+  "verified_on": "2026-10-28",
+  "scope": "28 strictly-leading missing indicator quarters only; no existing components replaced",
+  "source_vintage": "2026-09-24",
+  "publication_note": "Current-vintage source document date, not original release dates or verified release times.",
+  "sources": [
+    {
+      "indicator_id": "housing_trajectory",
+      "url": "https://assets.publishing.service.gov.uk/media/6ab3e26d997a4b2950ccedf7/LiveTable222.ods",
+      "archive": "data/exports/mhclg-housebuilding-table222-2026-09-24.ods",
+      "sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69",
+      "sheet": "LT_222a",
+      "source_vintage": "2026-09-24",
+      "raw_unit": "seasonally adjusted new-build dwelling completions, England",
+      "leading_rows": [
+        {
+          "period": "2019 Q1",
+          "observedAt": "2019-03-31T00:00:00Z",
+          "raw": 43280,
+          "value": 57.7,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 82,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2019 Q2",
+          "observedAt": "2019-06-30T00:00:00Z",
+          "raw": 44560,
+          "value": 59.4,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 83,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2019 Q3",
+          "observedAt": "2019-09-30T00:00:00Z",
+          "raw": 45630,
+          "value": 60.8,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 84,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2019 Q4",
+          "observedAt": "2019-12-31T00:00:00Z",
+          "raw": 44390,
+          "value": 59.2,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 85,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2020 Q1",
+          "observedAt": "2020-03-31T00:00:00Z",
+          "raw": 40320,
+          "value": 53.8,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 86,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2020 Q2",
+          "observedAt": "2020-06-30T00:00:00Z",
+          "raw": 16100,
+          "value": 21.5,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 87,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2020 Q3",
+          "observedAt": "2020-09-30T00:00:00Z",
+          "raw": 44600,
+          "value": 59.5,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 88,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2020 Q4",
+          "observedAt": "2020-12-31T00:00:00Z",
+          "raw": 46010,
+          "value": 61.3,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 89,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2021 Q1",
+          "observedAt": "2021-03-31T00:00:00Z",
+          "raw": 49230,
+          "value": 65.6,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 90,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2021 Q2",
+          "observedAt": "2021-06-30T00:00:00Z",
+          "raw": 42490,
+          "value": 56.7,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 91,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2021 Q3",
+          "observedAt": "2021-09-30T00:00:00Z",
+          "raw": 43330,
+          "value": 57.8,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 92,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2021 Q4",
+          "observedAt": "2021-12-31T00:00:00Z",
+          "raw": 40890,
+          "value": 54.5,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 93,
+          "sourceColumns": [
+            "I"
+          ]
+        },
+        {
+          "period": "2022 Q1",
+          "observedAt": "2022-03-31T00:00:00Z",
+          "raw": 45080,
+          "value": 60.1,
+          "sourceSheet": "LT_222a",
+          "sourceRow": 94,
+          "sourceColumns": [
+            "I"
+          ]
+        }
+      ]
+    },
+    {
+      "indicator_id": "planning_consents",
+      "url": "https://assets.publishing.service.gov.uk/media/6ab2cc778cb3c0580e501005/Tables_P120_to_P138_MJPSI_PIPTDCC.ods",
+      "archive": "data/exports/mhclg-planning-p120-p138-2026-09-24.ods",
+      "sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b",
+      "sheet": "LT_P120A",
+      "source_vintage": "2026-09-24",
+      "raw_unit": "residential planning applications granted, England; major plus minor",
+      "leading_rows": [
+        {
+          "period": "2019 Q1",
+          "observedAt": "2019-03-31T00:00:00Z",
+          "raw": 11201,
+          "value": 97.4,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 50,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1586,
+          "minorGranted": 9615
+        },
+        {
+          "period": "2019 Q2",
+          "observedAt": "2019-06-30T00:00:00Z",
+          "raw": 10900,
+          "value": 94.8,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 52,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1400,
+          "minorGranted": 9500
+        },
+        {
+          "period": "2019 Q3",
+          "observedAt": "2019-09-30T00:00:00Z",
+          "raw": 11464,
+          "value": 99.7,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 53,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1423,
+          "minorGranted": 10041
+        },
+        {
+          "period": "2019 Q4",
+          "observedAt": "2019-12-31T00:00:00Z",
+          "raw": 11133,
+          "value": 96.8,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 54,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1531,
+          "minorGranted": 9602
+        },
+        {
+          "period": "2020 Q1",
+          "observedAt": "2020-03-31T00:00:00Z",
+          "raw": 10204,
+          "value": 88.7,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 55,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1310,
+          "minorGranted": 8894
+        },
+        {
+          "period": "2020 Q2",
+          "observedAt": "2020-06-30T00:00:00Z",
+          "raw": 9093,
+          "value": 79.1,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 57,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1018,
+          "minorGranted": 8075
+        },
+        {
+          "period": "2020 Q3",
+          "observedAt": "2020-09-30T00:00:00Z",
+          "raw": 9917,
+          "value": 86.2,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 58,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1323,
+          "minorGranted": 8594
+        },
+        {
+          "period": "2020 Q4",
+          "observedAt": "2020-12-31T00:00:00Z",
+          "raw": 10132,
+          "value": 88.1,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 59,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1322,
+          "minorGranted": 8810
+        },
+        {
+          "period": "2021 Q1",
+          "observedAt": "2021-03-31T00:00:00Z",
+          "raw": 9817,
+          "value": 85.4,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 60,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1282,
+          "minorGranted": 8535
+        },
+        {
+          "period": "2021 Q2",
+          "observedAt": "2021-06-30T00:00:00Z",
+          "raw": 9597,
+          "value": 83.5,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 62,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1216,
+          "minorGranted": 8381
+        },
+        {
+          "period": "2021 Q3",
+          "observedAt": "2021-09-30T00:00:00Z",
+          "raw": 9644,
+          "value": 83.9,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 63,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1123,
+          "minorGranted": 8521
+        },
+        {
+          "period": "2021 Q4",
+          "observedAt": "2021-12-31T00:00:00Z",
+          "raw": 9447,
+          "value": 82.1,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 64,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1191,
+          "minorGranted": 8256
+        },
+        {
+          "period": "2022 Q1",
+          "observedAt": "2022-03-31T00:00:00Z",
+          "raw": 9219,
+          "value": 80.2,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 65,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1228,
+          "minorGranted": 7991
+        },
+        {
+          "period": "2022 Q2",
+          "observedAt": "2022-06-30T00:00:00Z",
+          "raw": 8668,
+          "value": 75.4,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 67,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1005,
+          "minorGranted": 7663
+        },
+        {
+          "period": "2022 Q3",
+          "observedAt": "2022-09-30T00:00:00Z",
+          "raw": 8833,
+          "value": 76.8,
+          "sourceSheet": "LT_P120A",
+          "sourceRow": 68,
+          "sourceColumns": [
+            "D",
+            "L"
+          ],
+          "majorGranted": 1011,
+          "minorGranted": 7822
+        }
+      ]
+    }
+  ],
+  "existing_preservation": {
+    "components": 32,
+    "sha256": "ba9d5fc92fd9709593e895b1a067abaef98f9afa27480984f622cdb7049ad98c",
+    "housing_first": "2022-06-30T00:00:00Z",
+    "planning_first": "2022-12-31T00:00:00Z",
+    "last": "2026-06-30T00:00:00Z"
+  },
+  "planning_benchmark": {
+    "preserved": 11500,
+    "exact_calendar_2019_grants": [
+      11201,
+      10900,
+      11464,
+      11133
+    ],
+    "exact_calendar_2019_quarterly_mean": 11174.5
+  }
+}

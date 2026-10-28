@@ -1,0 +1,3739 @@
+{
+  "generatedAt": "2026-10-28T18:22:23.499Z",
+  "mode": "IN_MEMORY_ONLY_DRY_RUN_NO_PRODUCTION_OR_NETWORK",
+  "status": "PROPOSAL_ONLY_AWAITING_REVIEW_NOT_APPLIED",
+  "inputPath": "/tmp/tightrope-postbudget/post-be-complete-audit-input.json",
+  "inputSha256": "219e7b48867c3241f0589ed2d466fbdc238bf43320f5238f4ec0b1ee3d45216e",
+  "scorePath": "/tmp/tightrope-postbudget/post-be-public-score.json",
+  "scoreSha256": "6906f1556e4e405ca9f2f2562ec556eb2f3cb13036caf1da9eac9038a1eadd27",
+  "sourceSnapshotAt": "2026-10-28T18:18:54.547Z",
+  "publishedCorrectedScore": 40.2,
+  "rawRowsBefore": 8293,
+  "rawRowsAfterDryRun": 8293,
+  "candidatePath": "/tmp/tightrope-corrected-leading-2019-observations.json",
+  "candidateSha256": "68c2deed8a4684327159b68fb1a1aadf28612f28b35a748368ba754cac0b3671",
+  "localApplicationProof": {
+    "mode": "DISPOSABLE_SQLITE_MEMORY_ONLY",
+    "rawRowsBefore": 8293,
+    "rawRowsAfter": 15639,
+    "totalInserted": 7346,
+    "existingRowsVerifiedUnchanged": 8293,
+    "existingPreserved": true,
+    "scoreHistoryTablesCreated": false,
+    "results": [
+      {
+        "id": "boe_yields",
+        "rowsWritten": 2648,
+        "repeatRowsWritten": 0,
+        "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDMNZC%2CIUDLNZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+        "batches": 53
+      },
+      {
+        "id": "boe_fx",
+        "rowsWritten": 2732,
+        "repeatRowsWritten": 0,
+        "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=XUDLUSS%2CXUDLBK67&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+        "batches": 55
+      },
+      {
+        "id": "boe_breakevens",
+        "rowsWritten": 1366,
+        "repeatRowsWritten": 0,
+        "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSIZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+        "batches": 28
+      },
+      {
+        "id": "boe_mortgage_rates",
+        "rowsWritten": 65,
+        "repeatRowsWritten": 0,
+        "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUMBV34&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+        "batches": 2
+      },
+      {
+        "id": "ons_lms",
+        "rowsWritten": 335,
+        "repeatRowsWritten": 0,
+        "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem/data",
+        "batches": 7
+      },
+      {
+        "id": "ons_psf",
+        "rowsWritten": 134,
+        "repeatRowsWritten": 0,
+        "sourceUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf/data",
+        "batches": 3
+      },
+      {
+        "id": "ons_rti",
+        "rowsWritten": 66,
+        "repeatRowsWritten": 0,
+        "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/k54l/emp/data",
+        "batches": 2
+      }
+    ]
+  },
+  "candidateRows": 7346,
+  "nonBreakevenCandidateRows": 5980,
+  "directBreakevenCandidateRows": 1366,
+  "baselineAdded": 7014,
+  "covidRowsStoredButNotBaseline": 332,
+  "perIndicator": [
+    {
+      "adapter": "boe_yields",
+      "indicatorId": "gilt_10y",
+      "pillar": "market",
+      "unit": "%",
+      "weightWithinPillar": 0.18,
+      "rawLeadingRows": 1324,
+      "baselineAdded": 1263,
+      "covidExcluded": 61,
+      "baselineBefore": 651,
+      "baselineAfter": 1914,
+      "beforeFirst": "2024-04-02T16:00:00Z",
+      "beforeLast": "2026-10-26T16:00:00Z",
+      "addedFirst": "2019-01-02T16:00:00Z",
+      "addedLast": "2024-03-28T16:00:00Z",
+      "sourceFirst": "2019-01-02T16:00:00Z",
+      "sourceLast": "2026-10-26T16:00:00Z",
+      "min": 0.1114,
+      "max": 4.6651,
+      "negativeCount": 0,
+      "releaseMetadataMissing": 1324,
+      "releaseAfterReference": 0,
+      "latestReleasedAt": null
+    },
+    {
+      "adapter": "boe_yields",
+      "indicatorId": "gilt_30y",
+      "pillar": "market",
+      "unit": "%",
+      "weightWithinPillar": 0.16,
+      "rawLeadingRows": 1324,
+      "baselineAdded": 1263,
+      "covidExcluded": 61,
+      "baselineBefore": 651,
+      "baselineAfter": 1914,
+      "beforeFirst": "2024-04-02T16:00:00Z",
+      "beforeLast": "2026-10-26T16:00:00Z",
+      "addedFirst": "2019-01-02T16:00:00Z",
+      "addedLast": "2024-03-28T16:00:00Z",
+      "sourceFirst": "2019-01-02T16:00:00Z",
+      "sourceLast": "2026-10-26T16:00:00Z",
+      "min": 0.5084,
+      "max": 5.151,
+      "negativeCount": 0,
+      "releaseMetadataMissing": 1324,
+      "releaseAfterReference": 0,
+      "latestReleasedAt": null
+    },
+    {
+      "adapter": "boe_fx",
+      "indicatorId": "gbp_usd",
+      "pillar": "market",
+      "unit": "ccy",
+      "weightWithinPillar": 0.07,
+      "rawLeadingRows": 1366,
+      "baselineAdded": 1305,
+      "covidExcluded": 61,
+      "baselineBefore": 610,
+      "baselineAfter": 1915,
+      "beforeFirst": "2024-06-03T16:00:00Z",
+      "beforeLast": "2026-10-27T16:00:00Z",
+      "addedFirst": "2019-01-02T16:00:00Z",
+      "addedLast": "2024-05-31T16:00:00Z",
+      "sourceFirst": "2019-01-02T16:00:00Z",
+      "sourceLast": "2026-10-27T16:00:00Z",
+      "min": 1.0745,
+      "max": 1.4211,
+      "negativeCount": 0,
+      "releaseMetadataMissing": 1366,
+      "releaseAfterReference": 0,
+      "latestReleasedAt": null
+    },
+    {
+      "adapter": "boe_fx",
+      "indicatorId": "gbp_twi",
+      "pillar": "market",
+      "unit": "index",
+      "weightWithinPillar": 0.07,
+      "rawLeadingRows": 1366,
+      "baselineAdded": 1305,
+      "covidExcluded": 61,
+      "baselineBefore": 610,
+      "baselineAfter": 1915,
+      "beforeFirst": "2024-06-03T16:00:00Z",
+      "beforeLast": "2026-10-27T16:00:00Z",
+      "addedFirst": "2019-01-02T16:00:00Z",
+      "addedLast": "2024-05-31T16:00:00Z",
+      "sourceFirst": "2019-01-02T16:00:00Z",
+      "sourceLast": "2026-10-27T16:00:00Z",
+      "min": 73.1081,
+      "max": 83.5273,
+      "negativeCount": 0,
+      "releaseMetadataMissing": 1366,
+      "releaseAfterReference": 0,
+      "latestReleasedAt": null
+    },
+    {
+      "adapter": "boe_breakevens",
+      "indicatorId": "breakeven_5y",
+      "pillar": "market",
+      "unit": "%",
+      "weightWithinPillar": 0.12,
+      "rawLeadingRows": 1366,
+      "baselineAdded": 1305,
+      "covidExcluded": 61,
+      "baselineBefore": 609,
+      "baselineAfter": 1914,
+      "beforeFirst": "2024-06-03T16:00:00Z",
+      "beforeLast": "2026-10-26T16:00:00Z",
+      "addedFirst": "2019-01-02T16:00:00Z",
+      "addedLast": "2024-05-31T16:00:00Z",
+      "sourceFirst": "2019-01-02T16:00:00Z",
+      "sourceLast": "2026-10-26T16:00:00Z",
+      "min": 2.5332,
+      "max": 5.0347,
+      "negativeCount": 0,
+      "releaseMetadataMissing": 1366,
+      "releaseAfterReference": 0,
+      "latestReleasedAt": null
+    },
+    {
+      "adapter": "boe_mortgage_rates",
+      "indicatorId": "mortgage_2y_fix",
+      "pillar": "labour",
+      "unit": "%",
+      "weightWithinPillar": 0.12,
+      "rawLeadingRows": 65,
+      "baselineAdded": 62,
+      "covidExcluded": 3,
+      "baselineBefore": 28,
+      "baselineAfter": 90,
+      "beforeFirst": "2024-06-30T16:00:00Z",
+      "beforeLast": "2026-09-30T16:00:00Z",
+      "addedFirst": "2019-01-31T16:00:00Z",
+      "addedLast": "2024-05-31T16:00:00Z",
+      "sourceFirst": "2019-01-31T16:00:00Z",
+      "sourceLast": "2026-09-30T16:00:00Z",
+      "min": 1.2,
+      "max": 6.22,
+      "negativeCount": 0,
+      "releaseMetadataMissing": 65,
+      "releaseAfterReference": 0,
+      "latestReleasedAt": null
+    },
+    {
+      "adapter": "ons_lms",
+      "indicatorId": "unemployment",
+      "pillar": "labour",
+      "unit": "%",
+      "weightWithinPillar": 0.1,
+      "rawLeadingRows": 67,
+      "baselineAdded": 64,
+      "covidExcluded": 3,
+      "baselineBefore": 24,
+      "baselineAfter": 88,
+      "beforeFirst": "2024-08-01T00:00:00Z",
+      "beforeLast": "2026-07-01T00:00:00Z",
+      "addedFirst": "2019-01-01T00:00:00Z",
+      "addedLast": "2024-07-01T00:00:00Z",
+      "sourceFirst": "2019-01-01T00:00:00Z",
+      "sourceLast": "2026-07-01T00:00:00Z",
+      "min": 3.6,
+      "max": 5.3,
+      "negativeCount": 0,
+      "releaseMetadataMissing": 0,
+      "releaseAfterReference": 67,
+      "latestReleasedAt": "2026-07-20T23:00:00.000Z"
+    },
+    {
+      "adapter": "ons_lms",
+      "indicatorId": "inactivity_rate",
+      "pillar": "labour",
+      "unit": "%",
+      "weightWithinPillar": 0.22,
+      "rawLeadingRows": 67,
+      "baselineAdded": 64,
+      "covidExcluded": 3,
+      "baselineBefore": 24,
+      "baselineAfter": 88,
+      "beforeFirst": "2024-08-01T00:00:00Z",
+      "beforeLast": "2026-07-01T00:00:00Z",
+      "addedFirst": "2019-01-01T00:00:00Z",
+      "addedLast": "2024-07-01T00:00:00Z",
+      "sourceFirst": "2019-01-01T00:00:00Z",
+      "sourceLast": "2026-07-01T00:00:00Z",
+      "min": 20.3,
+      "max": 22.2,
+      "negativeCount": 0,
+      "releaseMetadataMissing": 0,
+      "releaseAfterReference": 67,
+      "latestReleasedAt": "2026-07-20T23:00:00.000Z"
+    },
+    {
+      "adapter": "ons_lms",
+      "indicatorId": "inactivity_health",
+      "pillar": "labour",
+      "unit": "m",
+      "weightWithinPillar": 0.18,
+      "rawLeadingRows": 67,
+      "baselineAdded": 64,
+      "covidExcluded": 3,
+      "baselineBefore": 24,
+      "baselineAfter": 88,
+      "beforeFirst": "2024-08-01T00:00:00Z",
+      "beforeLast": "2026-07-01T00:00:00Z",
+      "addedFirst": "2019-01-01T00:00:00Z",
+      "addedLast": "2024-07-01T00:00:00Z",
+      "sourceFirst": "2019-01-01T00:00:00Z",
+      "sourceLast": "2026-07-01T00:00:00Z",
+      "min": 1.979,
+      "max": 2.85,
+      "negativeCount": 0,
+      "releaseMetadataMissing": 0,
+      "releaseAfterReference": 67,
+      "latestReleasedAt": "2026-07-20T23:00:00.000Z"
+    },
+    {
+      "adapter": "ons_lms",
+      "indicatorId": "real_regular_pay",
+      "pillar": "labour",
+      "unit": "%",
+      "weightWithinPillar": 0.1,
+      "rawLeadingRows": 67,
+      "baselineAdded": 64,
+      "covidExcluded": 3,
+      "baselineBefore": 25,
+      "baselineAfter": 89,
+      "beforeFirst": "2024-08-01T00:00:00Z",
+      "beforeLast": "2026-08-01T00:00:00Z",
+      "addedFirst": "2019-01-01T00:00:00Z",
+      "addedLast": "2024-07-01T00:00:00Z",
+      "sourceFirst": "2019-01-01T00:00:00Z",
+      "sourceLast": "2026-08-01T00:00:00Z",
+      "min": -2.9,
+      "max": 6.8,
+      "negativeCount": 18,
+      "releaseMetadataMissing": 0,
+      "releaseAfterReference": 67,
+      "latestReleasedAt": "2026-08-17T23:00:00.000Z"
+    },
+    {
+      "adapter": "ons_lms",
+      "indicatorId": "vacancies_per_unemployed",
+      "pillar": "labour",
+      "unit": "ratio",
+      "weightWithinPillar": 0.1,
+      "rawLeadingRows": 67,
+      "baselineAdded": 64,
+      "covidExcluded": 3,
+      "baselineBefore": 24,
+      "baselineAfter": 88,
+      "beforeFirst": "2024-08-01T00:00:00Z",
+      "beforeLast": "2026-07-01T00:00:00Z",
+      "addedFirst": "2019-01-01T00:00:00Z",
+      "addedLast": "2024-07-01T00:00:00Z",
+      "sourceFirst": "2019-01-01T00:00:00Z",
+      "sourceLast": "2026-07-01T00:00:00Z",
+      "min": 0.24711815561959655,
+      "max": 1.0227827502034175,
+      "negativeCount": 0,
+      "releaseMetadataMissing": 0,
+      "releaseAfterReference": 67,
+      "latestReleasedAt": "2026-07-20T23:00:00.000Z"
+    },
+    {
+      "adapter": "ons_psf",
+      "indicatorId": "borrowing_outturn",
+      "pillar": "fiscal",
+      "unit": "GBPbn",
+      "weightWithinPillar": 0.15,
+      "rawLeadingRows": 67,
+      "baselineAdded": 64,
+      "covidExcluded": 3,
+      "baselineBefore": 26,
+      "baselineAfter": 90,
+      "beforeFirst": "2024-08-01T00:00:00Z",
+      "beforeLast": "2026-09-01T00:00:00Z",
+      "addedFirst": "2019-01-01T00:00:00Z",
+      "addedLast": "2024-07-01T00:00:00Z",
+      "sourceFirst": "2019-01-01T00:00:00Z",
+      "sourceLast": "2026-09-01T00:00:00Z",
+      "min": -15.131,
+      "max": 51.103,
+      "negativeCount": 7,
+      "releaseMetadataMissing": 0,
+      "releaseAfterReference": 67,
+      "latestReleasedAt": "2026-09-21T23:00:00.000Z"
+    },
+    {
+      "adapter": "ons_psf",
+      "indicatorId": "debt_interest",
+      "pillar": "fiscal",
+      "unit": "GBPbn",
+      "weightWithinPillar": 0.15,
+      "rawLeadingRows": 67,
+      "baselineAdded": 64,
+      "covidExcluded": 3,
+      "baselineBefore": 26,
+      "baselineAfter": 90,
+      "beforeFirst": "2024-08-01T00:00:00Z",
+      "beforeLast": "2026-09-01T00:00:00Z",
+      "addedFirst": "2019-01-01T00:00:00Z",
+      "addedLast": "2024-07-01T00:00:00Z",
+      "sourceFirst": "2019-01-01T00:00:00Z",
+      "sourceLast": "2026-09-01T00:00:00Z",
+      "min": -0.125,
+      "max": 20.128,
+      "negativeCount": 1,
+      "releaseMetadataMissing": 0,
+      "releaseAfterReference": 67,
+      "latestReleasedAt": "2026-09-21T23:00:00.000Z"
+    },
+    {
+      "adapter": "ons_rti",
+      "indicatorId": "payroll_mom",
+      "pillar": "labour",
+      "unit": "index",
+      "weightWithinPillar": 0.1,
+      "rawLeadingRows": 66,
+      "baselineAdded": 63,
+      "covidExcluded": 3,
+      "baselineBefore": 26,
+      "baselineAfter": 89,
+      "beforeFirst": "2024-07-01T00:00:00Z",
+      "beforeLast": "2026-08-01T00:00:00Z",
+      "addedFirst": "2019-01-01T00:00:00Z",
+      "addedLast": "2024-06-01T00:00:00Z",
+      "sourceFirst": "2019-01-01T00:00:00Z",
+      "sourceLast": "2026-08-01T00:00:00Z",
+      "min": 167.8,
+      "max": 218.2,
+      "negativeCount": 0,
+      "releaseMetadataMissing": 0,
+      "releaseAfterReference": 66,
+      "latestReleasedAt": "2026-08-17T23:00:00.000Z"
+    }
+  ],
+  "dryruns": [
+    {
+      "id": "boe_yields",
+      "sourcePath": "/tmp/tightrope-postbudget/boe_yields-primary-history.json",
+      "sourceSha256": "d71dd309f14bec8b9b831736594b7d9631c39f152fc493eedac2996ba7822799",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDMNZC%2CIUDLNZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "sourceFetchedAt": "2026-10-28T17:33:37.931Z",
+      "adapter": "boe_yields",
+      "fetchedAt": "2026-10-28T18:22:18.486Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 2648,
+      "rowsAttempted": 2648,
+      "rowsWritten": 0,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-02T16:00:00Z",
+      "latestObservedAt": "2024-03-28T16:00:00Z",
+      "notes": [
+        "Verified primary current-vintage capture; leading missing reference dates only; network disabled by replay"
+      ],
+      "dryRun": true
+    },
+    {
+      "id": "boe_fx",
+      "sourcePath": "/tmp/tightrope-postbudget/boe_fx-primary-history.json",
+      "sourceSha256": "6933d29bfe96fbbe34e2ff497684fb61e5da4561e87d9ba2cbc77744cebde15e",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=XUDLUSS%2CXUDLBK67&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "sourceFetchedAt": "2026-10-28T17:33:41.871Z",
+      "adapter": "boe_fx",
+      "fetchedAt": "2026-10-28T18:22:18.749Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 2732,
+      "rowsAttempted": 2732,
+      "rowsWritten": 0,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-02T16:00:00Z",
+      "latestObservedAt": "2024-05-31T16:00:00Z",
+      "notes": [
+        "Verified primary current-vintage capture; leading missing reference dates only; network disabled by replay"
+      ],
+      "dryRun": true
+    },
+    {
+      "id": "boe_breakevens",
+      "sourcePath": "/tmp/tightrope-postbudget/boe-inflation-direct-2019-history.json",
+      "sourceSha256": "69f49d79b3c60d6369503696d461487ebc21b678911b02ed0ce07f9640c6c950",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSIZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "sourceFetchedAt": "2026-10-28T18:19:20.175Z",
+      "adapter": "boe_breakevens",
+      "fetchedAt": "2026-10-28T18:22:18.759Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 1366,
+      "rowsAttempted": 1366,
+      "rowsWritten": 0,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-02T16:00:00Z",
+      "latestObservedAt": "2024-05-31T16:00:00Z",
+      "notes": [
+        "Verified primary current-vintage capture; leading missing reference dates only; network disabled by replay"
+      ],
+      "dryRun": true
+    },
+    {
+      "id": "boe_mortgage_rates",
+      "sourcePath": "/tmp/tightrope-postbudget/boe_mortgage_rates-primary-history.json",
+      "sourceSha256": "a0b80aaf6a58720861de2fd17a287fbb04e990a955f45d4a55c24149b8ac2f64",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUMBV34&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "sourceFetchedAt": "2026-10-28T17:33:45.391Z",
+      "adapter": "boe_mortgage_rates",
+      "fetchedAt": "2026-10-28T18:22:18.768Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 65,
+      "rowsAttempted": 65,
+      "rowsWritten": 0,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-31T16:00:00Z",
+      "latestObservedAt": "2024-05-31T16:00:00Z",
+      "notes": [
+        "Verified primary current-vintage capture; leading missing reference dates only; network disabled by replay"
+      ],
+      "dryRun": true
+    },
+    {
+      "id": "ons_lms",
+      "sourcePath": "/tmp/tightrope-postbudget/ons_lms-primary-history.json",
+      "sourceSha256": "e82b5b1b03c9e28263209bf2fef5ff91904342e39ccb1b96c3d2e24e5c4a0ae2",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem/data",
+      "sourceFetchedAt": "2026-10-28T17:44:09.943Z",
+      "adapter": "ons_lms",
+      "fetchedAt": "2026-10-28T18:22:18.770Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 335,
+      "rowsAttempted": 335,
+      "rowsWritten": 0,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-01T00:00:00Z",
+      "latestObservedAt": "2024-07-01T00:00:00Z",
+      "notes": [
+        "Verified primary current-vintage capture; leading missing reference dates only; network disabled by replay"
+      ],
+      "dryRun": true
+    },
+    {
+      "id": "ons_psf",
+      "sourcePath": "/tmp/tightrope-postbudget/ons_psf-primary-history.json",
+      "sourceSha256": "80e14e20d472e2477a4625c71a61cce04eccf9edde3d4e02eb6217d7b266edc4",
+      "sourceUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf/data",
+      "sourceFetchedAt": "2026-10-28T17:44:10.754Z",
+      "adapter": "ons_psf",
+      "fetchedAt": "2026-10-28T18:22:18.774Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 134,
+      "rowsAttempted": 134,
+      "rowsWritten": 0,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-01T00:00:00Z",
+      "latestObservedAt": "2024-07-01T00:00:00Z",
+      "notes": [
+        "Verified primary current-vintage capture; leading missing reference dates only; network disabled by replay"
+      ],
+      "dryRun": true
+    },
+    {
+      "id": "ons_rti",
+      "sourcePath": "/tmp/tightrope-postbudget/ons_rti-primary-history.json",
+      "sourceSha256": "6d5f251d41ec11d6c9715665c58d37c482e8288f5ea685463b5611edec05acc2",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/k54l/emp/data",
+      "sourceFetchedAt": "2026-10-28T17:44:11.264Z",
+      "adapter": "ons_rti",
+      "fetchedAt": "2026-10-28T18:22:18.776Z",
+      "from": "2019-01-01T00:00:00.000Z",
+      "to": "2024-08-01T00:00:00.000Z",
+      "observationsFetched": 66,
+      "rowsAttempted": 66,
+      "rowsWritten": 0,
+      "rowsRejected": [],
+      "earliestObservedAt": "2019-01-01T00:00:00Z",
+      "latestObservedAt": "2024-06-01T00:00:00Z",
+      "notes": [
+        "Verified primary current-vintage capture; leading missing reference dates only; network disabled by replay"
+      ],
+      "dryRun": true
+    }
+  ],
+  "before": {
+    "headline": 40.2,
+    "pillars": {
+      "market": 36,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "contributions": {
+      "gilt_10y": {
+        "value": 5.3259,
+        "normalised": 3.9170506912442393,
+        "zScore": 2.015308866056033,
+        "baselineN": 651,
+        "baselineMean": 4.58113671274961,
+        "baselineStddev": 0.3695529255065969
+      },
+      "gilt_30y": {
+        "value": 5.7873,
+        "normalised": 8.064516129032262,
+        "zScore": 1.3329095478004045,
+        "baselineN": 651,
+        "baselineMean": 5.225360061443929,
+        "baselineStddev": 0.4215889513908847
+      },
+      "gbp_usd": {
+        "value": 1.3313,
+        "normalised": 49.91803278688525,
+        "zScore": 0.3280650683710215,
+        "baselineN": 610,
+        "baselineMean": 1.3197124590163931,
+        "baselineStddev": 0.035320861928835455
+      },
+      "gbp_twi": {
+        "value": 85.8916,
+        "normalised": 94.34426229508198,
+        "zScore": 1.5272088424219603,
+        "baselineN": 610,
+        "baselineMean": 84.72958311475419,
+        "baselineStddev": 0.7608762161192002
+      },
+      "ftse_250": {
+        "value": 24639.3,
+        "normalised": 97.1938775510204,
+        "zScore": 1.9735252314384393,
+        "baselineN": 588,
+        "baselineMean": 21870.965306122453,
+        "baselineStddev": 1402.7359011061624
+      },
+      "breakeven_5y": {
+        "value": 3.6941,
+        "normalised": 22.906403940886698,
+        "zScore": 0.8605336214652656,
+        "baselineN": 609,
+        "baselineMean": 3.4427482758620704,
+        "baselineStddev": 0.2920882088371433
+      },
+      "brent_gbp": {
+        "value": 92.47,
+        "normalised": 3.151618398637135,
+        "zScore": 2.420643263616042,
+        "baselineN": 587,
+        "baselineMean": 60.82470187393529,
+        "baselineStddev": 13.07309449587869
+      },
+      "housebuilder_idx": {
+        "value": 55.8,
+        "normalised": 98.13432835820896,
+        "zScore": 1.6604072882225231,
+        "baselineN": 134,
+        "baselineMean": 51.218656716417925,
+        "baselineStddev": 2.7591683775891096
+      },
+      "services_pmi": {
+        "value": 52.1,
+        "normalised": 53.57142857142857,
+        "zScore": 0.2266175403099024,
+        "baselineN": 28,
+        "baselineMean": 51.78571428571427,
+        "baselineStddev": 1.386855200422444
+      },
+      "consumer_confidence": {
+        "value": -24,
+        "normalised": 5.357142857142857,
+        "zScore": -1.6033114649834574,
+        "baselineN": 28,
+        "baselineMean": -18.821428571428573,
+        "baselineStddev": 3.2299222837683996
+      },
+      "rics_price_balance": {
+        "value": -32,
+        "normalised": 12.962962962962962,
+        "zScore": -1.2318347686368718,
+        "baselineN": 27,
+        "baselineMean": -9.481481481481481,
+        "baselineStddev": 18.28046998822508
+      },
+      "cb_headroom": {
+        "value": 14.5,
+        "normalised": 50,
+        "zScore": -0.24578806554679664,
+        "baselineN": 5,
+        "baselineMean": 15.919999999999998,
+        "baselineStddev": 5.777335025770966
+      },
+      "psnfl_trajectory": {
+        "value": 0,
+        "normalised": 50,
+        "zScore": 0,
+        "baselineN": 5,
+        "baselineMean": 0,
+        "baselineStddev": 0
+      },
+      "borrowing_outturn": {
+        "value": 24.52,
+        "normalised": 1.9230769230769273,
+        "zScore": 0.9548761803057723,
+        "baselineN": 26,
+        "baselineMean": 12.800615384615385,
+        "baselineStddev": 12.273198197939978
+      },
+      "debt_interest": {
+        "value": 10.933,
+        "normalised": 17.307692307692314,
+        "zScore": 0.8484534622710632,
+        "baselineN": 26,
+        "baselineMean": 8.107692307692309,
+        "baselineStddev": 3.3299501009108545
+      },
+      "ilg_share": {
+        "value": 24.47949830594804,
+        "normalised": 0.37037037037036535,
+        "zScore": 2.217474332803192,
+        "baselineN": 135,
+        "baselineMean": 24.03315463719633,
+        "baselineStddev": 0.20128470582451918
+      },
+      "issuance_long_share": {
+        "value": 30.673965664751584,
+        "normalised": 98.51851851851852,
+        "zScore": -4.083703304595333,
+        "baselineN": 135,
+        "baselineMean": 32.10636606116098,
+        "baselineStddev": 0.350760153118259
+      },
+      "inactivity_rate": {
+        "value": 20.9,
+        "normalised": 77.08333333333334,
+        "zScore": -0.765068805494682,
+        "baselineN": 24,
+        "baselineMean": 21.12083333333333,
+        "baselineStddev": 0.28864506270196694
+      },
+      "inactivity_health": {
+        "value": 2.738,
+        "normalised": 97.91666666666666,
+        "zScore": -2.4204177043634014,
+        "baselineN": 24,
+        "baselineMean": 2.7880833333333332,
+        "baselineStddev": 0.02069202073800967
+      },
+      "unemployment": {
+        "value": 4.7,
+        "normalised": 58.33333333333333,
+        "zScore": -0.17864740025262665,
+        "baselineN": 24,
+        "baselineMean": 4.750000000000001,
+        "baselineStddev": 0.2798809270624444
+      },
+      "vacancies_per_unemployed": {
+        "value": 0.411214953271028,
+        "normalised": 47.91666666666667,
+        "zScore": -0.6017907498203382,
+        "baselineN": 24,
+        "baselineMean": 0.44358128872179337,
+        "baselineStddev": 0.05378337147991749
+      },
+      "payroll_mom": {
+        "value": 238.3,
+        "normalised": 98.07692307692307,
+        "zScore": 1.6234197188864543,
+        "baselineN": 26,
+        "baselineMean": 229.29230769230767,
+        "baselineStddev": 5.548591164009605
+      },
+      "real_regular_pay": {
+        "value": 0.7,
+        "normalised": 24,
+        "zScore": -0.8623143062960393,
+        "baselineN": 25,
+        "baselineMean": 1.1920000000000002,
+        "baselineStddev": 0.5705576219804623
+      },
+      "mortgage_2y_fix": {
+        "value": 5.13,
+        "normalised": 8.92857142857143,
+        "zScore": 1.6545539583094735,
+        "baselineN": 28,
+        "baselineMean": 4.518928571428572,
+        "baselineStddev": 0.36932698719344587
+      },
+      "dd_failure_rate": {
+        "value": 2.43,
+        "normalised": 9.259259259259256,
+        "zScore": 1.164180018766606,
+        "baselineN": 27,
+        "baselineMean": 2.284444444444444,
+        "baselineStddev": 0.12502839183734263
+      },
+      "housing_trajectory": {
+        "value": 47.7,
+        "normalised": 20.588235294117645,
+        "zScore": -0.8063298149781285,
+        "baselineN": 17,
+        "baselineMean": 51.623529411764714,
+        "baselineStddev": 4.865911366394329
+      },
+      "planning_consents": {
+        "value": 60,
+        "normalised": 10,
+        "zScore": -1.1072320813964278,
+        "baselineN": 15,
+        "baselineMean": 65.61999999999999,
+        "baselineStddev": 5.075719981769417
+      },
+      "new_towns_milestones": {
+        "value": 68,
+        "normalised": 50,
+        "zScore": 0,
+        "baselineN": 3,
+        "baselineMean": 68,
+        "baselineStddev": 0
+      },
+      "bics_rollout": {
+        "value": 81.4,
+        "normalised": 50,
+        "zScore": 0,
+        "baselineN": 3,
+        "baselineMean": 81.4,
+        "baselineStddev": 0
+      },
+      "industrial_strategy": {
+        "value": 74,
+        "normalised": 50,
+        "zScore": 0,
+        "baselineN": 3,
+        "baselineMean": 74,
+        "baselineStddev": 0
+      },
+      "smr_programme": {
+        "value": 62,
+        "normalised": 50,
+        "zScore": 0,
+        "baselineN": 3,
+        "baselineMean": 62,
+        "baselineStddev": 0
+      }
+    }
+  },
+  "scenarios": {
+    "nonBreakeven2019": {
+      "headline": 37.9,
+      "pillars": {
+        "market": 36.2,
+        "fiscal": 36.6,
+        "labour": 45.7,
+        "delivery": 34.6
+      },
+      "contributions": {
+        "gilt_10y": {
+          "value": 5.3259,
+          "normalised": 1.3322884012539227,
+          "zScore": 1.4311858865854274,
+          "baselineN": 1914,
+          "baselineMean": 2.7889358411703213,
+          "baselineStddev": 1.7726307830511485
+        },
+        "gilt_30y": {
+          "value": 5.7873,
+          "normalised": 2.7429467084639447,
+          "zScore": 1.355029520035545,
+          "baselineN": 1914,
+          "baselineMean": 3.295263427377212,
+          "baselineStddev": 1.8391013153406555
+        },
+        "gbp_usd": {
+          "value": 1.3313,
+          "normalised": 67.9373368146214,
+          "zScore": 0.6061805654754162,
+          "baselineN": 1915,
+          "baselineMean": 1.295142715404699,
+          "baselineStddev": 0.059647713329349955
+        },
+        "gbp_twi": {
+          "value": 85.8916,
+          "normalised": 98.19843342036553,
+          "zScore": 1.5325089069843207,
+          "baselineN": 1915,
+          "baselineMean": 81.42443143603131,
+          "baselineStddev": 2.914938075472072
+        },
+        "ftse_250": {
+          "value": 24639.3,
+          "normalised": 97.1938775510204,
+          "zScore": 1.9735252314384393,
+          "baselineN": 588,
+          "baselineMean": 21870.965306122453,
+          "baselineStddev": 1402.7359011061624
+        },
+        "breakeven_5y": {
+          "value": 3.6941,
+          "normalised": 22.906403940886698,
+          "zScore": 0.8605336214652656,
+          "baselineN": 609,
+          "baselineMean": 3.4427482758620704,
+          "baselineStddev": 0.2920882088371433
+        },
+        "brent_gbp": {
+          "value": 92.47,
+          "normalised": 3.151618398637135,
+          "zScore": 2.420643263616042,
+          "baselineN": 587,
+          "baselineMean": 60.82470187393529,
+          "baselineStddev": 13.07309449587869
+        },
+        "housebuilder_idx": {
+          "value": 55.8,
+          "normalised": 98.13432835820896,
+          "zScore": 1.6604072882225231,
+          "baselineN": 134,
+          "baselineMean": 51.218656716417925,
+          "baselineStddev": 2.7591683775891096
+        },
+        "services_pmi": {
+          "value": 52.1,
+          "normalised": 53.57142857142857,
+          "zScore": 0.2266175403099024,
+          "baselineN": 28,
+          "baselineMean": 51.78571428571427,
+          "baselineStddev": 1.386855200422444
+        },
+        "consumer_confidence": {
+          "value": -24,
+          "normalised": 5.357142857142857,
+          "zScore": -1.6033114649834574,
+          "baselineN": 28,
+          "baselineMean": -18.821428571428573,
+          "baselineStddev": 3.2299222837683996
+        },
+        "rics_price_balance": {
+          "value": -32,
+          "normalised": 12.962962962962962,
+          "zScore": -1.2318347686368718,
+          "baselineN": 27,
+          "baselineMean": -9.481481481481481,
+          "baselineStddev": 18.28046998822508
+        },
+        "cb_headroom": {
+          "value": 14.5,
+          "normalised": 50,
+          "zScore": -0.24578806554679664,
+          "baselineN": 5,
+          "baselineMean": 15.919999999999998,
+          "baselineStddev": 5.777335025770966
+        },
+        "psnfl_trajectory": {
+          "value": 0,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 5,
+          "baselineMean": 0,
+          "baselineStddev": 0
+        },
+        "borrowing_outturn": {
+          "value": 24.52,
+          "normalised": 2.777777777777779,
+          "zScore": 1.317379219184097,
+          "baselineN": 90,
+          "baselineMean": 11.026888888888887,
+          "baselineStddev": 10.24238952202989
+        },
+        "debt_interest": {
+          "value": 10.933,
+          "normalised": 8.333333333333337,
+          "zScore": 1.2257346003140552,
+          "baselineN": 90,
+          "baselineMean": 6.592277777777776,
+          "baselineStddev": 3.541323073616469
+        },
+        "ilg_share": {
+          "value": 24.47949830594804,
+          "normalised": 0.37037037037036535,
+          "zScore": 2.217474332803192,
+          "baselineN": 135,
+          "baselineMean": 24.03315463719633,
+          "baselineStddev": 0.20128470582451918
+        },
+        "issuance_long_share": {
+          "value": 30.673965664751584,
+          "normalised": 98.51851851851852,
+          "zScore": -4.083703304595333,
+          "baselineN": 135,
+          "baselineMean": 32.10636606116098,
+          "baselineStddev": 0.350760153118259
+        },
+        "inactivity_rate": {
+          "value": 20.9,
+          "normalised": 81.25,
+          "zScore": -1.0829163814098477,
+          "baselineN": 88,
+          "baselineMean": 21.4,
+          "baselineStddev": 0.46171616625565354
+        },
+        "inactivity_health": {
+          "value": 2.738,
+          "normalised": 40.34090909090909,
+          "zScore": 0.7101484211250211,
+          "baselineN": 88,
+          "baselineMean": 2.5411250000000005,
+          "baselineStddev": 0.2772307790082938
+        },
+        "unemployment": {
+          "value": 4.7,
+          "normalised": 26.70454545454546,
+          "zScore": 0.779361792590109,
+          "baselineN": 88,
+          "baselineMean": 4.334090909090909,
+          "baselineStddev": 0.46949836954803653
+        },
+        "vacancies_per_unemployed": {
+          "value": 0.411214953271028,
+          "normalised": 23.295454545454543,
+          "zScore": -0.9973831544106523,
+          "baselineN": 88,
+          "baselineMean": 0.6063284196008581,
+          "baselineStddev": 0.19562538776296207
+        },
+        "payroll_mom": {
+          "value": 238.3,
+          "normalised": 99.43820224719101,
+          "zScore": 1.655841986235852,
+          "baselineN": 89,
+          "baselineMean": 200.8247191011236,
+          "baselineStddev": 22.632160079517735
+        },
+        "real_regular_pay": {
+          "value": 0.7,
+          "normalised": 30.89887640449438,
+          "zScore": -0.21985282566134734,
+          "baselineN": 89,
+          "baselineMean": 1.1191011235955057,
+          "baselineStddev": 1.9062803597579077
+        },
+        "mortgage_2y_fix": {
+          "value": 5.13,
+          "normalised": 15.000000000000002,
+          "zScore": 1.0471746641010495,
+          "baselineN": 90,
+          "baselineMean": 3.423555555555554,
+          "baselineStddev": 1.6295700258460213
+        },
+        "dd_failure_rate": {
+          "value": 2.43,
+          "normalised": 9.259259259259256,
+          "zScore": 1.164180018766606,
+          "baselineN": 27,
+          "baselineMean": 2.284444444444444,
+          "baselineStddev": 0.12502839183734263
+        },
+        "housing_trajectory": {
+          "value": 47.7,
+          "normalised": 20.588235294117645,
+          "zScore": -0.8063298149781285,
+          "baselineN": 17,
+          "baselineMean": 51.623529411764714,
+          "baselineStddev": 4.865911366394329
+        },
+        "planning_consents": {
+          "value": 60,
+          "normalised": 10,
+          "zScore": -1.1072320813964278,
+          "baselineN": 15,
+          "baselineMean": 65.61999999999999,
+          "baselineStddev": 5.075719981769417
+        },
+        "new_towns_milestones": {
+          "value": 68,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 68,
+          "baselineStddev": 0
+        },
+        "bics_rollout": {
+          "value": 81.4,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 81.4,
+          "baselineStddev": 0
+        },
+        "industrial_strategy": {
+          "value": 74,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 74,
+          "baselineStddev": 0
+        },
+        "smr_programme": {
+          "value": 62,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 62,
+          "baselineStddev": 0
+        }
+      }
+    },
+    "breakeven2019Only": {
+      "headline": 40.3,
+      "pillars": {
+        "market": 36.2,
+        "fiscal": 37.8,
+        "labour": 59.2,
+        "delivery": 34.6
+      },
+      "contributions": {
+        "gilt_10y": {
+          "value": 5.3259,
+          "normalised": 3.9170506912442393,
+          "zScore": 2.015308866056033,
+          "baselineN": 651,
+          "baselineMean": 4.58113671274961,
+          "baselineStddev": 0.3695529255065969
+        },
+        "gilt_30y": {
+          "value": 5.7873,
+          "normalised": 8.064516129032262,
+          "zScore": 1.3329095478004045,
+          "baselineN": 651,
+          "baselineMean": 5.225360061443929,
+          "baselineStddev": 0.4215889513908847
+        },
+        "gbp_usd": {
+          "value": 1.3313,
+          "normalised": 49.91803278688525,
+          "zScore": 0.3280650683710215,
+          "baselineN": 610,
+          "baselineMean": 1.3197124590163931,
+          "baselineStddev": 0.035320861928835455
+        },
+        "gbp_twi": {
+          "value": 85.8916,
+          "normalised": 94.34426229508198,
+          "zScore": 1.5272088424219603,
+          "baselineN": 610,
+          "baselineMean": 84.72958311475419,
+          "baselineStddev": 0.7608762161192002
+        },
+        "ftse_250": {
+          "value": 24639.3,
+          "normalised": 97.1938775510204,
+          "zScore": 1.9735252314384393,
+          "baselineN": 588,
+          "baselineMean": 21870.965306122453,
+          "baselineStddev": 1402.7359011061624
+        },
+        "breakeven_5y": {
+          "value": 3.6941,
+          "normalised": 24.320794148380354,
+          "zScore": 0.5184451911043261,
+          "baselineN": 1914,
+          "baselineMean": 3.4801480668756515,
+          "baselineStddev": 0.41267994533542773
+        },
+        "brent_gbp": {
+          "value": 92.47,
+          "normalised": 3.151618398637135,
+          "zScore": 2.420643263616042,
+          "baselineN": 587,
+          "baselineMean": 60.82470187393529,
+          "baselineStddev": 13.07309449587869
+        },
+        "housebuilder_idx": {
+          "value": 55.8,
+          "normalised": 98.13432835820896,
+          "zScore": 1.6604072882225231,
+          "baselineN": 134,
+          "baselineMean": 51.218656716417925,
+          "baselineStddev": 2.7591683775891096
+        },
+        "services_pmi": {
+          "value": 52.1,
+          "normalised": 53.57142857142857,
+          "zScore": 0.2266175403099024,
+          "baselineN": 28,
+          "baselineMean": 51.78571428571427,
+          "baselineStddev": 1.386855200422444
+        },
+        "consumer_confidence": {
+          "value": -24,
+          "normalised": 5.357142857142857,
+          "zScore": -1.6033114649834574,
+          "baselineN": 28,
+          "baselineMean": -18.821428571428573,
+          "baselineStddev": 3.2299222837683996
+        },
+        "rics_price_balance": {
+          "value": -32,
+          "normalised": 12.962962962962962,
+          "zScore": -1.2318347686368718,
+          "baselineN": 27,
+          "baselineMean": -9.481481481481481,
+          "baselineStddev": 18.28046998822508
+        },
+        "cb_headroom": {
+          "value": 14.5,
+          "normalised": 50,
+          "zScore": -0.24578806554679664,
+          "baselineN": 5,
+          "baselineMean": 15.919999999999998,
+          "baselineStddev": 5.777335025770966
+        },
+        "psnfl_trajectory": {
+          "value": 0,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 5,
+          "baselineMean": 0,
+          "baselineStddev": 0
+        },
+        "borrowing_outturn": {
+          "value": 24.52,
+          "normalised": 1.9230769230769273,
+          "zScore": 0.9548761803057723,
+          "baselineN": 26,
+          "baselineMean": 12.800615384615385,
+          "baselineStddev": 12.273198197939978
+        },
+        "debt_interest": {
+          "value": 10.933,
+          "normalised": 17.307692307692314,
+          "zScore": 0.8484534622710632,
+          "baselineN": 26,
+          "baselineMean": 8.107692307692309,
+          "baselineStddev": 3.3299501009108545
+        },
+        "ilg_share": {
+          "value": 24.47949830594804,
+          "normalised": 0.37037037037036535,
+          "zScore": 2.217474332803192,
+          "baselineN": 135,
+          "baselineMean": 24.03315463719633,
+          "baselineStddev": 0.20128470582451918
+        },
+        "issuance_long_share": {
+          "value": 30.673965664751584,
+          "normalised": 98.51851851851852,
+          "zScore": -4.083703304595333,
+          "baselineN": 135,
+          "baselineMean": 32.10636606116098,
+          "baselineStddev": 0.350760153118259
+        },
+        "inactivity_rate": {
+          "value": 20.9,
+          "normalised": 77.08333333333334,
+          "zScore": -0.765068805494682,
+          "baselineN": 24,
+          "baselineMean": 21.12083333333333,
+          "baselineStddev": 0.28864506270196694
+        },
+        "inactivity_health": {
+          "value": 2.738,
+          "normalised": 97.91666666666666,
+          "zScore": -2.4204177043634014,
+          "baselineN": 24,
+          "baselineMean": 2.7880833333333332,
+          "baselineStddev": 0.02069202073800967
+        },
+        "unemployment": {
+          "value": 4.7,
+          "normalised": 58.33333333333333,
+          "zScore": -0.17864740025262665,
+          "baselineN": 24,
+          "baselineMean": 4.750000000000001,
+          "baselineStddev": 0.2798809270624444
+        },
+        "vacancies_per_unemployed": {
+          "value": 0.411214953271028,
+          "normalised": 47.91666666666667,
+          "zScore": -0.6017907498203382,
+          "baselineN": 24,
+          "baselineMean": 0.44358128872179337,
+          "baselineStddev": 0.05378337147991749
+        },
+        "payroll_mom": {
+          "value": 238.3,
+          "normalised": 98.07692307692307,
+          "zScore": 1.6234197188864543,
+          "baselineN": 26,
+          "baselineMean": 229.29230769230767,
+          "baselineStddev": 5.548591164009605
+        },
+        "real_regular_pay": {
+          "value": 0.7,
+          "normalised": 24,
+          "zScore": -0.8623143062960393,
+          "baselineN": 25,
+          "baselineMean": 1.1920000000000002,
+          "baselineStddev": 0.5705576219804623
+        },
+        "mortgage_2y_fix": {
+          "value": 5.13,
+          "normalised": 8.92857142857143,
+          "zScore": 1.6545539583094735,
+          "baselineN": 28,
+          "baselineMean": 4.518928571428572,
+          "baselineStddev": 0.36932698719344587
+        },
+        "dd_failure_rate": {
+          "value": 2.43,
+          "normalised": 9.259259259259256,
+          "zScore": 1.164180018766606,
+          "baselineN": 27,
+          "baselineMean": 2.284444444444444,
+          "baselineStddev": 0.12502839183734263
+        },
+        "housing_trajectory": {
+          "value": 47.7,
+          "normalised": 20.588235294117645,
+          "zScore": -0.8063298149781285,
+          "baselineN": 17,
+          "baselineMean": 51.623529411764714,
+          "baselineStddev": 4.865911366394329
+        },
+        "planning_consents": {
+          "value": 60,
+          "normalised": 10,
+          "zScore": -1.1072320813964278,
+          "baselineN": 15,
+          "baselineMean": 65.61999999999999,
+          "baselineStddev": 5.075719981769417
+        },
+        "new_towns_milestones": {
+          "value": 68,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 68,
+          "baselineStddev": 0
+        },
+        "bics_rollout": {
+          "value": 81.4,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 81.4,
+          "baselineStddev": 0
+        },
+        "industrial_strategy": {
+          "value": 74,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 74,
+          "baselineStddev": 0
+        },
+        "smr_programme": {
+          "value": 62,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 62,
+          "baselineStddev": 0
+        }
+      }
+    },
+    "all2019": {
+      "headline": 38,
+      "pillars": {
+        "market": 36.4,
+        "fiscal": 36.6,
+        "labour": 45.7,
+        "delivery": 34.6
+      },
+      "contributions": {
+        "gilt_10y": {
+          "value": 5.3259,
+          "normalised": 1.3322884012539227,
+          "zScore": 1.4311858865854274,
+          "baselineN": 1914,
+          "baselineMean": 2.7889358411703213,
+          "baselineStddev": 1.7726307830511485
+        },
+        "gilt_30y": {
+          "value": 5.7873,
+          "normalised": 2.7429467084639447,
+          "zScore": 1.355029520035545,
+          "baselineN": 1914,
+          "baselineMean": 3.295263427377212,
+          "baselineStddev": 1.8391013153406555
+        },
+        "gbp_usd": {
+          "value": 1.3313,
+          "normalised": 67.9373368146214,
+          "zScore": 0.6061805654754162,
+          "baselineN": 1915,
+          "baselineMean": 1.295142715404699,
+          "baselineStddev": 0.059647713329349955
+        },
+        "gbp_twi": {
+          "value": 85.8916,
+          "normalised": 98.19843342036553,
+          "zScore": 1.5325089069843207,
+          "baselineN": 1915,
+          "baselineMean": 81.42443143603131,
+          "baselineStddev": 2.914938075472072
+        },
+        "ftse_250": {
+          "value": 24639.3,
+          "normalised": 97.1938775510204,
+          "zScore": 1.9735252314384393,
+          "baselineN": 588,
+          "baselineMean": 21870.965306122453,
+          "baselineStddev": 1402.7359011061624
+        },
+        "breakeven_5y": {
+          "value": 3.6941,
+          "normalised": 24.320794148380354,
+          "zScore": 0.5184451911043261,
+          "baselineN": 1914,
+          "baselineMean": 3.4801480668756515,
+          "baselineStddev": 0.41267994533542773
+        },
+        "brent_gbp": {
+          "value": 92.47,
+          "normalised": 3.151618398637135,
+          "zScore": 2.420643263616042,
+          "baselineN": 587,
+          "baselineMean": 60.82470187393529,
+          "baselineStddev": 13.07309449587869
+        },
+        "housebuilder_idx": {
+          "value": 55.8,
+          "normalised": 98.13432835820896,
+          "zScore": 1.6604072882225231,
+          "baselineN": 134,
+          "baselineMean": 51.218656716417925,
+          "baselineStddev": 2.7591683775891096
+        },
+        "services_pmi": {
+          "value": 52.1,
+          "normalised": 53.57142857142857,
+          "zScore": 0.2266175403099024,
+          "baselineN": 28,
+          "baselineMean": 51.78571428571427,
+          "baselineStddev": 1.386855200422444
+        },
+        "consumer_confidence": {
+          "value": -24,
+          "normalised": 5.357142857142857,
+          "zScore": -1.6033114649834574,
+          "baselineN": 28,
+          "baselineMean": -18.821428571428573,
+          "baselineStddev": 3.2299222837683996
+        },
+        "rics_price_balance": {
+          "value": -32,
+          "normalised": 12.962962962962962,
+          "zScore": -1.2318347686368718,
+          "baselineN": 27,
+          "baselineMean": -9.481481481481481,
+          "baselineStddev": 18.28046998822508
+        },
+        "cb_headroom": {
+          "value": 14.5,
+          "normalised": 50,
+          "zScore": -0.24578806554679664,
+          "baselineN": 5,
+          "baselineMean": 15.919999999999998,
+          "baselineStddev": 5.777335025770966
+        },
+        "psnfl_trajectory": {
+          "value": 0,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 5,
+          "baselineMean": 0,
+          "baselineStddev": 0
+        },
+        "borrowing_outturn": {
+          "value": 24.52,
+          "normalised": 2.777777777777779,
+          "zScore": 1.317379219184097,
+          "baselineN": 90,
+          "baselineMean": 11.026888888888887,
+          "baselineStddev": 10.24238952202989
+        },
+        "debt_interest": {
+          "value": 10.933,
+          "normalised": 8.333333333333337,
+          "zScore": 1.2257346003140552,
+          "baselineN": 90,
+          "baselineMean": 6.592277777777776,
+          "baselineStddev": 3.541323073616469
+        },
+        "ilg_share": {
+          "value": 24.47949830594804,
+          "normalised": 0.37037037037036535,
+          "zScore": 2.217474332803192,
+          "baselineN": 135,
+          "baselineMean": 24.03315463719633,
+          "baselineStddev": 0.20128470582451918
+        },
+        "issuance_long_share": {
+          "value": 30.673965664751584,
+          "normalised": 98.51851851851852,
+          "zScore": -4.083703304595333,
+          "baselineN": 135,
+          "baselineMean": 32.10636606116098,
+          "baselineStddev": 0.350760153118259
+        },
+        "inactivity_rate": {
+          "value": 20.9,
+          "normalised": 81.25,
+          "zScore": -1.0829163814098477,
+          "baselineN": 88,
+          "baselineMean": 21.4,
+          "baselineStddev": 0.46171616625565354
+        },
+        "inactivity_health": {
+          "value": 2.738,
+          "normalised": 40.34090909090909,
+          "zScore": 0.7101484211250211,
+          "baselineN": 88,
+          "baselineMean": 2.5411250000000005,
+          "baselineStddev": 0.2772307790082938
+        },
+        "unemployment": {
+          "value": 4.7,
+          "normalised": 26.70454545454546,
+          "zScore": 0.779361792590109,
+          "baselineN": 88,
+          "baselineMean": 4.334090909090909,
+          "baselineStddev": 0.46949836954803653
+        },
+        "vacancies_per_unemployed": {
+          "value": 0.411214953271028,
+          "normalised": 23.295454545454543,
+          "zScore": -0.9973831544106523,
+          "baselineN": 88,
+          "baselineMean": 0.6063284196008581,
+          "baselineStddev": 0.19562538776296207
+        },
+        "payroll_mom": {
+          "value": 238.3,
+          "normalised": 99.43820224719101,
+          "zScore": 1.655841986235852,
+          "baselineN": 89,
+          "baselineMean": 200.8247191011236,
+          "baselineStddev": 22.632160079517735
+        },
+        "real_regular_pay": {
+          "value": 0.7,
+          "normalised": 30.89887640449438,
+          "zScore": -0.21985282566134734,
+          "baselineN": 89,
+          "baselineMean": 1.1191011235955057,
+          "baselineStddev": 1.9062803597579077
+        },
+        "mortgage_2y_fix": {
+          "value": 5.13,
+          "normalised": 15.000000000000002,
+          "zScore": 1.0471746641010495,
+          "baselineN": 90,
+          "baselineMean": 3.423555555555554,
+          "baselineStddev": 1.6295700258460213
+        },
+        "dd_failure_rate": {
+          "value": 2.43,
+          "normalised": 9.259259259259256,
+          "zScore": 1.164180018766606,
+          "baselineN": 27,
+          "baselineMean": 2.284444444444444,
+          "baselineStddev": 0.12502839183734263
+        },
+        "housing_trajectory": {
+          "value": 47.7,
+          "normalised": 20.588235294117645,
+          "zScore": -0.8063298149781285,
+          "baselineN": 17,
+          "baselineMean": 51.623529411764714,
+          "baselineStddev": 4.865911366394329
+        },
+        "planning_consents": {
+          "value": 60,
+          "normalised": 10,
+          "zScore": -1.1072320813964278,
+          "baselineN": 15,
+          "baselineMean": 65.61999999999999,
+          "baselineStddev": 5.075719981769417
+        },
+        "new_towns_milestones": {
+          "value": 68,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 68,
+          "baselineStddev": 0
+        },
+        "bics_rollout": {
+          "value": 81.4,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 81.4,
+          "baselineStddev": 0
+        },
+        "industrial_strategy": {
+          "value": 74,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 74,
+          "baselineStddev": 0
+        },
+        "smr_programme": {
+          "value": 62,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 62,
+          "baselineStddev": 0
+        }
+      }
+    },
+    "only_boe_yields": {
+      "headline": 39.6,
+      "pillars": {
+        "market": 34.7,
+        "fiscal": 37.8,
+        "labour": 59.2,
+        "delivery": 34.6
+      },
+      "contributions": {
+        "gilt_10y": {
+          "value": 5.3259,
+          "normalised": 1.3322884012539227,
+          "zScore": 1.4311858865854274,
+          "baselineN": 1914,
+          "baselineMean": 2.7889358411703213,
+          "baselineStddev": 1.7726307830511485
+        },
+        "gilt_30y": {
+          "value": 5.7873,
+          "normalised": 2.7429467084639447,
+          "zScore": 1.355029520035545,
+          "baselineN": 1914,
+          "baselineMean": 3.295263427377212,
+          "baselineStddev": 1.8391013153406555
+        },
+        "gbp_usd": {
+          "value": 1.3313,
+          "normalised": 49.91803278688525,
+          "zScore": 0.3280650683710215,
+          "baselineN": 610,
+          "baselineMean": 1.3197124590163931,
+          "baselineStddev": 0.035320861928835455
+        },
+        "gbp_twi": {
+          "value": 85.8916,
+          "normalised": 94.34426229508198,
+          "zScore": 1.5272088424219603,
+          "baselineN": 610,
+          "baselineMean": 84.72958311475419,
+          "baselineStddev": 0.7608762161192002
+        },
+        "ftse_250": {
+          "value": 24639.3,
+          "normalised": 97.1938775510204,
+          "zScore": 1.9735252314384393,
+          "baselineN": 588,
+          "baselineMean": 21870.965306122453,
+          "baselineStddev": 1402.7359011061624
+        },
+        "breakeven_5y": {
+          "value": 3.6941,
+          "normalised": 22.906403940886698,
+          "zScore": 0.8605336214652656,
+          "baselineN": 609,
+          "baselineMean": 3.4427482758620704,
+          "baselineStddev": 0.2920882088371433
+        },
+        "brent_gbp": {
+          "value": 92.47,
+          "normalised": 3.151618398637135,
+          "zScore": 2.420643263616042,
+          "baselineN": 587,
+          "baselineMean": 60.82470187393529,
+          "baselineStddev": 13.07309449587869
+        },
+        "housebuilder_idx": {
+          "value": 55.8,
+          "normalised": 98.13432835820896,
+          "zScore": 1.6604072882225231,
+          "baselineN": 134,
+          "baselineMean": 51.218656716417925,
+          "baselineStddev": 2.7591683775891096
+        },
+        "services_pmi": {
+          "value": 52.1,
+          "normalised": 53.57142857142857,
+          "zScore": 0.2266175403099024,
+          "baselineN": 28,
+          "baselineMean": 51.78571428571427,
+          "baselineStddev": 1.386855200422444
+        },
+        "consumer_confidence": {
+          "value": -24,
+          "normalised": 5.357142857142857,
+          "zScore": -1.6033114649834574,
+          "baselineN": 28,
+          "baselineMean": -18.821428571428573,
+          "baselineStddev": 3.2299222837683996
+        },
+        "rics_price_balance": {
+          "value": -32,
+          "normalised": 12.962962962962962,
+          "zScore": -1.2318347686368718,
+          "baselineN": 27,
+          "baselineMean": -9.481481481481481,
+          "baselineStddev": 18.28046998822508
+        },
+        "cb_headroom": {
+          "value": 14.5,
+          "normalised": 50,
+          "zScore": -0.24578806554679664,
+          "baselineN": 5,
+          "baselineMean": 15.919999999999998,
+          "baselineStddev": 5.777335025770966
+        },
+        "psnfl_trajectory": {
+          "value": 0,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 5,
+          "baselineMean": 0,
+          "baselineStddev": 0
+        },
+        "borrowing_outturn": {
+          "value": 24.52,
+          "normalised": 1.9230769230769273,
+          "zScore": 0.9548761803057723,
+          "baselineN": 26,
+          "baselineMean": 12.800615384615385,
+          "baselineStddev": 12.273198197939978
+        },
+        "debt_interest": {
+          "value": 10.933,
+          "normalised": 17.307692307692314,
+          "zScore": 0.8484534622710632,
+          "baselineN": 26,
+          "baselineMean": 8.107692307692309,
+          "baselineStddev": 3.3299501009108545
+        },
+        "ilg_share": {
+          "value": 24.47949830594804,
+          "normalised": 0.37037037037036535,
+          "zScore": 2.217474332803192,
+          "baselineN": 135,
+          "baselineMean": 24.03315463719633,
+          "baselineStddev": 0.20128470582451918
+        },
+        "issuance_long_share": {
+          "value": 30.673965664751584,
+          "normalised": 98.51851851851852,
+          "zScore": -4.083703304595333,
+          "baselineN": 135,
+          "baselineMean": 32.10636606116098,
+          "baselineStddev": 0.350760153118259
+        },
+        "inactivity_rate": {
+          "value": 20.9,
+          "normalised": 77.08333333333334,
+          "zScore": -0.765068805494682,
+          "baselineN": 24,
+          "baselineMean": 21.12083333333333,
+          "baselineStddev": 0.28864506270196694
+        },
+        "inactivity_health": {
+          "value": 2.738,
+          "normalised": 97.91666666666666,
+          "zScore": -2.4204177043634014,
+          "baselineN": 24,
+          "baselineMean": 2.7880833333333332,
+          "baselineStddev": 0.02069202073800967
+        },
+        "unemployment": {
+          "value": 4.7,
+          "normalised": 58.33333333333333,
+          "zScore": -0.17864740025262665,
+          "baselineN": 24,
+          "baselineMean": 4.750000000000001,
+          "baselineStddev": 0.2798809270624444
+        },
+        "vacancies_per_unemployed": {
+          "value": 0.411214953271028,
+          "normalised": 47.91666666666667,
+          "zScore": -0.6017907498203382,
+          "baselineN": 24,
+          "baselineMean": 0.44358128872179337,
+          "baselineStddev": 0.05378337147991749
+        },
+        "payroll_mom": {
+          "value": 238.3,
+          "normalised": 98.07692307692307,
+          "zScore": 1.6234197188864543,
+          "baselineN": 26,
+          "baselineMean": 229.29230769230767,
+          "baselineStddev": 5.548591164009605
+        },
+        "real_regular_pay": {
+          "value": 0.7,
+          "normalised": 24,
+          "zScore": -0.8623143062960393,
+          "baselineN": 25,
+          "baselineMean": 1.1920000000000002,
+          "baselineStddev": 0.5705576219804623
+        },
+        "mortgage_2y_fix": {
+          "value": 5.13,
+          "normalised": 8.92857142857143,
+          "zScore": 1.6545539583094735,
+          "baselineN": 28,
+          "baselineMean": 4.518928571428572,
+          "baselineStddev": 0.36932698719344587
+        },
+        "dd_failure_rate": {
+          "value": 2.43,
+          "normalised": 9.259259259259256,
+          "zScore": 1.164180018766606,
+          "baselineN": 27,
+          "baselineMean": 2.284444444444444,
+          "baselineStddev": 0.12502839183734263
+        },
+        "housing_trajectory": {
+          "value": 47.7,
+          "normalised": 20.588235294117645,
+          "zScore": -0.8063298149781285,
+          "baselineN": 17,
+          "baselineMean": 51.623529411764714,
+          "baselineStddev": 4.865911366394329
+        },
+        "planning_consents": {
+          "value": 60,
+          "normalised": 10,
+          "zScore": -1.1072320813964278,
+          "baselineN": 15,
+          "baselineMean": 65.61999999999999,
+          "baselineStddev": 5.075719981769417
+        },
+        "new_towns_milestones": {
+          "value": 68,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 68,
+          "baselineStddev": 0
+        },
+        "bics_rollout": {
+          "value": 81.4,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 81.4,
+          "baselineStddev": 0
+        },
+        "industrial_strategy": {
+          "value": 74,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 74,
+          "baselineStddev": 0
+        },
+        "smr_programme": {
+          "value": 62,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 62,
+          "baselineStddev": 0
+        }
+      }
+    },
+    "only_boe_fx": {
+      "headline": 40.9,
+      "pillars": {
+        "market": 37.5,
+        "fiscal": 37.8,
+        "labour": 59.2,
+        "delivery": 34.6
+      },
+      "contributions": {
+        "gilt_10y": {
+          "value": 5.3259,
+          "normalised": 3.9170506912442393,
+          "zScore": 2.015308866056033,
+          "baselineN": 651,
+          "baselineMean": 4.58113671274961,
+          "baselineStddev": 0.3695529255065969
+        },
+        "gilt_30y": {
+          "value": 5.7873,
+          "normalised": 8.064516129032262,
+          "zScore": 1.3329095478004045,
+          "baselineN": 651,
+          "baselineMean": 5.225360061443929,
+          "baselineStddev": 0.4215889513908847
+        },
+        "gbp_usd": {
+          "value": 1.3313,
+          "normalised": 67.9373368146214,
+          "zScore": 0.6061805654754162,
+          "baselineN": 1915,
+          "baselineMean": 1.295142715404699,
+          "baselineStddev": 0.059647713329349955
+        },
+        "gbp_twi": {
+          "value": 85.8916,
+          "normalised": 98.19843342036553,
+          "zScore": 1.5325089069843207,
+          "baselineN": 1915,
+          "baselineMean": 81.42443143603131,
+          "baselineStddev": 2.914938075472072
+        },
+        "ftse_250": {
+          "value": 24639.3,
+          "normalised": 97.1938775510204,
+          "zScore": 1.9735252314384393,
+          "baselineN": 588,
+          "baselineMean": 21870.965306122453,
+          "baselineStddev": 1402.7359011061624
+        },
+        "breakeven_5y": {
+          "value": 3.6941,
+          "normalised": 22.906403940886698,
+          "zScore": 0.8605336214652656,
+          "baselineN": 609,
+          "baselineMean": 3.4427482758620704,
+          "baselineStddev": 0.2920882088371433
+        },
+        "brent_gbp": {
+          "value": 92.47,
+          "normalised": 3.151618398637135,
+          "zScore": 2.420643263616042,
+          "baselineN": 587,
+          "baselineMean": 60.82470187393529,
+          "baselineStddev": 13.07309449587869
+        },
+        "housebuilder_idx": {
+          "value": 55.8,
+          "normalised": 98.13432835820896,
+          "zScore": 1.6604072882225231,
+          "baselineN": 134,
+          "baselineMean": 51.218656716417925,
+          "baselineStddev": 2.7591683775891096
+        },
+        "services_pmi": {
+          "value": 52.1,
+          "normalised": 53.57142857142857,
+          "zScore": 0.2266175403099024,
+          "baselineN": 28,
+          "baselineMean": 51.78571428571427,
+          "baselineStddev": 1.386855200422444
+        },
+        "consumer_confidence": {
+          "value": -24,
+          "normalised": 5.357142857142857,
+          "zScore": -1.6033114649834574,
+          "baselineN": 28,
+          "baselineMean": -18.821428571428573,
+          "baselineStddev": 3.2299222837683996
+        },
+        "rics_price_balance": {
+          "value": -32,
+          "normalised": 12.962962962962962,
+          "zScore": -1.2318347686368718,
+          "baselineN": 27,
+          "baselineMean": -9.481481481481481,
+          "baselineStddev": 18.28046998822508
+        },
+        "cb_headroom": {
+          "value": 14.5,
+          "normalised": 50,
+          "zScore": -0.24578806554679664,
+          "baselineN": 5,
+          "baselineMean": 15.919999999999998,
+          "baselineStddev": 5.777335025770966
+        },
+        "psnfl_trajectory": {
+          "value": 0,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 5,
+          "baselineMean": 0,
+          "baselineStddev": 0
+        },
+        "borrowing_outturn": {
+          "value": 24.52,
+          "normalised": 1.9230769230769273,
+          "zScore": 0.9548761803057723,
+          "baselineN": 26,
+          "baselineMean": 12.800615384615385,
+          "baselineStddev": 12.273198197939978
+        },
+        "debt_interest": {
+          "value": 10.933,
+          "normalised": 17.307692307692314,
+          "zScore": 0.8484534622710632,
+          "baselineN": 26,
+          "baselineMean": 8.107692307692309,
+          "baselineStddev": 3.3299501009108545
+        },
+        "ilg_share": {
+          "value": 24.47949830594804,
+          "normalised": 0.37037037037036535,
+          "zScore": 2.217474332803192,
+          "baselineN": 135,
+          "baselineMean": 24.03315463719633,
+          "baselineStddev": 0.20128470582451918
+        },
+        "issuance_long_share": {
+          "value": 30.673965664751584,
+          "normalised": 98.51851851851852,
+          "zScore": -4.083703304595333,
+          "baselineN": 135,
+          "baselineMean": 32.10636606116098,
+          "baselineStddev": 0.350760153118259
+        },
+        "inactivity_rate": {
+          "value": 20.9,
+          "normalised": 77.08333333333334,
+          "zScore": -0.765068805494682,
+          "baselineN": 24,
+          "baselineMean": 21.12083333333333,
+          "baselineStddev": 0.28864506270196694
+        },
+        "inactivity_health": {
+          "value": 2.738,
+          "normalised": 97.91666666666666,
+          "zScore": -2.4204177043634014,
+          "baselineN": 24,
+          "baselineMean": 2.7880833333333332,
+          "baselineStddev": 0.02069202073800967
+        },
+        "unemployment": {
+          "value": 4.7,
+          "normalised": 58.33333333333333,
+          "zScore": -0.17864740025262665,
+          "baselineN": 24,
+          "baselineMean": 4.750000000000001,
+          "baselineStddev": 0.2798809270624444
+        },
+        "vacancies_per_unemployed": {
+          "value": 0.411214953271028,
+          "normalised": 47.91666666666667,
+          "zScore": -0.6017907498203382,
+          "baselineN": 24,
+          "baselineMean": 0.44358128872179337,
+          "baselineStddev": 0.05378337147991749
+        },
+        "payroll_mom": {
+          "value": 238.3,
+          "normalised": 98.07692307692307,
+          "zScore": 1.6234197188864543,
+          "baselineN": 26,
+          "baselineMean": 229.29230769230767,
+          "baselineStddev": 5.548591164009605
+        },
+        "real_regular_pay": {
+          "value": 0.7,
+          "normalised": 24,
+          "zScore": -0.8623143062960393,
+          "baselineN": 25,
+          "baselineMean": 1.1920000000000002,
+          "baselineStddev": 0.5705576219804623
+        },
+        "mortgage_2y_fix": {
+          "value": 5.13,
+          "normalised": 8.92857142857143,
+          "zScore": 1.6545539583094735,
+          "baselineN": 28,
+          "baselineMean": 4.518928571428572,
+          "baselineStddev": 0.36932698719344587
+        },
+        "dd_failure_rate": {
+          "value": 2.43,
+          "normalised": 9.259259259259256,
+          "zScore": 1.164180018766606,
+          "baselineN": 27,
+          "baselineMean": 2.284444444444444,
+          "baselineStddev": 0.12502839183734263
+        },
+        "housing_trajectory": {
+          "value": 47.7,
+          "normalised": 20.588235294117645,
+          "zScore": -0.8063298149781285,
+          "baselineN": 17,
+          "baselineMean": 51.623529411764714,
+          "baselineStddev": 4.865911366394329
+        },
+        "planning_consents": {
+          "value": 60,
+          "normalised": 10,
+          "zScore": -1.1072320813964278,
+          "baselineN": 15,
+          "baselineMean": 65.61999999999999,
+          "baselineStddev": 5.075719981769417
+        },
+        "new_towns_milestones": {
+          "value": 68,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 68,
+          "baselineStddev": 0
+        },
+        "bics_rollout": {
+          "value": 81.4,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 81.4,
+          "baselineStddev": 0
+        },
+        "industrial_strategy": {
+          "value": 74,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 74,
+          "baselineStddev": 0
+        },
+        "smr_programme": {
+          "value": 62,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 62,
+          "baselineStddev": 0
+        }
+      }
+    },
+    "only_boe_breakevens": {
+      "headline": 40.3,
+      "pillars": {
+        "market": 36.2,
+        "fiscal": 37.8,
+        "labour": 59.2,
+        "delivery": 34.6
+      },
+      "contributions": {
+        "gilt_10y": {
+          "value": 5.3259,
+          "normalised": 3.9170506912442393,
+          "zScore": 2.015308866056033,
+          "baselineN": 651,
+          "baselineMean": 4.58113671274961,
+          "baselineStddev": 0.3695529255065969
+        },
+        "gilt_30y": {
+          "value": 5.7873,
+          "normalised": 8.064516129032262,
+          "zScore": 1.3329095478004045,
+          "baselineN": 651,
+          "baselineMean": 5.225360061443929,
+          "baselineStddev": 0.4215889513908847
+        },
+        "gbp_usd": {
+          "value": 1.3313,
+          "normalised": 49.91803278688525,
+          "zScore": 0.3280650683710215,
+          "baselineN": 610,
+          "baselineMean": 1.3197124590163931,
+          "baselineStddev": 0.035320861928835455
+        },
+        "gbp_twi": {
+          "value": 85.8916,
+          "normalised": 94.34426229508198,
+          "zScore": 1.5272088424219603,
+          "baselineN": 610,
+          "baselineMean": 84.72958311475419,
+          "baselineStddev": 0.7608762161192002
+        },
+        "ftse_250": {
+          "value": 24639.3,
+          "normalised": 97.1938775510204,
+          "zScore": 1.9735252314384393,
+          "baselineN": 588,
+          "baselineMean": 21870.965306122453,
+          "baselineStddev": 1402.7359011061624
+        },
+        "breakeven_5y": {
+          "value": 3.6941,
+          "normalised": 24.320794148380354,
+          "zScore": 0.5184451911043261,
+          "baselineN": 1914,
+          "baselineMean": 3.4801480668756515,
+          "baselineStddev": 0.41267994533542773
+        },
+        "brent_gbp": {
+          "value": 92.47,
+          "normalised": 3.151618398637135,
+          "zScore": 2.420643263616042,
+          "baselineN": 587,
+          "baselineMean": 60.82470187393529,
+          "baselineStddev": 13.07309449587869
+        },
+        "housebuilder_idx": {
+          "value": 55.8,
+          "normalised": 98.13432835820896,
+          "zScore": 1.6604072882225231,
+          "baselineN": 134,
+          "baselineMean": 51.218656716417925,
+          "baselineStddev": 2.7591683775891096
+        },
+        "services_pmi": {
+          "value": 52.1,
+          "normalised": 53.57142857142857,
+          "zScore": 0.2266175403099024,
+          "baselineN": 28,
+          "baselineMean": 51.78571428571427,
+          "baselineStddev": 1.386855200422444
+        },
+        "consumer_confidence": {
+          "value": -24,
+          "normalised": 5.357142857142857,
+          "zScore": -1.6033114649834574,
+          "baselineN": 28,
+          "baselineMean": -18.821428571428573,
+          "baselineStddev": 3.2299222837683996
+        },
+        "rics_price_balance": {
+          "value": -32,
+          "normalised": 12.962962962962962,
+          "zScore": -1.2318347686368718,
+          "baselineN": 27,
+          "baselineMean": -9.481481481481481,
+          "baselineStddev": 18.28046998822508
+        },
+        "cb_headroom": {
+          "value": 14.5,
+          "normalised": 50,
+          "zScore": -0.24578806554679664,
+          "baselineN": 5,
+          "baselineMean": 15.919999999999998,
+          "baselineStddev": 5.777335025770966
+        },
+        "psnfl_trajectory": {
+          "value": 0,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 5,
+          "baselineMean": 0,
+          "baselineStddev": 0
+        },
+        "borrowing_outturn": {
+          "value": 24.52,
+          "normalised": 1.9230769230769273,
+          "zScore": 0.9548761803057723,
+          "baselineN": 26,
+          "baselineMean": 12.800615384615385,
+          "baselineStddev": 12.273198197939978
+        },
+        "debt_interest": {
+          "value": 10.933,
+          "normalised": 17.307692307692314,
+          "zScore": 0.8484534622710632,
+          "baselineN": 26,
+          "baselineMean": 8.107692307692309,
+          "baselineStddev": 3.3299501009108545
+        },
+        "ilg_share": {
+          "value": 24.47949830594804,
+          "normalised": 0.37037037037036535,
+          "zScore": 2.217474332803192,
+          "baselineN": 135,
+          "baselineMean": 24.03315463719633,
+          "baselineStddev": 0.20128470582451918
+        },
+        "issuance_long_share": {
+          "value": 30.673965664751584,
+          "normalised": 98.51851851851852,
+          "zScore": -4.083703304595333,
+          "baselineN": 135,
+          "baselineMean": 32.10636606116098,
+          "baselineStddev": 0.350760153118259
+        },
+        "inactivity_rate": {
+          "value": 20.9,
+          "normalised": 77.08333333333334,
+          "zScore": -0.765068805494682,
+          "baselineN": 24,
+          "baselineMean": 21.12083333333333,
+          "baselineStddev": 0.28864506270196694
+        },
+        "inactivity_health": {
+          "value": 2.738,
+          "normalised": 97.91666666666666,
+          "zScore": -2.4204177043634014,
+          "baselineN": 24,
+          "baselineMean": 2.7880833333333332,
+          "baselineStddev": 0.02069202073800967
+        },
+        "unemployment": {
+          "value": 4.7,
+          "normalised": 58.33333333333333,
+          "zScore": -0.17864740025262665,
+          "baselineN": 24,
+          "baselineMean": 4.750000000000001,
+          "baselineStddev": 0.2798809270624444
+        },
+        "vacancies_per_unemployed": {
+          "value": 0.411214953271028,
+          "normalised": 47.91666666666667,
+          "zScore": -0.6017907498203382,
+          "baselineN": 24,
+          "baselineMean": 0.44358128872179337,
+          "baselineStddev": 0.05378337147991749
+        },
+        "payroll_mom": {
+          "value": 238.3,
+          "normalised": 98.07692307692307,
+          "zScore": 1.6234197188864543,
+          "baselineN": 26,
+          "baselineMean": 229.29230769230767,
+          "baselineStddev": 5.548591164009605
+        },
+        "real_regular_pay": {
+          "value": 0.7,
+          "normalised": 24,
+          "zScore": -0.8623143062960393,
+          "baselineN": 25,
+          "baselineMean": 1.1920000000000002,
+          "baselineStddev": 0.5705576219804623
+        },
+        "mortgage_2y_fix": {
+          "value": 5.13,
+          "normalised": 8.92857142857143,
+          "zScore": 1.6545539583094735,
+          "baselineN": 28,
+          "baselineMean": 4.518928571428572,
+          "baselineStddev": 0.36932698719344587
+        },
+        "dd_failure_rate": {
+          "value": 2.43,
+          "normalised": 9.259259259259256,
+          "zScore": 1.164180018766606,
+          "baselineN": 27,
+          "baselineMean": 2.284444444444444,
+          "baselineStddev": 0.12502839183734263
+        },
+        "housing_trajectory": {
+          "value": 47.7,
+          "normalised": 20.588235294117645,
+          "zScore": -0.8063298149781285,
+          "baselineN": 17,
+          "baselineMean": 51.623529411764714,
+          "baselineStddev": 4.865911366394329
+        },
+        "planning_consents": {
+          "value": 60,
+          "normalised": 10,
+          "zScore": -1.1072320813964278,
+          "baselineN": 15,
+          "baselineMean": 65.61999999999999,
+          "baselineStddev": 5.075719981769417
+        },
+        "new_towns_milestones": {
+          "value": 68,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 68,
+          "baselineStddev": 0
+        },
+        "bics_rollout": {
+          "value": 81.4,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 81.4,
+          "baselineStddev": 0
+        },
+        "industrial_strategy": {
+          "value": 74,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 74,
+          "baselineStddev": 0
+        },
+        "smr_programme": {
+          "value": 62,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 62,
+          "baselineStddev": 0
+        }
+      }
+    },
+    "only_boe_mortgage_rates": {
+      "headline": 40.3,
+      "pillars": {
+        "market": 36,
+        "fiscal": 37.8,
+        "labour": 60,
+        "delivery": 34.6
+      },
+      "contributions": {
+        "gilt_10y": {
+          "value": 5.3259,
+          "normalised": 3.9170506912442393,
+          "zScore": 2.015308866056033,
+          "baselineN": 651,
+          "baselineMean": 4.58113671274961,
+          "baselineStddev": 0.3695529255065969
+        },
+        "gilt_30y": {
+          "value": 5.7873,
+          "normalised": 8.064516129032262,
+          "zScore": 1.3329095478004045,
+          "baselineN": 651,
+          "baselineMean": 5.225360061443929,
+          "baselineStddev": 0.4215889513908847
+        },
+        "gbp_usd": {
+          "value": 1.3313,
+          "normalised": 49.91803278688525,
+          "zScore": 0.3280650683710215,
+          "baselineN": 610,
+          "baselineMean": 1.3197124590163931,
+          "baselineStddev": 0.035320861928835455
+        },
+        "gbp_twi": {
+          "value": 85.8916,
+          "normalised": 94.34426229508198,
+          "zScore": 1.5272088424219603,
+          "baselineN": 610,
+          "baselineMean": 84.72958311475419,
+          "baselineStddev": 0.7608762161192002
+        },
+        "ftse_250": {
+          "value": 24639.3,
+          "normalised": 97.1938775510204,
+          "zScore": 1.9735252314384393,
+          "baselineN": 588,
+          "baselineMean": 21870.965306122453,
+          "baselineStddev": 1402.7359011061624
+        },
+        "breakeven_5y": {
+          "value": 3.6941,
+          "normalised": 22.906403940886698,
+          "zScore": 0.8605336214652656,
+          "baselineN": 609,
+          "baselineMean": 3.4427482758620704,
+          "baselineStddev": 0.2920882088371433
+        },
+        "brent_gbp": {
+          "value": 92.47,
+          "normalised": 3.151618398637135,
+          "zScore": 2.420643263616042,
+          "baselineN": 587,
+          "baselineMean": 60.82470187393529,
+          "baselineStddev": 13.07309449587869
+        },
+        "housebuilder_idx": {
+          "value": 55.8,
+          "normalised": 98.13432835820896,
+          "zScore": 1.6604072882225231,
+          "baselineN": 134,
+          "baselineMean": 51.218656716417925,
+          "baselineStddev": 2.7591683775891096
+        },
+        "services_pmi": {
+          "value": 52.1,
+          "normalised": 53.57142857142857,
+          "zScore": 0.2266175403099024,
+          "baselineN": 28,
+          "baselineMean": 51.78571428571427,
+          "baselineStddev": 1.386855200422444
+        },
+        "consumer_confidence": {
+          "value": -24,
+          "normalised": 5.357142857142857,
+          "zScore": -1.6033114649834574,
+          "baselineN": 28,
+          "baselineMean": -18.821428571428573,
+          "baselineStddev": 3.2299222837683996
+        },
+        "rics_price_balance": {
+          "value": -32,
+          "normalised": 12.962962962962962,
+          "zScore": -1.2318347686368718,
+          "baselineN": 27,
+          "baselineMean": -9.481481481481481,
+          "baselineStddev": 18.28046998822508
+        },
+        "cb_headroom": {
+          "value": 14.5,
+          "normalised": 50,
+          "zScore": -0.24578806554679664,
+          "baselineN": 5,
+          "baselineMean": 15.919999999999998,
+          "baselineStddev": 5.777335025770966
+        },
+        "psnfl_trajectory": {
+          "value": 0,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 5,
+          "baselineMean": 0,
+          "baselineStddev": 0
+        },
+        "borrowing_outturn": {
+          "value": 24.52,
+          "normalised": 1.9230769230769273,
+          "zScore": 0.9548761803057723,
+          "baselineN": 26,
+          "baselineMean": 12.800615384615385,
+          "baselineStddev": 12.273198197939978
+        },
+        "debt_interest": {
+          "value": 10.933,
+          "normalised": 17.307692307692314,
+          "zScore": 0.8484534622710632,
+          "baselineN": 26,
+          "baselineMean": 8.107692307692309,
+          "baselineStddev": 3.3299501009108545
+        },
+        "ilg_share": {
+          "value": 24.47949830594804,
+          "normalised": 0.37037037037036535,
+          "zScore": 2.217474332803192,
+          "baselineN": 135,
+          "baselineMean": 24.03315463719633,
+          "baselineStddev": 0.20128470582451918
+        },
+        "issuance_long_share": {
+          "value": 30.673965664751584,
+          "normalised": 98.51851851851852,
+          "zScore": -4.083703304595333,
+          "baselineN": 135,
+          "baselineMean": 32.10636606116098,
+          "baselineStddev": 0.350760153118259
+        },
+        "inactivity_rate": {
+          "value": 20.9,
+          "normalised": 77.08333333333334,
+          "zScore": -0.765068805494682,
+          "baselineN": 24,
+          "baselineMean": 21.12083333333333,
+          "baselineStddev": 0.28864506270196694
+        },
+        "inactivity_health": {
+          "value": 2.738,
+          "normalised": 97.91666666666666,
+          "zScore": -2.4204177043634014,
+          "baselineN": 24,
+          "baselineMean": 2.7880833333333332,
+          "baselineStddev": 0.02069202073800967
+        },
+        "unemployment": {
+          "value": 4.7,
+          "normalised": 58.33333333333333,
+          "zScore": -0.17864740025262665,
+          "baselineN": 24,
+          "baselineMean": 4.750000000000001,
+          "baselineStddev": 0.2798809270624444
+        },
+        "vacancies_per_unemployed": {
+          "value": 0.411214953271028,
+          "normalised": 47.91666666666667,
+          "zScore": -0.6017907498203382,
+          "baselineN": 24,
+          "baselineMean": 0.44358128872179337,
+          "baselineStddev": 0.05378337147991749
+        },
+        "payroll_mom": {
+          "value": 238.3,
+          "normalised": 98.07692307692307,
+          "zScore": 1.6234197188864543,
+          "baselineN": 26,
+          "baselineMean": 229.29230769230767,
+          "baselineStddev": 5.548591164009605
+        },
+        "real_regular_pay": {
+          "value": 0.7,
+          "normalised": 24,
+          "zScore": -0.8623143062960393,
+          "baselineN": 25,
+          "baselineMean": 1.1920000000000002,
+          "baselineStddev": 0.5705576219804623
+        },
+        "mortgage_2y_fix": {
+          "value": 5.13,
+          "normalised": 15.000000000000002,
+          "zScore": 1.0471746641010495,
+          "baselineN": 90,
+          "baselineMean": 3.423555555555554,
+          "baselineStddev": 1.6295700258460213
+        },
+        "dd_failure_rate": {
+          "value": 2.43,
+          "normalised": 9.259259259259256,
+          "zScore": 1.164180018766606,
+          "baselineN": 27,
+          "baselineMean": 2.284444444444444,
+          "baselineStddev": 0.12502839183734263
+        },
+        "housing_trajectory": {
+          "value": 47.7,
+          "normalised": 20.588235294117645,
+          "zScore": -0.8063298149781285,
+          "baselineN": 17,
+          "baselineMean": 51.623529411764714,
+          "baselineStddev": 4.865911366394329
+        },
+        "planning_consents": {
+          "value": 60,
+          "normalised": 10,
+          "zScore": -1.1072320813964278,
+          "baselineN": 15,
+          "baselineMean": 65.61999999999999,
+          "baselineStddev": 5.075719981769417
+        },
+        "new_towns_milestones": {
+          "value": 68,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 68,
+          "baselineStddev": 0
+        },
+        "bics_rollout": {
+          "value": 81.4,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 81.4,
+          "baselineStddev": 0
+        },
+        "industrial_strategy": {
+          "value": 74,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 74,
+          "baselineStddev": 0
+        },
+        "smr_programme": {
+          "value": 62,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 62,
+          "baselineStddev": 0
+        }
+      }
+    },
+    "only_ons_lms": {
+      "headline": 38,
+      "pillars": {
+        "market": 36,
+        "fiscal": 37.8,
+        "labour": 44.8,
+        "delivery": 34.6
+      },
+      "contributions": {
+        "gilt_10y": {
+          "value": 5.3259,
+          "normalised": 3.9170506912442393,
+          "zScore": 2.015308866056033,
+          "baselineN": 651,
+          "baselineMean": 4.58113671274961,
+          "baselineStddev": 0.3695529255065969
+        },
+        "gilt_30y": {
+          "value": 5.7873,
+          "normalised": 8.064516129032262,
+          "zScore": 1.3329095478004045,
+          "baselineN": 651,
+          "baselineMean": 5.225360061443929,
+          "baselineStddev": 0.4215889513908847
+        },
+        "gbp_usd": {
+          "value": 1.3313,
+          "normalised": 49.91803278688525,
+          "zScore": 0.3280650683710215,
+          "baselineN": 610,
+          "baselineMean": 1.3197124590163931,
+          "baselineStddev": 0.035320861928835455
+        },
+        "gbp_twi": {
+          "value": 85.8916,
+          "normalised": 94.34426229508198,
+          "zScore": 1.5272088424219603,
+          "baselineN": 610,
+          "baselineMean": 84.72958311475419,
+          "baselineStddev": 0.7608762161192002
+        },
+        "ftse_250": {
+          "value": 24639.3,
+          "normalised": 97.1938775510204,
+          "zScore": 1.9735252314384393,
+          "baselineN": 588,
+          "baselineMean": 21870.965306122453,
+          "baselineStddev": 1402.7359011061624
+        },
+        "breakeven_5y": {
+          "value": 3.6941,
+          "normalised": 22.906403940886698,
+          "zScore": 0.8605336214652656,
+          "baselineN": 609,
+          "baselineMean": 3.4427482758620704,
+          "baselineStddev": 0.2920882088371433
+        },
+        "brent_gbp": {
+          "value": 92.47,
+          "normalised": 3.151618398637135,
+          "zScore": 2.420643263616042,
+          "baselineN": 587,
+          "baselineMean": 60.82470187393529,
+          "baselineStddev": 13.07309449587869
+        },
+        "housebuilder_idx": {
+          "value": 55.8,
+          "normalised": 98.13432835820896,
+          "zScore": 1.6604072882225231,
+          "baselineN": 134,
+          "baselineMean": 51.218656716417925,
+          "baselineStddev": 2.7591683775891096
+        },
+        "services_pmi": {
+          "value": 52.1,
+          "normalised": 53.57142857142857,
+          "zScore": 0.2266175403099024,
+          "baselineN": 28,
+          "baselineMean": 51.78571428571427,
+          "baselineStddev": 1.386855200422444
+        },
+        "consumer_confidence": {
+          "value": -24,
+          "normalised": 5.357142857142857,
+          "zScore": -1.6033114649834574,
+          "baselineN": 28,
+          "baselineMean": -18.821428571428573,
+          "baselineStddev": 3.2299222837683996
+        },
+        "rics_price_balance": {
+          "value": -32,
+          "normalised": 12.962962962962962,
+          "zScore": -1.2318347686368718,
+          "baselineN": 27,
+          "baselineMean": -9.481481481481481,
+          "baselineStddev": 18.28046998822508
+        },
+        "cb_headroom": {
+          "value": 14.5,
+          "normalised": 50,
+          "zScore": -0.24578806554679664,
+          "baselineN": 5,
+          "baselineMean": 15.919999999999998,
+          "baselineStddev": 5.777335025770966
+        },
+        "psnfl_trajectory": {
+          "value": 0,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 5,
+          "baselineMean": 0,
+          "baselineStddev": 0
+        },
+        "borrowing_outturn": {
+          "value": 24.52,
+          "normalised": 1.9230769230769273,
+          "zScore": 0.9548761803057723,
+          "baselineN": 26,
+          "baselineMean": 12.800615384615385,
+          "baselineStddev": 12.273198197939978
+        },
+        "debt_interest": {
+          "value": 10.933,
+          "normalised": 17.307692307692314,
+          "zScore": 0.8484534622710632,
+          "baselineN": 26,
+          "baselineMean": 8.107692307692309,
+          "baselineStddev": 3.3299501009108545
+        },
+        "ilg_share": {
+          "value": 24.47949830594804,
+          "normalised": 0.37037037037036535,
+          "zScore": 2.217474332803192,
+          "baselineN": 135,
+          "baselineMean": 24.03315463719633,
+          "baselineStddev": 0.20128470582451918
+        },
+        "issuance_long_share": {
+          "value": 30.673965664751584,
+          "normalised": 98.51851851851852,
+          "zScore": -4.083703304595333,
+          "baselineN": 135,
+          "baselineMean": 32.10636606116098,
+          "baselineStddev": 0.350760153118259
+        },
+        "inactivity_rate": {
+          "value": 20.9,
+          "normalised": 81.25,
+          "zScore": -1.0829163814098477,
+          "baselineN": 88,
+          "baselineMean": 21.4,
+          "baselineStddev": 0.46171616625565354
+        },
+        "inactivity_health": {
+          "value": 2.738,
+          "normalised": 40.34090909090909,
+          "zScore": 0.7101484211250211,
+          "baselineN": 88,
+          "baselineMean": 2.5411250000000005,
+          "baselineStddev": 0.2772307790082938
+        },
+        "unemployment": {
+          "value": 4.7,
+          "normalised": 26.70454545454546,
+          "zScore": 0.779361792590109,
+          "baselineN": 88,
+          "baselineMean": 4.334090909090909,
+          "baselineStddev": 0.46949836954803653
+        },
+        "vacancies_per_unemployed": {
+          "value": 0.411214953271028,
+          "normalised": 23.295454545454543,
+          "zScore": -0.9973831544106523,
+          "baselineN": 88,
+          "baselineMean": 0.6063284196008581,
+          "baselineStddev": 0.19562538776296207
+        },
+        "payroll_mom": {
+          "value": 238.3,
+          "normalised": 98.07692307692307,
+          "zScore": 1.6234197188864543,
+          "baselineN": 26,
+          "baselineMean": 229.29230769230767,
+          "baselineStddev": 5.548591164009605
+        },
+        "real_regular_pay": {
+          "value": 0.7,
+          "normalised": 30.89887640449438,
+          "zScore": -0.21985282566134734,
+          "baselineN": 89,
+          "baselineMean": 1.1191011235955057,
+          "baselineStddev": 1.9062803597579077
+        },
+        "mortgage_2y_fix": {
+          "value": 5.13,
+          "normalised": 8.92857142857143,
+          "zScore": 1.6545539583094735,
+          "baselineN": 28,
+          "baselineMean": 4.518928571428572,
+          "baselineStddev": 0.36932698719344587
+        },
+        "dd_failure_rate": {
+          "value": 2.43,
+          "normalised": 9.259259259259256,
+          "zScore": 1.164180018766606,
+          "baselineN": 27,
+          "baselineMean": 2.284444444444444,
+          "baselineStddev": 0.12502839183734263
+        },
+        "housing_trajectory": {
+          "value": 47.7,
+          "normalised": 20.588235294117645,
+          "zScore": -0.8063298149781285,
+          "baselineN": 17,
+          "baselineMean": 51.623529411764714,
+          "baselineStddev": 4.865911366394329
+        },
+        "planning_consents": {
+          "value": 60,
+          "normalised": 10,
+          "zScore": -1.1072320813964278,
+          "baselineN": 15,
+          "baselineMean": 65.61999999999999,
+          "baselineStddev": 5.075719981769417
+        },
+        "new_towns_milestones": {
+          "value": 68,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 68,
+          "baselineStddev": 0
+        },
+        "bics_rollout": {
+          "value": 81.4,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 81.4,
+          "baselineStddev": 0
+        },
+        "industrial_strategy": {
+          "value": 74,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 74,
+          "baselineStddev": 0
+        },
+        "smr_programme": {
+          "value": 62,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 62,
+          "baselineStddev": 0
+        }
+      }
+    },
+    "only_ons_psf": {
+      "headline": 39.8,
+      "pillars": {
+        "market": 36,
+        "fiscal": 36.6,
+        "labour": 59.2,
+        "delivery": 34.6
+      },
+      "contributions": {
+        "gilt_10y": {
+          "value": 5.3259,
+          "normalised": 3.9170506912442393,
+          "zScore": 2.015308866056033,
+          "baselineN": 651,
+          "baselineMean": 4.58113671274961,
+          "baselineStddev": 0.3695529255065969
+        },
+        "gilt_30y": {
+          "value": 5.7873,
+          "normalised": 8.064516129032262,
+          "zScore": 1.3329095478004045,
+          "baselineN": 651,
+          "baselineMean": 5.225360061443929,
+          "baselineStddev": 0.4215889513908847
+        },
+        "gbp_usd": {
+          "value": 1.3313,
+          "normalised": 49.91803278688525,
+          "zScore": 0.3280650683710215,
+          "baselineN": 610,
+          "baselineMean": 1.3197124590163931,
+          "baselineStddev": 0.035320861928835455
+        },
+        "gbp_twi": {
+          "value": 85.8916,
+          "normalised": 94.34426229508198,
+          "zScore": 1.5272088424219603,
+          "baselineN": 610,
+          "baselineMean": 84.72958311475419,
+          "baselineStddev": 0.7608762161192002
+        },
+        "ftse_250": {
+          "value": 24639.3,
+          "normalised": 97.1938775510204,
+          "zScore": 1.9735252314384393,
+          "baselineN": 588,
+          "baselineMean": 21870.965306122453,
+          "baselineStddev": 1402.7359011061624
+        },
+        "breakeven_5y": {
+          "value": 3.6941,
+          "normalised": 22.906403940886698,
+          "zScore": 0.8605336214652656,
+          "baselineN": 609,
+          "baselineMean": 3.4427482758620704,
+          "baselineStddev": 0.2920882088371433
+        },
+        "brent_gbp": {
+          "value": 92.47,
+          "normalised": 3.151618398637135,
+          "zScore": 2.420643263616042,
+          "baselineN": 587,
+          "baselineMean": 60.82470187393529,
+          "baselineStddev": 13.07309449587869
+        },
+        "housebuilder_idx": {
+          "value": 55.8,
+          "normalised": 98.13432835820896,
+          "zScore": 1.6604072882225231,
+          "baselineN": 134,
+          "baselineMean": 51.218656716417925,
+          "baselineStddev": 2.7591683775891096
+        },
+        "services_pmi": {
+          "value": 52.1,
+          "normalised": 53.57142857142857,
+          "zScore": 0.2266175403099024,
+          "baselineN": 28,
+          "baselineMean": 51.78571428571427,
+          "baselineStddev": 1.386855200422444
+        },
+        "consumer_confidence": {
+          "value": -24,
+          "normalised": 5.357142857142857,
+          "zScore": -1.6033114649834574,
+          "baselineN": 28,
+          "baselineMean": -18.821428571428573,
+          "baselineStddev": 3.2299222837683996
+        },
+        "rics_price_balance": {
+          "value": -32,
+          "normalised": 12.962962962962962,
+          "zScore": -1.2318347686368718,
+          "baselineN": 27,
+          "baselineMean": -9.481481481481481,
+          "baselineStddev": 18.28046998822508
+        },
+        "cb_headroom": {
+          "value": 14.5,
+          "normalised": 50,
+          "zScore": -0.24578806554679664,
+          "baselineN": 5,
+          "baselineMean": 15.919999999999998,
+          "baselineStddev": 5.777335025770966
+        },
+        "psnfl_trajectory": {
+          "value": 0,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 5,
+          "baselineMean": 0,
+          "baselineStddev": 0
+        },
+        "borrowing_outturn": {
+          "value": 24.52,
+          "normalised": 2.777777777777779,
+          "zScore": 1.317379219184097,
+          "baselineN": 90,
+          "baselineMean": 11.026888888888887,
+          "baselineStddev": 10.24238952202989
+        },
+        "debt_interest": {
+          "value": 10.933,
+          "normalised": 8.333333333333337,
+          "zScore": 1.2257346003140552,
+          "baselineN": 90,
+          "baselineMean": 6.592277777777776,
+          "baselineStddev": 3.541323073616469
+        },
+        "ilg_share": {
+          "value": 24.47949830594804,
+          "normalised": 0.37037037037036535,
+          "zScore": 2.217474332803192,
+          "baselineN": 135,
+          "baselineMean": 24.03315463719633,
+          "baselineStddev": 0.20128470582451918
+        },
+        "issuance_long_share": {
+          "value": 30.673965664751584,
+          "normalised": 98.51851851851852,
+          "zScore": -4.083703304595333,
+          "baselineN": 135,
+          "baselineMean": 32.10636606116098,
+          "baselineStddev": 0.350760153118259
+        },
+        "inactivity_rate": {
+          "value": 20.9,
+          "normalised": 77.08333333333334,
+          "zScore": -0.765068805494682,
+          "baselineN": 24,
+          "baselineMean": 21.12083333333333,
+          "baselineStddev": 0.28864506270196694
+        },
+        "inactivity_health": {
+          "value": 2.738,
+          "normalised": 97.91666666666666,
+          "zScore": -2.4204177043634014,
+          "baselineN": 24,
+          "baselineMean": 2.7880833333333332,
+          "baselineStddev": 0.02069202073800967
+        },
+        "unemployment": {
+          "value": 4.7,
+          "normalised": 58.33333333333333,
+          "zScore": -0.17864740025262665,
+          "baselineN": 24,
+          "baselineMean": 4.750000000000001,
+          "baselineStddev": 0.2798809270624444
+        },
+        "vacancies_per_unemployed": {
+          "value": 0.411214953271028,
+          "normalised": 47.91666666666667,
+          "zScore": -0.6017907498203382,
+          "baselineN": 24,
+          "baselineMean": 0.44358128872179337,
+          "baselineStddev": 0.05378337147991749
+        },
+        "payroll_mom": {
+          "value": 238.3,
+          "normalised": 98.07692307692307,
+          "zScore": 1.6234197188864543,
+          "baselineN": 26,
+          "baselineMean": 229.29230769230767,
+          "baselineStddev": 5.548591164009605
+        },
+        "real_regular_pay": {
+          "value": 0.7,
+          "normalised": 24,
+          "zScore": -0.8623143062960393,
+          "baselineN": 25,
+          "baselineMean": 1.1920000000000002,
+          "baselineStddev": 0.5705576219804623
+        },
+        "mortgage_2y_fix": {
+          "value": 5.13,
+          "normalised": 8.92857142857143,
+          "zScore": 1.6545539583094735,
+          "baselineN": 28,
+          "baselineMean": 4.518928571428572,
+          "baselineStddev": 0.36932698719344587
+        },
+        "dd_failure_rate": {
+          "value": 2.43,
+          "normalised": 9.259259259259256,
+          "zScore": 1.164180018766606,
+          "baselineN": 27,
+          "baselineMean": 2.284444444444444,
+          "baselineStddev": 0.12502839183734263
+        },
+        "housing_trajectory": {
+          "value": 47.7,
+          "normalised": 20.588235294117645,
+          "zScore": -0.8063298149781285,
+          "baselineN": 17,
+          "baselineMean": 51.623529411764714,
+          "baselineStddev": 4.865911366394329
+        },
+        "planning_consents": {
+          "value": 60,
+          "normalised": 10,
+          "zScore": -1.1072320813964278,
+          "baselineN": 15,
+          "baselineMean": 65.61999999999999,
+          "baselineStddev": 5.075719981769417
+        },
+        "new_towns_milestones": {
+          "value": 68,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 68,
+          "baselineStddev": 0
+        },
+        "bics_rollout": {
+          "value": 81.4,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 81.4,
+          "baselineStddev": 0
+        },
+        "industrial_strategy": {
+          "value": 74,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 74,
+          "baselineStddev": 0
+        },
+        "smr_programme": {
+          "value": 62,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 62,
+          "baselineStddev": 0
+        }
+      }
+    },
+    "only_ons_rti": {
+      "headline": 40.2,
+      "pillars": {
+        "market": 36,
+        "fiscal": 37.8,
+        "labour": 59.4,
+        "delivery": 34.6
+      },
+      "contributions": {
+        "gilt_10y": {
+          "value": 5.3259,
+          "normalised": 3.9170506912442393,
+          "zScore": 2.015308866056033,
+          "baselineN": 651,
+          "baselineMean": 4.58113671274961,
+          "baselineStddev": 0.3695529255065969
+        },
+        "gilt_30y": {
+          "value": 5.7873,
+          "normalised": 8.064516129032262,
+          "zScore": 1.3329095478004045,
+          "baselineN": 651,
+          "baselineMean": 5.225360061443929,
+          "baselineStddev": 0.4215889513908847
+        },
+        "gbp_usd": {
+          "value": 1.3313,
+          "normalised": 49.91803278688525,
+          "zScore": 0.3280650683710215,
+          "baselineN": 610,
+          "baselineMean": 1.3197124590163931,
+          "baselineStddev": 0.035320861928835455
+        },
+        "gbp_twi": {
+          "value": 85.8916,
+          "normalised": 94.34426229508198,
+          "zScore": 1.5272088424219603,
+          "baselineN": 610,
+          "baselineMean": 84.72958311475419,
+          "baselineStddev": 0.7608762161192002
+        },
+        "ftse_250": {
+          "value": 24639.3,
+          "normalised": 97.1938775510204,
+          "zScore": 1.9735252314384393,
+          "baselineN": 588,
+          "baselineMean": 21870.965306122453,
+          "baselineStddev": 1402.7359011061624
+        },
+        "breakeven_5y": {
+          "value": 3.6941,
+          "normalised": 22.906403940886698,
+          "zScore": 0.8605336214652656,
+          "baselineN": 609,
+          "baselineMean": 3.4427482758620704,
+          "baselineStddev": 0.2920882088371433
+        },
+        "brent_gbp": {
+          "value": 92.47,
+          "normalised": 3.151618398637135,
+          "zScore": 2.420643263616042,
+          "baselineN": 587,
+          "baselineMean": 60.82470187393529,
+          "baselineStddev": 13.07309449587869
+        },
+        "housebuilder_idx": {
+          "value": 55.8,
+          "normalised": 98.13432835820896,
+          "zScore": 1.6604072882225231,
+          "baselineN": 134,
+          "baselineMean": 51.218656716417925,
+          "baselineStddev": 2.7591683775891096
+        },
+        "services_pmi": {
+          "value": 52.1,
+          "normalised": 53.57142857142857,
+          "zScore": 0.2266175403099024,
+          "baselineN": 28,
+          "baselineMean": 51.78571428571427,
+          "baselineStddev": 1.386855200422444
+        },
+        "consumer_confidence": {
+          "value": -24,
+          "normalised": 5.357142857142857,
+          "zScore": -1.6033114649834574,
+          "baselineN": 28,
+          "baselineMean": -18.821428571428573,
+          "baselineStddev": 3.2299222837683996
+        },
+        "rics_price_balance": {
+          "value": -32,
+          "normalised": 12.962962962962962,
+          "zScore": -1.2318347686368718,
+          "baselineN": 27,
+          "baselineMean": -9.481481481481481,
+          "baselineStddev": 18.28046998822508
+        },
+        "cb_headroom": {
+          "value": 14.5,
+          "normalised": 50,
+          "zScore": -0.24578806554679664,
+          "baselineN": 5,
+          "baselineMean": 15.919999999999998,
+          "baselineStddev": 5.777335025770966
+        },
+        "psnfl_trajectory": {
+          "value": 0,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 5,
+          "baselineMean": 0,
+          "baselineStddev": 0
+        },
+        "borrowing_outturn": {
+          "value": 24.52,
+          "normalised": 1.9230769230769273,
+          "zScore": 0.9548761803057723,
+          "baselineN": 26,
+          "baselineMean": 12.800615384615385,
+          "baselineStddev": 12.273198197939978
+        },
+        "debt_interest": {
+          "value": 10.933,
+          "normalised": 17.307692307692314,
+          "zScore": 0.8484534622710632,
+          "baselineN": 26,
+          "baselineMean": 8.107692307692309,
+          "baselineStddev": 3.3299501009108545
+        },
+        "ilg_share": {
+          "value": 24.47949830594804,
+          "normalised": 0.37037037037036535,
+          "zScore": 2.217474332803192,
+          "baselineN": 135,
+          "baselineMean": 24.03315463719633,
+          "baselineStddev": 0.20128470582451918
+        },
+        "issuance_long_share": {
+          "value": 30.673965664751584,
+          "normalised": 98.51851851851852,
+          "zScore": -4.083703304595333,
+          "baselineN": 135,
+          "baselineMean": 32.10636606116098,
+          "baselineStddev": 0.350760153118259
+        },
+        "inactivity_rate": {
+          "value": 20.9,
+          "normalised": 77.08333333333334,
+          "zScore": -0.765068805494682,
+          "baselineN": 24,
+          "baselineMean": 21.12083333333333,
+          "baselineStddev": 0.28864506270196694
+        },
+        "inactivity_health": {
+          "value": 2.738,
+          "normalised": 97.91666666666666,
+          "zScore": -2.4204177043634014,
+          "baselineN": 24,
+          "baselineMean": 2.7880833333333332,
+          "baselineStddev": 0.02069202073800967
+        },
+        "unemployment": {
+          "value": 4.7,
+          "normalised": 58.33333333333333,
+          "zScore": -0.17864740025262665,
+          "baselineN": 24,
+          "baselineMean": 4.750000000000001,
+          "baselineStddev": 0.2798809270624444
+        },
+        "vacancies_per_unemployed": {
+          "value": 0.411214953271028,
+          "normalised": 47.91666666666667,
+          "zScore": -0.6017907498203382,
+          "baselineN": 24,
+          "baselineMean": 0.44358128872179337,
+          "baselineStddev": 0.05378337147991749
+        },
+        "payroll_mom": {
+          "value": 238.3,
+          "normalised": 99.43820224719101,
+          "zScore": 1.655841986235852,
+          "baselineN": 89,
+          "baselineMean": 200.8247191011236,
+          "baselineStddev": 22.632160079517735
+        },
+        "real_regular_pay": {
+          "value": 0.7,
+          "normalised": 24,
+          "zScore": -0.8623143062960393,
+          "baselineN": 25,
+          "baselineMean": 1.1920000000000002,
+          "baselineStddev": 0.5705576219804623
+        },
+        "mortgage_2y_fix": {
+          "value": 5.13,
+          "normalised": 8.92857142857143,
+          "zScore": 1.6545539583094735,
+          "baselineN": 28,
+          "baselineMean": 4.518928571428572,
+          "baselineStddev": 0.36932698719344587
+        },
+        "dd_failure_rate": {
+          "value": 2.43,
+          "normalised": 9.259259259259256,
+          "zScore": 1.164180018766606,
+          "baselineN": 27,
+          "baselineMean": 2.284444444444444,
+          "baselineStddev": 0.12502839183734263
+        },
+        "housing_trajectory": {
+          "value": 47.7,
+          "normalised": 20.588235294117645,
+          "zScore": -0.8063298149781285,
+          "baselineN": 17,
+          "baselineMean": 51.623529411764714,
+          "baselineStddev": 4.865911366394329
+        },
+        "planning_consents": {
+          "value": 60,
+          "normalised": 10,
+          "zScore": -1.1072320813964278,
+          "baselineN": 15,
+          "baselineMean": 65.61999999999999,
+          "baselineStddev": 5.075719981769417
+        },
+        "new_towns_milestones": {
+          "value": 68,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 68,
+          "baselineStddev": 0
+        },
+        "bics_rollout": {
+          "value": 81.4,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 81.4,
+          "baselineStddev": 0
+        },
+        "industrial_strategy": {
+          "value": 74,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 74,
+          "baselineStddev": 0
+        },
+        "smr_programme": {
+          "value": 62,
+          "normalised": 50,
+          "zScore": 0,
+          "baselineN": 3,
+          "baselineMean": 62,
+          "baselineStddev": 0
+        }
+      }
+    }
+  },
+  "largestNormalisedChanges": [
+    {
+      "indicatorId": "inactivity_health",
+      "pillar": "labour",
+      "weightWithinPillar": 0.18,
+      "before": {
+        "value": 2.738,
+        "normalised": 97.91666666666666,
+        "zScore": -2.4204177043634014,
+        "baselineN": 24,
+        "baselineMean": 2.7880833333333332,
+        "baselineStddev": 0.02069202073800967
+      },
+      "after": {
+        "value": 2.738,
+        "normalised": 40.34090909090909,
+        "zScore": 0.7101484211250211,
+        "baselineN": 88,
+        "baselineMean": 2.5411250000000005,
+        "baselineStddev": 0.2772307790082938
+      },
+      "normalisedDelta": -57.575757575757564
+    },
+    {
+      "indicatorId": "unemployment",
+      "pillar": "labour",
+      "weightWithinPillar": 0.1,
+      "before": {
+        "value": 4.7,
+        "normalised": 58.33333333333333,
+        "zScore": -0.17864740025262665,
+        "baselineN": 24,
+        "baselineMean": 4.750000000000001,
+        "baselineStddev": 0.2798809270624444
+      },
+      "after": {
+        "value": 4.7,
+        "normalised": 26.70454545454546,
+        "zScore": 0.779361792590109,
+        "baselineN": 88,
+        "baselineMean": 4.334090909090909,
+        "baselineStddev": 0.46949836954803653
+      },
+      "normalisedDelta": -31.62878787878787
+    },
+    {
+      "indicatorId": "vacancies_per_unemployed",
+      "pillar": "labour",
+      "weightWithinPillar": 0.1,
+      "before": {
+        "value": 0.411214953271028,
+        "normalised": 47.91666666666667,
+        "zScore": -0.6017907498203382,
+        "baselineN": 24,
+        "baselineMean": 0.44358128872179337,
+        "baselineStddev": 0.05378337147991749
+      },
+      "after": {
+        "value": 0.411214953271028,
+        "normalised": 23.295454545454543,
+        "zScore": -0.9973831544106523,
+        "baselineN": 88,
+        "baselineMean": 0.6063284196008581,
+        "baselineStddev": 0.19562538776296207
+      },
+      "normalisedDelta": -24.621212121212128
+    },
+    {
+      "indicatorId": "gbp_usd",
+      "pillar": "market",
+      "weightWithinPillar": 0.07,
+      "before": {
+        "value": 1.3313,
+        "normalised": 49.91803278688525,
+        "zScore": 0.3280650683710215,
+        "baselineN": 610,
+        "baselineMean": 1.3197124590163931,
+        "baselineStddev": 0.035320861928835455
+      },
+      "after": {
+        "value": 1.3313,
+        "normalised": 67.9373368146214,
+        "zScore": 0.6061805654754162,
+        "baselineN": 1915,
+        "baselineMean": 1.295142715404699,
+        "baselineStddev": 0.059647713329349955
+      },
+      "normalisedDelta": 18.019304027736155
+    },
+    {
+      "indicatorId": "debt_interest",
+      "pillar": "fiscal",
+      "weightWithinPillar": 0.15,
+      "before": {
+        "value": 10.933,
+        "normalised": 17.307692307692314,
+        "zScore": 0.8484534622710632,
+        "baselineN": 26,
+        "baselineMean": 8.107692307692309,
+        "baselineStddev": 3.3299501009108545
+      },
+      "after": {
+        "value": 10.933,
+        "normalised": 8.333333333333337,
+        "zScore": 1.2257346003140552,
+        "baselineN": 90,
+        "baselineMean": 6.592277777777776,
+        "baselineStddev": 3.541323073616469
+      },
+      "normalisedDelta": -8.974358974358976
+    },
+    {
+      "indicatorId": "real_regular_pay",
+      "pillar": "labour",
+      "weightWithinPillar": 0.1,
+      "before": {
+        "value": 0.7,
+        "normalised": 24,
+        "zScore": -0.8623143062960393,
+        "baselineN": 25,
+        "baselineMean": 1.1920000000000002,
+        "baselineStddev": 0.5705576219804623
+      },
+      "after": {
+        "value": 0.7,
+        "normalised": 30.89887640449438,
+        "zScore": -0.21985282566134734,
+        "baselineN": 89,
+        "baselineMean": 1.1191011235955057,
+        "baselineStddev": 1.9062803597579077
+      },
+      "normalisedDelta": 6.898876404494381
+    },
+    {
+      "indicatorId": "mortgage_2y_fix",
+      "pillar": "labour",
+      "weightWithinPillar": 0.12,
+      "before": {
+        "value": 5.13,
+        "normalised": 8.92857142857143,
+        "zScore": 1.6545539583094735,
+        "baselineN": 28,
+        "baselineMean": 4.518928571428572,
+        "baselineStddev": 0.36932698719344587
+      },
+      "after": {
+        "value": 5.13,
+        "normalised": 15.000000000000002,
+        "zScore": 1.0471746641010495,
+        "baselineN": 90,
+        "baselineMean": 3.423555555555554,
+        "baselineStddev": 1.6295700258460213
+      },
+      "normalisedDelta": 6.071428571428571
+    },
+    {
+      "indicatorId": "gilt_30y",
+      "pillar": "market",
+      "weightWithinPillar": 0.16,
+      "before": {
+        "value": 5.7873,
+        "normalised": 8.064516129032262,
+        "zScore": 1.3329095478004045,
+        "baselineN": 651,
+        "baselineMean": 5.225360061443929,
+        "baselineStddev": 0.4215889513908847
+      },
+      "after": {
+        "value": 5.7873,
+        "normalised": 2.7429467084639447,
+        "zScore": 1.355029520035545,
+        "baselineN": 1914,
+        "baselineMean": 3.295263427377212,
+        "baselineStddev": 1.8391013153406555
+      },
+      "normalisedDelta": -5.321569420568316
+    },
+    {
+      "indicatorId": "inactivity_rate",
+      "pillar": "labour",
+      "weightWithinPillar": 0.22,
+      "before": {
+        "value": 20.9,
+        "normalised": 77.08333333333334,
+        "zScore": -0.765068805494682,
+        "baselineN": 24,
+        "baselineMean": 21.12083333333333,
+        "baselineStddev": 0.28864506270196694
+      },
+      "after": {
+        "value": 20.9,
+        "normalised": 81.25,
+        "zScore": -1.0829163814098477,
+        "baselineN": 88,
+        "baselineMean": 21.4,
+        "baselineStddev": 0.46171616625565354
+      },
+      "normalisedDelta": 4.166666666666657
+    },
+    {
+      "indicatorId": "gbp_twi",
+      "pillar": "market",
+      "weightWithinPillar": 0.07,
+      "before": {
+        "value": 85.8916,
+        "normalised": 94.34426229508198,
+        "zScore": 1.5272088424219603,
+        "baselineN": 610,
+        "baselineMean": 84.72958311475419,
+        "baselineStddev": 0.7608762161192002
+      },
+      "after": {
+        "value": 85.8916,
+        "normalised": 98.19843342036553,
+        "zScore": 1.5325089069843207,
+        "baselineN": 1915,
+        "baselineMean": 81.42443143603131,
+        "baselineStddev": 2.914938075472072
+      },
+      "normalisedDelta": 3.854171125283557
+    },
+    {
+      "indicatorId": "gilt_10y",
+      "pillar": "market",
+      "weightWithinPillar": 0.18,
+      "before": {
+        "value": 5.3259,
+        "normalised": 3.9170506912442393,
+        "zScore": 2.015308866056033,
+        "baselineN": 651,
+        "baselineMean": 4.58113671274961,
+        "baselineStddev": 0.3695529255065969
+      },
+      "after": {
+        "value": 5.3259,
+        "normalised": 1.3322884012539227,
+        "zScore": 1.4311858865854274,
+        "baselineN": 1914,
+        "baselineMean": 2.7889358411703213,
+        "baselineStddev": 1.7726307830511485
+      },
+      "normalisedDelta": -2.5847622899903167
+    },
+    {
+      "indicatorId": "breakeven_5y",
+      "pillar": "market",
+      "weightWithinPillar": 0.12,
+      "before": {
+        "value": 3.6941,
+        "normalised": 22.906403940886698,
+        "zScore": 0.8605336214652656,
+        "baselineN": 609,
+        "baselineMean": 3.4427482758620704,
+        "baselineStddev": 0.2920882088371433
+      },
+      "after": {
+        "value": 3.6941,
+        "normalised": 24.320794148380354,
+        "zScore": 0.5184451911043261,
+        "baselineN": 1914,
+        "baselineMean": 3.4801480668756515,
+        "baselineStddev": 0.41267994533542773
+      },
+      "normalisedDelta": 1.414390207493657
+    },
+    {
+      "indicatorId": "payroll_mom",
+      "pillar": "labour",
+      "weightWithinPillar": 0.1,
+      "before": {
+        "value": 238.3,
+        "normalised": 98.07692307692307,
+        "zScore": 1.6234197188864543,
+        "baselineN": 26,
+        "baselineMean": 229.29230769230767,
+        "baselineStddev": 5.548591164009605
+      },
+      "after": {
+        "value": 238.3,
+        "normalised": 99.43820224719101,
+        "zScore": 1.655841986235852,
+        "baselineN": 89,
+        "baselineMean": 200.8247191011236,
+        "baselineStddev": 22.632160079517735
+      },
+      "normalisedDelta": 1.3612791702679488
+    },
+    {
+      "indicatorId": "borrowing_outturn",
+      "pillar": "fiscal",
+      "weightWithinPillar": 0.15,
+      "before": {
+        "value": 24.52,
+        "normalised": 1.9230769230769273,
+        "zScore": 0.9548761803057723,
+        "baselineN": 26,
+        "baselineMean": 12.800615384615385,
+        "baselineStddev": 12.273198197939978
+      },
+      "after": {
+        "value": 24.52,
+        "normalised": 2.777777777777779,
+        "zScore": 1.317379219184097,
+        "baselineN": 90,
+        "baselineMean": 11.026888888888887,
+        "baselineStddev": 10.24238952202989
+      },
+      "normalisedDelta": 0.8547008547008517
+    }
+  ],
+  "notes": [
+    "Only dates strictly before each indicator current canonical first reference day are proposed. No existing observations are replaced, and no headline or pillar history rows are rewritten.",
+    "Frozen current readings are identical across sensitivity scenarios. Any score change is baseline coverage, not a new market move or Budget attribution.",
+    "Direct official IUDSIZC is used for five-year implied inflation; old nominal-minus-IUDSIZC derived capture is excluded.",
+    "Historical writer guards dates/non-finite/hash only. Passing guards does not independently establish economic meaning; definitions were checked against primary catalogues.",
+    "BoE publication timestamps are unavailable. Observed 16:00 is the existing daily series convention, not a verified release time.",
+    "ONS updateDate may reflect later source revisions. These are current-vintage historical indicators for baseline distributions, not as-known-at-the-time score history.",
+    "COVID Q2 2020 rows remain possible source observations but are excluded from baseline using unchanged policy.",
+    "Current global baseline eligibility begins2019, but other indicators remain shorter where comparable official history is not yet prepared. This proposal does not make every indicator complete from2019.",
+    "Production application would need explicit reviewed approval, audited idempotent writes, public coverage/correction disclosure and cache generation refresh after current-score recomputation."
+  ]
+}

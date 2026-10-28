@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-28T18:41:06.447Z",
+  "productionPreflight": {
+    "missing": 8770,
+    "alreadyPresent": 0
+  },
+  "existingRawRows": 8294,
+  "sourceFilesShaVerified": 9,
+  "eiaFxPairsVerified": 1396,
+  "candidateSha256": "bad910e7715eeba5e7b47c240a126ea4de0ff276575cd502b83305e214e322a7",
+  "productionObservationWrites": 0,
+  "productionAuditWrites": 0,
+  "scoreHistoryWrites": 0
+}

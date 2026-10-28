@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "status": "CONSOLIDATED_REVIEW_PROPOSAL_REQUIRES_EXPLICIT_USER_APPROVAL",
+  "captureKind": "Seven parsed official-source adapter captures plus reviewed MHCLG ODS-derived observations and independently paired EIA/BoE observations. Original ODS/HTML and source-cell/pairing evidence are archived; original raw BoE/ONS HTTP bodies are unavailable except explicitly archived evidence.",
+  "candidateFile": "leading-observations-8770.json",
+  "candidateSha256": "bad910e7715eeba5e7b47c240a126ea4de0ff276575cd502b83305e214e322a7",
+  "sourceSnapshotAt": "2026-10-28T18:35:27.192Z",
+  "sourceSnapshotSha256": "1123ce970cd44d75500fc09d7d283ff40a085d794034388b34de66b9d5289cc4",
+  "referenceRawRows": 8294,
+  "candidateRows": 8770,
+  "baselineEligibleRows": 8375,
+  "covidExcludedRows": 395,
+  "originalFirstReferenceDayByIndicator": {
+    "gilt_10y": "2024-04-02",
+    "gilt_30y": "2024-04-02",
+    "gbp_usd": "2024-06-03",
+    "gbp_twi": "2024-06-03",
+    "breakeven_5y": "2024-06-03",
+    "mortgage_2y_fix": "2024-06-30",
+    "unemployment": "2024-08-01",
+    "inactivity_rate": "2024-08-01",
+    "inactivity_health": "2024-08-01",
+    "real_regular_pay": "2024-08-01",
+    "vacancies_per_unemployed": "2024-08-01",
+    "borrowing_outturn": "2024-08-01",
+    "debt_interest": "2024-08-01",
+    "payroll_mom": "2024-07-01",
+    "housing_trajectory": "2022-06-30",
+    "planning_consents": "2022-12-31",
+    "brent_gbp": "2024-07-04"
+  },
+  "sources": [
+    {
+      "id": "boe_yields",
+      "file": "boe_yields-primary-history.json",
+      "sha256": "d71dd309f14bec8b9b831736594b7d9631c39f152fc493eedac2996ba7822799",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDMNZC%2CIUDLNZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "sourceFetchedAt": "2026-10-28T17:33:37.931Z",
+      "expectedCandidates": 2648
+    },
+    {
+      "id": "boe_fx",
+      "file": "boe_fx-primary-history.json",
+      "sha256": "6933d29bfe96fbbe34e2ff497684fb61e5da4561e87d9ba2cbc77744cebde15e",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=XUDLUSS%2CXUDLBK67&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "sourceFetchedAt": "2026-10-28T17:33:41.871Z",
+      "expectedCandidates": 2732
+    },
+    {
+      "id": "boe_breakevens",
+      "file": "boe-inflation-direct-2019-history.json",
+      "sha256": "69f49d79b3c60d6369503696d461487ebc21b678911b02ed0ce07f9640c6c950",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSIZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "sourceFetchedAt": "2026-10-28T18:19:20.175Z",
+      "expectedCandidates": 1366
+    },
+    {
+      "id": "boe_mortgage_rates",
+      "file": "boe_mortgage_rates-primary-history.json",
+      "sha256": "a0b80aaf6a58720861de2fd17a287fbb04e990a955f45d4a55c24149b8ac2f64",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUMBV34&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "sourceFetchedAt": "2026-10-28T17:33:45.391Z",
+      "expectedCandidates": 65
+    },
+    {
+      "id": "ons_lms",
+      "file": "ons_lms-primary-history.json",
+      "sha256": "e82b5b1b03c9e28263209bf2fef5ff91904342e39ccb1b96c3d2e24e5c4a0ae2",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem/data",
+      "sourceFetchedAt": "2026-10-28T17:44:09.943Z",
+      "expectedCandidates": 335
+    },
+    {
+      "id": "ons_psf",
+      "file": "ons_psf-primary-history.json",
+      "sha256": "80e14e20d472e2477a4625c71a61cce04eccf9edde3d4e02eb6217d7b266edc4",
+      "sourceUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf/data",
+      "sourceFetchedAt": "2026-10-28T17:44:10.754Z",
+      "expectedCandidates": 134
+    },
+    {
+      "id": "ons_rti",
+      "file": "ons_rti-primary-history.json",
+      "sha256": "6d5f251d41ec11d6c9715665c58d37c482e8288f5ea685463b5611edec05acc2",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/k54l/emp/data",
+      "sourceFetchedAt": "2026-10-28T17:44:11.264Z",
+      "expectedCandidates": 66
+    },
+    {
+      "id": "mhclg",
+      "file": "mhclg-leading-adapter-capture.json",
+      "sha256": "44552666cb43de4711617bd839bbee00f0358cfc6c38f6134cc622867069102a",
+      "sourceUrl": "local:fixtures/housing-history.json",
+      "sourceFetchedAt": "2026-10-28T18:34:24.332Z",
+      "expectedCandidates": 28
+    },
+    {
+      "id": "eia_brent",
+      "file": "eia-leading-adapter-capture.json",
+      "sha256": "199b0d996a34cd35bf25afe24babaaae56f67d485f09c531bf6c1ce7aa19176c",
+      "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+      "sourceFetchedAt": "2026-10-28",
+      "expectedCandidates": 1396
+    }
+  ],
+  "overwrite": false,
+  "scoreHistoryWrites": 0,
+  "frozenReplay": {
+    "after": 36.9,
+    "before": 39.4,
+    "beforePillars": {
+      "market": 34.2,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "afterPillars": {
+      "market": 34.6,
+      "fiscal": 36.6,
+      "labour": 45.7,
+      "delivery": 31.6
+    }
+  },
+  "limitations": [
+    "Only dates strictly before each indicator's current canonical first reference day are proposed. No existing observations are replaced, and no headline or pillar history rows are rewritten.",
+    "Frozen current readings are identical across sensitivity scenarios. Any score change is baseline coverage, not a new market move or Budget attribution.",
+    "Direct official IUDSIZC is used for five-year implied inflation; old nominal-minus-IUDSIZC derived capture is excluded.",
+    "Historical writer guards dates/non-finite/hash only. Passing guards does not independently establish economic meaning; definitions were checked against primary catalogues.",
+    "BoE publication timestamps are unavailable. Observed 16:00 is the existing daily series convention, not a verified release time.",
+    "ONS updateDate may reflect later source revisions. These are current-vintage historical indicators for baseline distributions, not as-known-at-the-time score history.",
+    "COVID Q2 2020 rows remain possible source observations but are excluded from baseline using unchanged policy.",
+    "Current global baseline eligibility begins in 2019, but other indicators remain shorter where comparable official history is not yet prepared. This proposal does not make every indicator complete from 2019.",
+    "Production application would need explicit reviewed approval, audited idempotent writes, public coverage/correction disclosure and cache generation refresh after current-score recomputation."
+  ],
+  "reviewedHistoricalExceptionsFile": "historical-live-bound-exceptions.json",
+  "expectedRawOutsideLiveBoundsFlagsAfterBackfill": 31,
+  "livePlausibilityBoundsChanged": false,
+  "proofs": [
+    {
+      "file": "mhclg-housebuilding-table222-2026-09-24.ods",
+      "sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69"
+    },
+    {
+      "file": "mhclg-planning-p120-p138-2026-09-24.ods",
+      "sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b"
+    },
+    {
+      "file": "mhclg-leading-source-evidence.json",
+      "sha256": "f6b27b1d3eefa0c9fef65fb02c1e12d81e9e2dbab11afbd1d5019d0efe67410f"
+    },
+    {
+      "file": "mhclg-housing-history-fixture.json",
+      "sha256": "4a38a27d1e80d928a3dff54239bd84f5f42e8b02f12c7f06b12993e3a7569c36"
+    },
+    {
+      "file": "eia-official-brent-table.html",
+      "sha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4"
+    },
+    {
+      "file": "eia-pairing-review.json",
+      "sha256": "48996d7104c6db91383c9cee315f46153878b43ff97d8946eb71372aa3e62b11"
+    },
+    {
+      "file": "boe-inflation-direct-2019.csv",
+      "sha256": "8177ca3e9f40ea6d529b1cb898e4f6e3d5ee646cee89a76aa053f3941eb979bc"
+    }
+  ],
+  "registeredInputs": 17,
+  "orderingNote": "BoE and ONS leading history is inserted before the EIA pairs. Those pairs use the archived FX working table and retain the existing June 2024 FX readings.",
+  "reviewedEligibleBaselineExceptionCount": 6,
+  "earlierFrozenReplay": {
+    "before": 40.2,
+    "after": 37.6,
+    "beforePillars": {
+      "market": 36,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "afterPillars": {
+      "market": 36.4,
+      "fiscal": 36.6,
+      "labour": 45.7,
+      "delivery": 31.6
+    }
+  },
+  "referenceObservationFile": "reference-observations-8294.json",
+  "referenceObservationSha256": "303bfffdd4b75bf4710c98f1a20a2056dbf24a211310e115a7c07356750ddbf1",
+  "referenceScoreFile": "reference-score-2026-10-28T18-35.json"
+}

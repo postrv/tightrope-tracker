@@ -1,0 +1,102 @@
+{
+  "mode": "DISPOSABLE_REAL_SQLITE_ONLY_NO_PRODUCTION_WRITES",
+  "generatedAt": "2026-10-28T18:38:55.158Z",
+  "referenceSnapshotAt": "2026-10-28T18:35:27.192Z",
+  "referenceRawRows": 8294,
+  "observationsAfter": 17064,
+  "candidates": 8770,
+  "originalRowsVerifiedUnchanged": 8294,
+  "allOriginalFieldsPreserved": true,
+  "scoreHistoryTablesCreated": false,
+  "results": [
+    {
+      "id": "boe_yields",
+      "inserted": 2648,
+      "repeatInserted": 0,
+      "rejected": 0
+    },
+    {
+      "id": "boe_fx",
+      "inserted": 2732,
+      "repeatInserted": 0,
+      "rejected": 0
+    },
+    {
+      "id": "boe_breakevens",
+      "inserted": 1366,
+      "repeatInserted": 0,
+      "rejected": 0
+    },
+    {
+      "id": "boe_mortgage_rates",
+      "inserted": 65,
+      "repeatInserted": 0,
+      "rejected": 0
+    },
+    {
+      "id": "ons_lms",
+      "inserted": 335,
+      "repeatInserted": 0,
+      "rejected": 0
+    },
+    {
+      "id": "ons_psf",
+      "inserted": 134,
+      "repeatInserted": 0,
+      "rejected": 0
+    },
+    {
+      "id": "ons_rti",
+      "inserted": 66,
+      "repeatInserted": 0,
+      "rejected": 0
+    },
+    {
+      "id": "mhclg",
+      "inserted": 28,
+      "repeatInserted": 0,
+      "rejected": 0
+    },
+    {
+      "id": "eia_brent",
+      "inserted": 1396,
+      "repeatInserted": 0,
+      "rejected": 0
+    }
+  ],
+  "before": {
+    "headline": 39.4,
+    "pillars": {
+      "market": 34.2,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    }
+  },
+  "after": {
+    "headline": 36.9,
+    "pillars": {
+      "market": 34.6,
+      "fiscal": 36.6,
+      "labour": 45.7,
+      "delivery": 31.6
+    }
+  },
+  "headlineChange": -2.5,
+  "olderReferenceReplay": {
+    "before": 40.2,
+    "after": 37.6,
+    "beforePillars": {
+      "market": 36,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "afterPillars": {
+      "market": 36.4,
+      "fiscal": 36.6,
+      "labour": 45.7,
+      "delivery": 31.6
+    }
+  }
+}

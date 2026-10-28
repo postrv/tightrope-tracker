@@ -1,0 +1,258 @@
+{
+  "observations": [
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 57.7,
+      "observedAt": "2019-03-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:5f6e77774068e21bc3e198ca99c3acd38b3a13c92fcc668f6fcc47ac04be049a",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 97.4,
+      "observedAt": "2019-03-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:d7f263af2a8d0b130f23a0b77db79d6741041ce59b096a6deecf4aaadf856f8c",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 59.4,
+      "observedAt": "2019-06-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:385894b28021b10253ca58d1628b8f1d3aee4cbf124e12a8fb257a65b2fea588",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 94.8,
+      "observedAt": "2019-06-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:acb43abf4327be5cd49fd48092bdfa4c69e209702349caf2c488de6ec3409815",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 60.8,
+      "observedAt": "2019-09-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:f8cec193846e56b5b7ff363b9d7869b7bda04d8e9d8622f2e8de53603f9929b7",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 99.7,
+      "observedAt": "2019-09-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:942be459671ce6ae5c2d88b4cb07d77bb45c5ce81b90a7e22330ccb5dc0992d4",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 59.2,
+      "observedAt": "2019-12-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:1df55ca28c725716b4e0f4520f07f918092f78dd0a3270f197afa9456a8416df",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 96.8,
+      "observedAt": "2019-12-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:e375450939ff1c6ac913c704481549eb7f3789396676a3fef8462de803835fff",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 53.8,
+      "observedAt": "2020-03-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:438c9976cfbce758d0a75626ffcc76cc4fd9deadb0fb4463db3ed0abc47b336e",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 88.7,
+      "observedAt": "2020-03-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:66e8237810ce86246ab2edc4ba8c88c65371b5f8271d2f985491b20a78f26d1a",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 21.5,
+      "observedAt": "2020-06-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:7ff38e122691ea717319858962d0de2a40a7c41bee7d2beb1ce5adc10389501b",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 79.1,
+      "observedAt": "2020-06-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:7243239cc0a999f2abae59ea25cefa0fcc93622497cefb3da2f8afaa9dd3e3b2",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 59.5,
+      "observedAt": "2020-09-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:7ed1c96cf9549864e5ce13398b31549c2f221cce4f9caee0612d6bf6077de1a8",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 86.2,
+      "observedAt": "2020-09-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:0b32c7b052dc481e2a90ffe964df0097facd6d80e06ac510dc71160c315f9230",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 61.3,
+      "observedAt": "2020-12-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:1224354af45f9227211de9efc49e2d9836e76e110c460f24e4ff12d1b991fefd",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 88.1,
+      "observedAt": "2020-12-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:85e1932908cca1d17bb6092c7760251a7ac50a2b653735174039518bb3ec0a2b",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 65.6,
+      "observedAt": "2021-03-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:107986c58e1c38936bfe4be97f9d577df90c6f702e3959ad45980a03f4b4b428",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 85.4,
+      "observedAt": "2021-03-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:96d0962e5edd2457b71198a53780ff18b2194da44a52f0d67f8714d8e9f9a11e",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 56.7,
+      "observedAt": "2021-06-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:ce9fc7c690969100bdcba6f6fa0c8061a43975490a232580fa79c3d96b29b5d1",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 83.5,
+      "observedAt": "2021-06-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:b985ea766df16f171301bf5eae6d19f0f68291b87f9c01a7e32cee43b3ffcf81",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 57.8,
+      "observedAt": "2021-09-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:449766c15e38714f79dcd1990c4a40af5c52937682beefbdf8b9df05e7cae933",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 83.9,
+      "observedAt": "2021-09-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:cb4f92e5246cb6ef7f5d17fdbfc57df55b503e2a5ca9dcfcefc96b1ed28ff48e",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 54.5,
+      "observedAt": "2021-12-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:fbbe9f43f29a09219e1c00ed0147707c7b18a9144bdab2f075b0888c05e61608",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 82.1,
+      "observedAt": "2021-12-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:0efc9ca92e56d0658ff151f9c165e331b45587cca27ca7121b3065214d364181",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "value": 60.1,
+      "observedAt": "2022-03-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:6a06485c69dbdb81ffea8a9f3570183620845c8cb4e72deeefb9c39bf3ff6c8d",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 80.2,
+      "observedAt": "2022-03-31T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:11e7f7eb09965cac18935f1a643d80f0c80a514b712048e3c2d1e3e1a8cc03e2",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 75.4,
+      "observedAt": "2022-06-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:5b01675ac39b5cc7024fc39b6810010066be091c38645cddecdd1f574eff30e2",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicatorId": "planning_consents",
+      "value": 76.8,
+      "observedAt": "2022-09-30T00:00:00Z",
+      "sourceId": "mhclg",
+      "payloadHash": "hist:5e6f2f2ba8cfef9336b52a03edffb8a80337d1c9ba32f4028d3293eef2bb1aea",
+      "releasedAt": "2026-09-24T00:00:00Z"
+    }
+  ],
+  "sourceUrl": "local:fixtures/housing-history.json",
+  "fetchedAt": "2026-10-28T18:34:24.332Z",
+  "captureKind": "Reviewed source-derived adapter observations",
+  "originalSource": {
+    "id": "mhclg",
+    "sourcePath": "/Users/laurence/WebstormProjects/tightrope/packages/data-sources/src/fixtures/housing-history.json",
+    "sourceSha256": "4a38a27d1e80d928a3dff54239bd84f5f42e8b02f12c7f06b12993e3a7569c36",
+    "sourceUrl": "local:fixtures/housing-history.json",
+    "sourceFetchedAt": "2026-10-28T18:34:24.332Z",
+    "sourceEvidencePath": "/Users/laurence/WebstormProjects/tightrope/data/exports/mhclg-leading-2019-2022-evidence-2026-10-28.json",
+    "sourceVintage": "2026-09-24"
+  },
+  "evidenceFiles": [
+    {
+      "file": "mhclg-housebuilding-table222-2026-09-24.ods",
+      "sha256": "b9876700eb8f9047e37bebbf0b405dfdafc64a1f276d0dde69bee8bc2b924f69"
+    },
+    {
+      "file": "mhclg-planning-p120-p138-2026-09-24.ods",
+      "sha256": "ec1936b8bbf885a643c860e3d96772759a7066214899bd7590e1c35c0af2bf8b"
+    },
+    {
+      "file": "mhclg-leading-source-evidence.json",
+      "sha256": "f6b27b1d3eefa0c9fef65fb02c1e12d81e9e2dbab11afbd1d5019d0efe67410f"
+    },
+    {
+      "file": "mhclg-housing-history-fixture.json",
+      "sha256": "4a38a27d1e80d928a3dff54239bd84f5f42e8b02f12c7f06b12993e3a7569c36"
+    }
+  ]
+}

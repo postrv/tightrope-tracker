@@ -1,4 +1,5 @@
 ---
+import ScoreDeltaNote from "./ScoreDeltaNote.astro";
 import type { DeliveryCommitment } from "@tightrope/shared/delivery";
 import type { PillarScore } from "@tightrope/shared";
 import { DELIVERY_STATUS_LABEL } from "@tightrope/shared/delivery";
@@ -30,6 +31,7 @@ function statusClass(status: string): string {
         <h2 class="sec-title" id="delivery-title" style="margin-top: 14px;">Is the Government hitting their targets?</h2>
         <p class="section-sub">The Government's own stated commitments, tracked against public milestones. Green for on track, amber for slipping, red for missed, blue for shipped. Every status is sourced.</p>
       </div>
+      <div class="pillar-score-group">
       <div class="pillar-score" aria-label={`Delivery pillar score ${Math.round(pillar.value)}`}>
         <span class="pillar-score-num">{Math.round(pillar.value)}</span>
         <span class="pillar-score-sub">/100</span>
@@ -48,6 +50,8 @@ function statusClass(status: string): string {
             </span>
           );
         })()}
+      </div>
+      <ScoreDeltaNote />
       </div>
     </div>
 
@@ -93,7 +97,8 @@ function statusClass(status: string): string {
   display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;
   margin-bottom: 40px;
 }
-.pillar-score { display: flex; align-items: baseline; gap: 6px; font-family: var(--font-mono); }
+.pillar-score-group { max-width: 340px; min-width: 0; }
+.pillar-score { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; font-family: var(--font-mono); }
 .pillar-score-num { font-size: 40px; font-weight: 500; color: var(--ink-0); font-variant-numeric: tabular-nums; }
 .pillar-score-sub { color: var(--ink-2); font-size: 14px; }
 .pillar-score-delta { margin-left: 12px; font-size: 12px; }

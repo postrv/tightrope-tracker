@@ -2,6 +2,7 @@
 import type { HeadlineScore, TimelineEvent } from "@tightrope/shared";
 import { bandFor, BANDS, OBR_LATEST_VINTAGE_LABEL, OBR_TARGET_YEAR_LABEL, PILLARS } from "@tightrope/shared";
 import TightropeWalker from "./TightropeWalker.astro";
+import ScoreDeltaNote from "./ScoreDeltaNote.astro";
 import { eyebrowDate, shortDate, signedDelta, trendArrow, trendClass, trendDescriptor } from "~/lib/format.js";
 import { safeHref } from "~/lib/safeHref.js";
 
@@ -130,6 +131,7 @@ function headroomDateLabel(iso: string): string {
                   </>
                 )}
               </div>
+              <ScoreDeltaNote />
             </div>
             <div class="score-meta">
               <span class="band-pill" style={`color: var(${bandColour}); border-color: var(${bandColour}); background: color-mix(in srgb, var(${bandColour}) 12%, transparent);`}>{band.label}</span>

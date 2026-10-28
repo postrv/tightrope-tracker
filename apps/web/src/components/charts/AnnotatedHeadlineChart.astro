@@ -573,7 +573,7 @@ const eventStamp = (date: string) => date.includes("T") ? bstTimestamp(date) : s
   <div class="band-key" aria-label="Score bands">
     {BANDS.map(band => <span style={`--key-colour: var(${band.colourToken});`}><i aria-hidden="true"></i>{band.label} <b>{band.min}–{band.max > 100 ? "100" : `<${band.max}`}</b></span>)}
   </div>
-  <p class="history-provenance">Earlier daily history includes reconstructions from historical indicators and later source revisions. <a href="/methodology#historical-coverage">See historical coverage and methodology.</a></p>
+  <p class="history-provenance">Recorded scores include the marked data and calculation corrections: a change across those markers is not purely an economic move. Earlier daily history also includes reconstructions and later source revisions. <a href="/methodology#historical-coverage">See historical coverage and methodology.</a></p>
   {eventKey.length ? <div class="event-key" aria-label="Event marker key">
     <span class="key-heading">Event markers</span>
     {eventKey.map(item => <span class="event-key-item"><i style={`background: ${item.dash ? "transparent" : item.colour}; ${item.dash ? `border-style: dashed; border-color: ${item.colour};` : ""}`} aria-hidden="true"></i>{item.label} <b>{item.count}</b></span>)}

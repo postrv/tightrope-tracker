@@ -290,7 +290,7 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
   housebuilder_idx: {
     id: "housebuilder_idx", pillar: "market", label: "UK housebuilder composite", shortLabel: "Housebuilders",
     unit: "index", weight: 0.08, risingIsBad: false, sourceId: "eodhd_housebuilders",
-    description: "Equal-weighted price index of five listed UK housebuilders, rebased to their 2019 average. Completed-session closes come from EODHD. When the feed is unavailable or lacks a common completed session, ingestion retains the last verified reading and reports degraded source health.",
+    description: "Equal-weighted price index of five listed UK housebuilders, rebased to their 2019 average. Both EODHD and the official London Stock Exchange fallback require all five closes for the same completed session. LSE is also checked when EODHD's complete basket predates the current London day. Ingestion retains a newer verified reading if provider data moves backwards, and reports degraded source health when a safe complete basket cannot be published.",
     formatDisplay: fmtIndex(1),
     provenance: "live-fallback",
     maxStaleMs: STALE_DAILY_MS,
@@ -462,14 +462,11 @@ export const INDICATORS: Record<string, IndicatorDefinition> = {
     maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
   },
   planning_consents: {
-    id: "planning_consents", pillar: "delivery", label: "Planning consents vs. baseline", shortLabel: "Consents",
+    id: "planning_consents", pillar: "delivery", label: "Planning consents vs. benchmark", shortLabel: "Consents",
     unit: "%", weight: 0.20, risingIsBad: false, sourceId: "mhclg",
-    // The 2019 quarterly baseline (11,500) is an estimate reconstructed
-    // from MHCLG's pre-COVID archives — the authoritative figure would
-    // require manual PDF extraction, which is out of scope for the
-    // current fixture. Surfaced in the description so the caveat ships
-    // on /methodology next to the indicator.
-    description: "Quarterly residential planning-decisions-granted as a % of a self-declared estimated 2019 pre-COVID quarterly baseline of 11,500. The denominator is an estimate — archived MHCLG PDFs can tighten it; the caveat is intentional and surfaced here.",
+    // Preserve the original estimated comparison. The 24 Sep 2026 P120A
+    // workbook gives 11,174.5 as the exact calendar 2019 quarterly mean.
+    description: "Quarterly major and minor residential planning applications granted in England, as a percentage of the tracker's fixed 11,500 quarterly benchmark. This preserves the original estimated 2019 comparison; the current-vintage official 2019 quarterly mean is 11,174.5.",
     formatDisplay: fmtPct(1),
     provenance: "fixture",
     maxStaleMs: STALE_MHCLG_QUARTERLY_MS,
@@ -576,10 +573,10 @@ export const SOURCES: Record<string, DataSource> = {
     expectedCadence: "trading-daily", graceDays: 10,
   },
   eodhd_housebuilders: {
-    id: "eodhd_housebuilders", name: "EODHD -- UK housebuilder composite (daily EOD)",
+    id: "eodhd_housebuilders", name: "EODHD / LSE -- UK housebuilder composite (daily closes)",
     homepage: "https://eodhd.com",
-    notes: "Equal-weighted composite of Persimmon, Barratt Redrow, Taylor Wimpey, Berkeley, Vistry via EODHD EOD API. Rebased to 100 at 2019 average. Free tier: 20 req/day (5 per fetch). Falls back to editorial fixture when API key is unset.",
-    // Daily EOD; free-tier quota exhaustion drops to a weekly fixture, so
+    notes: "Fixed five-stock equal-weighted composite of Persimmon, Barratt Redrow, Taylor Wimpey, Berkeley and Vistry; rebased to 100 at each stock's 2019 average. EODHD requires all five closes for one completed session (free tier: 20 req/day, 5 per fetch). Official LSE OFF_CLOSE prices are checked if that basket is unavailable or predates the current London day. LSE requires all five expected listings, GBX prices and one closed session after 16:35 London time. A stored-head check prevents older provider readings replacing newer verified data; unavailable verification or an incomplete basket degrades source health and leaves stored readings untouched.",
+    // Daily EOD; simultaneous feed failures drop to a weekly fixture, so
     // ~8 days covers a fallback week + weekend.
     expectedCadence: "trading-daily", graceDays: 8,
   },

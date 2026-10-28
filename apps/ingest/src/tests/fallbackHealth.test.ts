@@ -1,7 +1,8 @@
 import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { lseFtse250Adapter, eodhdHousebuildersAdapter, obrEfoAdapter, type DataSourceAdapter } from "@tightrope/data-sources";
-import { computeSourceHealth } from "@tightrope/shared";
+import { computeSourceHealth, filterStaleLiveRows } from "@tightrope/shared";
 import { runAdapter } from "../pipelines/runAdapter.js";
 import type { Env } from "../env.js";
 
@@ -47,14 +48,53 @@ describe("fixture fallback ingestion health", () => {
     const { env, sqlite, observations, lastAudit, health } = setup(adapter.id, indicatorId, value);
     try {
       const before = observations();
-      const fetchImpl = vi.fn();
+      const fetchImpl = vi.fn(async () => new Response("Unavailable", { status: 503 }));
       await runAdapter(env, adapter, { fetchImpl });
-      expect(fetchImpl).not.toHaveBeenCalled();
+      // The housebuilder adapter can recover without an EODHD key through
+      // five official LSE quotes; FTSE still needs its configured live feed.
+      expect(fetchImpl).toHaveBeenCalledTimes(adapter.id === "eodhd_housebuilders" ? 5 : 0);
       expect(observations()).toEqual(before); // includes original value, hash and ingestion time
       expect(lastAudit()).toMatchObject({ status: "partial", rows_written: 0 });
       expect(lastAudit().error).toContain("no EODHD_API_KEY");
       expect(lastAudit().source_url).toMatch(/^local:fixtures\//);
       expect(health()).toMatchObject([{ sourceId: adapter.id, status: "partial" }]);
+    } finally { sqlite.close(); }
+  });
+
+  it.each(["EODHD", "LSE"] as const)("preserves today's verified housebuilder head when %s returns yesterday's complete basket", async (provider) => {
+    const { env, sqlite, observations, lastAudit, health } = setup("eodhd_housebuilders", "housebuilder_idx", 55.8);
+    vi.setSystemTime(new Date("2026-10-28T18:40:00Z"));
+    if (provider === "EODHD") env.EODHD_API_KEY = "test-only-secret";
+    sqlite.prepare("INSERT INTO indicator_observations VALUES ('housebuilder_idx', '2026-10-28T16:30:00Z', 52.6, 'eodhd_housebuilders', '2026-10-28T18:33:53Z', 'verified-today', NULL)").run();
+    const archive = new URL("../../../../packages/data-sources/src/fixtures/lse-housebuilders-2026-10-28/", import.meta.url);
+    const sources = ["PSN", "BTRW", "TW", "BKG", "VTY"].map(symbol => ({
+      symbol, data: JSON.parse(readFileSync(new URL(`${symbol.toLowerCase()}-pricing.json`, archive), "utf8")).data,
+    }));
+    try {
+      const before = observations();
+      const result = await runAdapter(env, eodhdHousebuildersAdapter, { fetchImpl: async (input) => {
+        const url = String(input);
+        if (url.startsWith("https://eodhd.com/")) {
+          const source = sources.find(row => url.includes(`/${row.symbol}.LSE`))!;
+          const close = Number(String(source.data.HST_CLOSE).replaceAll(",", ""));
+          return new Response(JSON.stringify([{ date: "2026-10-27", close }]));
+        }
+        const source = sources.find(row => url.endsWith(`ric=${String(row.data.RIC).replace(/^\//, "")}`))!;
+        return new Response(JSON.stringify({ statusCode: 200, data: {
+          ...source.data, OFF_CLOSE: source.data.HST_CLOSE, OFF_CLS_DT: source.data.HSTCLSDATE,
+        } }));
+      } });
+      expect(result.fallbackReason).toContain("predates the stored verified head");
+      expect(result.sourceUrl).toContain(provider === "EODHD" ? "eodhd.com" : "apidata.londonstockexchange.com");
+      expect(observations()).toEqual(before); // original hashes and ingestion timestamps stay intact
+      expect(lastAudit()).toMatchObject({ status: "partial", rows_written: 0, source_url: result.sourceUrl });
+      expect(health()).toMatchObject([{ sourceId: "eodhd_housebuilders", status: "partial" }]);
+      const retained = filterStaleLiveRows(observations().map(row => ({
+        indicator_id: String(row.indicator_id), source_id: String(row.source_id),
+        observed_at: String(row.observed_at), value: Number(row.value),
+        ingested_at: String(row.ingested_at), payload_hash: String(row.payload_hash),
+      })));
+      expect(retained.at(-1)).toMatchObject({ value: 52.6, observed_at: "2026-10-28T16:30:00Z" });
     } finally { sqlite.close(); }
   });
 

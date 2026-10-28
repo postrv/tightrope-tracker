@@ -2,6 +2,7 @@
 import type { PillarScore, PillarId } from "@tightrope/shared";
 import { PILLAR_ORDER, PILLARS, BANDS, liveOnlyIndicatorsForPillar, describeSparklineCoverage } from "@tightrope/shared";
 import Sparkline from "./charts/Sparkline.astro";
+import ScoreDeltaNote from "./ScoreDeltaNote.astro";
 import { signedDelta, trendArrow, trendDescriptor } from "~/lib/format.js";
 
 interface Props {
@@ -97,6 +98,7 @@ function pillarHref(id: PillarId): string {
         );
       })}
     </div>
+    <ScoreDeltaNote />
   </div>
 </section>
 

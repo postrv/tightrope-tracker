@@ -49,6 +49,8 @@ describe("eodhdHousebuildersAdapter", () => {
       PSN: eodResponse(1248.5, "2026-11-02"),
       BTRW: eodResponse(421.0, "2026-11-02"),
       TW: eodResponse(118.2, "2026-11-02"),
+      BKG: eodResponse(3912.0, "2026-11-02"),
+      VTY: eodResponse(652.0, "2026-11-02"),
     };
     const result = await eodhdHousebuildersAdapter.fetch(
       mockFetch(responses) as unknown as typeof globalThis.fetch,
@@ -59,8 +61,8 @@ describe("eodhdHousebuildersAdapter", () => {
 
   it("uses a common completed session instead of mixing constituent dates", async () => {
     const responses = {
-      PSN: eodResponse(1248.5, "2026-10-27"),
-      BTRW: eodResponse(421.0, "2026-10-27"),
+      PSN: JSON.stringify([...JSON.parse(eodResponse(1250, "2026-10-27")), ...JSON.parse(eodResponse(1248.5, "2026-10-26"))]),
+      BTRW: JSON.stringify([...JSON.parse(eodResponse(425, "2026-10-27")), ...JSON.parse(eodResponse(421, "2026-10-26"))]),
       TW: eodResponse(118.2, "2026-10-26"),
       BKG: eodResponse(3912.0, "2026-10-26"),
       VTY: eodResponse(652.0, "2026-10-26"),
@@ -69,14 +71,14 @@ describe("eodhdHousebuildersAdapter", () => {
       mockFetch(responses) as typeof globalThis.fetch, CTX_WITH_KEY,
     );
     expect(result.observations[0]!.observedAt).toBe("2026-10-26T16:30:00Z");
-    const expected = (118.2 / 163.26 + 3912 / 4684.43 + 652 / 919.61) * 100 / 3;
+    const expected = (1248.5 / 2010.47 + 421 / 603.15 + 118.2 / 163.26 + 3912 / 4684.43 + 652 / 919.61) * 100 / 5;
     expect(result.observations[0]!.value).toBe(Math.round(expected * 10) / 10);
   });
 
   it("skips an unfinished Budget-day bar and uses the prior completed close", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-28T12:30:00Z"));
-    const responses = Object.fromEntries(["PSN", "BTRW", "TW"].map((symbol) => [symbol,
+    const responses = Object.fromEntries(["PSN", "BTRW", "TW", "BKG", "VTY"].map((symbol) => [symbol,
       JSON.stringify([
         ...JSON.parse(eodResponse(9999, "2026-10-28")),
         ...JSON.parse(eodResponse(500, "2026-10-27")),
@@ -148,7 +150,8 @@ describe("eodhdHousebuildersAdapter", () => {
     await vi.advanceTimersByTimeAsync(49_999);
     expect(settled).toBe(false);
     expect(stalledFetch).toHaveBeenCalledTimes(5);
-    await vi.advanceTimersByTimeAsync(1);
+    // Five sequential EODHD deadlines, then five concurrent LSE deadlines.
+    await vi.advanceTimersByTimeAsync(10_001);
     const result = await pending;
 
     expect(signals.every(signal => signal.aborted)).toBe(true);
@@ -172,17 +175,17 @@ describe("eodhdHousebuildersAdapter", () => {
       return response;
     });
     const pending = eodhdHousebuildersAdapter.fetch(stalledBodyFetch, CTX_WITH_KEY);
-    await vi.advanceTimersByTimeAsync(50_000);
+    await vi.advanceTimersByTimeAsync(60_000);
     const result = await pending;
 
-    expect(stalledBodyFetch).toHaveBeenCalledTimes(5);
+    expect(stalledBodyFetch).toHaveBeenCalledTimes(10);
     expect(result.fallbackReason).toContain("request timed out after 10000ms");
     expect(result.observations[0]!.payloadHash).toBe("fixture-fallback");
     expect(result.observations[0]!.observedAt).toBe(housebuilders.observed_at);
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it("tolerates missing constituents if >= 3 resolve", async () => {
+  it("retains the fixture when only three EODHD constituents resolve and LSE cannot complete the basket", async () => {
     const responses = {
       PSN: eodResponse(1248.5),
       TW: eodResponse(118.2),
@@ -193,10 +196,10 @@ describe("eodhdHousebuildersAdapter", () => {
       CTX_WITH_KEY,
     );
     expect(result.observations).toHaveLength(1);
-    expect(result.observations[0]!.payloadHash).not.toBe("fixture-fallback");
+    expect(result.observations[0]!.payloadHash).toBe("fixture-fallback");
   });
 
-  it("falls back to fixture if fewer than 3 constituents resolve", async () => {
+  it("falls back to fixture if neither feed supplies all five constituents", async () => {
     const responses = {
       PSN: eodResponse(1248.5),
       TW: eodResponse(118.2),
@@ -210,7 +213,7 @@ describe("eodhdHousebuildersAdapter", () => {
 
   it("serves the 27 October housebuilder close from the fallback fixture", async () => {
     const fx = housebuilders as { observed_at: string; housebuilder_idx: { value: number } };
-    const result = await eodhdHousebuildersAdapter.fetch(globalThis.fetch);
+    const result = await eodhdHousebuildersAdapter.fetch(mockFetch({}) as typeof fetch);
     expect(fx.observed_at).toBe("2026-10-27T16:30:00Z");
     expect(fx.housebuilder_idx.value).toBe(55.8);
     expect(result.observations[0]).toMatchObject({

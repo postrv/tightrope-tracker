@@ -1,4 +1,5 @@
 ---
+import ScoreDeltaNote from "./ScoreDeltaNote.astro";
 import type { PillarScore, TodayMovement, ScoreHistory } from "@tightrope/shared";
 import { BANDS, bandFor, describeSparklineCoverage } from "@tightrope/shared";
 import LineChart from "./charts/LineChart.astro";
@@ -78,6 +79,7 @@ const meta = {
         <h2 class="sec-title" id="market-title" style="margin-top: 14px;">Market stability</h2>
         <p class="section-sub">The daily market read on UK constraint: long gilts, sterling, the rate path, mid-cap equities, and the energy input.</p>
       </div>
+      <div class="pillar-score-group">
       <div class="pillar-score" aria-label={`Market pillar score ${Math.round(pillar.value)}`}>
         <span class="pillar-score-num">{Math.round(pillar.value)}</span>
         <span class="pillar-score-sub">/100</span>
@@ -96,6 +98,8 @@ const meta = {
             </span>
           );
         })()}
+      </div>
+      <ScoreDeltaNote />
       </div>
     </div>
 
@@ -175,7 +179,8 @@ const meta = {
   display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;
   margin-bottom: 40px;
 }
-.pillar-score { display: flex; align-items: baseline; gap: 6px; font-family: var(--font-mono); }
+.pillar-score-group { max-width: 340px; min-width: 0; }
+.pillar-score { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; font-family: var(--font-mono); }
 .pillar-score-num { font-size: 40px; font-weight: 500; color: var(--ink-0); font-variant-numeric: tabular-nums; }
 .pillar-score-sub { color: var(--ink-2); font-size: 14px; }
 .pillar-score-delta { margin-left: 12px; font-size: 12px; }

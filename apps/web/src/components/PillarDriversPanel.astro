@@ -27,6 +27,7 @@ import type { ScoreSnapshot, IndicatorContribution } from "@tightrope/shared";
 import { BANDS, INDICATORS, PILLAR_ORDER, PILLARS } from "@tightrope/shared";
 import { signedDelta, trendArrow, trendClass, trendDescriptor, formatIndicator } from "~/lib/format.js";
 import IndicatorTooltip from "./IndicatorTooltip.astro";
+import ScoreDeltaNote from "./ScoreDeltaNote.astro";
 
 interface Props {
   snapshot: ScoreSnapshot;
@@ -132,6 +133,7 @@ function describeDriver(c: IndicatorContribution): Driver {
               <span class={`delta ${trendClass(p.delta30d)}`}>{trendArrow(p.delta30d)} {signedDelta(p.delta30d, 1)}{trendDescriptor(p.delta30d) ? <span class="trend-word"> {trendDescriptor(p.delta30d)}</span> : null}</span>
             </li>
           </ul>
+          <ScoreDeltaNote />
 
           {driverInfo ? (
             <p class="driver-line">

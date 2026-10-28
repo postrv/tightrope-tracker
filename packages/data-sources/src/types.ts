@@ -25,8 +25,9 @@ export interface AdapterResult {
   observations: RawObservation[];
   sourceUrl: string;
   fetchedAt: Iso8601;
-  /** A live feed failed and a guarded local fallback supplied these readings.
-   * The observations remain usable, but the ingestion attempt is degraded.
+  /** A degraded candidate that the live ingestion pipeline must not publish:
+   * for example, a guarded local fallback, an older provider snapshot, or an
+   * unavailable stored-head check. Observations are retained for diagnostics.
    * Omit for deliberate editorial/manual sources such as OBR vintages. */
   fallbackReason?: string;
   /**
@@ -77,7 +78,8 @@ export interface AdapterContext {
    * EIA Brent uses this to pair its dated USD price with the relay-fed BoE FX
    * fix from the same or a preceding day. A later FX release must not reprice
    * an already-published Brent period. Absent in dev/probe scripts, where the
-   * adapter falls back to its fixture.
+   * Brent adapter falls back to its fixture. Housebuilders also use this
+   * lookup to prevent delayed provider data replacing a newer verified head.
    */
   getObservationBefore?: (
     indicatorId: string,

@@ -1,6 +1,6 @@
-import type { ScoreHistory, ScoreSnapshot } from "@tightrope/shared";
+import type { ScoreHistory, ScoreSnapshot, ScoreHistoryResolutionRequest } from "@tightrope/shared";
 import { PILLAR_ORDER, SCORE_HISTORY_SCHEMA_VERSION, SCORE_SCHEMA_VERSION } from "@tightrope/shared";
-import { primeHistoryCache, primeSnapshotCache } from "@tightrope/snapshot";
+import { primeHistoryCache, primeSnapshotCache, HISTORY_MAX_DAYS, HISTORY_RESOLUTIONS } from "@tightrope/snapshot";
 import { json, notSeeded } from "../lib/router.js";
 import { kvGetJson } from "../lib/cache.js";
 import { buildHistoryFromD1, buildSnapshotFromD1 } from "../lib/db.js";
@@ -35,7 +35,7 @@ function snapshotHasContributions(snapshot: ScoreSnapshot): boolean {
  * rebuild. Wrong schema version → not fresh.
  */
 function historyIsFresh(history: ScoreHistory): boolean {
-  if (history.schemaVersion !== SCORE_HISTORY_SCHEMA_VERSION) return false;
+  if (history.schemaVersion !== SCORE_HISTORY_SCHEMA_VERSION || history.sampling !== "last_recorded_in_bucket" || history.resolution !== "daily") return false;
   if (history.points.length === 0) return false;
   const last = history.points[history.points.length - 1]!.timestamp;
   const ts = Date.parse(last);
@@ -60,7 +60,7 @@ function looksUnseeded(snapshot: ScoreSnapshot): boolean {
 }
 
 const ALLOWED_SCORE_PARAMS = new Set<string>([]);
-const ALLOWED_HISTORY_PARAMS = new Set<string>(["days"]);
+const ALLOWED_HISTORY_PARAMS = new Set<string>(["days", "resolution"]);
 
 export async function handleScore(
   req: Request,
@@ -104,11 +104,13 @@ export async function handleScoreHistory(
   if (unknown) return json({ error: `unknown query parameter: ${unknown}`, code: "BAD_QUERY" }, 400);
 
   const raw = url.searchParams.get("days") ?? "30";
-  const days = Number.parseInt(raw, 10);
+  const days = Number(raw);
+  const resolution = (url.searchParams.get("resolution") ?? "auto") as ScoreHistoryResolutionRequest;
+  if (!HISTORY_RESOLUTIONS.includes(resolution)) return json({ error: "resolution must be auto, raw, hourly, daily or weekly", code: "BAD_QUERY" }, 400);
   // Cap matches the ingest backfill cap (apps/ingest/src/pipelines/backfill.ts)
   // so the chart can serve the full GE-2024-to-today range once backfilled.
-  if (!Number.isFinite(days) || days < 1 || days > 800) {
-    return json({ error: "days must be an integer between 1 and 800", code: "BAD_QUERY" }, 400);
+  if (!/^\d+$/.test(raw) || !Number.isInteger(days) || days < 1 || days > HISTORY_MAX_DAYS) {
+    return json({ error: "days must be an integer between 1 and 7305", code: "BAD_QUERY" }, 400);
   }
 
   try {
@@ -117,27 +119,18 @@ export async function handleScoreHistory(
     // predicate guards against serving a six-hour-old slice that survived
     // a recompute outage — without it the consumer would believe the
     // dashboard had stopped moving.
-    if (days === 90) {
+    if (days === 90 && (resolution === "auto" || resolution === "daily")) {
       // KV-first read with the 30-min freshness gate, then single-writer
       // prime on miss/stale. primeHistoryCache (@tightrope/snapshot) owns
       // score:history:90d — inlined here rather than via readThrough so the
       // write routes through the one allowed writer.
       const cached = await kvGetJson<ScoreHistory>(env, "score:history:90d");
-      if (cached && historyIsFresh(cached)) return json(cached);
-      const history = await buildHistoryFromD1(env, 90);
+      if (cached && historyIsFresh(cached)) return json({ ...cached, requestedResolution: resolution });
+      const history = await buildHistoryFromD1(env, 90, resolution);
       ctx.waitUntil(primeHistoryCache(env.KV, history));
       return json(history);
     }
-    const history = await buildHistoryFromD1(env, days);
-    // Best-effort cache of 90d slice on the side if we just computed a wider one.
-    if (days > 90) {
-      const trimmed: ScoreHistory = {
-        ...history,
-        points: history.points.slice(-90),
-        rangeDays: 90,
-      };
-      ctx.waitUntil(primeHistoryCache(env.KV, trimmed));
-    }
+    const history = await buildHistoryFromD1(env, days, resolution);
     return json(history);
   } catch (err) {
     // SEC-8: see snapshot handler for rationale.

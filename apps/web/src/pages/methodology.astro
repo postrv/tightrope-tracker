@@ -176,6 +176,8 @@ function ecdfPath(): string {
 
     <section class="block" id="historical-coverage">
       <h2>What the historical chart covers</h2>
+      <p>The <a href="/composite">score explorer</a> offers 24-hour, seven-day, monthly, yearly and full-history windows. Sampling selects every stored recording or the last recording in each UTC hour, day or week. It does not interpolate missing readings. A five-minute score recalculation does not imply a new five-minute market quote.</p>
+      <p>Historical reconstructions are not an archive of what a reader could have known on that date. Source series can contain later revisions, and some publication fields identify an update rather than the first release. The chart reports its actual stored coverage and excludes incomplete or invalid selected points. The <a href="/budget">Budget comparison</a> uses a fixed, downloadable reference snapshot and separates forecast revisions from economic observations; it withholds a score delta across calculation corrections.</p>
       <p>Every trajectory and sparkline on this site reads from stored pillar scores. Those scores are produced by two pipelines and the difference matters:</p>
       <ul class="bullets">
         <li><strong>Live recompute</strong> — runs every five minutes against <em>every</em> indicator in a pillar. This is what powers the headline score, the 24-hour change, and the latest points on every chart.</li>

@@ -39,6 +39,8 @@ const FIXTURE_URL = "local:fixtures/obr-efo.json";
 
 export interface ObrVintage {
   observed_at: string;
+  /** Actual publication instant, distinct from the vintage's calendar date. */
+  released_at?: string;
   source_url?: string;
   label?: string;
   indicators: Record<string, { value: number; unit: string }>;
@@ -49,6 +51,7 @@ export interface ObrFixture {
   vintages?: ObrVintage[];
   /** Legacy single-vintage shape. */
   observed_at?: string;
+  released_at?: string;
   source_url?: string;
   indicators?: Record<string, { value: number; unit: string }>;
 }
@@ -71,6 +74,7 @@ export function normaliseVintages(data: ObrFixture): ObrVintage[] {
       indicators: data.indicators,
     };
     if (data.source_url !== undefined) legacy.source_url = data.source_url;
+    if (data.released_at !== undefined) legacy.released_at = data.released_at;
     list = [legacy];
   } else {
     list = [];
@@ -97,11 +101,21 @@ async function vintageToObservations(
       message: "OBR EFO: vintage malformed — missing indicators",
     });
   }
-  if (typeof vintage.observed_at !== "string" || !vintage.observed_at) {
+  if (typeof vintage.observed_at !== "string" || !Number.isFinite(Date.parse(vintage.observed_at))) {
     throw new AdapterError({
       sourceId: SOURCE_ID,
       sourceUrl: FIXTURE_URL,
       message: "OBR EFO: vintage missing observed_at",
+    });
+  }
+  const releasedAt = vintage.released_at ?? vintage.observed_at;
+  if (typeof releasedAt !== "string" || !Number.isFinite(Date.parse(releasedAt))
+    || Date.parse(releasedAt) < Date.parse(vintage.observed_at)
+    || (vintage.released_at !== undefined && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(releasedAt))) {
+    throw new AdapterError({
+      sourceId: SOURCE_ID,
+      sourceUrl: FIXTURE_URL,
+      message: "OBR EFO: released_at must be an ISO publication instant at or after observed_at",
     });
   }
   const payloadHashCore = await sha256Hex(JSON.stringify(vintage));
@@ -136,7 +150,7 @@ async function vintageToObservations(
       observedAt: vintage.observed_at,
       sourceId: SOURCE_ID,
       payloadHash,
-      releasedAt: vintage.observed_at,
+      releasedAt,
     });
   }
   return out;

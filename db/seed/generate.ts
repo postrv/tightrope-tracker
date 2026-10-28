@@ -195,12 +195,12 @@ type TLRow = { id: string; date: string; title: string; summary: string; categor
 const timeline: TLRow[] = [
   {
     id: "t_2026_10_28_budget",
-    date: "2026-10-28",
-    title: "Budget day: statement scheduled for 12:30",
-    summary: "Parliament schedules the 2026 Budget statement for approximately 12:30 after Prime Minister’s Questions. This marks the announced fiscal-event date; no Budget measures, OBR forecast figures or market reaction are assumed here.",
+    date: "2026-10-28T13:29:19Z",
+    title: "OBR Budget forecast published: £14.5bn headroom",
+    summary: "John Healey delivers Budget 2026. The OBR’s October forecast puts current-budget headroom at £14.5bn in 2029–30, versus £23.6bn in March. The October pre-measures figure is £12.5bn. These are forecast comparisons, not realised outcomes or an isolated measure of the Budget’s effect. The official forecast was published at 13:29 UTC.",
     category: "fiscal",
-    sourceLabel: "UK Parliament, Budget statement notice (23 October 2026)",
-    sourceUrl: "https://www.parliament.uk/business/news/2026/october-2026/budget-statement-wednesday-28-october/",
+    sourceLabel: "OBR October 2026 EFO, Table 7.1; HM Treasury Budget speech",
+    sourceUrl: "https://www.gov.uk/government/publications/october-2026-economic-and-fiscal-outlook",
   },
   {
     id: "t_2026_10_23",

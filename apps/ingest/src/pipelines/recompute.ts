@@ -2,16 +2,12 @@ import type { D1PreparedStatement } from "@cloudflare/workers-types";
 import {
   INDICATORS,
   PILLAR_ORDER,
-  SCORE_DIRECTION,
-  SCORE_HISTORY_SCHEMA_VERSION,
   computeSourceCadence,
   computeSourceHealth,
   evaluatePillarFreshness,
   type IndicatorDefinition,
   type PillarId,
   type PillarScore,
-  type ScoreHistory,
-  type ScoreHistoryPoint,
   type ScoreSnapshot,
   type SourceHealthEntry,
 } from "@tightrope/shared";
@@ -25,6 +21,7 @@ import {
   primeHistoryCache,
   primeSnapshotCache,
   readLatestObservations,
+  readScoreHistory,
 } from "@tightrope/snapshot";
 import type { Env } from "../env.js";
 import {
@@ -232,17 +229,16 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   if (!persistOptions.skipHeadline) {
     headlineHist.push({ observed_at: updatedAt, value: snapshot.headline.value });
   }
-  for (const p of PILLAR_ORDER) {
-    if (persistOptions.skipPillars.includes(p)) continue;
-    pillarHistByPillar[p].push({ observed_at: updatedAt, value: snapshot.pillars[p].value });
-  }
   snapshot.headline.sparkline90d = downsampleLatestPerDay(headlineHist).slice(-90);
 
   // Single-writer: primeSnapshotCache / primeHistoryCache (@tightrope/snapshot)
   // own score:latest and score:history:90d.
   await primeSnapshotCache(env.KV, snapshot);
 
-  const history = buildHistory(headlineHist, pillarHistByPillar);
+  // Read after persistence through the same as-of alignment and sampling
+  // contract as the public API/SSR readers. Never publish a separate cache
+  // interpretation of the historical score series.
+  const history = await readScoreHistory(env.DB, 90, "daily");
   await primeHistoryCache(env.KV, history);
 
   return snapshot;
@@ -378,55 +374,4 @@ export function buildDailyPillarSparkline(
     series.push(score.value);
   }
   return series;
-}
-
-function buildHistory(
-  headline: { observed_at: string; value: number }[],
-  pillarHist: Record<PillarId, { observed_at: string; value: number }[]>,
-): ScoreHistory {
-  // Downsample headline to one row per UTC day (latest per day wins). Without
-  // this, the recompute writes ~300 rows per day to headline_scores and the
-  // chart's slice(-90) below collapses to ~7.5 hours of today's intraday
-  // recomputes, hiding 89 days of real history. Mirrors the SQL-side
-  // GROUP BY substr(observed_at, 1, 10) used in apps/api/src/lib/db.ts and
-  // apps/web/src/lib/db.ts when reading history live from D1.
-  const headlineDaily = downsampleLatestPerDayKeepTs(headline);
-
-  // Align pillar values to each headline timestamp using last-known values.
-  const points: ScoreHistoryPoint[] = [];
-  const cursors: Record<PillarId, number> = { market: 0, fiscal: 0, labour: 0, delivery: 0 };
-  const last: Record<PillarId, number> = { market: 0, fiscal: 0, labour: 0, delivery: 0 };
-  for (const h of headlineDaily) {
-    const ts = h.observed_at;
-    for (const p of PILLAR_ORDER) {
-      const arr = pillarHist[p];
-      while (cursors[p] < arr.length && arr[cursors[p]]!.observed_at <= ts) {
-        last[p] = arr[cursors[p]]!.value;
-        cursors[p] += 1;
-      }
-    }
-    points.push({
-      timestamp: ts,
-      headline: h.value,
-      pillars: { market: last.market, fiscal: last.fiscal, labour: last.labour, delivery: last.delivery },
-    });
-  }
-  return { points: points.slice(-90), rangeDays: 90, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
-}
-
-/**
- * Like `downsampleLatestPerDay` (which returns just the values for sparklines),
- * but keeps each day's latest row intact so the caller can use `observed_at`
- * to align other series (pillar history) to the same per-day cadence.
- */
-function downsampleLatestPerDayKeepTs(
-  series: readonly { observed_at: string; value: number }[],
-): { observed_at: string; value: number }[] {
-  const latestByDay = new Map<string, { observed_at: string; value: number }>();
-  for (const row of series) {
-    const day = row.observed_at.slice(0, 10);
-    const prev = latestByDay.get(day);
-    if (!prev || row.observed_at > prev.observed_at) latestByDay.set(day, row);
-  }
-  return [...latestByDay.keys()].sort().map((d) => latestByDay.get(d)!);
 }

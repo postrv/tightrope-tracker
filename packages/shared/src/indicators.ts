@@ -185,7 +185,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * rule target year is FY 2029/30.
  */
 export const OBR_TARGET_YEAR_LABEL = "FY 2029/30";
-export const OBR_LATEST_VINTAGE_LABEL = "Spring Forecast 2026";
+export const OBR_LATEST_VINTAGE_LABEL = "Autumn Budget 2026";
 
 /**
  * Per-cadence freshness windows used by `IndicatorDefinition.maxStaleMs`.

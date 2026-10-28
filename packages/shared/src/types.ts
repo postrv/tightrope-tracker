@@ -157,10 +157,26 @@ export interface ScoreHistoryPoint {
   pillars: Record<PillarId, number>;
 }
 
+export type ScoreHistoryResolution = "raw" | "hourly" | "daily" | "weekly";
+export type ScoreHistoryResolutionRequest = ScoreHistoryResolution | "auto";
+
 export interface ScoreHistory {
   points: ScoreHistoryPoint[];
   /** Max range returned — older data is in R2 archives. */
   rangeDays: number;
+  /** Actual sampling, never interpolation. Buckets use UTC and retain the last recording. */
+  resolution?: ScoreHistoryResolution;
+  requestedResolution?: ScoreHistoryResolutionRequest;
+  sampling?: "last_recorded_in_bucket";
+  /** Full stored coverage, which can be shorter than the requested window. */
+  availableFrom?: Iso8601 | null;
+  availableTo?: Iso8601 | null;
+  selectedFrom?: Iso8601 | null;
+  selectedTo?: Iso8601 | null;
+  pointLimit?: number;
+  truncated?: boolean;
+  /** Incomplete or invalid recordings are excluded, never turned into zeroes. */
+  excludedPoints?: number;
   /** Public score polarity for every point in this series. */
   scoreDirection: typeof SCORE_DIRECTION;
   schemaVersion: typeof SCORE_HISTORY_SCHEMA_VERSION;

@@ -64,8 +64,10 @@ export const PLAUSIBILITY: Record<string, PlausibilityBound> = {
   gbp_twi: { min: 60, max: 120, maxJumpPerDay: 3 },
   // FTSE 250 ~22k; history (ftse-250-history.json) max daily move ~880, ×2→~2000.
   ftse_250: { min: 5000, max: 40000, maxJumpPerDay: 2000 },
-  // 5y breakeven: seed-test [0,8]; daily moves like the gilt legs, 0.8.
-  breakeven_5y: { min: 0, max: 8, maxJumpPerDay: 0.8 },
+  // Negative inflation compensation is a valid observation: official BoE
+  // IUDSNZC−IUDSIZC was −0.0314 on 1 Aug 2024. Keep a broad negative
+  // floor instead of rejecting deflation signals; daily jump guard stays 0.8.
+  breakeven_5y: { min: -2, max: 8, maxJumpPerDay: 0.8 },
   // Brent in GBP ~65; history (brent-history.json) max daily move ~13.6, ×2→27.
   brent_gbp: { min: 20, max: 200, maxJumpPerDay: 27 },
   // Housebuilder composite ~63 (rebased 100=2019); a few % per day, allow ~15.

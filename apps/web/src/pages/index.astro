@@ -2,6 +2,7 @@
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import TopNav from "~/components/TopNav.astro";
 import Hero from "~/components/Hero.astro";
+import BudgetWatch from "~/components/BudgetWatch.astro";
 import HeadlineChartSection from "~/components/HeadlineChartSection.astro";
 import PillarStrip from "~/components/PillarStrip.astro";
 import TodayStrip from "~/components/TodayStrip.astro";
@@ -69,6 +70,7 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
     ) : null}
 
     <Hero headline={snapshot.headline} freshestAt={freshness.freshestAt} headroomVintages={headroomVintages} calculationCorrection={recentCalculationCorrection} />
+    <BudgetWatch />
     <HeadlineChartSection history={history} events={timeline} />
     <PillarStrip pillars={snapshot.pillars} />
     <TodayStrip movements={movements} />

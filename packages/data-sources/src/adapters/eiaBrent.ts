@@ -54,6 +54,7 @@ const MAX_FX_LAG_MS = 5 * 24 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const EIA_BASE = "https://api.eia.gov/v2/petroleum/pri/spt/data/";
+const EIA_HISTORY_URL = "https://www.eia.gov/dnav/pet/hist/RBRTED.htm";
 // The v2 SERIES facet id for daily Europe Brent Spot FOB. EIA's own API
 // browser confirms it (facets=series;&series=RBRTE). EPCBRENT — used here
 // until 2026-07-13 — is the PRODUCT facet code; as a series facet it matches
@@ -87,6 +88,37 @@ interface EiaResponse {
 }
 
 type FxFix = { value: number; observedAtIso: string };
+type EiaPrice = { period: string; value: number; sourceUrl?: string };
+
+/** EIA's published weekly HTML table can update before its v2 API. Only
+ * positive weekday cells become observations; blanks remain genuine gaps. */
+export function parseEiaBrentHtml(html: string): EiaPrice[] {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const rows: EiaPrice[] = [];
+  for (const match of html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)) {
+    const cells = [...match[1]!.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/gi)].map((cell) => cell[1]!.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim());
+    const week = /^(\d{4})\s+([A-Z][a-z]{2})-\s*(\d{1,2})\s+to\s+([A-Z][a-z]{2})-\s*(\d{1,2})$/.exec(cells[0] ?? "");
+    if (!week || cells.length !== 6) continue;
+    const month = months.indexOf(week[2]!);
+    const start = Date.UTC(Number(week[1]), month, Number(week[3]));
+    if (month < 0 || new Date(start).getUTCDay() !== 1) continue;
+    for (let day = 0; day < 5; day++) {
+      const price = cells[day + 1]!;
+      if (!/^\d+(?:\.\d+)?$/.test(price) || Number(price) <= 0) continue;
+      rows.push({ period: new Date(start + day * DAY_MS).toISOString().slice(0, 10), value: Number(price) });
+    }
+  }
+  return rows.sort((a, b) => b.period.localeCompare(a.period));
+}
+
+async function fetchPublishedHtml(fetchImpl: typeof globalThis.fetch): Promise<EiaPrice[]> {
+  const res = await fetchOrThrow(fetchImpl, SOURCE_ID, EIA_HISTORY_URL);
+  const body = await res.text();
+  if (body.length > 2_000_000) throw new Error("EIA history HTML exceeds expected size");
+  const rows = parseEiaBrentHtml(body).filter((row) => row.period <= new Date().toISOString().slice(0, 10));
+  if (rows.length === 0) throw new Error("EIA history HTML has no usable weekly price cells");
+  return rows;
+}
 
 /** The price date, not its later publication date, determines the FX fix. */
 function pairingError(eiaPeriod: string, fx: FxFix): string | null {
@@ -103,8 +135,13 @@ function pairingError(eiaPeriod: string, fx: FxFix): string | null {
 
 async function fetchEiaBrentUsd(
   fetchImpl: typeof globalThis.fetch,
-  apiKey: string,
-): Promise<{ value: number; period: string } | null> {
+  apiKey: string | undefined,
+): Promise<EiaPrice | null> {
+  if (!apiKey) return { ...(await fetchPublishedHtml(fetchImpl))[0]!, sourceUrl: EIA_HISTORY_URL };
+  const publishedFallback = async (): Promise<EiaPrice | null> => {
+    try { return { ...(await fetchPublishedHtml(fetchImpl))[0]!, sourceUrl: EIA_HISTORY_URL }; }
+    catch { return null; }
+  };
   const params = new URLSearchParams();
   params.set("api_key", apiKey);
   params.set("frequency", "daily");
@@ -119,20 +156,28 @@ async function fetchEiaBrentUsd(
     res = await fetchOrThrow(fetchImpl, SOURCE_ID, url);
   } catch (err) {
     console.warn(`${SOURCE_ID}: EIA fetch failed -- ${(err as Error)?.message ?? String(err)}`);
-    return null;
+    return publishedFallback();
   }
   let body: EiaResponse;
   try {
     body = (await res.json()) as EiaResponse;
   } catch {
     console.warn(`${SOURCE_ID}: EIA response not JSON`);
-    return null;
+    return publishedFallback();
   }
   const rows = body.response?.data ?? [];
   for (const r of rows) {
     if (!r.period) continue;
     const v = typeof r.value === "string" ? Number(r.value) : r.value;
     if (typeof v !== "number" || !Number.isFinite(v) || v <= 0) continue;
+    // The 28 October HTML publication exposed 27 October while v2 still
+    // returned 20 October. Check the published table when the API is late.
+    if (Date.now() - Date.parse(`${r.period}T00:00:00Z`) >= 4 * DAY_MS) {
+      try {
+        const published = (await fetchPublishedHtml(fetchImpl))[0]!;
+        if (published.period > r.period) return { ...published, sourceUrl: EIA_HISTORY_URL };
+      } catch { /* keep the valid API print if the alternate surface fails */ }
+    }
     return { value: v, period: r.period };
   }
   // Diagnostic: surface enough signal in tail logs to triage which facet
@@ -144,7 +189,7 @@ async function fetchEiaBrentUsd(
   console.warn(
     `${SOURCE_ID}: EIA returned no usable Brent rows (count=${rows.length}, sample=${JSON.stringify(sample)})`,
   );
-  return null;
+  return publishedFallback();
 }
 
 /** USD-per-GBP fix from the relay-fed series, bounded to the EIA price date. */
@@ -172,7 +217,7 @@ async function fxFromPublished(
 
 async function liveObservation(
   fetchImpl: typeof globalThis.fetch,
-  apiKey: string,
+  apiKey: string | undefined,
   ctx: AdapterContext | undefined,
 ): Promise<{ observation: RawObservation; sourceUrl: string } | { reason: string }> {
   const eia = await fetchEiaBrentUsd(fetchImpl, apiKey);
@@ -205,7 +250,7 @@ async function liveObservation(
       sourceId: SOURCE_ID,
       payloadHash,
     },
-    sourceUrl: `${EIA_BASE}?series=${EIA_BRENT_SERIES}`,
+    sourceUrl: eia.sourceUrl ?? `${EIA_BASE}?series=${EIA_BRENT_SERIES}`,
   };
 }
 
@@ -241,13 +286,13 @@ async function historicalFromEia(
   fetchImpl: typeof globalThis.fetch,
   opts: HistoricalFetchOptions,
   ctx: AdapterContext,
-  apiKey: string,
+  apiKey: string | undefined,
 ): Promise<HistoricalFetchResult> {
   const { fromMs, toMs } = rangeUtcBounds(opts);
   const startDay = opts.from.toISOString().slice(0, 10);
   const endDay = opts.to.toISOString().slice(0, 10);
   const params = new URLSearchParams();
-  params.set("api_key", apiKey);
+  if (apiKey) params.set("api_key", apiKey);
   params.set("frequency", "daily");
   params.set("data[0]", "value");
   params.set("facets[series][]", EIA_BRENT_SERIES);
@@ -256,9 +301,10 @@ async function historicalFromEia(
   params.set("sort[0][column]", "period");
   params.set("sort[0][direction]", "asc");
   params.set("length", "5000");
-  const response = await fetchOrThrow(fetchImpl, SOURCE_ID, `${EIA_BASE}?${params.toString()}`);
-  const body = (await response.json()) as EiaResponse;
-  const rows = body.response?.data;
+  const response = apiKey ? await fetchOrThrow(fetchImpl, SOURCE_ID, `${EIA_BASE}?${params.toString()}`) : null;
+  const body: EiaResponse = response ? (await response.json()) as EiaResponse : { response: { data: await fetchPublishedHtml(fetchImpl) } };
+  let usedHtml = !apiKey;
+  let rows = body.response?.data;
   if (!Array.isArray(rows)) {
     throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: EIA_BASE, message: "EIA historical response has no data array" });
   }
@@ -269,6 +315,17 @@ async function historicalFromEia(
       sourceUrl: EIA_BASE,
       message: `EIA historical response truncated (${rows.length}/${total}); narrow the requested range`,
     });
+  }
+  const newestApiDay = rows.map((row) => row.period ?? "").sort().at(-1) ?? "";
+  if (apiKey && endDay >= new Date(Date.now() - 7 * DAY_MS).toISOString().slice(0, 10)
+    && (!newestApiDay || Date.now() - Date.parse(`${newestApiDay}T00:00:00Z`) >= 4 * DAY_MS)) {
+    try {
+      // Only append periods absent from the lagging API; never replace an
+      // existing API vintage with a different surface's same-day revision.
+      const published = await fetchPublishedHtml(fetchImpl);
+      rows = [...rows, ...published.filter((row) => row.period > newestApiDay)];
+      usedHtml = true;
+    } catch { /* normal validation below still handles an empty API result */ }
   }
   // The daily 14-day catch-up should fail its audit if EIA silently returns
   // an empty result (as it did when an incorrect series facet was queried).
@@ -330,7 +387,7 @@ async function historicalFromEia(
       message: `No EIA Brent prices could be paired with BoE FX for ${startDay} to ${endDay}`,
     });
   }
-  return buildHistoricalResult(observations, `${EIA_BASE}?series=${EIA_BRENT_SERIES}`, notes);
+  return buildHistoricalResult(observations, usedHtml ? EIA_HISTORY_URL : `${EIA_BASE}?series=${EIA_BRENT_SERIES}`, notes);
 }
 
 export const eiaBrentAdapter: DataSourceAdapter = {
@@ -339,9 +396,19 @@ export const eiaBrentAdapter: DataSourceAdapter = {
   async fetch(fetchImpl, ctx?: AdapterContext): Promise<AdapterResult> {
     const apiKey = ctx?.secrets?.EIA_API_KEY;
     let liveReason = "no EIA_API_KEY in context";
-    if (apiKey) {
-      const live = await liveObservation(fetchImpl, apiKey, ctx);
+    if (ctx?.getObservationBefore) {
+      let live: Awaited<ReturnType<typeof liveObservation>>;
+      try { live = await liveObservation(fetchImpl, apiKey, ctx); }
+      catch (err) { live = { reason: (err as Error).message }; }
       if ("observation" in live) {
+        // A verified newer fallback must not be rolled back by a lagging API.
+        const fixtureDate = Date.parse((fixture as BrentFixture).observed_at);
+        if (fixtureDate > Date.parse(live.observation.observedAt) && fixtureDate <= Date.now()) {
+          try {
+            const newer = await fixtureObservation();
+            return { observations: [newer.observation], sourceUrl: newer.sourceUrl, fetchedAt: new Date().toISOString() };
+          } catch { /* a valid live print remains usable if the fixture is stale */ }
+        }
         return {
           observations: [live.observation],
           sourceUrl: live.sourceUrl,
@@ -378,11 +445,11 @@ export const eiaBrentAdapter: DataSourceAdapter = {
   async fetchHistorical(fetchImpl, opts, ctx): Promise<HistoricalFetchResult> {
     const apiKey = ctx?.secrets?.EIA_API_KEY;
     if (ctx && (apiKey || ctx.getObservationsInRange)) {
-      if (!apiKey || !ctx.getObservationsInRange) {
+      if (!ctx.getObservationsInRange) {
         throw new AdapterError({
           sourceId: SOURCE_ID,
           sourceUrl: EIA_BASE,
-          message: "EIA historical backfill requires EIA_API_KEY and D1 BoE FX lookup",
+          message: "EIA historical backfill requires D1 BoE FX lookup",
         });
       }
       return historicalFromEia(fetchImpl, opts, ctx, apiKey);

@@ -1,11 +1,11 @@
 {
-  "_comment": "Brent crude (Europe Brent Spot Price FOB) converted to GBP. EIA daily price for 2026-10-20 is $115.22/bbl at https://www.eia.gov/dnav/pet/hist/RBRTED.htm (RBRTEd release dated 10/21/2026; 21-23 Oct cells blank, next release listed 10/28/2026 had not replaced the file). The matching 2026-10-20 BoE XUDLUSS 4pm fix already ingested in indicator_observations is 1.3387 USD/GBP. Math.round((115.22 / 1.3387) * 100) / 100 = 86.07 GBP/bbl, the same figure already stored for that day. Refreshed 2026-10-28 so the 14-day fallback guard covers the latest paired print.",
-  "as_of": "2026-10-20",
-  "observed_at": "2026-10-20T00:00:00Z",
-  "brent_usd_per_bbl": 115.22,
-  "gbp_usd": 1.3387,
+  "_comment": "EIA Europe Brent spot in GBP. Official RBRTED.htm release dated 28 October 2026, fetched 28 October after publication, reports $123.10/bbl for 27 October (28 October cell remains blank). The same-day BoE XUDLUSS 16:00 fix already ingested is 1.3313 USD/GBP: Math.round((123.10 / 1.3313) * 100) / 100 = 92.47 GBP/bbl. The EIA v2 API was still on 20 October when its public HTML had advanced to 27 October; the adapter now checks that official table when the API lags. No price from the in-progress/unpublished 28 October period is used.",
+  "as_of": "2026-10-27",
+  "observed_at": "2026-10-27T00:00:00Z",
+  "brent_usd_per_bbl": 123.1,
+  "gbp_usd": 1.3313,
   "brent_gbp": {
-    "value": 86.07,
+    "value": 92.47,
     "unit": "GBP/bbl"
   },
   "source_url": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm"

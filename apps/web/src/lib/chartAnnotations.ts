@@ -62,8 +62,9 @@ export function mapEventsToChart(
   // Allow a one-day grace either side of the inclusive window so events
   // observed late on the same UTC day as the first/last sample don't get
   // dropped on a millisecond technicality.
-  const windowMin = firstMs - SNAP_TOLERANCE_MS;
-  const windowMax = lastMs + SNAP_TOLERANCE_MS;
+  const tolerance = history.resolution === "weekly" ? 3.5 * DAY_MS : SNAP_TOLERANCE_MS;
+  const windowMin = firstMs - tolerance;
+  const windowMax = lastMs + tolerance;
   const span = lastMs - firstMs;
 
   const out: AnnotationPoint[] = [];
@@ -83,7 +84,7 @@ export function mapEventsToChart(
         bestIdx = pointTimes[i]!.idx;
       }
     }
-    if (bestDelta > SNAP_TOLERANCE_MS) continue;
+    if (bestDelta > tolerance) continue;
 
     const point = points[bestIdx]!;
     // xRatio: position along the rendered span (0..1), proportional to the

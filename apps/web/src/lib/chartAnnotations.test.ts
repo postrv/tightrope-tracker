@@ -184,4 +184,13 @@ describe("mapEventsToChart", () => {
     // Snapped to a real point, not the corrupt row at index 0.
     expect(out[0]!.value).toBe(50);
   });
+
+  it("uses explicit nearest weekly samples for events between sampled weeks", () => {
+    const h = history([point("2026-04-01", 50), point("2026-04-08", 55), point("2026-04-15", 60)]);
+    h.resolution = "weekly";
+    const out = mapEventsToChart(h, [event("release", "2026-04-05T12:00:00Z")]);
+    expect(out).toHaveLength(1);
+    expect(out[0]?.value).toBe(55);
+    expect(out[0]?.event.date).toBe("2026-04-05T12:00:00Z");
+  });
 });

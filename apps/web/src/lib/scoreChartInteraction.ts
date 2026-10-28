@@ -1,8 +1,8 @@
 import type { PillarId, ScoreHistoryPoint } from "@tightrope/shared";
-import { nearestPointIndex } from "./scoreChart.js";
+import { nearestPointIndex, projectScorePoints, scoreLinePath, timeRatio, yForScore, type ScorePlotLayout } from "./scoreChart.js";
 
 interface ChartSample extends ScoreHistoryPoint { x: number; y: number }
-interface ChartData { points: ChartSample[]; width: number; padL: number; plotW: number; label?: string }
+interface ChartData { points: ChartSample[]; width: number; padL: number; plotW: number; label?: string; responsive?: ScorePlotLayout; maxGapMs?: number }
 
 /** Progressive enhancement: the SVG and latest reading remain useful without JS. */
 export function initialiseScoreCharts(root: ParentNode = document): void {
@@ -28,13 +28,76 @@ export function initialiseScoreCharts(root: ParentNode = document): void {
     });
     let pinned = false;
     let selected = data.points.length - 1;
+    let layoutWidth = -1;
+
+    function resizePlot() {
+      const original = data.responsive;
+      if (!original) return;
+      const cssWidth = svg!.getBoundingClientRect().width;
+      if (!cssWidth || Math.abs(cssWidth - layoutWidth) < .5) return;
+      layoutWidth = cssWidth;
+      const compact = cssWidth < 600;
+      const layout: ScorePlotLayout = compact ? { ...original, width: cssWidth, height: Math.min(300, Math.max(240, original.height * .8)), padL: 36, padR: 12, padT: 16, padB: 34 } : original;
+      data.width = layout.width;
+      data.padL = layout.padL;
+      data.plotW = layout.width - layout.padL - layout.padR;
+      data.points = projectScorePoints(data.points, layout);
+      svg!.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
+      svg!.dataset.compact = String(compact);
+      svg!.dataset.labels = String(cssWidth >= 850);
+      chart.style.setProperty("--chart-font-scale", String(layout.width / cssWidth));
+      const line = scoreLinePath(data.points, data.maxGapMs);
+      chart.querySelector(".headline-line")?.setAttribute("d", line);
+      const fill = chart.querySelector(".headline-fill");
+      if (fill) {
+        const bottom = layout.height - layout.padB;
+        fill.setAttribute("d", line.includes(" M") ? "" : `${line} L${layout.width - layout.padR},${bottom} L${layout.padL},${bottom} Z`);
+      }
+      for (const path of chart.querySelectorAll<SVGPathElement>(".pillar-line")) {
+        const id = path.dataset.pillar as PillarId;
+        const projected = data.points.map(point => ({ ...point, y: yForScore(point.pillars[id], layout) }));
+        path.setAttribute("d", scoreLinePath(projected, data.maxGapMs));
+      }
+      for (const band of chart.querySelectorAll<SVGRectElement>("[data-band-min]")) {
+        const top = yForScore(Math.min(100, Number(band.dataset.bandMax)), layout);
+        band.setAttribute("x", String(layout.padL)); band.setAttribute("width", String(data.plotW));
+        band.setAttribute("y", String(top)); band.setAttribute("height", String(yForScore(Number(band.dataset.bandMin), layout) - top));
+      }
+      for (const grid of chart.querySelectorAll<SVGLineElement>("line[data-score-tick]")) {
+        const y = yForScore(Number(grid.dataset.scoreTick), layout);
+        grid.setAttribute("x1", String(layout.padL)); grid.setAttribute("x2", String(layout.width - layout.padR));
+        grid.setAttribute("y1", String(y)); grid.setAttribute("y2", String(y));
+      }
+      for (const tick of chart.querySelectorAll<SVGTextElement>("text[data-score-tick]")) {
+        tick.setAttribute("x", String(layout.padL - 8)); tick.setAttribute("y", String(yForScore(Number(tick.dataset.scoreTick), layout) + 4));
+      }
+      const first = data.points[0]!.timestamp;
+      const last = data.points[data.points.length - 1]!.timestamp;
+      for (const tick of chart.querySelectorAll<SVGTextElement>("[data-chart-date]")) {
+        tick.setAttribute("x", String(layout.padL + timeRatio(tick.dataset.chartDate!, first, last) * data.plotW));
+        tick.setAttribute("y", String(layout.height - 9));
+      }
+      for (const marker of chart.querySelectorAll<SVGGElement>(".marker[data-chart-x]")) {
+        const x = layout.padL + Number(marker.dataset.chartX) * data.plotW;
+        const y = yForScore(Number(marker.dataset.chartScore), layout);
+        for (const circle of marker.querySelectorAll("circle")) { circle.setAttribute("cx", String(x)); circle.setAttribute("cy", String(y)); }
+        const guide = marker.querySelector("line");
+        guide?.setAttribute("x1", String(x)); guide?.setAttribute("x2", String(x)); guide?.setAttribute("y1", String(y)); guide?.setAttribute("y2", String(layout.height - layout.padB));
+      }
+      for (const tooltip of chart.querySelectorAll<HTMLElement>(".tooltip[data-chart-x]")) {
+        tooltip.style.left = `${((layout.padL + Number(tooltip.dataset.chartX) * data.plotW) / layout.width) * 100}%`;
+      }
+      guide?.setAttribute("y1", String(layout.padT)); guide?.setAttribute("y2", String(layout.height - layout.padB));
+      select(selected);
+    }
 
     function select(index: number) {
       selected = Math.max(0, Math.min(data.points.length - 1, index));
       const point = data.points[selected]!;
       slider!.value = String(selected);
       const dateText = `${dateFormat.format(new Date(point.timestamp))} UTC`;
-      slider!.setAttribute("aria-valuetext", `${dateText}; ${data.label ?? "headline"} ${point.headline.toFixed(1)} out of 100`);
+      const pillarSummary = ["market", "fiscal", "labour", "delivery"].flatMap(id => Number.isFinite(point.pillars[id as PillarId]) ? [`${id} ${point.pillars[id as PillarId].toFixed(1)}`] : []).join(", ");
+      slider!.setAttribute("aria-valuetext", `${dateText}; ${data.label ?? "headline"} ${point.headline.toFixed(1)} out of 100${pillarSummary ? `; ${pillarSummary}` : ""}`);
       if (date) { date.dateTime = point.timestamp; date.textContent = dateText; }
       if (label) label.textContent = `${pinned ? "Pinned" : selected === data.points.length - 1 ? "Latest" : "Recorded"} · ${selected + 1} / ${data.points.length}`;
       fields.forEach(field => {
@@ -67,6 +130,17 @@ export function initialiseScoreCharts(root: ParentNode = document): void {
       select(index);
     });
     slider.addEventListener("input", () => { pinned = false; select(Number(slider.value)); });
+    chart.querySelector("[data-score-previous]")?.addEventListener("click", () => { pinned = false; select(selected - 1); });
+    chart.querySelector("[data-score-next]")?.addEventListener("click", () => { pinned = false; select(selected + 1); });
+    const jump = chart.querySelector<HTMLInputElement>("[data-score-jump]");
+    jump?.addEventListener("change", () => {
+      const target = Date.parse(`${jump.value}Z`);
+      const first = Date.parse(data.points[0]!.timestamp);
+      const last = Date.parse(data.points[data.points.length - 1]!.timestamp);
+      if (!Number.isFinite(target)) return;
+      pinned = true;
+      select(nearestPointIndex(data.points, last > first ? (target - first) / (last - first) : .5));
+    });
     chart.addEventListener("keydown", event => {
       if (event.key !== "Escape") return;
       pinned = false;
@@ -85,5 +159,8 @@ export function initialiseScoreCharts(root: ParentNode = document): void {
       });
     }
     select(selected);
+    resizePlot();
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(resizePlot).observe(chart);
+    else window.addEventListener("resize", resizePlot, { passive: true });
   }
 }

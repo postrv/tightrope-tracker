@@ -68,10 +68,10 @@ export interface LatestObservationRow {
  */
 export async function readLatestObservations(
   db: D1Database,
+  asOf?: string,
 ): Promise<LatestObservationRow[]> {
-  const res = await db
-    .prepare(
-      `SELECT indicator_id, source_id, observed_at, value, ingested_at, released_at FROM (
+  if (asOf && !Number.isFinite(Date.parse(asOf))) throw new Error("Invalid observation cutoff");
+  let sql = `SELECT indicator_id, source_id, observed_at, value, ingested_at, released_at FROM (
          SELECT indicator_id, source_id, observed_at, value, ingested_at, released_at, payload_hash,
                 ROW_NUMBER() OVER (
                   PARTITION BY indicator_id
@@ -102,8 +102,17 @@ export async function readLatestObservations(
            ) m ON o.indicator_id = m.indicator_id AND o.observed_at = m.oa
               AND o.payload_hash LIKE 'hist:%'
          ) candidates
-       ) ranked WHERE rn = 1`,
-    )
-    .all<LatestObservationRow>();
+       ) ranked WHERE rn = 1`;
+  if (asOf) {
+    // Publication-aware reconstruction from the latest stored source vintage.
+    // Reference periods may end in the future (e.g. October confidence released
+    // on23October with31October period-end). Do not reject those known releases.
+    // ingested_at is overwritten on refetch, so it CANNOT prove historical
+    // knowledge. Callers must disclose that this is not an archived as-known view.
+    sql = `WITH eligible AS (SELECT * FROM indicator_observations
+      WHERE julianday(COALESCE(released_at, observed_at)) < julianday(?1)) ` + sql.replaceAll("indicator_observations", "eligible");
+  }
+  const statement = db.prepare(sql);
+  const res = await (asOf ? statement.bind(asOf) : statement).all<LatestObservationRow>();
   return res.results ?? [];
 }

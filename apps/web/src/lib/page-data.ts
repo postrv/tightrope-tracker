@@ -1,6 +1,7 @@
 import type {
   ScoreSnapshot,
   ScoreHistory,
+  ScoreHistoryResolutionRequest,
   TodayMovement,
   PillarId,
   PillarScore,
@@ -117,7 +118,7 @@ export async function loadSnapshot(astroLocals: App.Locals): Promise<ScoreSnapsh
 export async function loadTimeline(astroLocals: App.Locals, days: number): Promise<TimelineEvent[]> {
   const env = astroLocals.runtime?.env;
   if (!env?.DB) return [];
-  const cutoff = new Date(Date.now() - (Math.max(1, Math.min(800, days)) + 1) * 86_400_000).toISOString();
+  const cutoff = new Date(Date.now() - (Math.max(1, Math.min(7305, days)) + 1) * 86_400_000).toISOString();
   try { return await getTimelineEvents(env, 500, cutoff); } catch { return []; }
 }
 
@@ -200,11 +201,11 @@ export function emptyHistory(): ScoreHistory {
  * failure resolves to an empty history of the requested width so the
  * page still renders.
  */
-export async function loadHistory(astroLocals: App.Locals, days: number): Promise<ScoreHistory> {
+export async function loadHistory(astroLocals: App.Locals, days: number, resolution: ScoreHistoryResolutionRequest = "auto"): Promise<ScoreHistory> {
   const env = astroLocals.runtime?.env;
   if (!env || !env.DB) return { points: [], rangeDays: clampDays(days), scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
   try {
-    return await getHistory(env, days);
+    return await getHistory(env, days, resolution);
   } catch {
     return { points: [], rangeDays: clampDays(days), scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
   }
@@ -214,7 +215,7 @@ function clampDays(days: number): number {
   if (!Number.isFinite(days)) return 90;
   // Cap matches apps/api/src/handlers/score.ts and the ingest backfill cap so
   // the long-composite page can serve the full GE-2024-to-today range.
-  return Math.max(1, Math.min(800, Math.floor(days)));
+  return Math.max(1, Math.min(7305, Math.floor(days)));
 }
 
 function emptySnapshot(): ScoreSnapshot {

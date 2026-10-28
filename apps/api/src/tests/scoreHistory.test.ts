@@ -31,6 +31,7 @@ function makeHistory(latest: string, value: number): ScoreHistory {
       { timestamp: latest,                  headline: value, pillars: { market: value, fiscal: value, labour: value, delivery: value } },
     ],
     rangeDays: 90,
+    resolution: "daily", sampling: "last_recorded_in_bucket",
     scoreDirection: "higher_is_better",
     schemaVersion: 2,
   };
@@ -78,6 +79,20 @@ function makeRequest(): Request {
 }
 
 describe("handleScoreHistory — KV freshness gate on score:history:90d", () => {
+  it("rejects malformed days and unknown resolutions instead of silently parsing a prefix", async () => {
+    const { env, ctx, loaderCalls } = makeEnv({ cached: null, d1Latest: 50 });
+    for (const query of ["days=1.5", "days=7junk", "days=0", "days=7306", "days=1&resolution=minute"]) {
+      const response = await handleScoreHistory(new Request(`https://api.tightropetracker.uk/api/v1/score/history?${query}`), env, ctx);
+      expect(response.status).toBe(400);
+    }
+    expect(loaderCalls.value).toBe(0);
+  });
+  it("does not serve the daily cache for an intraday request", async () => {
+    const { env, ctx, loaderCalls } = makeEnv({ cached: makeHistory(new Date().toISOString(), 40), d1Latest: 50 });
+    const response = await handleScoreHistory(new Request("https://api.tightropetracker.uk/api/v1/score/history?days=90&resolution=hourly"), env, ctx);
+    expect(response.status).toBe(200);
+    expect(loaderCalls.value).toBeGreaterThan(0);
+  });
   afterEach(() => {
     vi.useRealTimers();
   });
@@ -118,7 +133,8 @@ describe("handleScoreHistory — KV freshness gate on score:history:90d", () => 
   });
 
   it("falls through to D1 when the cached slice has zero points (degenerate cache)", async () => {
-    const empty: ScoreHistory = { points: [], rangeDays: 90, scoreDirection: "higher_is_better", schemaVersion: 2 };
+    const empty: ScoreHistory = { points: [], rangeDays: 90,
+    resolution: "daily", sampling: "last_recorded_in_bucket", scoreDirection: "higher_is_better", schemaVersion: 2 };
     const { env, ctx, loaderCalls } = makeEnv({ cached: empty, d1Latest: 50 });
     await handleScoreHistory(makeRequest(), env, ctx);
     // Empty points → no newest timestamp → treat as stale, force a rebuild.

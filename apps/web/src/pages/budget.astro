@@ -1,0 +1,188 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import TopNav from "~/components/TopNav.astro";
+import SiteFooter from "~/components/SiteFooter.astro";
+import { loadBudgetComparison } from "~/lib/budget.js";
+import { loadSnapshot } from "~/lib/page-data.js";
+import { summariseFreshness } from "~/lib/freshness.js";
+import evidence from "../../../../packages/data-sources/src/fixtures/budget-2026-evidence.json";
+
+const [comparison, snapshot] = await Promise.all([
+  loadBudgetComparison(Astro.locals), loadSnapshot(Astro.locals),
+]);
+const freshness = summariseFreshness(snapshot, []);
+const fiscal = evidence.fiscal;
+const sources = evidence.sources;
+const newObservations = comparison.indicators.filter(row => row.status === "post_budget_observation").length;
+const budgetDayReadings = comparison.indicators.filter(row => row.status === "budget_day_observation").length;
+const forecasts = comparison.indicators.filter(row => row.status === "forecast_revision").length;
+const waiting = comparison.indicators.filter(row => row.status === "awaiting_post_budget_data").length;
+const statusLabel = {
+  post_budget_observation: "New observation",
+  budget_day_observation: "Budget-day reading · time unavailable",
+  forecast_revision: "Forecast revision",
+  awaiting_post_budget_data: "Awaiting new data",
+  baseline_unavailable: "Baseline not retained",
+  unavailable: "Reading unavailable",
+};
+function stamp(iso: string | null | undefined): string {
+  if (!iso || !Number.isFinite(Date.parse(iso))) return "Unavailable";
+  const date = new Date(iso);
+  const day = date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" });
+  return iso.substring(11, 16) === "00:00" ? day : `${day} · ${date.toISOString().slice(11, 16)} UTC`;
+}
+const scoreDelta = comparison.score.delta;
+---
+<BaseLayout title="Budget 2026 tracker — forecasts, market readings and data gaps" description="Compare official Budget forecasts and recorded UK economic readings before and after 28 October 2026. Source links, release dates and missing data made explicit." canonicalPath="/budget">
+  <TopNav compact band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} freshestAt={freshness.freshestAt} stale={Boolean(snapshot.headline.stale)} />
+  <main id="main" class="container budget-page">
+    <header class="budget-head">
+      <span class="eyebrow">Budget watch / 28 October 2026</span>
+      <h1>after the <span>Budget.</span></h1>
+      <p class="lede">Follow the evidence as it arrives. Official forecasts, recorded market readings, and the economic data that will take longer to tell the story.</p>
+      <div class="event-strip"><span class="published-dot" aria-hidden="true"></span><strong>Statement delivered</strong><span>OBR forecast published 13:29 UTC</span><a href={sources.speech.url} target="_blank" rel="noopener noreferrer">Read the speech ↗</a></div>
+    </header>
+
+    <section aria-labelledby="forecast-heading" class="forecast-section">
+      <div class="section-head"><div><span class="eyebrow">Official forecast · target year 2029/30</span><h2 id="forecast-heading">less room to move.</h2></div><a class="source-link" href={`${sources.obr_pdf.url}#page=164`} target="_blank" rel="noopener noreferrer">OBR Table 7.1, p.161 ↗</a></div>
+      <div class="forecast-grid">
+        <article class="metric-card lead-metric"><span class="metric-label">Current-budget headroom</span><strong>£{fiscal.currentBudgetHeadroomGbpBn}<small>bn</small></strong><p>Down £{Math.abs(fiscal.forecastRevisionGbpBn).toFixed(1)}bn from the March forecast of £{fiscal.previousVintageHeadroomGbpBn}bn.</p><span class="metric-note">Forecast revision · same target year</span></article>
+        <article class="metric-card"><span class="metric-label">Within the October forecast</span><strong>£{fiscal.preMeasuresHeadroomGbpBn}<span class="arrow">→</span>£{fiscal.postMeasuresHeadroomGbpBn}<small>bn</small></strong><p>The pre-measures and post-measures estimates differ by £{fiscal.withinForecastPolicyDifferenceGbpBn.toFixed(1)}bn.</p><span class="metric-note">OBR policy costing · not an outturn</span></article>
+        <article class="metric-card"><span class="metric-label">Probability of meeting the rule</span><strong>{fiscal.probabilityFiscalMandateMetPct}<small>%</small></strong><p>The OBR’s estimated probability that the current-budget rule is met in 2029/30.</p><span class="metric-note">Forecast uncertainty remains substantial</span></article>
+      </div>
+      <p class="explanation">The £9.1bn change since March includes forecast changes and policy decisions. It does not measure the Budget’s isolated effect. The detailed table records £14.5bn; the speech rounds that to £15bn.</p>
+    </section>
+
+    <section class="readings-section" aria-labelledby="readings-heading">
+      <div class="section-head"><div><span class="eyebrow">Recorded inputs · before and after</span><h2 id="readings-heading">what has actually printed?</h2></div><span class="updated">Checked {stamp(comparison.generatedAt)}</span></div>
+      <p class="section-intro">The earlier reference readings come from an archived snapshot timestamped <strong>12:55 UTC on 28 October</strong> (saved at 12:56 UTC), before the OBR’s 13:29 publication but after Parliament’s announced approximate 12:30 statement start. These inputs were already published before that boundary; some surveys use month-end reference labels. These are earlier published readings, not market quotes at 12:55. The exact statement start is not independently verified.</p>
+      <div class="reading-key" aria-label="Reading status legend"><span><i class="new"></i><strong>{newObservations}</strong> observations after the cutoff</span><span><i class="day"></i><strong>{budgetDayReadings}</strong> Budget-day readings · time unavailable</span><span><i class="forecast"></i><strong>{forecasts}</strong> forecast revisions</span><span><i class="waiting"></i><strong>{waiting}</strong> awaiting new data</span></div>
+      {comparison.unavailable ? <div class="notice" role="status">Live comparison data is unavailable. The official forecast above remains source-linked; no market changes have been filled in.</div> : (
+        <>
+          <div class="reading-controls"><div class="filter-buttons" aria-label="Filter readings"><button type="button" data-budget-filter="all" aria-pressed="true">All readings</button><button type="button" data-budget-filter="market" aria-pressed="false">Markets</button><button type="button" data-budget-filter="new" aria-pressed="false">New readings</button><button type="button" data-budget-filter="awaiting_post_budget_data" aria-pressed="false">Waiting</button></div><label class="search-label">Find an input<input type="search" data-budget-search placeholder="e.g. gilt, pay, housing" /></label></div>
+          <p class="table-scroll-hint">Swipe across the table to compare earlier and latest readings.</p>
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Budget input comparison table"><table class="readings-table"><thead><tr><th scope="col">Input</th><th scope="col">Reference snapshot · 12:55 UTC</th><th scope="col">Latest retained reading</th><th scope="col">Change / status</th></tr></thead><tbody>
+            {comparison.indicators.map(row => (
+              <tr data-budget-row data-pillar={row.pillar} data-status={row.status} data-search={`${row.label} ${row.id}`.toLowerCase()}>
+                <th scope="row"><span class="input-name">{row.label}</span><span class="pillar-label">{row.pillar}</span>{row.latest?.sourceUrl ? <a class="row-source" href={row.latest.sourceUrl} target="_blank" rel="noopener noreferrer">{row.latest.sourceLabel} ↗</a> : null}</th>
+                <td>{row.before ? <><strong class="reading-value">{row.before.display}</strong><time datetime={row.before.observedAt}>{stamp(row.before.observedAt)}</time>{row.before.releasedAt && row.before.releasedAt !== row.before.observedAt ? <span class="release-stamp">Released {stamp(row.before.releasedAt)}</span> : null}</> : <span class="missing">Not retained</span>}</td>
+                <td>{row.latest ? <><strong class="reading-value">{row.latest.display}</strong><time datetime={row.latest.observedAt}>{stamp(row.latest.observedAt)}</time>{row.latest.releasedAt && row.latest.releasedAt !== row.latest.observedAt ? <span class="release-stamp">Released {stamp(row.latest.releasedAt)}</span> : null}</> : <span class="missing">Unavailable</span>}</td>
+                <td><span class={`status-badge ${row.status}`}>{statusLabel[row.status]}</span>{row.deltaDisplay !== null ? <strong class="reading-delta">{row.deltaDisplay}</strong> : <span class="no-delta">Change not shown</span>}</td>
+              </tr>
+            ))}
+          </tbody></table></div>
+          <p class="filter-empty" data-budget-empty hidden>No readings match this filter.</p>
+          <p class="table-note">Dates identify the observation’s reference period or market close. A later release of an older period is not a new post-Budget economic outcome. “Not retained” means the earlier value cannot be reconstructed reliably from this record.</p>
+        </>
+      )}
+    </section>
+
+    <section class="interpretation-grid" aria-label="How to interpret the comparison">
+      <article class="score-context"><span class="eyebrow">Composite score</span><h2>keep the calculation in view.</h2>
+        <div class="score-values"><span>Before<strong>{comparison.score.before?.value.toFixed(1) ?? "—"}</strong><small>{stamp(comparison.score.before?.timestamp)}</small></span><span>Latest<strong>{comparison.score.latest?.value.toFixed(1) ?? "—"}</strong><small>{stamp(comparison.score.latest?.timestamp)}</small></span></div>
+        {comparison.score.comparable && scoreDelta !== null ? <p>Recorded score change: <strong>{scoreDelta > 0 ? "+" : scoreDelta < 0 ? "−" : ""}{Math.abs(scoreDelta).toFixed(1)} points</strong>. Several inputs still describe earlier periods.</p> : <p class="score-caution">A score change is not shown because the retained snapshots do not provide a consistent comparison{comparison.score.corrections.length ? ": a calculation correction falls between them" : ""}. Use the raw readings above.</p>}
+        {comparison.score.corrections.length ? <ul class="correction-list">{comparison.score.corrections.map(item => <li><time datetime={item.date}>{stamp(item.date)}</time> · {item.title}</li>)}</ul> : null}<a href="/methodology" class="source-link">See how the score is calculated ↗</a>
+      </article>
+      <article class="lag-context"><span class="eyebrow">Reading the lags</span><h2>the economy takes longer.</h2><ul><li><strong>Daily market closes</strong> include the whole day and overnight news. They cannot isolate the statement.</li><li><strong>Monthly surveys and official statistics</strong> may cover periods before Budget day, even when released afterwards.</li><li><strong>Housing and delivery data</strong> take quarters to establish progress. Announcing funding is not the same as delivering homes.</li><li><strong>The OBR report</strong> is a conditional forecast. Its figures are not observed outcomes.</li></ul></article>
+    </section>
+
+    <section class="evidence-section" aria-labelledby="evidence-heading"><div><span class="eyebrow">Primary evidence</span><h2 id="evidence-heading">check the original.</h2><p>Published documents and their web publication times, kept separate from the approximate statement start.</p></div><ul><li><a href={comparison.baselineArchiveUrl} target="_blank" rel="noopener noreferrer">Archived reference snapshot ↗</a><span>Original public API response · timestamped 12:55 UTC · saved 12:56 UTC</span></li><li><a href="https://github.com/postrv/tightrope-tracker/blob/main/data/exports/quality-audit-2026-10-28.json" target="_blank" rel="noopener noreferrer">Data quality audit ↗</a><span>Validation scope, source checks and unresolved coverage limits</span></li><li><a href="/budget.json" target="_blank" rel="noopener noreferrer">Download comparison evidence JSON ↗</a><span>Frozen reference captured {stamp(comparison.baselineCapturedAt)} · raw readings, dates and provenance</span></li><li><a href={sources.obr_publication.url} target="_blank" rel="noopener noreferrer">OBR October 2026 forecast ↗</a><span>Published 28 October · 13:29:19 UTC</span></li><li><a href={sources.speech.url} target="_blank" rel="noopener noreferrer">Budget speech, as delivered ↗</a><span>Transcript published · 15:45:59 UTC</span></li><li><a href={sources.budget_document.url} target="_blank" rel="noopener noreferrer">Full Treasury Budget document ↗</a><span>Policy measures and costings</span></li><li><a href={sources.parliament_schedule.url} target="_blank" rel="noopener noreferrer">Parliament’s statement notice ↗</a><span>Announced approximately 12:30 UTC</span></li></ul></section>
+  </main>
+  <SiteFooter updatedAt={snapshot.headline.updatedAt} freshestAt={freshness.freshestAt} stale={Boolean(snapshot.headline.stale)} />
+</BaseLayout>
+
+<script is:inline nonce={Astro.locals.cspNonce}>
+(() => {
+  const buttons = [...document.querySelectorAll('[data-budget-filter]')];
+  const input = document.querySelector('[data-budget-search]');
+  const rows = [...document.querySelectorAll('[data-budget-row]')];
+  const empty = document.querySelector('[data-budget-empty]');
+  let selected = 'all';
+  function filter() {
+    const query = (input?.value || '').trim().toLowerCase();
+    let count = 0;
+    for (const row of rows) {
+      const match = selected === 'all' || (selected === 'market' ? row.dataset.pillar === 'market' : selected === 'new' ? ['post_budget_observation', 'budget_day_observation', 'forecast_revision'].includes(row.dataset.status) : row.dataset.status === selected);
+      row.hidden = !match || !row.dataset.search.includes(query);
+      if (!row.hidden) count++;
+    }
+    if (empty) empty.hidden = count > 0;
+  }
+  buttons.forEach(button => button.addEventListener('click', () => {
+    selected = button.dataset.budgetFilter;
+    buttons.forEach(other => other.setAttribute('aria-pressed', String(other === button)));
+    filter();
+  }));
+  input?.addEventListener('input', filter);
+})();
+</script>
+
+<style>
+.table-scroll-hint { display: none; color: var(--ink-2); font-size: 12px; }
+@media (max-width:720px) { .table-scroll-hint { display: block; } }
+.budget-page { padding-top: 52px; padding-bottom: 60px; }
+.eyebrow { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .13em; color: var(--ink-2); }
+.budget-head { max-width: 960px; margin-bottom: 48px; }
+h1 { margin: 16px 0 20px; font-family: var(--font-serif); font-size: clamp(52px, 8vw, 96px); line-height: .98; letter-spacing: -.055em; }
+h1 span { color: color-mix(in srgb, var(--accent) 85%, var(--ink-0)); }
+.lede { max-width: 760px; margin: 0; font-size: clamp(17px, 2vw, 21px); line-height: 1.6; color: var(--ink-1); }
+.event-strip { margin-top: 25px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); }
+.event-strip a, .source-link, .row-source { color: color-mix(in srgb, var(--accent-cool) 40%, var(--ink-0)); text-decoration: underline; text-underline-offset: 3px; }
+.event-strip strong { color: var(--ink-0); font-weight: 500; }
+.published-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-cool); }
+.section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 24px; }
+h2 { font-family: var(--font-serif); font-size: clamp(27px, 4vw, 40px); line-height: 1.1; letter-spacing: -.035em; margin: 9px 0 0; }
+.source-link, .updated { font-family: var(--font-mono); font-size: 11px; line-height: 1.6; }
+.updated { color: var(--ink-2); }
+.forecast-grid { display: grid; grid-template-columns: 1.1fr 1.3fr 1fr; gap: 16px; }
+.metric-card { padding: 25px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 14px; }
+.lead-metric { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--bg-1)); }
+.metric-label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--ink-1); }
+.metric-card > strong { display: block; font-family: var(--font-serif); font-size: clamp(32px, 4vw, 50px); letter-spacing: -.05em; margin: 16px 0 12px; white-space: nowrap; line-height: 1.2; }
+.metric-card strong small { font-size: .42em; margin-left: 5px; letter-spacing: 0; font-weight: 400; }
+.arrow { color: var(--ink-2); margin: 0 8px; font-size: .65em; }
+.metric-card p, .explanation, .section-intro, .table-note { font-size: 14px; line-height: 1.65; color: var(--ink-1); }
+.metric-card p { margin: 0 0 18px; }
+.metric-note { font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); line-height: 1.6; }
+.explanation { max-width: 960px; margin: 18px 0 0; }
+.readings-section { margin-top: 55px; }
+.section-intro { max-width: 950px; }
+.reading-key { display: flex; flex-wrap: wrap; gap: 10px 24px; margin: 22px 0; font-family: var(--font-mono); font-size: 11px; color: var(--ink-1); }
+.reading-key > span { display: inline-flex; gap: 7px; align-items: center; }
+.reading-key i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--ink-2); }
+.reading-key i.new { background: var(--accent); }.reading-key i.day { background: var(--ink-1); }.reading-key i.forecast { background: var(--accent-cool); }.reading-key i.waiting { background: var(--band-strain); }
+.reading-controls { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin: 24px 0 15px; }
+.filter-buttons { display: flex; flex-wrap: wrap; gap: 7px; }
+.filter-buttons button { padding: 9px 12px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--ink-1); font-family: var(--font-mono); font-size: 11px; cursor: pointer; }
+.filter-buttons button[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--ink-0); }
+.search-label { display: grid; gap: 5px; font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }
+.search-label input { width: 230px; max-width: 100%; border: 1px solid var(--border); border-radius: 7px; padding: 9px 12px; font: inherit; font-size: 12px; background: var(--bg-1); color: var(--ink-0); }
+.table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+.readings-table { width: 100%; border-collapse: collapse; text-align: left; }
+.readings-table thead th { padding: 14px 16px; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; font-weight: 500; color: var(--ink-2); background: var(--bg-1); white-space: nowrap; }
+.readings-table tbody th, .readings-table td { border-top: 1px solid var(--border-soft); padding: 17px 16px; vertical-align: top; min-width: 185px; }
+.readings-table tbody th { width: 32%; font-weight: 400; min-width: 230px; }
+.readings-table tr[hidden] { display: none; }
+.readings-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+.input-name { display: block; font-size: 14px; line-height: 1.45; color: var(--ink-0); }
+.pillar-label { display: inline-block; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; color: var(--ink-2); letter-spacing: .08em; margin-top: 7px; }
+.row-source { display: block; max-width: 290px; font-family: var(--font-mono); font-size: 9px; line-height: 1.5; margin-top: 7px; }
+.reading-value { display: block; font-family: var(--font-mono); font-size: 17px; font-weight: 500; margin-bottom: 7px; }
+.readings-table time, .release-stamp { display: block; font-family: var(--font-mono); font-size: 10px; line-height: 1.6; color: var(--ink-2); }
+.release-stamp { margin-top: 5px; }
+.status-badge { display: inline-block; border: 1px solid var(--border); border-radius: 5px; padding: 4px 6px; font-family: var(--font-mono); font-size: 9px; color: var(--ink-2); white-space: nowrap; }
+.status-badge.post_budget_observation { color: color-mix(in srgb, var(--accent) 75%, var(--ink-0)); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }.status-badge.budget_day_observation { color: var(--ink-1); }.status-badge.forecast_revision { color: color-mix(in srgb, var(--accent-cool) 40%, var(--ink-0)); border-color: color-mix(in srgb, var(--accent-cool) 45%, transparent); }
+.reading-delta { display: block; font-family: var(--font-mono); font-size: 15px; margin-top: 9px; font-weight: 500; }
+.missing, .no-delta { color: var(--ink-2); font-family: var(--font-mono); font-size: 11px; }.no-delta { display: block; margin-top: 10px; font-size: 10px; }
+.table-note { font-size: 12px; margin: 14px 0 0; }.filter-empty, .notice { padding: 24px; border: 1px solid var(--border); border-radius: 10px; color: var(--ink-1); }
+.interpretation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin: 50px 0; }
+.interpretation-grid article { padding: 28px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-1); }
+.interpretation-grid h2 { font-size: 29px; }.interpretation-grid p, .lag-context li { font-size: 14px; line-height: 1.65; color: var(--ink-1); }
+.score-values { display: flex; flex-wrap: wrap; gap: 18px 35px; margin-top: 24px; }
+.score-values > span { display: flex; flex-direction: column; font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }.score-values strong { font-family: var(--font-serif); font-size: 40px; line-height: 1.4; color: var(--ink-0); }.score-values small { font-size: 9px; }
+.correction-list { padding-left: 18px; font-family: var(--font-mono); font-size: 10px; line-height: 1.7; color: var(--ink-2); }
+.lag-context ul { padding-left: 20px; margin-top: 22px; }.lag-context li { margin-bottom: 15px; }.lag-context strong { color: var(--ink-0); }
+.evidence-section { display: grid; grid-template-columns: 1fr 1fr; gap: 35px; padding-top: 30px; border-top: 1px solid var(--border); }.evidence-section p { font-size: 14px; line-height: 1.6; max-width: 430px; color: var(--ink-1); }.evidence-section ul { list-style: none; padding: 0; margin: 0; }.evidence-section li { padding: 10px 0; border-bottom: 1px solid var(--border-soft); }.evidence-section a { color: color-mix(in srgb, var(--accent-cool) 40%, var(--ink-0)); text-decoration: underline; text-underline-offset: 3px; font-size: 14px; }.evidence-section li span { display: block; font-family: var(--font-mono); color: var(--ink-2); font-size: 10px; margin-top: 6px; }
+@media (max-width: 980px) { .forecast-grid { grid-template-columns: 1fr; }.metric-card { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }.metric-card > strong { grid-column: 2; grid-row: 1 / span 3; align-self: center; margin: 0; }.metric-card p { margin: 10px 0; }.metric-card .metric-note { grid-column: 1; }.reading-controls { align-items: flex-start; flex-direction: column; }.section-head { flex-wrap: wrap; }.interpretation-grid { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .budget-page { padding-top: 32px; }.budget-head { margin-bottom: 36px; }.event-strip { gap: 9px 12px; }.metric-card { display: block; padding: 22px; }.metric-card > strong { margin: 15px 0; }.metric-card p { margin-bottom: 15px; }.evidence-section { grid-template-columns: 1fr; gap: 18px; }.interpretation-grid article { padding: 23px; }.readings-table td, .readings-table tbody th { padding: 14px; }.reading-key { font-size: 10px; gap: 12px; }.search-label input { width: min(330px, 100%); } }
+</style>

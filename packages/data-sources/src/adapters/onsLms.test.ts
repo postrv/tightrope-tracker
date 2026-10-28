@@ -82,6 +82,26 @@ describe("onsLmsAdapter", () => {
     ).rejects.toBeInstanceOf(AdapterError);
   });
 
+  it("joins the latest common reference month instead of mixing independently latest inputs", async () => {
+    const payload = (month: string, value: number, updateDate: string) => ({ date: `2026 ${month}`, year: "2026", month, value: String(value), updateDate });
+    const fetchImpl = async (input: RequestInfo | URL) => {
+      const url = String(input);
+      const search = /cdids=([A-Z0-9]+)/.exec(url);
+      if (search) return mockJson(searchPayload(search[1]!, search[1] === "AP2Y" ? "UNEM" : search[1] === "A3WW" ? "EMP" : "LMS"));
+      if (url.includes("/ap2y/")) return mockJson(JSON.stringify({ months: [payload("JUL", 704, "2026-10-20T00:00:00Z"), payload("AUG", 691, "2026-10-20T00:00:00Z")] }));
+      if (url.includes("/mgsc/")) return mockJson(JSON.stringify({ months: [payload("JUL", 1712, "2026-10-20T01:00:00Z")] }));
+      return mockJson(onsPayload(4.3));
+    };
+    const live = await onsLmsAdapter.fetch(fetchImpl as typeof fetch);
+    const ratio = live.observations.find((row) => row.indicatorId === "vacancies_per_unemployed")!;
+    expect(ratio.value).toBeCloseTo(704 / 1712, 12);
+    expect(ratio.value).not.toBeCloseTo(691 / 1712, 8);
+    expect(ratio.observedAt).toBe("2026-07-01T00:00:00Z");
+    expect(ratio.releasedAt).toBe("2026-10-20T01:00:00Z");
+    const history = await onsLmsAdapter.fetchHistorical!(fetchImpl as typeof fetch, { from: new Date("2026-07-01"), to: new Date("2026-08-31") });
+    expect(history.observations.find((row) => row.indicatorId === "vacancies_per_unemployed")!.value).toBe(ratio.value);
+  });
+
   it("throws AdapterError when the data fetch fails", async () => {
     const fetchImpl = async (input: RequestInfo | URL): Promise<Response> => {
       const url = typeof input === "string" ? input : (input as URL | Request).toString();

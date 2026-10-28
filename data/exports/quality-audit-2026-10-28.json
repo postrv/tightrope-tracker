@@ -1,0 +1,5743 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-28T17:50:16.737Z",
+  "inputSha256": "e6b02112aaa01f0dea931391c7b424c21e9ed099e5b73f49d49bcb10240a5a21",
+  "scope": {
+    "rawRows": 8292,
+    "registeredRows": 7532,
+    "registeredIndicators": 31,
+    "unregisteredIndicatorIds": [
+      "breakeven_10y",
+      "gas_m1",
+      "gilt_il_10y_real",
+      "sonia_12m"
+    ],
+    "missingReleaseMetadata": 7303
+  },
+  "summary": {
+    "qualityIssueCounts": {
+      "nonFinite": 0,
+      "outsidePlausibility": 0,
+      "invalidDates": 0,
+      "futurePublication": 0,
+      "futureIngest": 0,
+      "unexplainedFutureReference": 0
+    },
+    "futureMonthlyLabels": 1,
+    "duplicateReferenceDayGroups": 2431,
+    "contradictoryReferenceDays": 130,
+    "roundingOnlyReferenceDays": 13,
+    "quarantines": 0
+  },
+  "issues": {
+    "nonFinite": [],
+    "outsidePlausibility": [],
+    "invalidDates": [],
+    "futurePublication": [],
+    "futureIngest": [],
+    "unexplainedFutureReference": []
+  },
+  "futureMonthlyLabels": [
+    {
+      "indicatorId": "consumer_confidence",
+      "observedAt": "2026-10-31T00:00:00Z",
+      "value": -24,
+      "sourceId": "gfk_confidence",
+      "releasedAt": "2026-10-23T00:00:00Z"
+    }
+  ],
+  "contradictions": [
+    {
+      "referenceDay": "gilt_10y|2024-04-02",
+      "values": [
+        4.0942,
+        4.0494
+      ],
+      "spread": 0.04479999999999951,
+      "representations": [
+        {
+          "observedAt": "2024-04-02T00:00:00Z",
+          "value": 4.0942,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-02T16:00:00Z",
+          "value": 4.0494,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-03",
+      "values": [
+        4.0837,
+        4.0392
+      ],
+      "spread": 0.044500000000000206,
+      "representations": [
+        {
+          "observedAt": "2024-04-03T00:00:00Z",
+          "value": 4.0837,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-03T16:00:00Z",
+          "value": 4.0392,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-04",
+      "values": [
+        4.0247,
+        3.9755
+      ],
+      "spread": 0.049200000000000355,
+      "representations": [
+        {
+          "observedAt": "2024-04-04T00:00:00Z",
+          "value": 4.0247,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-04T16:00:00Z",
+          "value": 3.9755,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-05",
+      "values": [
+        4.0858,
+        4.0394
+      ],
+      "spread": 0.04640000000000022,
+      "representations": [
+        {
+          "observedAt": "2024-04-05T00:00:00Z",
+          "value": 4.0858,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-05T16:00:00Z",
+          "value": 4.0394,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-08",
+      "values": [
+        4.1025,
+        4.0553
+      ],
+      "spread": 0.04720000000000013,
+      "representations": [
+        {
+          "observedAt": "2024-04-08T00:00:00Z",
+          "value": 4.1025,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-08T16:00:00Z",
+          "value": 4.0553,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-09",
+      "values": [
+        4.0415,
+        3.9912
+      ],
+      "spread": 0.05030000000000001,
+      "representations": [
+        {
+          "observedAt": "2024-04-09T00:00:00Z",
+          "value": 4.0415,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-09T16:00:00Z",
+          "value": 3.9912,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-10",
+      "values": [
+        4.1474,
+        4.0934
+      ],
+      "spread": 0.05400000000000027,
+      "representations": [
+        {
+          "observedAt": "2024-04-10T00:00:00Z",
+          "value": 4.1474,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-10T16:00:00Z",
+          "value": 4.0934,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-11",
+      "values": [
+        4.2332,
+        4.1769
+      ],
+      "spread": 0.05630000000000024,
+      "representations": [
+        {
+          "observedAt": "2024-04-11T00:00:00Z",
+          "value": 4.2332,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-11T16:00:00Z",
+          "value": 4.1769,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-12",
+      "values": [
+        4.1494,
+        4.0902
+      ],
+      "spread": 0.0591999999999997,
+      "representations": [
+        {
+          "observedAt": "2024-04-12T00:00:00Z",
+          "value": 4.1494,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-12T16:00:00Z",
+          "value": 4.0902,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-15",
+      "values": [
+        4.2591,
+        4.2034
+      ],
+      "spread": 0.05569999999999986,
+      "representations": [
+        {
+          "observedAt": "2024-04-15T00:00:00Z",
+          "value": 4.2591,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-15T16:00:00Z",
+          "value": 4.2034,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-16",
+      "values": [
+        4.3113,
+        4.2578
+      ],
+      "spread": 0.05350000000000055,
+      "representations": [
+        {
+          "observedAt": "2024-04-16T00:00:00Z",
+          "value": 4.3113,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-16T16:00:00Z",
+          "value": 4.2578,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-17",
+      "values": [
+        4.2944,
+        4.2351
+      ],
+      "spread": 0.05930000000000035,
+      "representations": [
+        {
+          "observedAt": "2024-04-17T00:00:00Z",
+          "value": 4.2944,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-17T16:00:00Z",
+          "value": 4.2351,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-18",
+      "values": [
+        4.2757,
+        4.2164
+      ],
+      "spread": 0.059299999999999464,
+      "representations": [
+        {
+          "observedAt": "2024-04-18T00:00:00Z",
+          "value": 4.2757,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-18T16:00:00Z",
+          "value": 4.2164,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-19",
+      "values": [
+        4.263,
+        4.2108
+      ],
+      "spread": 0.052200000000000024,
+      "representations": [
+        {
+          "observedAt": "2024-04-19T00:00:00Z",
+          "value": 4.263,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-19T16:00:00Z",
+          "value": 4.2108,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-22",
+      "values": [
+        4.2162,
+        4.1684
+      ],
+      "spread": 0.04779999999999962,
+      "representations": [
+        {
+          "observedAt": "2024-04-22T00:00:00Z",
+          "value": 4.2162,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-22T16:00:00Z",
+          "value": 4.1684,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-23",
+      "values": [
+        4.265,
+        4.2149
+      ],
+      "spread": 0.05009999999999959,
+      "representations": [
+        {
+          "observedAt": "2024-04-23T00:00:00Z",
+          "value": 4.265,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-23T16:00:00Z",
+          "value": 4.2149,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-24",
+      "values": [
+        4.342,
+        4.2923
+      ],
+      "spread": 0.04969999999999963,
+      "representations": [
+        {
+          "observedAt": "2024-04-24T00:00:00Z",
+          "value": 4.342,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-24T16:00:00Z",
+          "value": 4.2923,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-25",
+      "values": [
+        4.3694,
+        4.3175
+      ],
+      "spread": 0.051899999999999835,
+      "representations": [
+        {
+          "observedAt": "2024-04-25T00:00:00Z",
+          "value": 4.3694,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-25T16:00:00Z",
+          "value": 4.3175,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-26",
+      "values": [
+        4.3357,
+        4.2794
+      ],
+      "spread": 0.05630000000000024,
+      "representations": [
+        {
+          "observedAt": "2024-04-26T00:00:00Z",
+          "value": 4.3357,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-26T16:00:00Z",
+          "value": 4.2794,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-29",
+      "values": [
+        4.2977,
+        4.2423
+      ],
+      "spread": 0.05539999999999967,
+      "representations": [
+        {
+          "observedAt": "2024-04-29T00:00:00Z",
+          "value": 4.2977,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-29T16:00:00Z",
+          "value": 4.2423,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-04-30",
+      "values": [
+        4.3695,
+        4.316
+      ],
+      "spread": 0.05350000000000055,
+      "representations": [
+        {
+          "observedAt": "2024-04-30T00:00:00Z",
+          "value": 4.3695,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-30T16:00:00Z",
+          "value": 4.316,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-01",
+      "values": [
+        4.3822,
+        4.3286
+      ],
+      "spread": 0.053600000000000314,
+      "representations": [
+        {
+          "observedAt": "2024-05-01T00:00:00Z",
+          "value": 4.3822,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-01T16:00:00Z",
+          "value": 4.3286,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-02",
+      "values": [
+        4.3113,
+        4.2587
+      ],
+      "spread": 0.05259999999999998,
+      "representations": [
+        {
+          "observedAt": "2024-05-02T00:00:00Z",
+          "value": 4.3113,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-02T16:00:00Z",
+          "value": 4.2587,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-03",
+      "values": [
+        4.249,
+        4.1976
+      ],
+      "spread": 0.051399999999999224,
+      "representations": [
+        {
+          "observedAt": "2024-05-03T00:00:00Z",
+          "value": 4.249,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-03T16:00:00Z",
+          "value": 4.1976,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-07",
+      "values": [
+        4.1436,
+        4.0893
+      ],
+      "spread": 0.05430000000000046,
+      "representations": [
+        {
+          "observedAt": "2024-05-07T00:00:00Z",
+          "value": 4.1436,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-07T16:00:00Z",
+          "value": 4.0893,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-08",
+      "values": [
+        4.1425,
+        4.0929
+      ],
+      "spread": 0.049599999999999866,
+      "representations": [
+        {
+          "observedAt": "2024-05-08T00:00:00Z",
+          "value": 4.1425,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-08T16:00:00Z",
+          "value": 4.0929,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-09",
+      "values": [
+        4.1521,
+        4.1053
+      ],
+      "spread": 0.046800000000000175,
+      "representations": [
+        {
+          "observedAt": "2024-05-09T00:00:00Z",
+          "value": 4.1521,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-09T16:00:00Z",
+          "value": 4.1053,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-10",
+      "values": [
+        4.1754,
+        4.1261
+      ],
+      "spread": 0.04929999999999968,
+      "representations": [
+        {
+          "observedAt": "2024-05-10T00:00:00Z",
+          "value": 4.1754,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-10T16:00:00Z",
+          "value": 4.1261,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-13",
+      "values": [
+        4.1771,
+        4.1253
+      ],
+      "spread": 0.05180000000000007,
+      "representations": [
+        {
+          "observedAt": "2024-05-13T00:00:00Z",
+          "value": 4.1771,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-13T16:00:00Z",
+          "value": 4.1253,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-14",
+      "values": [
+        4.1769,
+        4.126
+      ],
+      "spread": 0.0508999999999995,
+      "representations": [
+        {
+          "observedAt": "2024-05-14T00:00:00Z",
+          "value": 4.1769,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-14T16:00:00Z",
+          "value": 4.126,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-15",
+      "values": [
+        4.0747,
+        4.0232
+      ],
+      "spread": 0.05149999999999988,
+      "representations": [
+        {
+          "observedAt": "2024-05-15T00:00:00Z",
+          "value": 4.0747,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-15T16:00:00Z",
+          "value": 4.0232,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-16",
+      "values": [
+        4.0711,
+        4.0184
+      ],
+      "spread": 0.052700000000000635,
+      "representations": [
+        {
+          "observedAt": "2024-05-16T00:00:00Z",
+          "value": 4.0711,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-16T16:00:00Z",
+          "value": 4.0184,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-17",
+      "values": [
+        4.1386,
+        4.0886
+      ],
+      "spread": 0.05000000000000071,
+      "representations": [
+        {
+          "observedAt": "2024-05-17T00:00:00Z",
+          "value": 4.1386,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-17T16:00:00Z",
+          "value": 4.0886,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-20",
+      "values": [
+        4.1824,
+        4.1326
+      ],
+      "spread": 0.04980000000000029,
+      "representations": [
+        {
+          "observedAt": "2024-05-20T00:00:00Z",
+          "value": 4.1824,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-20T16:00:00Z",
+          "value": 4.1326,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-21",
+      "values": [
+        4.1598,
+        4.109
+      ],
+      "spread": 0.050799999999999734,
+      "representations": [
+        {
+          "observedAt": "2024-05-21T00:00:00Z",
+          "value": 4.1598,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-21T16:00:00Z",
+          "value": 4.109,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-22",
+      "values": [
+        4.2405,
+        4.1893
+      ],
+      "spread": 0.05119999999999969,
+      "representations": [
+        {
+          "observedAt": "2024-05-22T00:00:00Z",
+          "value": 4.2405,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-22T16:00:00Z",
+          "value": 4.1893,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-23",
+      "values": [
+        4.2736,
+        4.219
+      ],
+      "spread": 0.05459999999999976,
+      "representations": [
+        {
+          "observedAt": "2024-05-23T00:00:00Z",
+          "value": 4.2736,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-23T16:00:00Z",
+          "value": 4.219,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-24",
+      "values": [
+        4.2698,
+        4.2137
+      ],
+      "spread": 0.05609999999999982,
+      "representations": [
+        {
+          "observedAt": "2024-05-24T00:00:00Z",
+          "value": 4.2698,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-24T16:00:00Z",
+          "value": 4.2137,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-28",
+      "values": [
+        4.2698,
+        4.2294
+      ],
+      "spread": 0.04039999999999999,
+      "representations": [
+        {
+          "observedAt": "2024-05-28T00:00:00Z",
+          "value": 4.2698,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-28T16:00:00Z",
+          "value": 4.2294,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-29",
+      "values": [
+        4.3995,
+        4.3476
+      ],
+      "spread": 0.051899999999999835,
+      "representations": [
+        {
+          "observedAt": "2024-05-29T00:00:00Z",
+          "value": 4.3995,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-29T16:00:00Z",
+          "value": 4.3476,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-30",
+      "values": [
+        4.3743,
+        4.3253
+      ],
+      "spread": 0.04899999999999949,
+      "representations": [
+        {
+          "observedAt": "2024-05-30T00:00:00Z",
+          "value": 4.3743,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-30T16:00:00Z",
+          "value": 4.3253,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-05-31",
+      "values": [
+        4.3167,
+        4.2693
+      ],
+      "spread": 0.047399999999999665,
+      "representations": [
+        {
+          "observedAt": "2024-05-31T00:00:00Z",
+          "value": 4.3167,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-31T16:00:00Z",
+          "value": 4.2693,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-03",
+      "values": [
+        4.2443,
+        4.195
+      ],
+      "spread": 0.04929999999999968,
+      "representations": [
+        {
+          "observedAt": "2024-06-03T00:00:00Z",
+          "value": 4.2443,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-03T16:00:00Z",
+          "value": 4.195,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-04",
+      "values": [
+        4.1956,
+        4.1442
+      ],
+      "spread": 0.05140000000000011,
+      "representations": [
+        {
+          "observedAt": "2024-06-04T00:00:00Z",
+          "value": 4.1956,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-04T16:00:00Z",
+          "value": 4.1442,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-05",
+      "values": [
+        4.1979,
+        4.1455
+      ],
+      "spread": 0.05239999999999956,
+      "representations": [
+        {
+          "observedAt": "2024-06-05T00:00:00Z",
+          "value": 4.1979,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-05T16:00:00Z",
+          "value": 4.1455,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-06",
+      "values": [
+        4.1856,
+        4.1358
+      ],
+      "spread": 0.04980000000000029,
+      "representations": [
+        {
+          "observedAt": "2024-06-06T00:00:00Z",
+          "value": 4.1856,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-06T16:00:00Z",
+          "value": 4.1358,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-07",
+      "values": [
+        4.2688,
+        4.2216
+      ],
+      "spread": 0.04720000000000013,
+      "representations": [
+        {
+          "observedAt": "2024-06-07T00:00:00Z",
+          "value": 4.2688,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-07T16:00:00Z",
+          "value": 4.2216,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-10",
+      "values": [
+        4.3348,
+        4.287
+      ],
+      "spread": 0.04780000000000051,
+      "representations": [
+        {
+          "observedAt": "2024-06-10T00:00:00Z",
+          "value": 4.3348,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-10T16:00:00Z",
+          "value": 4.287,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-11",
+      "values": [
+        4.2883,
+        4.2327
+      ],
+      "spread": 0.055599999999999206,
+      "representations": [
+        {
+          "observedAt": "2024-06-11T00:00:00Z",
+          "value": 4.2883,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-11T16:00:00Z",
+          "value": 4.2327,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-12",
+      "values": [
+        4.1569,
+        4.1044
+      ],
+      "spread": 0.05250000000000021,
+      "representations": [
+        {
+          "observedAt": "2024-06-12T00:00:00Z",
+          "value": 4.1569,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-12T16:00:00Z",
+          "value": 4.1044,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-13",
+      "values": [
+        4.1686,
+        4.118
+      ],
+      "spread": 0.05059999999999931,
+      "representations": [
+        {
+          "observedAt": "2024-06-13T00:00:00Z",
+          "value": 4.1686,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-13T16:00:00Z",
+          "value": 4.118,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-14",
+      "values": [
+        4.0719,
+        4.0186
+      ],
+      "spread": 0.053300000000000125,
+      "representations": [
+        {
+          "observedAt": "2024-06-14T00:00:00Z",
+          "value": 4.0719,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-14T16:00:00Z",
+          "value": 4.0186,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-17",
+      "values": [
+        4.1274,
+        4.0765
+      ],
+      "spread": 0.0508999999999995,
+      "representations": [
+        {
+          "observedAt": "2024-06-17T00:00:00Z",
+          "value": 4.1274,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-17T16:00:00Z",
+          "value": 4.0765,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-18",
+      "values": [
+        4.0784,
+        4.0314
+      ],
+      "spread": 0.0470000000000006,
+      "representations": [
+        {
+          "observedAt": "2024-06-18T00:00:00Z",
+          "value": 4.0784,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-18T16:00:00Z",
+          "value": 4.0314,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-19",
+      "values": [
+        4.0944,
+        4.0495
+      ],
+      "spread": 0.04490000000000016,
+      "representations": [
+        {
+          "observedAt": "2024-06-19T00:00:00Z",
+          "value": 4.0944,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-19T16:00:00Z",
+          "value": 4.0495,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-20",
+      "values": [
+        4.0782,
+        4.0351
+      ],
+      "spread": 0.043099999999999916,
+      "representations": [
+        {
+          "observedAt": "2024-06-20T00:00:00Z",
+          "value": 4.0782,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-20T16:00:00Z",
+          "value": 4.0351,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-21",
+      "values": [
+        4.0966,
+        4.0538
+      ],
+      "spread": 0.04279999999999973,
+      "representations": [
+        {
+          "observedAt": "2024-06-21T00:00:00Z",
+          "value": 4.0966,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-21T16:00:00Z",
+          "value": 4.0538,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-24",
+      "values": [
+        4.1035,
+        4.0571
+      ],
+      "spread": 0.04640000000000022,
+      "representations": [
+        {
+          "observedAt": "2024-06-24T00:00:00Z",
+          "value": 4.1035,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-24T16:00:00Z",
+          "value": 4.0571,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-25",
+      "values": [
+        4.0889,
+        4.0439
+      ],
+      "spread": 0.04499999999999993,
+      "representations": [
+        {
+          "observedAt": "2024-06-25T00:00:00Z",
+          "value": 4.0889,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-25T16:00:00Z",
+          "value": 4.0439,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-26",
+      "values": [
+        4.1585,
+        4.1106
+      ],
+      "spread": 0.047900000000000276,
+      "representations": [
+        {
+          "observedAt": "2024-06-26T00:00:00Z",
+          "value": 4.1585,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-26T16:00:00Z",
+          "value": 4.1106,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-27",
+      "values": [
+        4.154,
+        4.1054
+      ],
+      "spread": 0.04859999999999953,
+      "representations": [
+        {
+          "observedAt": "2024-06-27T00:00:00Z",
+          "value": 4.154,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-27T16:00:00Z",
+          "value": 4.1054,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-06-28",
+      "values": [
+        4.195,
+        4.1534
+      ],
+      "spread": 0.04159999999999986,
+      "representations": [
+        {
+          "observedAt": "2024-06-28T00:00:00Z",
+          "value": 4.195,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-28T16:00:00Z",
+          "value": 4.1534,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-07-01",
+      "values": [
+        4.2941,
+        4.251
+      ],
+      "spread": 0.043099999999999916,
+      "representations": [
+        {
+          "observedAt": "2024-07-01T00:00:00Z",
+          "value": 4.2941,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-07-01T16:00:00Z",
+          "value": 4.251,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-07-02",
+      "values": [
+        4.2688,
+        4.2249
+      ],
+      "spread": 0.04389999999999983,
+      "representations": [
+        {
+          "observedAt": "2024-07-02T00:00:00Z",
+          "value": 4.2688,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-07-02T16:00:00Z",
+          "value": 4.2249,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_10y|2024-07-03",
+      "values": [
+        4.1797,
+        4.1377
+      ],
+      "spread": 0.0420000000000007,
+      "representations": [
+        {
+          "observedAt": "2024-07-03T00:00:00Z",
+          "value": 4.1797,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-07-03T16:00:00Z",
+          "value": 4.1377,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-02",
+      "values": [
+        4.0494,
+        4.5847
+      ],
+      "spread": 0.5352999999999994,
+      "representations": [
+        {
+          "observedAt": "2024-04-02T00:00:00Z",
+          "value": 4.0494,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-02T16:00:00Z",
+          "value": 4.5847,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-03",
+      "values": [
+        4.0392,
+        4.5894
+      ],
+      "spread": 0.5502000000000002,
+      "representations": [
+        {
+          "observedAt": "2024-04-03T00:00:00Z",
+          "value": 4.0392,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-03T16:00:00Z",
+          "value": 4.5894,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-04",
+      "values": [
+        3.9755,
+        4.5332
+      ],
+      "spread": 0.5577000000000001,
+      "representations": [
+        {
+          "observedAt": "2024-04-04T00:00:00Z",
+          "value": 3.9755,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-04T16:00:00Z",
+          "value": 4.5332,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-05",
+      "values": [
+        4.0394,
+        4.591
+      ],
+      "spread": 0.5516000000000005,
+      "representations": [
+        {
+          "observedAt": "2024-04-05T00:00:00Z",
+          "value": 4.0394,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-05T16:00:00Z",
+          "value": 4.591,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-08",
+      "values": [
+        4.0553,
+        4.6036
+      ],
+      "spread": 0.5483000000000002,
+      "representations": [
+        {
+          "observedAt": "2024-04-08T00:00:00Z",
+          "value": 4.0553,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-08T16:00:00Z",
+          "value": 4.6036,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-09",
+      "values": [
+        3.9912,
+        4.5298
+      ],
+      "spread": 0.5385999999999997,
+      "representations": [
+        {
+          "observedAt": "2024-04-09T00:00:00Z",
+          "value": 3.9912,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-09T16:00:00Z",
+          "value": 4.5298,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-10",
+      "values": [
+        4.0934,
+        4.6048
+      ],
+      "spread": 0.5114000000000001,
+      "representations": [
+        {
+          "observedAt": "2024-04-10T00:00:00Z",
+          "value": 4.0934,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-10T16:00:00Z",
+          "value": 4.6048,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-11",
+      "values": [
+        4.1769,
+        4.6907
+      ],
+      "spread": 0.5137999999999998,
+      "representations": [
+        {
+          "observedAt": "2024-04-11T00:00:00Z",
+          "value": 4.1769,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-11T16:00:00Z",
+          "value": 4.6907,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-12",
+      "values": [
+        4.0902,
+        4.6113
+      ],
+      "spread": 0.5210999999999997,
+      "representations": [
+        {
+          "observedAt": "2024-04-12T00:00:00Z",
+          "value": 4.0902,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-12T16:00:00Z",
+          "value": 4.6113,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-15",
+      "values": [
+        4.2034,
+        4.724
+      ],
+      "spread": 0.5206,
+      "representations": [
+        {
+          "observedAt": "2024-04-15T00:00:00Z",
+          "value": 4.2034,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-15T16:00:00Z",
+          "value": 4.724,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-16",
+      "values": [
+        4.2578,
+        4.7482
+      ],
+      "spread": 0.49040000000000017,
+      "representations": [
+        {
+          "observedAt": "2024-04-16T00:00:00Z",
+          "value": 4.2578,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-16T16:00:00Z",
+          "value": 4.7482,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-17",
+      "values": [
+        4.2351,
+        4.7098
+      ],
+      "spread": 0.47470000000000034,
+      "representations": [
+        {
+          "observedAt": "2024-04-17T00:00:00Z",
+          "value": 4.2351,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-17T16:00:00Z",
+          "value": 4.7098,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-18",
+      "values": [
+        4.2164,
+        4.7085
+      ],
+      "spread": 0.49209999999999976,
+      "representations": [
+        {
+          "observedAt": "2024-04-18T00:00:00Z",
+          "value": 4.2164,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-18T16:00:00Z",
+          "value": 4.7085,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-19",
+      "values": [
+        4.2108,
+        4.7222
+      ],
+      "spread": 0.5114000000000001,
+      "representations": [
+        {
+          "observedAt": "2024-04-19T00:00:00Z",
+          "value": 4.2108,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-19T16:00:00Z",
+          "value": 4.7222,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-22",
+      "values": [
+        4.1684,
+        4.6825
+      ],
+      "spread": 0.5141,
+      "representations": [
+        {
+          "observedAt": "2024-04-22T00:00:00Z",
+          "value": 4.1684,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-22T16:00:00Z",
+          "value": 4.6825,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-23",
+      "values": [
+        4.2149,
+        4.7291
+      ],
+      "spread": 0.5141999999999998,
+      "representations": [
+        {
+          "observedAt": "2024-04-23T00:00:00Z",
+          "value": 4.2149,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-23T16:00:00Z",
+          "value": 4.7291,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-24",
+      "values": [
+        4.2923,
+        4.7959
+      ],
+      "spread": 0.5035999999999996,
+      "representations": [
+        {
+          "observedAt": "2024-04-24T00:00:00Z",
+          "value": 4.2923,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-24T16:00:00Z",
+          "value": 4.7959,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-25",
+      "values": [
+        4.3175,
+        4.8143
+      ],
+      "spread": 0.49680000000000035,
+      "representations": [
+        {
+          "observedAt": "2024-04-25T00:00:00Z",
+          "value": 4.3175,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-25T16:00:00Z",
+          "value": 4.8143,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-26",
+      "values": [
+        4.2794,
+        4.7702
+      ],
+      "spread": 0.4908000000000001,
+      "representations": [
+        {
+          "observedAt": "2024-04-26T00:00:00Z",
+          "value": 4.2794,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-26T16:00:00Z",
+          "value": 4.7702,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-29",
+      "values": [
+        4.2423,
+        4.7361
+      ],
+      "spread": 0.49380000000000024,
+      "representations": [
+        {
+          "observedAt": "2024-04-29T00:00:00Z",
+          "value": 4.2423,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-29T16:00:00Z",
+          "value": 4.7361,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-04-30",
+      "values": [
+        4.316,
+        4.7974
+      ],
+      "spread": 0.48139999999999983,
+      "representations": [
+        {
+          "observedAt": "2024-04-30T00:00:00Z",
+          "value": 4.316,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-04-30T16:00:00Z",
+          "value": 4.7974,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-01",
+      "values": [
+        4.3286,
+        4.8105
+      ],
+      "spread": 0.48190000000000044,
+      "representations": [
+        {
+          "observedAt": "2024-05-01T00:00:00Z",
+          "value": 4.3286,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-01T16:00:00Z",
+          "value": 4.8105,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-02",
+      "values": [
+        4.2587,
+        4.7651
+      ],
+      "spread": 0.5064000000000002,
+      "representations": [
+        {
+          "observedAt": "2024-05-02T00:00:00Z",
+          "value": 4.2587,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-02T16:00:00Z",
+          "value": 4.7651,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-03",
+      "values": [
+        4.1976,
+        4.7156
+      ],
+      "spread": 0.5179999999999998,
+      "representations": [
+        {
+          "observedAt": "2024-05-03T00:00:00Z",
+          "value": 4.1976,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-03T16:00:00Z",
+          "value": 4.7156,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-07",
+      "values": [
+        4.0893,
+        4.6057
+      ],
+      "spread": 0.5164,
+      "representations": [
+        {
+          "observedAt": "2024-05-07T00:00:00Z",
+          "value": 4.0893,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-07T16:00:00Z",
+          "value": 4.6057,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-08",
+      "values": [
+        4.0929,
+        4.5976
+      ],
+      "spread": 0.5046999999999997,
+      "representations": [
+        {
+          "observedAt": "2024-05-08T00:00:00Z",
+          "value": 4.0929,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-08T16:00:00Z",
+          "value": 4.5976,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-09",
+      "values": [
+        4.1053,
+        4.6258
+      ],
+      "spread": 0.5205000000000002,
+      "representations": [
+        {
+          "observedAt": "2024-05-09T00:00:00Z",
+          "value": 4.1053,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-09T16:00:00Z",
+          "value": 4.6258,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-10",
+      "values": [
+        4.1261,
+        4.6409
+      ],
+      "spread": 0.5148000000000001,
+      "representations": [
+        {
+          "observedAt": "2024-05-10T00:00:00Z",
+          "value": 4.1261,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-10T16:00:00Z",
+          "value": 4.6409,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-13",
+      "values": [
+        4.1253,
+        4.6441
+      ],
+      "spread": 0.5187999999999997,
+      "representations": [
+        {
+          "observedAt": "2024-05-13T00:00:00Z",
+          "value": 4.1253,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-13T16:00:00Z",
+          "value": 4.6441,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-14",
+      "values": [
+        4.126,
+        4.6413
+      ],
+      "spread": 0.5152999999999999,
+      "representations": [
+        {
+          "observedAt": "2024-05-14T00:00:00Z",
+          "value": 4.126,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-14T16:00:00Z",
+          "value": 4.6413,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-15",
+      "values": [
+        4.0232,
+        4.5313
+      ],
+      "spread": 0.5080999999999998,
+      "representations": [
+        {
+          "observedAt": "2024-05-15T00:00:00Z",
+          "value": 4.0232,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-15T16:00:00Z",
+          "value": 4.5313,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-16",
+      "values": [
+        4.0184,
+        4.5319
+      ],
+      "spread": 0.5135000000000005,
+      "representations": [
+        {
+          "observedAt": "2024-05-16T00:00:00Z",
+          "value": 4.0184,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-16T16:00:00Z",
+          "value": 4.5319,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-17",
+      "values": [
+        4.0886,
+        4.5967
+      ],
+      "spread": 0.5081000000000007,
+      "representations": [
+        {
+          "observedAt": "2024-05-17T00:00:00Z",
+          "value": 4.0886,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-17T16:00:00Z",
+          "value": 4.5967,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-20",
+      "values": [
+        4.1326,
+        4.648
+      ],
+      "spread": 0.5153999999999996,
+      "representations": [
+        {
+          "observedAt": "2024-05-20T00:00:00Z",
+          "value": 4.1326,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-20T16:00:00Z",
+          "value": 4.648,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-21",
+      "values": [
+        4.109,
+        4.6257
+      ],
+      "spread": 0.5167000000000002,
+      "representations": [
+        {
+          "observedAt": "2024-05-21T00:00:00Z",
+          "value": 4.109,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-21T16:00:00Z",
+          "value": 4.6257,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-22",
+      "values": [
+        4.1893,
+        4.6749
+      ],
+      "spread": 0.4855999999999998,
+      "representations": [
+        {
+          "observedAt": "2024-05-22T00:00:00Z",
+          "value": 4.1893,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-22T16:00:00Z",
+          "value": 4.6749,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-23",
+      "values": [
+        4.219,
+        4.6943
+      ],
+      "spread": 0.47529999999999983,
+      "representations": [
+        {
+          "observedAt": "2024-05-23T00:00:00Z",
+          "value": 4.219,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-23T16:00:00Z",
+          "value": 4.6943,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-24",
+      "values": [
+        4.2137,
+        4.6992
+      ],
+      "spread": 0.48550000000000004,
+      "representations": [
+        {
+          "observedAt": "2024-05-24T00:00:00Z",
+          "value": 4.2137,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-24T16:00:00Z",
+          "value": 4.6992,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-28",
+      "values": [
+        4.2294,
+        4.7202
+      ],
+      "spread": 0.4908000000000001,
+      "representations": [
+        {
+          "observedAt": "2024-05-28T00:00:00Z",
+          "value": 4.2294,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-28T16:00:00Z",
+          "value": 4.7202,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-29",
+      "values": [
+        4.3476,
+        4.8396
+      ],
+      "spread": 0.492,
+      "representations": [
+        {
+          "observedAt": "2024-05-29T00:00:00Z",
+          "value": 4.3476,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-29T16:00:00Z",
+          "value": 4.8396,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-30",
+      "values": [
+        4.3253,
+        4.8141
+      ],
+      "spread": 0.48879999999999946,
+      "representations": [
+        {
+          "observedAt": "2024-05-30T00:00:00Z",
+          "value": 4.3253,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-30T16:00:00Z",
+          "value": 4.8141,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-05-31",
+      "values": [
+        4.2693,
+        4.7409
+      ],
+      "spread": 0.4715999999999996,
+      "representations": [
+        {
+          "observedAt": "2024-05-31T00:00:00Z",
+          "value": 4.2693,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-05-31T16:00:00Z",
+          "value": 4.7409,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-10-28T17:36:44.864Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-03",
+      "values": [
+        4.195,
+        4.6708
+      ],
+      "spread": 0.47579999999999956,
+      "representations": [
+        {
+          "observedAt": "2024-06-03T00:00:00Z",
+          "value": 4.195,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-03T16:00:00Z",
+          "value": 4.6708,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-04",
+      "values": [
+        4.1442,
+        4.6089
+      ],
+      "spread": 0.46470000000000056,
+      "representations": [
+        {
+          "observedAt": "2024-06-04T00:00:00Z",
+          "value": 4.1442,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-04T16:00:00Z",
+          "value": 4.6089,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-05",
+      "values": [
+        4.1455,
+        4.6096
+      ],
+      "spread": 0.4641000000000002,
+      "representations": [
+        {
+          "observedAt": "2024-06-05T00:00:00Z",
+          "value": 4.1455,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-05T16:00:00Z",
+          "value": 4.6096,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-06",
+      "values": [
+        4.1358,
+        4.611
+      ],
+      "spread": 0.47520000000000007,
+      "representations": [
+        {
+          "observedAt": "2024-06-06T00:00:00Z",
+          "value": 4.1358,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-06T16:00:00Z",
+          "value": 4.611,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-07",
+      "values": [
+        4.2216,
+        4.6869
+      ],
+      "spread": 0.46530000000000005,
+      "representations": [
+        {
+          "observedAt": "2024-06-07T00:00:00Z",
+          "value": 4.2216,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-07T16:00:00Z",
+          "value": 4.6869,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-10",
+      "values": [
+        4.287,
+        4.7587
+      ],
+      "spread": 0.47170000000000023,
+      "representations": [
+        {
+          "observedAt": "2024-06-10T00:00:00Z",
+          "value": 4.287,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-10T16:00:00Z",
+          "value": 4.7587,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-11",
+      "values": [
+        4.2327,
+        4.73
+      ],
+      "spread": 0.4973000000000001,
+      "representations": [
+        {
+          "observedAt": "2024-06-11T00:00:00Z",
+          "value": 4.2327,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-11T16:00:00Z",
+          "value": 4.73,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-12",
+      "values": [
+        4.1044,
+        4.6138
+      ],
+      "spread": 0.5094000000000003,
+      "representations": [
+        {
+          "observedAt": "2024-06-12T00:00:00Z",
+          "value": 4.1044,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-12T16:00:00Z",
+          "value": 4.6138,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-13",
+      "values": [
+        4.118,
+        4.629
+      ],
+      "spread": 0.5109999999999992,
+      "representations": [
+        {
+          "observedAt": "2024-06-13T00:00:00Z",
+          "value": 4.118,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-13T16:00:00Z",
+          "value": 4.629,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-14",
+      "values": [
+        4.0186,
+        4.5232
+      ],
+      "spread": 0.5045999999999999,
+      "representations": [
+        {
+          "observedAt": "2024-06-14T00:00:00Z",
+          "value": 4.0186,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-14T16:00:00Z",
+          "value": 4.5232,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-17",
+      "values": [
+        4.0765,
+        4.5857
+      ],
+      "spread": 0.5091999999999999,
+      "representations": [
+        {
+          "observedAt": "2024-06-17T00:00:00Z",
+          "value": 4.0765,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-17T16:00:00Z",
+          "value": 4.5857,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-18",
+      "values": [
+        4.0314,
+        4.5309
+      ],
+      "spread": 0.4995000000000003,
+      "representations": [
+        {
+          "observedAt": "2024-06-18T00:00:00Z",
+          "value": 4.0314,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-18T16:00:00Z",
+          "value": 4.5309,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-19",
+      "values": [
+        4.0495,
+        4.5519
+      ],
+      "spread": 0.5023999999999997,
+      "representations": [
+        {
+          "observedAt": "2024-06-19T00:00:00Z",
+          "value": 4.0495,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-19T16:00:00Z",
+          "value": 4.5519,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-20",
+      "values": [
+        4.0351,
+        4.5635
+      ],
+      "spread": 0.5284000000000004,
+      "representations": [
+        {
+          "observedAt": "2024-06-20T00:00:00Z",
+          "value": 4.0351,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-20T16:00:00Z",
+          "value": 4.5635,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-21",
+      "values": [
+        4.0538,
+        4.5804
+      ],
+      "spread": 0.5266000000000002,
+      "representations": [
+        {
+          "observedAt": "2024-06-21T00:00:00Z",
+          "value": 4.0538,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-21T16:00:00Z",
+          "value": 4.5804,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-24",
+      "values": [
+        4.0571,
+        4.5841
+      ],
+      "spread": 0.5270000000000001,
+      "representations": [
+        {
+          "observedAt": "2024-06-24T00:00:00Z",
+          "value": 4.0571,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-24T16:00:00Z",
+          "value": 4.5841,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-25",
+      "values": [
+        4.0439,
+        4.5637
+      ],
+      "spread": 0.5198,
+      "representations": [
+        {
+          "observedAt": "2024-06-25T00:00:00Z",
+          "value": 4.0439,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-25T16:00:00Z",
+          "value": 4.5637,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-26",
+      "values": [
+        4.1106,
+        4.6212
+      ],
+      "spread": 0.5106000000000002,
+      "representations": [
+        {
+          "observedAt": "2024-06-26T00:00:00Z",
+          "value": 4.1106,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-26T16:00:00Z",
+          "value": 4.6212,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-27",
+      "values": [
+        4.1054,
+        4.6104
+      ],
+      "spread": 0.5049999999999999,
+      "representations": [
+        {
+          "observedAt": "2024-06-27T00:00:00Z",
+          "value": 4.1054,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-27T16:00:00Z",
+          "value": 4.6104,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-06-28",
+      "values": [
+        4.1534,
+        4.6603
+      ],
+      "spread": 0.5068999999999999,
+      "representations": [
+        {
+          "observedAt": "2024-06-28T00:00:00Z",
+          "value": 4.1534,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-06-28T16:00:00Z",
+          "value": 4.6603,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-07-01",
+      "values": [
+        4.251,
+        4.7641
+      ],
+      "spread": 0.5130999999999997,
+      "representations": [
+        {
+          "observedAt": "2024-07-01T00:00:00Z",
+          "value": 4.251,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-07-01T16:00:00Z",
+          "value": 4.7641,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-07-02",
+      "values": [
+        4.2249,
+        4.7457
+      ],
+      "spread": 0.5208000000000004,
+      "representations": [
+        {
+          "observedAt": "2024-07-02T00:00:00Z",
+          "value": 4.2249,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-07-02T16:00:00Z",
+          "value": 4.7457,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    },
+    {
+      "referenceDay": "gilt_30y|2024-07-03",
+      "values": [
+        4.1377,
+        4.6532
+      ],
+      "spread": 0.5155000000000003,
+      "representations": [
+        {
+          "observedAt": "2024-07-03T00:00:00Z",
+          "value": 4.1377,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-04-22T11:22:27.806Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2024-07-03T16:00:00Z",
+          "value": 4.6532,
+          "sourceId": "boe_yields",
+          "ingestedAt": "2026-07-08T18:50:58.091Z",
+          "payloadClass": "hist"
+        }
+      ]
+    }
+  ],
+  "roundingOnly": [
+    {
+      "referenceDay": "ftse_250|2026-09-23",
+      "values": [
+        24362,
+        24361.6
+      ],
+      "spread": 0.4000000000014552,
+      "representations": [
+        {
+          "observedAt": "2026-09-23T15:30:00Z",
+          "value": 24362,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-09-23T16:30:00Z",
+          "value": 24361.6,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-09-24T15:26:07.230Z",
+          "payloadClass": "c3d1349170a9b250c694c030582a2b6150da984c6370fde1fae37687bc0dd78a"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-09-24",
+      "values": [
+        24154,
+        24154.3
+      ],
+      "spread": 0.2999999999992724,
+      "representations": [
+        {
+          "observedAt": "2026-09-24T15:30:00Z",
+          "value": 24154,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-09-24T16:30:00Z",
+          "value": 24154.3,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-09-25T15:26:06.759Z",
+          "payloadClass": "543fd3f6a6dde90d732c465a5f9475aed4e0decbc914a3a058599b34a2c3d4ea"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-09-25",
+      "values": [
+        24261,
+        24261.1
+      ],
+      "spread": 0.09999999999854481,
+      "representations": [
+        {
+          "observedAt": "2026-09-25T15:30:00Z",
+          "value": 24261,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-09-25T16:30:00Z",
+          "value": 24261.1,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-09-28T15:26:04.123Z",
+          "payloadClass": "b2857c8a17853d25829ffdd81b6b947088ed4c4a4df3cbb5aef17694a69a4461"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-09-28",
+      "values": [
+        24335,
+        24335.3
+      ],
+      "spread": 0.2999999999992724,
+      "representations": [
+        {
+          "observedAt": "2026-09-28T15:30:00Z",
+          "value": 24335,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-09-28T16:30:00Z",
+          "value": 24335.3,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-09-29T15:30:17.793Z",
+          "payloadClass": "9e23907f0ef6ff2004c4ca083e140e42986feb7241d65b9dad81b38b1513a42c"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-09-29",
+      "values": [
+        24375,
+        24374.8
+      ],
+      "spread": 0.2000000000007276,
+      "representations": [
+        {
+          "observedAt": "2026-09-29T15:30:00Z",
+          "value": 24375,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-09-29T16:30:00Z",
+          "value": 24374.8,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-09-30T15:30:16.680Z",
+          "payloadClass": "fc6b1402392b258790b31adbc5dab9ec0e7aae97dda28fb355d8b4999959db7a"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-10-01",
+      "values": [
+        24143,
+        24143.2
+      ],
+      "spread": 0.2000000000007276,
+      "representations": [
+        {
+          "observedAt": "2026-10-01T15:30:00Z",
+          "value": 24143,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-10-01T16:30:00Z",
+          "value": 24143.2,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-02T15:30:19.555Z",
+          "payloadClass": "c3b7f3a5612196628e41f735e3564c6140883838114398ff66cf91b49ed43a4f"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-10-02",
+      "values": [
+        24194,
+        24194.2
+      ],
+      "spread": 0.2000000000007276,
+      "representations": [
+        {
+          "observedAt": "2026-10-02T15:30:00Z",
+          "value": 24194,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-10-02T16:30:00Z",
+          "value": 24194.2,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-05T15:30:13.250Z",
+          "payloadClass": "895e8a40458165c35856e0eefdd5590bba17fb59591d5dd8ab9c7cd522bfe3ee"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-10-05",
+      "values": [
+        24124,
+        24123.8
+      ],
+      "spread": 0.2000000000007276,
+      "representations": [
+        {
+          "observedAt": "2026-10-05T15:30:00Z",
+          "value": 24124,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-10-05T16:30:00Z",
+          "value": 24123.8,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-06T15:30:22.210Z",
+          "payloadClass": "93b4bed9298039dc1dc538b6361ae6ad740df29960a976aed1591ca592ebcd43"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-10-06",
+      "values": [
+        24215,
+        24215.3
+      ],
+      "spread": 0.2999999999992724,
+      "representations": [
+        {
+          "observedAt": "2026-10-06T15:30:00Z",
+          "value": 24215,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-10-06T16:30:00Z",
+          "value": 24215.3,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-07T15:30:17.243Z",
+          "payloadClass": "f8ef2c6a1c527a2b05e636981831c0240af27a9690bd2b87404ac932b2b2e7f2"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-10-07",
+      "values": [
+        24037,
+        24036.8
+      ],
+      "spread": 0.2000000000007276,
+      "representations": [
+        {
+          "observedAt": "2026-10-07T15:30:00Z",
+          "value": 24037,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-10-07T16:30:00Z",
+          "value": 24036.8,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-08T15:30:17.033Z",
+          "payloadClass": "8baf0da623154174935ed64d4f9d9f824400420de4c5ccd27d4d335f47a5523f"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-10-08",
+      "values": [
+        23944,
+        23943.9
+      ],
+      "spread": 0.09999999999854481,
+      "representations": [
+        {
+          "observedAt": "2026-10-08T15:30:00Z",
+          "value": 23944,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-10-08T16:30:00Z",
+          "value": 23943.9,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-09T15:30:42.535Z",
+          "payloadClass": "074249ed9d6437a16b1c0c1a2ef3f10096dc49eff7bf73a7f66cac3e1f119783"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-10-09",
+      "values": [
+        24214,
+        24213.8
+      ],
+      "spread": 0.2000000000007276,
+      "representations": [
+        {
+          "observedAt": "2026-10-09T15:30:00Z",
+          "value": 24214,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-10-09T16:30:00Z",
+          "value": 24213.8,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-12T15:30:17.415Z",
+          "payloadClass": "c4bab965a2226717b16d0ab75cb45d6cdb6e5e98c7650255c5e45cc10e15d642"
+        }
+      ]
+    },
+    {
+      "referenceDay": "ftse_250|2026-10-12",
+      "values": [
+        24328,
+        24328.1
+      ],
+      "spread": 0.09999999999854481,
+      "representations": [
+        {
+          "observedAt": "2026-10-12T15:30:00Z",
+          "value": 24328,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-28T13:07:35.201Z",
+          "payloadClass": "hist"
+        },
+        {
+          "observedAt": "2026-10-12T16:30:00Z",
+          "value": 24328.1,
+          "sourceId": "lseg",
+          "ingestedAt": "2026-10-13T15:30:23.601Z",
+          "payloadClass": "615474a565b8997a17158df3b18ba690e2c25ee9007edd87f024dff8c245ff0c"
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "indicatorId": "gilt_10y",
+      "label": "10-year gilt yield",
+      "cadence": "trading-daily",
+      "provenance": "live",
+      "rawRows": 1173,
+      "baselineReferenceDays": 651,
+      "first": "2024-04-02",
+      "last": "2026-10-26",
+      "missingSlotsToReview": [
+        "2024-05-06",
+        "2024-05-27",
+        "2024-08-26",
+        "2024-12-25",
+        "2024-12-26",
+        "2025-01-01",
+        "2025-04-18",
+        "2025-04-21",
+        "2025-05-05",
+        "2025-05-26",
+        "2025-08-25",
+        "2025-12-25",
+        "2025-12-26",
+        "2026-01-01",
+        "2026-04-03",
+        "2026-04-06",
+        "2026-05-04",
+        "2026-05-25",
+        "2026-08-31"
+      ],
+      "missingSlotCaveat": "Weekday candidates only: publisher holidays, US/UK calendars and expected publication lag require source review; these are not asserted ingest failures.",
+      "latest": {
+        "value": 5.3259,
+        "observedAt": "2026-10-26T16:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T15:35:46.800Z",
+        "sourceId": "boe_yields",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "gilt_30y",
+      "label": "20-year gilt yield",
+      "cadence": "trading-daily",
+      "provenance": "live",
+      "rawRows": 1173,
+      "baselineReferenceDays": 651,
+      "first": "2024-04-02",
+      "last": "2026-10-26",
+      "missingSlotsToReview": [
+        "2024-05-06",
+        "2024-05-27",
+        "2024-08-26",
+        "2024-12-25",
+        "2024-12-26",
+        "2025-01-01",
+        "2025-04-18",
+        "2025-04-21",
+        "2025-05-05",
+        "2025-05-26",
+        "2025-08-25",
+        "2025-12-25",
+        "2025-12-26",
+        "2026-01-01",
+        "2026-04-03",
+        "2026-04-06",
+        "2026-05-04",
+        "2026-05-25",
+        "2026-08-31"
+      ],
+      "missingSlotCaveat": "Weekday candidates only: publisher holidays, US/UK calendars and expected publication lag require source review; these are not asserted ingest failures.",
+      "latest": {
+        "value": 5.7873,
+        "observedAt": "2026-10-26T16:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T15:35:46.800Z",
+        "sourceId": "boe_yields",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "gbp_usd",
+      "label": "GBP / USD",
+      "cadence": "trading-daily",
+      "provenance": "live",
+      "rawRows": 1068,
+      "baselineReferenceDays": 610,
+      "first": "2024-06-03",
+      "last": "2026-10-27",
+      "missingSlotsToReview": [
+        "2024-08-26",
+        "2024-12-25",
+        "2024-12-26",
+        "2025-01-01",
+        "2025-04-18",
+        "2025-04-21",
+        "2025-05-05",
+        "2025-05-26",
+        "2025-08-25",
+        "2025-12-25",
+        "2025-12-26",
+        "2026-01-01",
+        "2026-04-03",
+        "2026-04-06",
+        "2026-05-04",
+        "2026-05-25",
+        "2026-08-31"
+      ],
+      "missingSlotCaveat": "Weekday candidates only: publisher holidays, US/UK calendars and expected publication lag require source review; these are not asserted ingest failures.",
+      "latest": {
+        "value": 1.3313,
+        "observedAt": "2026-10-27T16:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T15:35:48.358Z",
+        "sourceId": "boe_fx",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "gbp_twi",
+      "label": "GBP trade-weighted index",
+      "cadence": "trading-daily",
+      "provenance": "live",
+      "rawRows": 1068,
+      "baselineReferenceDays": 610,
+      "first": "2024-06-03",
+      "last": "2026-10-27",
+      "missingSlotsToReview": [
+        "2024-08-26",
+        "2024-12-25",
+        "2024-12-26",
+        "2025-01-01",
+        "2025-04-18",
+        "2025-04-21",
+        "2025-05-05",
+        "2025-05-26",
+        "2025-08-25",
+        "2025-12-25",
+        "2025-12-26",
+        "2026-01-01",
+        "2026-04-03",
+        "2026-04-06",
+        "2026-05-04",
+        "2026-05-25",
+        "2026-08-31"
+      ],
+      "missingSlotCaveat": "Weekday candidates only: publisher holidays, US/UK calendars and expected publication lag require source review; these are not asserted ingest failures.",
+      "latest": {
+        "value": 85.8916,
+        "observedAt": "2026-10-27T16:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T15:35:48.358Z",
+        "sourceId": "boe_fx",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "ftse_250",
+      "label": "FTSE 250",
+      "cadence": "trading-daily",
+      "provenance": "live-fallback",
+      "rawRows": 601,
+      "baselineReferenceDays": 587,
+      "first": "2024-07-04",
+      "last": "2026-10-27",
+      "missingSlotsToReview": [
+        "2024-08-26",
+        "2024-12-25",
+        "2024-12-26",
+        "2025-01-01",
+        "2025-04-18",
+        "2025-04-21",
+        "2025-05-05",
+        "2025-05-26",
+        "2025-08-25",
+        "2025-12-25",
+        "2025-12-26",
+        "2026-01-01",
+        "2026-04-03",
+        "2026-04-06",
+        "2026-05-04",
+        "2026-05-25",
+        "2026-08-31"
+      ],
+      "missingSlotCaveat": "Weekday candidates only: publisher holidays, US/UK calendars and expected publication lag require source review; these are not asserted ingest failures.",
+      "latest": {
+        "value": 24716.4,
+        "observedAt": "2026-10-27T16:30:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T16:30:29.277Z",
+        "sourceId": "lseg",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "breakeven_5y",
+      "label": "5y breakeven inflation",
+      "cadence": "trading-daily",
+      "provenance": "live",
+      "rawRows": 1066,
+      "baselineReferenceDays": 609,
+      "first": "2024-06-03",
+      "last": "2026-10-26",
+      "missingSlotsToReview": [
+        "2024-08-26",
+        "2024-12-25",
+        "2024-12-26",
+        "2025-01-01",
+        "2025-04-18",
+        "2025-04-21",
+        "2025-05-05",
+        "2025-05-26",
+        "2025-08-25",
+        "2025-12-25",
+        "2025-12-26",
+        "2026-01-01",
+        "2026-04-03",
+        "2026-04-06",
+        "2026-05-04",
+        "2026-05-25",
+        "2026-08-31"
+      ],
+      "missingSlotCaveat": "Weekday candidates only: publisher holidays, US/UK calendars and expected publication lag require source review; these are not asserted ingest failures.",
+      "latest": {
+        "value": 1.2673,
+        "observedAt": "2026-10-26T16:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T15:35:50.097Z",
+        "sourceId": "boe_yields",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "brent_gbp",
+      "label": "Brent crude in GBP",
+      "cadence": "trading-daily",
+      "provenance": "live-fallback",
+      "rawRows": 587,
+      "baselineReferenceDays": 587,
+      "first": "2024-07-04",
+      "last": "2026-10-27",
+      "missingSlotsToReview": [
+        "2024-08-26",
+        "2024-12-25",
+        "2024-12-26",
+        "2025-01-01",
+        "2025-04-18",
+        "2025-04-21",
+        "2025-05-05",
+        "2025-05-26",
+        "2025-08-25",
+        "2025-12-25",
+        "2025-12-26",
+        "2026-01-01",
+        "2026-04-03",
+        "2026-04-06",
+        "2026-05-04",
+        "2026-05-25",
+        "2026-08-31"
+      ],
+      "missingSlotCaveat": "Weekday candidates only: publisher holidays, US/UK calendars and expected publication lag require source review; these are not asserted ingest failures.",
+      "latest": {
+        "value": 92.47,
+        "observedAt": "2026-10-27T00:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T17:32:27.847Z",
+        "sourceId": "eia_brent",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "housebuilder_idx",
+      "label": "UK housebuilder composite",
+      "cadence": "trading-daily",
+      "provenance": "live-fallback",
+      "rawRows": 134,
+      "baselineReferenceDays": 134,
+      "first": "2026-04-17",
+      "last": "2026-10-27",
+      "missingSlotsToReview": [
+        "2026-04-20",
+        "2026-05-04",
+        "2026-05-25",
+        "2026-08-31"
+      ],
+      "missingSlotCaveat": "Weekday candidates only: publisher holidays, US/UK calendars and expected publication lag require source review; these are not asserted ingest failures.",
+      "latest": {
+        "value": 55.8,
+        "observedAt": "2026-10-27T16:30:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T12:15:35.260Z",
+        "sourceId": "eodhd_housebuilders",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "services_pmi",
+      "label": "S&P Global UK Services PMI",
+      "cadence": "monthly",
+      "provenance": "fixture",
+      "rawRows": 28,
+      "baselineReferenceDays": 28,
+      "first": "2024-07-31",
+      "last": "2026-09-30",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 52.1,
+        "observedAt": "2026-09-30T00:00:00Z",
+        "releasedAt": "2026-10-05T00:00:00Z",
+        "ingestedAt": "2026-10-28T16:30:27.865Z",
+        "sourceId": "sp_global_pmi",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "consumer_confidence",
+      "label": "GfK consumer confidence",
+      "cadence": "monthly",
+      "provenance": "fixture",
+      "rawRows": 28,
+      "baselineReferenceDays": 28,
+      "first": "2024-07-31",
+      "last": "2026-10-31",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": -24,
+        "observedAt": "2026-10-31T00:00:00Z",
+        "releasedAt": "2026-10-23T00:00:00Z",
+        "ingestedAt": "2026-10-28T16:30:27.865Z",
+        "sourceId": "gfk_confidence",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "rics_price_balance",
+      "label": "RICS house-price balance",
+      "cadence": "monthly",
+      "provenance": "fixture",
+      "rawRows": 27,
+      "baselineReferenceDays": 27,
+      "first": "2024-07-31",
+      "last": "2026-09-30",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": -32,
+        "observedAt": "2026-09-30T00:00:00Z",
+        "releasedAt": "2026-10-06T00:00:00Z",
+        "ingestedAt": "2026-10-28T16:30:27.865Z",
+        "sourceId": "rics_rms",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "cb_headroom",
+      "label": "Current-budget headroom (forecast)",
+      "cadence": "event",
+      "provenance": "fixture",
+      "rawRows": 5,
+      "baselineReferenceDays": 5,
+      "first": "2024-10-30",
+      "last": "2026-10-28",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 14.5,
+        "observedAt": "2026-10-28T00:00:00Z",
+        "releasedAt": "2026-10-28T13:29:19Z",
+        "ingestedAt": "2026-10-28T17:32:29.826Z",
+        "sourceId": "obr_efo",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "psnfl_trajectory",
+      "label": "PSNFL trajectory deviation (forecast)",
+      "cadence": "event",
+      "provenance": "fixture",
+      "rawRows": 5,
+      "baselineReferenceDays": 5,
+      "first": "2024-10-30",
+      "last": "2026-10-28",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 0,
+        "observedAt": "2026-10-28T00:00:00Z",
+        "releasedAt": "2026-10-28T13:29:19Z",
+        "ingestedAt": "2026-10-28T17:32:29.826Z",
+        "sourceId": "obr_efo",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "borrowing_outturn",
+      "label": "Public-sector net borrowing",
+      "cadence": "monthly",
+      "provenance": "live",
+      "rawRows": 26,
+      "baselineReferenceDays": 26,
+      "first": "2024-08-01",
+      "last": "2026-09-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 24.52,
+        "observedAt": "2026-09-01T00:00:00Z",
+        "releasedAt": "2026-10-20T23:00:00.000Z",
+        "ingestedAt": "2026-10-28T12:15:31.615Z",
+        "sourceId": "ons_psf",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "debt_interest",
+      "label": "Central-government net interest payable",
+      "cadence": "monthly",
+      "provenance": "live",
+      "rawRows": 26,
+      "baselineReferenceDays": 26,
+      "first": "2024-08-01",
+      "last": "2026-09-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 10.933,
+        "observedAt": "2026-09-01T00:00:00Z",
+        "releasedAt": "2026-10-20T23:00:00.000Z",
+        "ingestedAt": "2026-10-28T12:15:31.615Z",
+        "sourceId": "ons_psf",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "ilg_share",
+      "label": "Index-linked gilt share of stock",
+      "cadence": "trading-daily",
+      "provenance": "live",
+      "rawRows": 135,
+      "baselineReferenceDays": 135,
+      "first": "2026-04-17",
+      "last": "2026-10-27",
+      "missingSlotsToReview": [
+        "2026-05-04",
+        "2026-05-25",
+        "2026-08-31"
+      ],
+      "missingSlotCaveat": "Weekday candidates only: publisher holidays, US/UK calendars and expected publication lag require source review; these are not asserted ingest failures.",
+      "latest": {
+        "value": 24.47949830594804,
+        "observedAt": "2026-10-27T00:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T12:15:33.419Z",
+        "sourceId": "dmo",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "issuance_long_share",
+      "label": "Long-dated share of conventional gilt stock",
+      "cadence": "trading-daily",
+      "provenance": "live",
+      "rawRows": 135,
+      "baselineReferenceDays": 135,
+      "first": "2026-04-17",
+      "last": "2026-10-27",
+      "missingSlotsToReview": [
+        "2026-05-04",
+        "2026-05-25",
+        "2026-08-31"
+      ],
+      "missingSlotCaveat": "Weekday candidates only: publisher holidays, US/UK calendars and expected publication lag require source review; these are not asserted ingest failures.",
+      "latest": {
+        "value": 30.673965664751584,
+        "observedAt": "2026-10-27T00:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T12:15:33.419Z",
+        "sourceId": "dmo",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "inactivity_rate",
+      "label": "Economic inactivity rate, 16-64",
+      "cadence": "monthly",
+      "provenance": "live",
+      "rawRows": 24,
+      "baselineReferenceDays": 24,
+      "first": "2024-08-01",
+      "last": "2026-07-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 20.9,
+        "observedAt": "2026-07-01T00:00:00Z",
+        "releasedAt": "2026-10-19T23:00:00.000Z",
+        "ingestedAt": "2026-10-28T17:47:55.565Z",
+        "sourceId": "ons_lms",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "inactivity_health",
+      "label": "Health-related inactivity (m)",
+      "cadence": "monthly",
+      "provenance": "live",
+      "rawRows": 24,
+      "baselineReferenceDays": 24,
+      "first": "2024-08-01",
+      "last": "2026-07-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 2.738,
+        "observedAt": "2026-07-01T00:00:00Z",
+        "releasedAt": "2026-10-19T23:00:00.000Z",
+        "ingestedAt": "2026-10-28T17:47:55.565Z",
+        "sourceId": "ons_lms",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "unemployment",
+      "label": "Unemployment rate, 16+",
+      "cadence": "monthly",
+      "provenance": "live",
+      "rawRows": 24,
+      "baselineReferenceDays": 24,
+      "first": "2024-08-01",
+      "last": "2026-07-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 4.7,
+        "observedAt": "2026-07-01T00:00:00Z",
+        "releasedAt": "2026-10-19T23:00:00.000Z",
+        "ingestedAt": "2026-10-28T17:47:55.565Z",
+        "sourceId": "ons_lms",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "vacancies_per_unemployed",
+      "label": "Vacancies per unemployed person",
+      "cadence": "monthly",
+      "provenance": "live",
+      "rawRows": 25,
+      "baselineReferenceDays": 24,
+      "first": "2024-08-01",
+      "last": "2026-08-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 0.411214953271028,
+        "observedAt": "2026-07-01T00:00:00Z",
+        "releasedAt": "2026-10-19T23:00:00.000Z",
+        "ingestedAt": "2026-10-28T17:47:55.565Z",
+        "sourceId": "ons_lms",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "payroll_mom",
+      "label": "AWE regular pay index",
+      "cadence": "monthly",
+      "provenance": "live",
+      "rawRows": 26,
+      "baselineReferenceDays": 26,
+      "first": "2024-07-01",
+      "last": "2026-08-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 238.3,
+        "observedAt": "2026-08-01T00:00:00Z",
+        "releasedAt": "2026-10-19T23:00:00.000Z",
+        "ingestedAt": "2026-10-28T12:15:37.423Z",
+        "sourceId": "ons_rti",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "real_regular_pay",
+      "label": "Real regular pay growth, YoY",
+      "cadence": "monthly",
+      "provenance": "live",
+      "rawRows": 25,
+      "baselineReferenceDays": 25,
+      "first": "2024-08-01",
+      "last": "2026-08-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 0.7,
+        "observedAt": "2026-08-01T00:00:00Z",
+        "releasedAt": "2026-10-19T23:00:00.000Z",
+        "ingestedAt": "2026-10-28T17:47:55.565Z",
+        "sourceId": "ons_lms",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "mortgage_2y_fix",
+      "label": "Effective 2y fix mortgage rate",
+      "cadence": "monthly",
+      "provenance": "live",
+      "rawRows": 28,
+      "baselineReferenceDays": 28,
+      "first": "2024-06-30",
+      "last": "2026-09-30",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 5.13,
+        "observedAt": "2026-09-30T16:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T17:36:50.739Z",
+        "sourceId": "boe_mortgage_rates",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "dd_failure_rate",
+      "label": "Direct-debit failure rate",
+      "cadence": "monthly",
+      "provenance": "fixture",
+      "rawRows": 27,
+      "baselineReferenceDays": 27,
+      "first": "2024-07-31",
+      "last": "2026-09-30",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 2.43,
+        "observedAt": "2026-09-30T00:00:00Z",
+        "releasedAt": "2026-10-22T00:00:00Z",
+        "ingestedAt": "2026-10-28T12:15:37.423Z",
+        "sourceId": "ons_rti",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "housing_trajectory",
+      "label": "Net housing additions vs. trajectory",
+      "cadence": "quarterly",
+      "provenance": "fixture",
+      "rawRows": 17,
+      "baselineReferenceDays": 17,
+      "first": "2022-06-30",
+      "last": "2026-06-30",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 47.7,
+        "observedAt": "2026-06-30T00:00:00Z",
+        "releasedAt": "2026-09-24T00:00:00Z",
+        "ingestedAt": "2026-10-28T02:31:00.068Z",
+        "sourceId": "mhclg",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "planning_consents",
+      "label": "Planning consents vs. baseline",
+      "cadence": "quarterly",
+      "provenance": "fixture",
+      "rawRows": 15,
+      "baselineReferenceDays": 15,
+      "first": "2022-12-31",
+      "last": "2026-06-30",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 60,
+        "observedAt": "2026-06-30T00:00:00Z",
+        "releasedAt": "2026-09-24T00:00:00Z",
+        "ingestedAt": "2026-10-28T02:31:00.068Z",
+        "sourceId": "mhclg",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "new_towns_milestones",
+      "label": "New towns milestones hit",
+      "cadence": "quarterly",
+      "provenance": "editorial",
+      "rawRows": 3,
+      "baselineReferenceDays": 3,
+      "first": "2026-04-17",
+      "last": "2026-09-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 68,
+        "observedAt": "2026-09-01T00:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T02:31:00.178Z",
+        "sourceId": "gov_uk",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "bics_rollout",
+      "label": "BICS rollout vs. target",
+      "cadence": "quarterly",
+      "provenance": "editorial",
+      "rawRows": 3,
+      "baselineReferenceDays": 3,
+      "first": "2026-04-17",
+      "last": "2026-09-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 81.4,
+        "observedAt": "2026-09-01T00:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T02:31:00.178Z",
+        "sourceId": "desnz",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "industrial_strategy",
+      "label": "Industrial Strategy milestones",
+      "cadence": "quarterly",
+      "provenance": "editorial",
+      "rawRows": 3,
+      "baselineReferenceDays": 3,
+      "first": "2026-04-17",
+      "last": "2026-09-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 74,
+        "observedAt": "2026-09-01T00:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T02:31:00.178Z",
+        "sourceId": "dbt",
+        "payloadClass": "live"
+      }
+    },
+    {
+      "indicatorId": "smr_programme",
+      "label": "SMR fleet progress",
+      "cadence": "quarterly",
+      "provenance": "editorial",
+      "rawRows": 3,
+      "baselineReferenceDays": 3,
+      "first": "2026-04-17",
+      "last": "2026-09-01",
+      "missingSlotsToReview": [],
+      "missingSlotCaveat": "Reference-period slots between first and last stored observations; not evidence that earlier history was available.",
+      "latest": {
+        "value": 62,
+        "observedAt": "2026-09-01T00:00:00Z",
+        "releasedAt": null,
+        "ingestedAt": "2026-10-28T02:31:00.178Z",
+        "sourceId": "gov_uk",
+        "payloadClass": "live"
+      }
+    }
+  ],
+  "sourceCadence": [
+    {
+      "sourceId": "boe_fx",
+      "name": "Bank of England -- Exchange rates",
+      "cadence": "trading-daily",
+      "graceDays": 7,
+      "state": "green",
+      "latestObservedAt": "2026-10-27T16:00:00Z"
+    },
+    {
+      "sourceId": "boe_mortgage_rates",
+      "name": "Bank of England -- 2y fix mortgage rate (IUMBV34)",
+      "cadence": "monthly",
+      "graceDays": 50,
+      "state": "green",
+      "latestObservedAt": "2026-09-30T16:00:00Z"
+    },
+    {
+      "sourceId": "boe_yields",
+      "name": "Bank of England -- Statistical Database (gilt yields)",
+      "cadence": "trading-daily",
+      "graceDays": 7,
+      "state": "green",
+      "latestObservedAt": "2026-10-26T16:00:00Z"
+    },
+    {
+      "sourceId": "dbt",
+      "name": "Department for Business and Trade",
+      "cadence": "quarterly",
+      "graceDays": 120,
+      "state": "green",
+      "latestObservedAt": "2026-09-01T00:00:00Z"
+    },
+    {
+      "sourceId": "desnz",
+      "name": "Department for Energy Security and Net Zero",
+      "cadence": "quarterly",
+      "graceDays": 120,
+      "state": "green",
+      "latestObservedAt": "2026-09-01T00:00:00Z"
+    },
+    {
+      "sourceId": "dmo",
+      "name": "UK Debt Management Office -- gilts in issue",
+      "cadence": "trading-daily",
+      "graceDays": 7,
+      "state": "green",
+      "latestObservedAt": "2026-10-27T00:00:00Z"
+    },
+    {
+      "sourceId": "eia_brent",
+      "name": "US EIA -- Europe Brent Spot Price (FOB)",
+      "cadence": "trading-daily",
+      "graceDays": 10,
+      "state": "green",
+      "latestObservedAt": "2026-10-27T00:00:00Z"
+    },
+    {
+      "sourceId": "eodhd_housebuilders",
+      "name": "EODHD -- UK housebuilder composite (daily EOD)",
+      "cadence": "trading-daily",
+      "graceDays": 8,
+      "state": "green",
+      "latestObservedAt": "2026-10-27T16:30:00Z"
+    },
+    {
+      "sourceId": "gfk_confidence",
+      "name": "GfK / NIESR -- Consumer Confidence Barometer",
+      "cadence": "monthly",
+      "graceDays": 45,
+      "state": "green",
+      "latestObservedAt": "2026-10-31T00:00:00Z",
+      "latestReleasedAt": "2026-10-23T00:00:00Z"
+    },
+    {
+      "sourceId": "gov_uk",
+      "name": "gov.uk -- Announcements RSS",
+      "cadence": "quarterly",
+      "graceDays": 120,
+      "state": "green",
+      "latestObservedAt": "2026-09-01T00:00:00Z"
+    },
+    {
+      "sourceId": "lseg",
+      "name": "LSEG -- FTSE 250",
+      "cadence": "trading-daily",
+      "graceDays": 10,
+      "state": "green",
+      "latestObservedAt": "2026-10-27T16:30:00Z"
+    },
+    {
+      "sourceId": "mhclg",
+      "name": "MHCLG / DLUHC -- Housing Statistics",
+      "cadence": "quarterly",
+      "graceDays": 110,
+      "state": "green",
+      "latestObservedAt": "2026-06-30T00:00:00Z",
+      "latestReleasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "sourceId": "obr_efo",
+      "name": "Office for Budget Responsibility -- Economic & Fiscal Outlook",
+      "cadence": "event",
+      "graceDays": 255,
+      "state": "green",
+      "latestObservedAt": "2026-10-28T00:00:00Z",
+      "latestReleasedAt": "2026-10-28T13:29:19Z"
+    },
+    {
+      "sourceId": "ons_lms",
+      "name": "ONS -- Labour Market Statistics",
+      "cadence": "monthly",
+      "graceDays": 50,
+      "state": "green",
+      "latestObservedAt": "2026-07-01T00:00:00Z",
+      "latestReleasedAt": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "sourceId": "ons_psf",
+      "name": "ONS -- Public Sector Finances",
+      "cadence": "monthly",
+      "graceDays": 50,
+      "state": "green",
+      "latestObservedAt": "2026-09-01T00:00:00Z",
+      "latestReleasedAt": "2026-10-20T23:00:00.000Z"
+    },
+    {
+      "sourceId": "ons_rti",
+      "name": "ONS -- Real-Time Indicators",
+      "cadence": "monthly",
+      "graceDays": 50,
+      "state": "green",
+      "latestObservedAt": "2026-09-30T00:00:00Z",
+      "latestReleasedAt": "2026-10-22T00:00:00Z"
+    },
+    {
+      "sourceId": "rics_rms",
+      "name": "RICS -- UK Residential Market Survey",
+      "cadence": "monthly",
+      "graceDays": 45,
+      "state": "green",
+      "latestObservedAt": "2026-09-30T00:00:00Z",
+      "latestReleasedAt": "2026-10-06T00:00:00Z"
+    },
+    {
+      "sourceId": "sp_global_pmi",
+      "name": "S&P Global -- UK Services PMI",
+      "cadence": "monthly",
+      "graceDays": 45,
+      "state": "green",
+      "latestObservedAt": "2026-09-30T00:00:00Z",
+      "latestReleasedAt": "2026-10-05T00:00:00Z"
+    }
+  ],
+  "latestIngestionAttempts": [
+    {
+      "source_id": "seed",
+      "started_at": "2026-04-17T14:02:00.000Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "boe_sonia:historical",
+      "started_at": "2026-04-19T08:17:50.711Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "lseg_housebuilders",
+      "started_at": "2026-04-22T07:46:00.403Z",
+      "status": "unchanged",
+      "error": null
+    },
+    {
+      "source_id": "twelve_data_housebuilders",
+      "started_at": "2026-04-22T08:45:49.308Z",
+      "status": "unchanged",
+      "error": null
+    },
+    {
+      "source_id": "boe_sonia",
+      "started_at": "2026-04-23T15:30:33.060Z",
+      "status": "unchanged",
+      "error": null
+    },
+    {
+      "source_id": "ice_gas",
+      "started_at": "2026-04-23T15:30:35.867Z",
+      "status": "unchanged",
+      "error": null
+    },
+    {
+      "source_id": "moneyfacts:historical",
+      "started_at": "2026-04-27T18:02:58.475Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "moneyfacts",
+      "started_at": "2026-04-27T18:06:50.313Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "unknown",
+      "started_at": "2026-07-06T02:31:24.303Z",
+      "status": "dlq",
+      "error": "dlq"
+    },
+    {
+      "source_id": "ons_psf:historical",
+      "started_at": "2026-07-06T18:19:13.969Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "ons_lms:historical",
+      "started_at": "2026-07-06T18:19:14.551Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "boe_fx:historical",
+      "started_at": "2026-07-08T18:51:01.605Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "boe_breakevens:historical",
+      "started_at": "2026-07-08T18:51:05.182Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "boe_mortgage_rates:historical",
+      "started_at": "2026-07-08T18:51:07.231Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "growth_sentiment:historical",
+      "started_at": "2026-10-13T16:04:50.311Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "mhclg:historical",
+      "started_at": "2026-10-13T16:05:24.263Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "ons_rti:historical",
+      "started_at": "2026-10-13T16:05:43.536Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "mhclg",
+      "started_at": "2026-10-28T02:31:00.023Z",
+      "status": "unchanged",
+      "error": null
+    },
+    {
+      "source_id": "gov_uk",
+      "started_at": "2026-10-28T02:31:00.248Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "ons_psf",
+      "started_at": "2026-10-28T12:15:30.369Z",
+      "status": "unchanged",
+      "error": null
+    },
+    {
+      "source_id": "dmo",
+      "started_at": "2026-10-28T12:15:32.030Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "eodhd_housebuilders",
+      "started_at": "2026-10-28T12:15:33.764Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "ons_rti",
+      "started_at": "2026-10-28T12:15:37.056Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "lseg:historical",
+      "started_at": "2026-10-28T13:07:34.342Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "obr_efo:historical",
+      "started_at": "2026-10-28T13:11:30.499Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "sp_global_pmi",
+      "started_at": "2026-10-28T13:16:51.115Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "gfk_confidence",
+      "started_at": "2026-10-28T13:16:51.115Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "rics_rms",
+      "started_at": "2026-10-28T13:16:51.115Z",
+      "status": "unchanged",
+      "error": "skipped: disabled — rics.org Imperva bot challenge blocks all non-residential egress (verified 2026-07-07); hand-refresh fixture path owns rics_price_balance"
+    },
+    {
+      "source_id": "mhclg_housing",
+      "started_at": "2026-10-28T13:16:51.450Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "ons_dd_failure",
+      "started_at": "2026-10-28T13:17:01.597Z",
+      "status": "unchanged",
+      "error": "skipped: fetchVia=relay (ingested via /admin/relay-artefact)"
+    },
+    {
+      "source_id": "delivery_milestones",
+      "started_at": "2026-10-28T13:17:01.615Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "delivery_commitments",
+      "started_at": "2026-10-28T13:17:01.801Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "timeline_triage",
+      "started_at": "2026-10-28T13:17:06.810Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "dmo:historical",
+      "started_at": "2026-10-28T13:26:11.454Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "boe_yields",
+      "started_at": "2026-10-28T15:35:46.564Z",
+      "status": "unchanged",
+      "error": null
+    },
+    {
+      "source_id": "boe_fx",
+      "started_at": "2026-10-28T15:35:48.086Z",
+      "status": "unchanged",
+      "error": null
+    },
+    {
+      "source_id": "boe_breakevens",
+      "started_at": "2026-10-28T15:35:49.865Z",
+      "status": "unchanged",
+      "error": null
+    },
+    {
+      "source_id": "growth_sentiment",
+      "started_at": "2026-10-28T16:30:27.642Z",
+      "status": "unchanged",
+      "error": null
+    },
+    {
+      "source_id": "lseg",
+      "started_at": "2026-10-28T16:30:28.459Z",
+      "status": "unchanged",
+      "error": null
+    },
+    {
+      "source_id": "eia_brent",
+      "started_at": "2026-10-28T17:32:26.319Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "obr_efo",
+      "started_at": "2026-10-28T17:32:29.449Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "boe_yields:historical",
+      "started_at": "2026-10-28T17:36:44.312Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "eia_brent:historical",
+      "started_at": "2026-10-28T17:36:48.123Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "boe_mortgage_rates",
+      "started_at": "2026-10-28T17:36:50.328Z",
+      "status": "success",
+      "error": null
+    },
+    {
+      "source_id": "ons_lms",
+      "started_at": "2026-10-28T17:47:54.259Z",
+      "status": "unchanged",
+      "error": null
+    }
+  ],
+  "quarantines": [],
+  "fixtureChecks": [
+    {
+      "file": "brent-history.json",
+      "indicatorId": "brent_gbp",
+      "fixturePoints": 587,
+      "missingReferenceDays": [],
+      "disagreements": [],
+      "tolerance": 1e-8
+    },
+    {
+      "file": "consumer-confidence-history.json",
+      "indicatorId": "consumer_confidence",
+      "fixturePoints": 28,
+      "missingReferenceDays": [],
+      "disagreements": [],
+      "tolerance": 1e-8
+    },
+    {
+      "file": "dd-failure-rate-history.json",
+      "indicatorId": "dd_failure_rate",
+      "fixturePoints": 27,
+      "missingReferenceDays": [],
+      "disagreements": [],
+      "tolerance": 0.051
+    },
+    {
+      "file": "ftse-250-history.json",
+      "indicatorId": "ftse_250",
+      "fixturePoints": 587,
+      "missingReferenceDays": [],
+      "disagreements": [
+        {
+          "observedAt": "2026-08-26T15:30:00Z",
+          "fixture": 24898,
+          "stored": [
+            24961.9
+          ]
+        }
+      ],
+      "tolerance": 0.51
+    },
+    {
+      "file": "rics-price-balance-history.json",
+      "indicatorId": "rics_price_balance",
+      "fixturePoints": 27,
+      "missingReferenceDays": [],
+      "disagreements": [],
+      "tolerance": 1e-8
+    },
+    {
+      "file": "services-pmi-history.json",
+      "indicatorId": "services_pmi",
+      "fixturePoints": 28,
+      "missingReferenceDays": [],
+      "disagreements": [],
+      "tolerance": 1e-8
+    }
+  ],
+  "limitations": [
+    "Numeric bounds, date checks and fixture parity do not prove that every historical source value was transcribed correctly.",
+    "Stored ingested_at is last write time, not an immutable first-publication or event-time record.",
+    "Historical series begin at different dates. A 2019 policy window does not imply complete observations since 2019.",
+    "Repeated same-day rows can represent timestamp migrations or revisions. Canonical baseline selection uses one reference day; contradictions remain listed for review."
+  ],
+  "primaryVerification": [
+    {
+      "adapter": "boe_yields",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDMNZC%2CIUDLNZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "canonicalSamplesCompared": 1302,
+      "mismatches": 0
+    },
+    {
+      "adapter": "boe_fx",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=XUDLUSS%2CXUDLBK67&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "canonicalSamplesCompared": 1220,
+      "mismatches": 0
+    },
+    {
+      "adapter": "boe_breakevens",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSNZC%2CIUDSIZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "canonicalSamplesCompared": 609,
+      "mismatches": 0
+    },
+    {
+      "adapter": "boe_mortgage_rates",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUMBV34&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y",
+      "canonicalSamplesCompared": 28,
+      "mismatches": 0
+    }
+  ],
+  "reviewedFindings": [
+    {
+      "finding": "Two breakeven bound flags describe one negative reference-day observation, not two independent errors.",
+      "resolution": "Official BoE IUDSNZC minus IUDSIZC for 1 August 2024 is -0.03139999999999965. The stored canonical value matches and is retained. The operational lower plausibility guard now allows negative breakevens down to -2; the upper bound 8 and daily-jump protection 0.8 are unchanged. This does not alter scoring polarity or weights."
+    },
+    {
+      "finding": "130 reference-day contradictions remain in legacy gilt representations.",
+      "resolution": "All selected canonical gilt observations now match the official 10-year/20-year series. Older midnight values remain visible in raw history, excluded by the one-reference-day baseline selection."
+    },
+    {
+      "finding": "FTSE 250 on 26 August 2026 differs between the stored live value (24961.9) and the curated Yahoo history proxy (24898).",
+      "resolution": "Unresolved provider/session discrepancy. Yahoo returned HTTP 429 during verification. Neither value was silently overwritten; the discrepancy remains disclosed."
+    },
+    {
+      "finding": "Housebuilder history lacks 20 April 2026.",
+      "resolution": "No independently verified five-issuer close set was retrieved; gap retained."
+    },
+    {
+      "finding": "Completed 28 October FTSE/housebuilder closes are not yet verified.",
+      "resolution": "Local Yahoo endpoints rate-limited; the new 16:35/18:05 scheduled close checks use the existing production EODHD path. No intraday or invented completed bar was published."
+    },
+    {
+      "finding": "Monthly/quarterly stored series have no missing reference slots between their own first and last observations.",
+      "resolution": "This is structural coverage, not a claim of complete history since the 2019 policy baseline or contemporaneous unrevised vintages."
+    },
+    {
+      "finding": "Live vacancies/unemployment previously mixed independently latest months.",
+      "resolution": "Corrected at 2026-10-28T17:47:55.565Z to latest common July 2026 period: 704/1712=0.411214953271028. The superseded August-labelled mixed-period row remains in raw history, excluded by current and baseline selection. Public correction patch records original and revised values."
+    }
+  ],
+  "repairsApplied": [
+    {
+      "at": "2026-10-28T17:32:25Z",
+      "series": "brent_gbp",
+      "count": 5,
+      "dates": "21,22,23,26,27 October 2026",
+      "pipeline": "backfillObservations overwrite=false; paired official EIA HTML and stored BoE FX"
+    },
+    {
+      "at": "2026-10-28T17:36:44.864Z",
+      "series": "gilt_10y,gilt_30y",
+      "count": 84,
+      "dates": "2 April–31 May 2024",
+      "pipeline": "backfillObservations overwrite=false; canonical official IUDMNZC/IUDLNZC"
+    },
+    {
+      "at": "2026-10-28T17:36:49.426Z",
+      "series": "brent_gbp",
+      "count": 8,
+      "dates": "21–24,27–30 April 2026",
+      "pipeline": "backfillObservations overwrite=false; official EIA HTML and same-day BoE FX"
+    },
+    {
+      "series": "mortgage_2y_fix",
+      "dates": "May/June 2026",
+      "old": [
+        4.92,
+        4.81
+      ],
+      "currentOfficial": [
+        4.91,
+        4.8
+      ],
+      "pipeline": "runAdapter audited revision batch retained September current head5.13"
+    },
+    {
+      "at": "2026-10-28T17:47:55.565Z",
+      "series": "vacancies_per_unemployed",
+      "old": {
+        "value": 0.4036214953271028,
+        "referenceLabel": "2026-08"
+      },
+      "corrected": {
+        "value": 0.411214953271028,
+        "referencePeriod": "2026-07",
+        "numeratorThousands": 704,
+        "denominatorThousands": 1712
+      },
+      "pipeline": "runAdapter with recorded official ONS payloads; latest common reference-period join"
+    }
+  ],
+  "currentOnsVintageComparison": [
+    {
+      "adapter": "ons_lms",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem/data",
+      "compared": 121,
+      "exactMatches": 55,
+      "historicalDifferences": [
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2024-08-01",
+          "stored": 2.792,
+          "published": 2.793
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2024-09-01",
+          "stored": 2.795,
+          "published": 2.798
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2024-10-01",
+          "stored": 2.816,
+          "published": 2.805
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2024-11-01",
+          "stored": 2.771,
+          "published": 2.776
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-01-01",
+          "stored": 2.785,
+          "published": 2.784
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-02-01",
+          "stored": 2.779,
+          "published": 2.775
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-03-01",
+          "stored": 2.796,
+          "published": 2.782
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-04-01",
+          "stored": 2.783,
+          "published": 2.776
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-05-01",
+          "stored": 2.785,
+          "published": 2.78
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-06-01",
+          "stored": 2.797,
+          "published": 2.792
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-07-01",
+          "stored": 2.823,
+          "published": 2.824
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-08-01",
+          "stored": 2.822,
+          "published": 2.826
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-09-01",
+          "stored": 2.81,
+          "published": 2.818
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-10-01",
+          "stored": 2.811,
+          "published": 2.8
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-11-01",
+          "stored": 2.779,
+          "published": 2.786
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2025-12-01",
+          "stored": 2.774,
+          "published": 2.785
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2026-01-01",
+          "stored": 2.788,
+          "published": 2.792
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2026-02-01",
+          "stored": 2.778,
+          "published": 2.772
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "day": "2026-03-01",
+          "stored": 2.779,
+          "published": 2.772
+        },
+        {
+          "indicatorId": "inactivity_rate",
+          "day": "2025-01-01",
+          "stored": 21.4,
+          "published": 21.3
+        },
+        {
+          "indicatorId": "inactivity_rate",
+          "day": "2025-02-01",
+          "stored": 21.4,
+          "published": 21.3
+        },
+        {
+          "indicatorId": "inactivity_rate",
+          "day": "2025-03-01",
+          "stored": 21.3,
+          "published": 21.2
+        },
+        {
+          "indicatorId": "inactivity_rate",
+          "day": "2025-05-01",
+          "stored": 21,
+          "published": 20.9
+        },
+        {
+          "indicatorId": "inactivity_rate",
+          "day": "2025-06-01",
+          "stored": 21.1,
+          "published": 21
+        },
+        {
+          "indicatorId": "inactivity_rate",
+          "day": "2025-08-01",
+          "stored": 21,
+          "published": 20.9
+        },
+        {
+          "indicatorId": "inactivity_rate",
+          "day": "2025-11-01",
+          "stored": 20.8,
+          "published": 20.9
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2024-10-01",
+          "stored": 2.2,
+          "published": 2.3
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2024-11-01",
+          "stored": 2.2,
+          "published": 2.3
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2024-12-01",
+          "stored": 2.3,
+          "published": 2.5
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2025-01-01",
+          "stored": 1.9,
+          "published": 2
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2025-02-01",
+          "stored": 1.9,
+          "published": 2.1
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2025-03-01",
+          "stored": 1.9,
+          "published": 1.8
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2025-04-01",
+          "stored": 1.5,
+          "published": 1.4
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2025-05-01",
+          "stored": 1,
+          "published": 0.8
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2025-06-01",
+          "stored": 0.5,
+          "published": 0.4
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2025-09-01",
+          "stored": 0.7,
+          "published": 0.8
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2026-01-01",
+          "stored": 0.7,
+          "published": 0.8
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2026-05-01",
+          "stored": 1.1,
+          "published": 1.2
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2026-06-01",
+          "stored": 1.1,
+          "published": 1.2
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "day": "2026-07-01",
+          "stored": 0.9,
+          "published": 1
+        },
+        {
+          "indicatorId": "unemployment",
+          "day": "2024-09-01",
+          "stored": 4.3,
+          "published": 4.2
+        },
+        {
+          "indicatorId": "unemployment",
+          "day": "2025-01-01",
+          "stored": 4.4,
+          "published": 4.5
+        },
+        {
+          "indicatorId": "unemployment",
+          "day": "2025-02-01",
+          "stored": 4.5,
+          "published": 4.6
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2024-08-01",
+          "stored": 0.557398805573988,
+          "published": 0.559254327563249
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2024-09-01",
+          "stored": 0.5501661129568106,
+          "published": 0.5531062124248497
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2024-10-01",
+          "stored": 0.5192307692307693,
+          "published": 0.5195638229634381
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2024-12-01",
+          "stored": 0.516504854368932,
+          "published": 0.5155038759689923
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-01-01",
+          "stored": 0.5038119440914867,
+          "published": 0.5006313131313131
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-02-01",
+          "stored": 0.4801734820322181,
+          "published": 0.4780999383096854
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-03-01",
+          "stored": 0.46158536585365856,
+          "published": 0.4583333333333333
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-04-01",
+          "stored": 0.4393305439330544,
+          "published": 0.4395473496128648
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-05-01",
+          "stored": 0.43480861244019137,
+          "published": 0.4334916864608076
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-06-01",
+          "stored": 0.4324970131421744,
+          "published": 0.42865566037735847
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-07-01",
+          "stored": 0.42429476108232583,
+          "published": 0.42462600690448793
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-08-01",
+          "stored": 0.4074902179988821,
+          "published": 0.40738668158925573
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-09-01",
+          "stored": 0.39737991266375544,
+          "published": 0.3982494529540481
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-10-01",
+          "stored": 0.3967391304347826,
+          "published": 0.3982542280414621
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-11-01",
+          "stored": 0.3924588422729687,
+          "published": 0.39413333333333334
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2025-12-01",
+          "stored": 0.3927233814874264,
+          "published": 0.3935656836461126
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2026-01-01",
+          "stored": 0.40730337078651685,
+          "published": 0.4079909960607766
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2026-02-01",
+          "stored": 0.3959025470653378,
+          "published": 0.3971238938053097
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2026-03-01",
+          "stored": 0.40192743764172334,
+          "published": 0.40328054298642535
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2026-04-01",
+          "stored": 0.4007936507936508,
+          "published": 0.4034090909090909
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2026-05-01",
+          "stored": 0.40454545454545454,
+          "published": 0.40124153498871334
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2026-06-01",
+          "stored": 0.3989841986455982,
+          "published": 0.39763779527559057
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "day": "2026-07-01",
+          "stored": 0.3948256467941507,
+          "published": 0.411214953271028
+        }
+      ],
+      "missingCurrentPrimaryPair": [
+        {
+          "indicator_id": "vacancies_per_unemployed",
+          "source_id": "ons_lms",
+          "observed_at": "2026-08-01T00:00:00Z",
+          "value": 0.4036214953271028,
+          "released_at": "2026-10-19T23:00:00.000Z",
+          "payload_hash": "8312b6c6be6e8c6031352cea412f55c4b8aeb0bd15778ce2498ae746a8b80ce3",
+          "ingested_at": "2026-10-28T12:15:36.707Z"
+        }
+      ]
+    },
+    {
+      "adapter": "ons_psf",
+      "sourceUrl": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf/data",
+      "compared": 52,
+      "exactMatches": 3,
+      "historicalDifferences": [
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2024-09-01",
+          "stored": 18.703,
+          "published": 18.713
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2024-10-01",
+          "stored": 19.3,
+          "published": 19.092
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2024-11-01",
+          "stored": 13.455,
+          "published": 13.263
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2024-12-01",
+          "stored": 18.581,
+          "published": 18.418
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-01-01",
+          "stored": -14.421,
+          "published": -14.973
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-02-01",
+          "stored": 12.162,
+          "published": 11.632
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-03-01",
+          "stored": 13.977,
+          "published": 13.43
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-04-01",
+          "stored": 19.662,
+          "published": 20.158
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-05-01",
+          "stored": 18.389,
+          "published": 18.245
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-06-01",
+          "stored": 24.336,
+          "published": 24.273
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-07-01",
+          "stored": 1.241,
+          "published": 1.489
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-08-01",
+          "stored": 14.823,
+          "published": 15.361
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-09-01",
+          "stored": 22.072,
+          "published": 22.764
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-10-01",
+          "stored": 15.682,
+          "published": 16.177
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-11-01",
+          "stored": 9.44,
+          "published": 9.921
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2025-12-01",
+          "stored": 12.505,
+          "published": 12.93
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2026-01-01",
+          "stored": -32.911,
+          "published": -31.96
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2026-02-01",
+          "stored": 12.26,
+          "published": 12.827
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2026-03-01",
+          "stored": 11.857,
+          "published": 12.026
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2026-04-01",
+          "stored": 23.033,
+          "published": 23.132
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2026-05-01",
+          "stored": 23.294,
+          "published": 19.274
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2026-06-01",
+          "stored": 15.989,
+          "published": 13.289
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2026-07-01",
+          "stored": 1.8,
+          "published": 0.374
+        },
+        {
+          "indicatorId": "borrowing_outturn",
+          "day": "2026-08-01",
+          "stored": 18.268,
+          "published": 17.252
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2024-08-01",
+          "stored": 6.553,
+          "published": 6.542
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2024-09-01",
+          "stored": 5.828,
+          "published": 5.818
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2024-10-01",
+          "stored": 9.288,
+          "published": 9.278
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2024-11-01",
+          "stored": 3.557,
+          "published": 3.547
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2024-12-01",
+          "stored": 8.884,
+          "published": 8.875
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-01-01",
+          "stored": 6.534,
+          "published": 6.524
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-02-01",
+          "stored": 7.458,
+          "published": 7.448
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-03-01",
+          "stored": 4.515,
+          "published": 4.501
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-04-01",
+          "stored": 9.391,
+          "published": 9.232
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-05-01",
+          "stored": 7.759,
+          "published": 7.6
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-06-01",
+          "stored": 17.207,
+          "published": 17.048
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-07-01",
+          "stored": 7.092,
+          "published": 7.021
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-08-01",
+          "stored": 8.373,
+          "published": 8.363
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-09-01",
+          "stored": 9.389,
+          "published": 9.377
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-10-01",
+          "stored": 8.365,
+          "published": 8.356
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-11-01",
+          "stored": 3.13,
+          "published": 3.121
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2025-12-01",
+          "stored": 9.062,
+          "published": 9.052
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2026-01-01",
+          "stored": 1.508,
+          "published": 1.502
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2026-02-01",
+          "stored": 12.965,
+          "published": 12.959
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2026-03-01",
+          "stored": 3.216,
+          "published": 3.208
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2026-04-01",
+          "stored": 9.762,
+          "published": 9.758
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2026-05-01",
+          "stored": 11.747,
+          "published": 11.735
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2026-06-01",
+          "stored": 11.771,
+          "published": 11.75
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2026-07-01",
+          "stored": 7.705,
+          "published": 7.726
+        },
+        {
+          "indicatorId": "debt_interest",
+          "day": "2026-08-01",
+          "stored": 8.808,
+          "published": 8.883
+        }
+      ],
+      "missingCurrentPrimaryPair": []
+    },
+    {
+      "adapter": "ons_rti",
+      "sourceUrl": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/k54l/emp/data",
+      "compared": 53,
+      "exactMatches": 34,
+      "historicalDifferences": [
+        {
+          "indicatorId": "dd_failure_rate",
+          "day": "2026-07-31",
+          "stored": 2.44,
+          "published": 2.4
+        },
+        {
+          "indicatorId": "dd_failure_rate",
+          "day": "2026-08-31",
+          "stored": 2.41,
+          "published": 2.4
+        },
+        {
+          "indicatorId": "dd_failure_rate",
+          "day": "2026-09-30",
+          "stored": 2.43,
+          "published": 2.4
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2024-07-01",
+          "stored": 219.2,
+          "published": 219.1
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2024-09-01",
+          "stored": 220.8,
+          "published": 220.9
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2024-12-01",
+          "stored": 224.1,
+          "published": 224.2
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2025-03-01",
+          "stored": 226.1,
+          "published": 226
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2025-04-01",
+          "stored": 227.4,
+          "published": 227.2
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2025-05-01",
+          "stored": 228.3,
+          "published": 228.2
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2025-06-01",
+          "stored": 228.9,
+          "published": 228.7
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2025-07-01",
+          "stored": 229.5,
+          "published": 229.3
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2025-09-01",
+          "stored": 231,
+          "published": 231.1
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2025-10-01",
+          "stored": 231.8,
+          "published": 231.9
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2025-12-01",
+          "stored": 232.8,
+          "published": 232.9
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2026-01-01",
+          "stored": 232.9,
+          "published": 233
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2026-02-01",
+          "stored": 233.4,
+          "published": 233.5
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2026-03-01",
+          "stored": 233.9,
+          "published": 233.6
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2026-06-01",
+          "stored": 236.9,
+          "published": 237.1
+        },
+        {
+          "indicatorId": "payroll_mom",
+          "day": "2026-07-01",
+          "stored": 237.7,
+          "published": 237.9
+        }
+      ],
+      "missingCurrentPrimaryPair": []
+    }
+  ],
+  "onsVintagePolicy": "Current heads are refreshed from current official primary series. Older ONS observations retain their previously recorded source vintages; later revisions are reported, not silently mass-overwritten. Direct-debit curated history rounds to one decimal while current live values keep source precision. Differences against today's revised API are not automatically transcription errors. updateDate is revision metadata, not proof of first publication.",
+  "coverageInterpretation": "Score history begins17December2024 because the stored published-date labour inputs first meet historical quorum then: mortgage+DD earlier, unemployment12November, inactivity/health17December. This is eligibility under the stored revision/publication metadata, not proof no contemporaneous source existed earlier. No score history was fabricated to fill July–December2024.",
+  "scoreHistoryValidation": {
+    "h1": {
+      "points": 227,
+      "resolution": "raw",
+      "first": "2026-10-27T23:35:28.951Z",
+      "last": "2026-10-28T17:40:27.112Z",
+      "errorsOverQuarterPoint": 0,
+      "maxRoundingDifference": 0.04591321107427859
+    },
+    "h7": {
+      "points": 76,
+      "resolution": "hourly",
+      "first": "2026-10-21T17:55:24.911Z",
+      "last": "2026-10-28T17:40:27.112Z",
+      "errorsOverQuarterPoint": 0,
+      "maxRoundingDifference": 0.04591321107427859
+    },
+    "hAll": {
+      "points": 681,
+      "resolution": "daily",
+      "first": "2024-12-17T23:59:00.000Z",
+      "last": "2026-10-28T17:40:27.112Z",
+      "errorsOverQuarterPoint": 0,
+      "maxRoundingDifference": 0.049911176251669076
+    }
+  },
+  "currentScoreAfterSourceUpdates": {
+    "recordedAt": "2026-10-28T17:40:10.443Z",
+    "headline": 39,
+    "pillars": {
+      "market": 33.6,
+      "fiscal": 37.8,
+      "labour": 58.2,
+      "delivery": 34.6
+    },
+    "sourceHealth": [],
+    "note": "Before the17:47vacancies reference-period correction. The84gilt/8AprilBrent historical repairs did not change the rounded39.0 headline. Later new source data or computation corrections require a new score read; this audit is timestamped."
+  },
+  "scoreAfterRatioCorrection": {
+    "recordedAt": "2026-10-28T17:50:26.998Z",
+    "headline": 39.1,
+    "pillars": {
+      "market": 33.6,
+      "fiscal": 37.8,
+      "labour": 59.2,
+      "delivery": 34.6
+    },
+    "sourceHealth": [],
+    "note": "The rounded score moved from39.0 to39.1 following the common-period vacancies ratio correction. This is a computation correction, not a Budget reaction."
+  }
+}

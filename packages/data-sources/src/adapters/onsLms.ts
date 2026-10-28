@@ -91,13 +91,19 @@ export const onsLmsAdapter: DataSourceAdapter = {
       ]);
       const vBody = await vRes.text();
       const uBody = await uRes.text();
-      const v = parseOnsMonthly(vBody, SOURCE_ID, vUrl);
-      const u = parseOnsMonthly(uBody, SOURCE_ID, uUrl);
-      if (u.value > 0) {
+      // Vacancies and unemployment have different publication lags. Dividing
+      // each series' independent latest print mixed August vacancies with
+      // July unemployment and then stamped the result as August. Join by
+      // reference period, matching the historical adapter's definition.
+      const vacancies = parseOnsMonthlySeries(vBody, SOURCE_ID, vUrl);
+      const unemployed = parseOnsMonthlySeries(uBody, SOURCE_ID, uUrl);
+      const uByPeriod = new Map(unemployed.filter((point) => point.value > 0).map((point) => [point.observedAt, point]));
+      const v = vacancies.filter((point) => uByPeriod.has(point.observedAt)).at(-1);
+      const u = v ? uByPeriod.get(v.observedAt) : undefined;
+      if (v && u) {
         const ratio = v.value / u.value;
         const hash = await sha256Hex(vBody + "|" + uBody);
-        // Use the later of the two observations.
-        const observedAt = v.observedAt > u.observedAt ? v.observedAt : u.observedAt;
+        const observedAt = v.observedAt;
         // Released-at for a derived ratio is the later of the two inputs —
         // the ratio only becomes public once both legs have been released.
         const releasedAt = v.releasedAt && u.releasedAt

@@ -16,11 +16,12 @@
 import type { ScoreHistory } from "@tightrope/shared";
 import type { TimelineEvent, TimelineCategory } from "@tightrope/shared/timeline";
 import { BANDS, bandFor, PILLAR_ORDER, PILLARS } from "@tightrope/shared";
-import { shortDate } from "~/lib/format.js";
+import { shortDate, bstTimestamp } from "~/lib/format.js";
 import { mapEventsToChart } from "~/lib/chartAnnotations.js";
 import { safeHref } from "~/lib/safeHref.js";
 import { safeJsonForScriptTag } from "~/lib/safeJson.js";
-import { timeRatio } from "~/lib/scoreChart.js";
+import { timeRatio, scoreGapThreshold, scoreLinePath } from "~/lib/scoreChart.js";
+import { chartTickLabel, RESOLUTION_LABELS } from "~/lib/historyView.js";
 import { EVENT_STYLES, PILLAR_STYLES } from "~/lib/chartTheme.js";
 
 interface Props {
@@ -94,7 +95,7 @@ const bandRegions = BANDS.flatMap((band) => {
   const bottom = yFor(band.min);
   const h = bottom - top;
   if (h <= 0) return [];
-  return [{ y: top, h, colourToken: band.colourToken }];
+  return [{ y: top, h, min: band.min, max: band.max, colourToken: band.colourToken }];
 });
 
 // --- headline path --------------------------------------------------------
@@ -107,6 +108,8 @@ function xFor(timestamp: string): number {
 const headlineSeries = points.map((p) => p.headline);
 const latestHeadline = headlineSeries.length ? headlineSeries[headlineSeries.length - 1]! : 0;
 const accentBand = bandFor(latestHeadline);
+const resolution = history.resolution ?? "daily";
+const maxGapMs = scoreGapThreshold(resolution);
 
 // pathFromSeries normalises the y-axis to the data range; we want a fixed
 // 0..100 scale so band regions line up. Build the path manually using yFor.
@@ -116,13 +119,7 @@ function pointsToPath(series: readonly number[]): string {
     const x = padL + plotW / 2;
     return `M${x.toFixed(2)},${yFor(series[0]!).toFixed(2)}`;
   }
-  return series
-    .map((v, i) => {
-      const x = xFor(points[i]!.timestamp);
-      const y = yFor(v);
-      return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
-    })
-    .join(" ");
+  return scoreLinePath(series.map((v, i) => ({ x: xFor(points[i]!.timestamp), y: yFor(v), timestamp: points[i]!.timestamp })), maxGapMs);
 }
 const headlineD = pointsToPath(headlineSeries);
 
@@ -143,7 +140,9 @@ const eventKey = [...new Set(annotations.map(a => a.event.category))].map(catego
   count: annotations.filter(a => a.event.category === category).length,
 }));
 const latestPoint = points[points.length - 1];
-const sampleData = { width, padL, plotW, points: points.map(point => ({ ...point, x: xFor(point.timestamp), y: yFor(point.headline) })) };
+const sampleData = { width, padL, plotW, maxGapMs,
+  responsive: { width, height, padL, padR, padT, padB },
+  points: points.map(point => ({ ...point, x: xFor(point.timestamp), y: yFor(point.headline) })) };
 
 /** Titles are abbreviated to keep the SVG legible — the full title remains
  * accessible via the tooltip and label hover/focus target.
@@ -272,7 +271,7 @@ function tooltipIdFor(eventId: string): string {
 // --- date ticks (sparse) --------------------------------------------------
 // Render at most ~6 date labels so the x-axis stays readable. We pick the
 // first, last, and a roughly-evenly-spaced set in between.
-const dateTicks: { x: number; label: string; anchor: "start" | "middle" | "end" }[] = [];
+const dateTicks: { x: number; label: string; timestamp: string; anchor: "start" | "middle" | "end" }[] = [];
 if (points.length > 0) {
   const TARGET_TICKS = Math.min(6, points.length);
   const step = points.length === 1 ? 1 : (points.length - 1) / (TARGET_TICKS - 1);
@@ -282,7 +281,9 @@ if (points.length > 0) {
     // End ticks hug the plot edges: a centred label at the last point would
     // overflow the 16px right pad and clip mid-glyph ("12 Jul 2…").
     const anchor = i === 0 ? "start" : i === TARGET_TICKS - 1 ? "end" : "middle";
-    dateTicks.push({ x, label: shortDate(points[idx]!.timestamp), anchor });
+    const timestamp = points[idx]!.timestamp;
+    const span = Date.parse(points.at(-1)!.timestamp) - Date.parse(points[0]!.timestamp);
+    dateTicks.push({ x, label: chartTickLabel(timestamp, span), timestamp, anchor });
   }
 }
 
@@ -296,7 +297,7 @@ function fmt(n: number): string {
   return Math.abs(n) >= 100 ? Math.round(n).toString() : n.toFixed(1);
 }
 const ariaSummary = first !== null && last !== null && lo !== null && hi !== null
-  ? `Headline Tightrope Score over ${finite.length} day${finite.length === 1 ? "" : "s"}: starts ${fmt(first)}, ends ${fmt(last)}, range ${fmt(lo)} to ${fmt(hi)}. ${annotations.length} event${annotations.length === 1 ? "" : "s"} annotated.`
+  ? `Headline Tightrope Score across ${finite.length} recording${finite.length === 1 ? "" : "s"}, from ${bstTimestamp(points[0]!.timestamp)} to ${bstTimestamp(points.at(-1)!.timestamp)}: starts ${fmt(first)}, ends ${fmt(last)}, range ${fmt(lo)} to ${fmt(hi)}. ${annotations.length} event${annotations.length === 1 ? "" : "s"} annotated.`
   : "Headline Tightrope Score over time — no data yet.";
 
 // Stable IDs derived from chart dimensions so multiple charts on one page
@@ -331,6 +332,8 @@ const idScope = `chart-${width}x${height}`;
     {/* Band-tinted regions: subtle horizontal stripes mapping each band's range. */}
     {bandRegions.map((r) => (
       <rect
+        data-band-min={r.min}
+        data-band-max={r.max}
         x={padL}
         y={r.y}
         width={plotW}
@@ -343,10 +346,10 @@ const idScope = `chart-${width}x${height}`;
     {/* Y-axis grid lines + tick labels at band boundaries. */}
     <g class="grid">
       {yTicks.map((t) => (
-        <line x1={padL} y1={t.y} x2={padL + plotW} y2={t.y} class="grid-line" />
+        <line x1={padL} y1={t.y} x2={padL + plotW} y2={t.y} class="grid-line" data-score-tick={t.value} />
       ))}
       {yTicks.map((t) => (
-        <text x={padL - 8} y={t.y + 4} text-anchor="end" class="axis-label">{t.value}</text>
+        <text x={padL - 8} y={t.y + 4} text-anchor="end" class="axis-label" data-score-tick={t.value}>{t.value}</text>
       ))}
     </g>
 
@@ -355,6 +358,7 @@ const idScope = `chart-${width}x${height}`;
       <path
         d={p.d}
         class={`pillar-line pillar-${p.id}`}
+        data-pillar={p.id}
         stroke={PILLAR_STYLES[p.id].colour}
         stroke-dasharray={PILLAR_STYLES[p.id].dash}
         fill="none"
@@ -365,10 +369,11 @@ const idScope = `chart-${width}x${height}`;
     ))}
 
     {/* Headline fill + line. */}
-    {headlineSeries.length > 1 ? (
+    {headlineSeries.length > 1 && !headlineD.includes(" M") ? (
       <path
         d={`${headlineD} L${(padL + plotW).toFixed(2)},${(padT + plotH).toFixed(2)} L${padL.toFixed(2)},${(padT + plotH).toFixed(2)} Z`}
         fill={`url(#fill-${idScope})`}
+        class="headline-fill"
       />
     ) : null}
     <path
@@ -400,6 +405,8 @@ const idScope = `chart-${width}x${height}`;
           aria-describedby={tooltipIdFor(a.event.id)}
           aria-label={`${a.event.title}, ${shortDate(a.event.date)}`}
           data-event-id={a.event.id}
+          data-chart-x={a.xRatio}
+          data-chart-score={a.value}
         >
           {/* Vertical guide line from the data point down to the x-axis. */}
           <line
@@ -495,6 +502,7 @@ const idScope = `chart-${width}x${height}`;
         text-anchor={t.anchor}
         class="axis-label date-tick"
         data-tick-i={i}
+        data-chart-date={t.timestamp}
       >{t.label}</text>
     ))}
   </svg>
@@ -513,6 +521,7 @@ const idScope = `chart-${width}x${height}`;
           class="tooltip"
           role="tooltip"
           data-event-id={a.event.id}
+          data-chart-x={a.xRatio}
           style={`left: ${leftPct.toFixed(2)}%;`}
         >
           <div class="tooltip-head">
@@ -521,7 +530,7 @@ const idScope = `chart-${width}x${height}`;
           </div>
           <div class="tooltip-title">{a.event.title}</div>
           <div class="tooltip-summary">{summary}</div>
-          <div class="tooltip-score">Nearest recorded headline: <strong>{a.value.toFixed(1)} / 100</strong></div>
+          <div class="tooltip-score">Nearest recorded headline: <strong>{a.value.toFixed(1)} / 100</strong><span>{shortDate(points[a.seriesIndex]!.timestamp)} · {resolution} sampling</span></div>
           <div class="tooltip-source">
             {/* SEC-6: a.event.sourceUrl is operator-curated in D1. Allowlist http(s). */}
             Source: {(() => {
@@ -541,7 +550,11 @@ const idScope = `chart-${width}x${height}`;
     <div class="score-inspector">
       <div class="inspector-heading">
         <div><span class="inspector-eyebrow" data-score-position>Latest · {points.length} / {points.length}</span><time datetime={latestPoint.timestamp} data-score-date>{shortDate(latestPoint.timestamp)}</time></div>
-        <button type="button" class="latest-button" data-score-reset>Latest ↗</button>
+        <div class="inspector-navigation" aria-label="Move between recordings">
+          <button type="button" class="latest-button step-button" data-score-previous aria-label="Previous recorded score">←</button>
+          <button type="button" class="latest-button step-button" data-score-next aria-label="Next recorded score">→</button>
+          <button type="button" class="latest-button" data-score-reset>Latest ↗</button>
+        </div>
       </div>
       <dl class="score-readout" aria-label="Scores at selected recording">
         <div class="headline-readout"><dt>Headline</dt><dd><span data-score-value="headline">{latestPoint.headline.toFixed(1)}</span><small>/100</small></dd></div>
@@ -550,13 +563,16 @@ const idScope = `chart-${width}x${height}`;
       <label class="scrubber-label">Explore recorded scores
         <input class="score-scrubber" type="range" min="0" max={points.length - 1} value={points.length - 1} step="1" aria-label="Recorded score date. Use arrow keys to move through history." />
       </label>
-      <p class="inspector-hint">Hover to inspect · tap or click to pin · use the slider or arrow keys. Daily recordings; gaps select the nearest available score. Escape returns to latest.</p>
+      <div class="inspector-bottom"><p class="inspector-hint">{RESOLUTION_LABELS[resolution]}. Hover to inspect · tap to pin · arrow keys on the slider · Escape for latest.</p>
+        <label class="jump-label">Jump to UTC <input type="datetime-local" data-score-jump min={points[0]!.timestamp.slice(0, 16)} max={latestPoint.timestamp.slice(0, 16)} aria-label="Jump to nearest recorded date and time in UTC" /></label>
+      </div>
     </div>
   </> : null}
 
   <div class="band-key" aria-label="Score bands">
     {BANDS.map(band => <span style={`--key-colour: var(${band.colourToken});`}><i aria-hidden="true"></i>{band.label} <b>{band.min}–{band.max > 100 ? "100" : `<${band.max}`}</b></span>)}
   </div>
+  <p class="history-provenance">Earlier daily history includes reconstructions from historical indicators and later source revisions. <a href="/methodology#historical-coverage">See historical coverage and methodology.</a></p>
   {eventKey.length ? <div class="event-key" aria-label="Event marker key">
     <span class="key-heading">Event markers</span>
     {eventKey.map(item => <span class="event-key-item"><i style={`background: ${item.dash ? "transparent" : item.colour}; ${item.dash ? `border-style: dashed; border-color: ${item.colour};` : ""}`} aria-hidden="true"></i>{item.label} <b>{item.count}</b></span>)}
@@ -596,7 +612,9 @@ const idScope = `chart-${width}x${height}`;
 .score-crosshair circle { fill: var(--chart-accent); stroke: var(--bg-1); stroke-width: 2; }
 .score-inspector { border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px 12px; background: var(--bg-0); margin-top: 12px; }
 .inspector-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.inspector-heading > div { display: flex; gap: 6px; flex-direction: column; }
+.inspector-heading > div:first-child { display: flex; gap: 6px; flex-direction: column; }
+.inspector-navigation { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.step-button { min-width: 34px; }
 .inspector-eyebrow { font-family: var(--font-mono); font-size: 9px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .1em; }
 .inspector-heading time { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-0); }
 .latest-button { font-family: var(--font-mono); font-size: 10px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 6px; color: var(--ink-1); padding: 9px 11px; min-height: 34px; }
@@ -610,10 +628,16 @@ const idScope = `chart-${width}x${height}`;
 .scrubber-label { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }
 .score-scrubber { display: block; width: 100%; accent-color: var(--accent); cursor: ew-resize; margin: 4px 0 0; height: 30px; }
 .inspector-hint { font-size: 10px; color: var(--ink-2); line-height: 1.5; margin: 4px 0 0; }
+.inspector-bottom { display: flex; align-items: end; gap: 16px; justify-content: space-between; }
+.inspector-bottom .inspector-hint { max-width: 540px; }
+.jump-label { display: flex; flex-direction: column; gap: 4px; font-size: 9px; color: var(--ink-2); font-family: var(--font-mono); white-space: nowrap; }
+.jump-label input { font-family: var(--font-mono); font-size: 10px; color: var(--ink-1); background: var(--bg-1); border: 1px solid var(--border); border-radius: 6px; padding: 7px; min-height: 34px; min-width: 0; }
 .band-key { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 18px 0; }
 .band-key > span { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; color: var(--ink-2); }
 .band-key i { display: inline-block; height: 7px; width: 16px; background: var(--key-colour); border-radius: 2px; border: 1px solid color-mix(in srgb, var(--ink-0) 15%, transparent); }
 .band-key b { font-family: var(--font-mono); font-size: 9px; font-weight: 400; }
+.history-provenance { color: var(--ink-2); font-size: 11px; line-height: 1.6; margin: 0 0 16px; }
+.history-provenance a { color: var(--ink-1); text-decoration: underline; text-underline-offset: 2px; }
 .event-key { display: flex; flex-wrap: wrap; gap: 9px 16px; align-items: center; border-top: 1px solid var(--border-soft); padding-top: 14px; color: var(--ink-1); font-family: var(--font-mono); font-size: 10px; }
 .key-heading { text-transform: uppercase; letter-spacing: .08em; font-size: 9px; color: var(--ink-2); }
 .event-key-item { display: inline-flex; align-items: center; gap: 6px; }
@@ -635,8 +659,9 @@ const idScope = `chart-${width}x${height}`;
   font-family: var(--font-mono);
 }
 .grid-line { stroke: var(--border-soft); stroke-width: 1; }
-.axis-label { font-family: var(--font-mono); font-size: 10px; fill: var(--ink-2); }
+.axis-label { font-family: var(--font-mono); font-size: calc(10px * var(--chart-font-scale, 1)); fill: var(--ink-2); }
 .headline-line { stroke: var(--chart-accent); }
+.headline-line, .pillar-line, .score-crosshair line { vector-effect: non-scaling-stroke; }
 
 /* Faint pillar series (only rendered when showPillars=true). */
 .pillar-line { opacity: 0.65; }
@@ -649,6 +674,7 @@ const idScope = `chart-${width}x${height}`;
   pointer-events: none;
   touch-action: manipulation;
 }
+.chart-svg[data-labels="false"] .event-label { display: none; }
 .event-label-hit {
   fill: transparent;
   stroke: transparent;
@@ -705,11 +731,18 @@ const idScope = `chart-${width}x${height}`;
   fill: color-mix(in srgb, var(--bg-1) 74%, transparent);
   stroke: var(--border);
 }
+@media (max-width: 900px) {
+  .event-label { display: none; }
+}
 @media (max-width: 600px) {
   .chart-key { gap: 8px; margin-bottom: 10px; }
   .score-direction { width: 100%; margin-left: 0; font-size: 9px; }
   .score-inspector { padding: 12px; }
   .inspector-heading time { font-size: 10px; }
+  .inspector-heading { align-items: start; flex-wrap: wrap; }
+  .inspector-bottom { align-items: stretch; flex-direction: column; gap: 12px; }
+  .jump-label { flex-direction: row; align-items: center; }
+  .jump-label input { flex: 1; width: 0; }
   .score-readout { gap: 8px; grid-template-columns: repeat(4, 1fr); }
   .score-readout .headline-readout { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; }
   .score-readout > div { padding-left: 8px; }
@@ -828,6 +861,7 @@ const idScope = `chart-${width}x${height}`;
 .tooltip-title { font-family: var(--font-serif); font-size: 14px; color: var(--ink-0); margin-bottom: 4px; line-height: 1.3; }
 .tooltip-summary { font-size: 12.5px; color: var(--ink-1); line-height: 1.45; margin-bottom: 6px; }
 .tooltip-score { font-family: var(--font-mono); font-size: 10px; padding-top: 6px; margin: 6px 0; border-top: 1px solid var(--border-soft); }
+.tooltip-score span { display: block; color: var(--ink-2); margin-top: 4px; }
 .tooltip-source { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-2); }
 .tooltip-source a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; }
 .tooltip-source a:hover { color: var(--accent-dim); }

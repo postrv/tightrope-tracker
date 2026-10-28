@@ -40,7 +40,9 @@ function setup(staleMarket = false) {
     prepare(sql: string) {
       return {
         bind(...params: unknown[]) {
-          return { sql, params, all: async () => ({ results: sqlite.prepare(sql).all(...(params as [])) }) };
+          return { sql, params, all: async () => ({ results: /\?\d/.test(sql)
+            ? sqlite.prepare(sql).all(Object.fromEntries(params.map((value, index) => [String(index + 1), value])) as never)
+            : sqlite.prepare(sql).all(...(params as [])) }) };
         },
         all: async () => ({ results: sqlite.prepare(sql).all() }),
       };

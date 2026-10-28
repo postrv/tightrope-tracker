@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-28T12:56:25.696Z",
+  "sourceUrl": "https://api.tightropetracker.uk/api/v1/score",
+  "sourceFileSha256": "c3f1296572141f1bcd5ae5ad7ec3593530d52c39f63159159f222ac92a00d614",
+  "description": "Immutable reference readings from the actual public API snapshot timestamped 12:55 UTC, captured to the local audit file at 12:56:25 UTC on 28 October 2026. This capture was after the scheduled 12:30 statement start; it is not a pre-statement snapshot. All reading reference dates precede the scheduled start, except October consumer confidence whose month-end period label is 31 October but whose release was 23 October. This fixture freezes the captured raw readings, not a score or a causal counterfactual.",
+  "publicationCutoff": "2026-10-28T12:30:00Z",
+  "readings": {
+    "gilt_10y": {
+      "value": 5.3259,
+      "observedAt": "2026-10-26T16:00:00Z",
+      "releasedAt": null,
+      "sourceId": "boe_yields"
+    },
+    "gilt_30y": {
+      "value": 5.7873,
+      "observedAt": "2026-10-26T16:00:00Z",
+      "releasedAt": null,
+      "sourceId": "boe_yields"
+    },
+    "gbp_usd": {
+      "value": 1.3313,
+      "observedAt": "2026-10-27T16:00:00Z",
+      "releasedAt": null,
+      "sourceId": "boe_fx"
+    },
+    "gbp_twi": {
+      "value": 85.8916,
+      "observedAt": "2026-10-27T16:00:00Z",
+      "releasedAt": null,
+      "sourceId": "boe_fx"
+    },
+    "ftse_250": {
+      "value": 24716.4,
+      "observedAt": "2026-10-27T16:30:00Z",
+      "releasedAt": null,
+      "sourceId": "lseg"
+    },
+    "breakeven_5y": {
+      "value": 1.2673,
+      "observedAt": "2026-10-26T16:00:00Z",
+      "releasedAt": null,
+      "sourceId": "boe_yields"
+    },
+    "brent_gbp": {
+      "value": 86.07,
+      "observedAt": "2026-10-20T00:00:00Z",
+      "releasedAt": null,
+      "sourceId": "eia_brent"
+    },
+    "housebuilder_idx": {
+      "value": 55.8,
+      "observedAt": "2026-10-27T16:30:00Z",
+      "releasedAt": null,
+      "sourceId": "eodhd_housebuilders"
+    },
+    "services_pmi": {
+      "value": 52.1,
+      "observedAt": "2026-09-30T00:00:00Z",
+      "releasedAt": "2026-10-05T00:00:00Z",
+      "sourceId": "sp_global_pmi"
+    },
+    "consumer_confidence": {
+      "value": -24,
+      "observedAt": "2026-10-31T00:00:00Z",
+      "releasedAt": "2026-10-23T00:00:00Z",
+      "sourceId": "gfk_confidence"
+    },
+    "rics_price_balance": {
+      "value": -32,
+      "observedAt": "2026-09-30T00:00:00Z",
+      "releasedAt": "2026-10-06T00:00:00Z",
+      "sourceId": "rics_rms"
+    },
+    "cb_headroom": {
+      "value": 23.6,
+      "observedAt": "2026-03-03T00:00:00Z",
+      "releasedAt": "2026-03-03T00:00:00Z",
+      "sourceId": "obr_efo"
+    },
+    "psnfl_trajectory": {
+      "value": 0,
+      "observedAt": "2026-03-03T00:00:00Z",
+      "releasedAt": "2026-03-03T00:00:00Z",
+      "sourceId": "obr_efo"
+    },
+    "borrowing_outturn": {
+      "value": 24.52,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": "2026-10-20T23:00:00.000Z",
+      "sourceId": "ons_psf"
+    },
+    "debt_interest": {
+      "value": 10.933,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": "2026-10-20T23:00:00.000Z",
+      "sourceId": "ons_psf"
+    },
+    "ilg_share": {
+      "value": 24.47949830594804,
+      "observedAt": "2026-10-27T00:00:00Z",
+      "releasedAt": null,
+      "sourceId": "dmo"
+    },
+    "issuance_long_share": {
+      "value": 30.673965664751584,
+      "observedAt": "2026-10-27T00:00:00Z",
+      "releasedAt": null,
+      "sourceId": "dmo"
+    },
+    "inactivity_rate": {
+      "value": 20.9,
+      "observedAt": "2026-07-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "sourceId": "ons_lms"
+    },
+    "inactivity_health": {
+      "value": 2.738,
+      "observedAt": "2026-07-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "sourceId": "ons_lms"
+    },
+    "unemployment": {
+      "value": 4.7,
+      "observedAt": "2026-07-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "sourceId": "ons_lms"
+    },
+    "vacancies_per_unemployed": {
+      "value": 0.4036214953271028,
+      "observedAt": "2026-08-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "sourceId": "ons_lms"
+    },
+    "payroll_mom": {
+      "value": 238.3,
+      "observedAt": "2026-08-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "sourceId": "ons_rti"
+    },
+    "real_regular_pay": {
+      "value": 0.7,
+      "observedAt": "2026-08-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "sourceId": "ons_lms"
+    },
+    "mortgage_2y_fix": {
+      "value": 5.13,
+      "observedAt": "2026-09-30T16:00:00Z",
+      "releasedAt": null,
+      "sourceId": "boe_mortgage_rates"
+    },
+    "dd_failure_rate": {
+      "value": 2.43,
+      "observedAt": "2026-09-30T00:00:00Z",
+      "releasedAt": "2026-10-22T00:00:00Z",
+      "sourceId": "ons_rti"
+    },
+    "housing_trajectory": {
+      "value": 47.7,
+      "observedAt": "2026-06-30T00:00:00Z",
+      "releasedAt": "2026-09-24T00:00:00Z",
+      "sourceId": "mhclg"
+    },
+    "planning_consents": {
+      "value": 60,
+      "observedAt": "2026-06-30T00:00:00Z",
+      "releasedAt": "2026-09-24T00:00:00Z",
+      "sourceId": "mhclg"
+    },
+    "new_towns_milestones": {
+      "value": 68,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": null,
+      "sourceId": "gov_uk"
+    },
+    "bics_rollout": {
+      "value": 81.4,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": null,
+      "sourceId": "desnz"
+    },
+    "industrial_strategy": {
+      "value": 74,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": null,
+      "sourceId": "dbt"
+    },
+    "smr_programme": {
+      "value": 62,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": null,
+      "sourceId": "gov_uk"
+    }
+  },
+  "sourceSnapshotAt": "2026-10-28T12:55:31.006Z",
+  "captureEvidence": "Original curl output file filesystem mtime, recording the local capture file write. sourceSnapshotAt is the API headline computed timestamp and is distinct from capture time.",
+  "sourceArtifactPath": "data/exports/budget-2026-reference-api.json"
+}

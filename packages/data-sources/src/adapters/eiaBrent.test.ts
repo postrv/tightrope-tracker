@@ -29,6 +29,7 @@ describe("eiaBrentAdapter — live path", () => {
   afterEach(() => { vi.useRealTimers(); });
 
   it("queries the RBRTE series facet and pairs with the published gbp_usd fix", async () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date("2026-07-07T12:00:00Z"));
     let capturedUrl = "";
     const fetchImpl = (async (url: RequestInfo | URL) => {
       capturedUrl = String(url);
@@ -50,6 +51,7 @@ describe("eiaBrentAdapter — live path", () => {
   });
 
   it("keeps a dated Brent price stable when later FX fixes arrive", async () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-07T12:00:00Z"));
     const eia = eiaFetchStub([{ period: "2026-10-06", value: 125.44 }]);
     const periodFx = { value: 1.3279, observedAt: "2026-10-06T16:00:00Z" };
     const first = await eiaBrentAdapter.fetch(eia, liveCtx([periodFx]));
@@ -100,6 +102,7 @@ describe("eiaBrentAdapter — live path", () => {
   });
 
   it("accepts a preceding Friday fix for a Tuesday price after a UK bank holiday", async () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date("2026-09-02T12:00:00Z"));
     const result = await eiaBrentAdapter.fetch(
       eiaFetchStub([{ period: "2026-09-01", value: 75 }]),
       liveCtx([{ value: 1.3, observedAt: "2026-08-28T16:00:00Z" }]),
@@ -207,17 +210,17 @@ describe("eiaBrentAdapter — historical EIA/BoE pairing", () => {
     }, ctx)).rejects.toThrow(/truncated/);
   });
 
-  it("refuses a production backfill without EIA credentials", async () => {
+  it("refuses a production API backfill without the D1 FX lookup", async () => {
     await expect(eiaBrentAdapter.fetchHistorical!(
       eiaFetchStub([]),
       { from: new Date("2026-05-01T00:00:00Z"), to: new Date("2026-05-31T23:59:59Z") },
-      { getObservationsInRange: async () => [] },
-    )).rejects.toThrow(/requires EIA_API_KEY/);
+      { secrets: { EIA_API_KEY: "test-key" } },
+    )).rejects.toThrow(/requires D1 BoE FX lookup/);
   });
 
   it("emits every pairable business day after 2026-10-20 and omits a day with no in-window fix", async () => {
-    // Recorded EIA payload. Prices after 2026-10-20 are not yet on the
-    // public RBRTEd file; they exist here only to prove the shipped joiner.
+    // Synthetic payload, deliberately different from actual published prices.
+    // These values only prove the joiner; never promote them into fixtures.
     // FX fixes are the published BoE XUDLUSS values for those dates.
     const recorded = [
       { period: "2026-10-20", value: "115.22" },
@@ -325,17 +328,17 @@ describe("eiaBrentAdapter", () => {
     expect(result.observations).toHaveLength(1);
   });
 
-  it("serves the 2026-10-20 paired print from the fallback fixture inside the 14-day guard", async () => {
+  it("serves the 2026-10-27 paired print from the fallback fixture inside the 14-day guard", async () => {
     const fx = fixture as { observed_at: string; brent_gbp: { value: number } };
-    expect(fx.observed_at).toBe("2026-10-20T00:00:00Z");
-    expect(fx.brent_gbp.value).toBe(86.07);
+    expect(fx.observed_at).toBe("2026-10-27T00:00:00Z");
+    expect(fx.brent_gbp.value).toBe(92.47);
     vi.useFakeTimers();
     vi.setSystemTime(new Date(Date.parse(fx.observed_at) + 8 * 24 * 60 * 60 * 1000));
     const result = await eiaBrentAdapter.fetch(globalThis.fetch);
     expect(result.observations[0]).toMatchObject({
       indicatorId: "brent_gbp",
-      observedAt: "2026-10-20T00:00:00Z",
-      value: 86.07,
+      observedAt: "2026-10-27T00:00:00Z",
+      value: 92.47,
     });
   });
 });

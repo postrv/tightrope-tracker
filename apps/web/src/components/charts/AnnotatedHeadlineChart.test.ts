@@ -180,6 +180,18 @@ describe("AnnotatedHeadlineChart", () => {
     expect(doc.querySelector(".tooltip-source a")?.getAttribute("href")).toBe("https://tightropetracker.uk/corrections");
   });
 
+  it("labels real intraday observations by time and exposes their actual sampling", async () => {
+    const h = buildHistory();
+    h.resolution = "raw";
+    h.points = h.points.slice(0, 3).map((p, i) => ({ ...p, timestamp: `2026-04-01T12:${String(i * 5).padStart(2, "0")}:00Z` }));
+    const doc = await render({ history: h, events: [] });
+    expect(doc.querySelector(".date-tick")?.textContent).toBe("12:00");
+    expect(doc.querySelector(".chart-svg")?.getAttribute("aria-label")).toContain("3 recordings, from 2026-04-01 12:00 UTC to 2026-04-01 12:10 UTC");
+    expect(doc.querySelector(".chart-svg")?.getAttribute("aria-label")).not.toContain("3 days");
+    expect(doc.querySelector(".inspector-hint")?.textContent).toContain("Every recorded snapshot");
+    expect(doc.querySelector('[data-score-jump]')?.getAttribute("max")).toBe("2026-04-01T12:10");
+  });
+
   it("renders y-axis labels at the canonical band boundaries", async () => {
     const doc = await render({ history: buildHistory(), events: [] });
     // Six labels: 0, 20, 40, 60, 80, 100 — pulled from BANDS.

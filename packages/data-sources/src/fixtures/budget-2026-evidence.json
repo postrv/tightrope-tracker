@@ -1,0 +1,86 @@
+{
+  "_comment": "Verified primary-source event reference. Publication timestamps come from GOV.UK Article JSON-LD, not speech start times. Policy announcements and forecasts are not realised economic outcomes.",
+  "id": "uk-budget-2026-10-28",
+  "date": "2026-10-28",
+  "title": "Autumn Budget 2026",
+  "status": "delivered",
+  "verifiedAt": "2026-10-28T17:17:07Z",
+  "timing": {
+    "scheduledStatementStartAt": "2026-10-28T12:30:00Z",
+    "scheduledStartPrecision": "approximately",
+    "verifiedActualStatementStartAt": null,
+    "forecastPublishedAt": "2026-10-28T13:29:19Z",
+    "speechTranscriptPublishedAt": "2026-10-28T15:45:59Z",
+    "comparisonCutoffAt": "2026-10-28T12:30:00Z",
+    "comparisonCutoffLabel": "Announced approximate statement start; actual start time not independently verified"
+  },
+  "fiscal": {
+    "targetFiscalYear": "2029/30",
+    "currentBudgetHeadroomGbpBn": 14.5,
+    "previousVintageHeadroomGbpBn": 23.6,
+    "previousVintageDate": "2026-03-03",
+    "forecastRevisionGbpBn": -9.1,
+    "preMeasuresHeadroomGbpBn": 12.5,
+    "postMeasuresHeadroomGbpBn": 14.5,
+    "withinForecastPolicyDifferenceGbpBn": 2.0,
+    "probabilityFiscalMandateMetPct": 56,
+    "sourceTable": "7.1",
+    "sourcePrintedPage": 161,
+    "sourcePdfPage": 164,
+    "crossCheckTable": "A.9",
+    "crossCheckPrintedPage": 188,
+    "crossCheckPdfPage": 191
+  },
+  "announcements": [
+    {
+      "id": "household_energy_payment",
+      "summary": "£100 Household Energy Payment for eligible England council-tax bands A–D from January 2027; £2.6bn programme.",
+      "status": "announced",
+      "sourceId": "budget_document"
+    },
+    {
+      "id": "social_affordable_housing",
+      "summary": "Additional £1.5bn for the Social and Affordable Housing Programme.",
+      "status": "announced",
+      "sourceId": "speech"
+    },
+    {
+      "id": "your_first_home",
+      "summary": "Your First Home equity-loan scheme: £4.7bn of government-backed lending, planned from next spring.",
+      "status": "announced",
+      "sourceId": "speech"
+    }
+  ],
+  "interpretation": {
+    "forecastRevision": "March-to-October headroom change combines forecast changes and policy decisions; it is not a measured Budget effect.",
+    "withinForecast": "The October pre-measures and post-measures comparison is an OBR policy costing within one forecast vintage.",
+    "dailyMarkets": "A Budget-day close versus the preceding close includes overnight and other news; it does not isolate the announcement.",
+    "slowData": "Monthly and quarterly reference periods published after Budget day can still describe pre-Budget conditions.",
+    "composite": "A recomputed headline can move because of changed data availability, baselines or calculation corrections; inspect the raw series and methodology annotations."
+  },
+  "sources": {
+    "parliament_schedule": {
+      "title": "UK Parliament: Budget statement notice",
+      "url": "https://www.parliament.uk/business/news/2026/october-2026/budget-statement-wednesday-28-october/"
+    },
+    "obr_publication": {
+      "title": "OBR October 2026 Economic and fiscal outlook — official publication",
+      "url": "https://www.gov.uk/government/publications/october-2026-economic-and-fiscal-outlook",
+      "publishedAt": "2026-10-28T13:29:19Z"
+    },
+    "obr_pdf": {
+      "title": "OBR October 2026 EFO, Tables 7.1 and A.9",
+      "url": "https://assets.publishing.service.gov.uk/media/6ae1f7b839d29f3f9b9b3f36/economic-and-fiscal-outlook-october-2026-web-accessible.pdf",
+      "sha256": "9e0e9c340e35e603066f3124a614fcd68feadb3d5d10d1f76fb536e150e6225e"
+    },
+    "speech": {
+      "title": "HM Treasury: Budget 2026 speech, as delivered",
+      "url": "https://www.gov.uk/government/speeches/budget-2026-speech",
+      "publishedAt": "2026-10-28T15:45:59Z"
+    },
+    "budget_document": {
+      "title": "HM Treasury: Budget 2026 document",
+      "url": "https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html"
+    }
+  }
+}

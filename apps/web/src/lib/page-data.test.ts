@@ -45,6 +45,9 @@ function buildEnv(opts: {
   function execute(sql: string): Promise<{ results: unknown[] }> {
     if (opts.d1Throws) return Promise.reject(new Error("D1 boom"));
     const lower = sql.toLowerCase();
+    if (lower.includes("with selected as")) {
+      return Promise.resolve({ results: headlineRows.map(r => ({ ...r, market: 50, fiscal: 50, labour: 50, delivery: 50 })) });
+    }
     if (lower.includes("from headline_scores") && lower.includes("limit 1")) {
       const last = headlineRows[headlineRows.length - 1];
       return Promise.resolve({
@@ -138,7 +141,7 @@ describe("loadHomepageData history wiring", () => {
         // gate accepts it regardless of when the test runs.
         { timestamp: new Date().toISOString(), headline: 64, pillars: { market: 70, fiscal: 60, labour: 50, delivery: 40 } },
       ],
-      rangeDays: 90,
+      rangeDays: 90, resolution: "daily", sampling: "last_recorded_in_bucket",
       scoreDirection: "higher_is_better",
       schemaVersion: 2,
     };
@@ -155,7 +158,7 @@ describe("loadHomepageData history wiring", () => {
         // 6 hours old → past the 30-minute freshness gate.
         { timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), headline: 99, pillars: { market: 99, fiscal: 99, labour: 99, delivery: 99 } },
       ],
-      rangeDays: 90,
+      rangeDays: 90, resolution: "daily", sampling: "last_recorded_in_bucket",
       scoreDirection: "higher_is_better",
       schemaVersion: 2,
     };
@@ -172,10 +175,10 @@ describe("loadHomepageData history wiring", () => {
 });
 
 describe("loadHistory with explicit range", () => {
-  it("clamps invalid days down to a 1..800 window when KV/D1 are missing", async () => {
-    const result = await loadHistory({} as App.Locals, 999);
+  it("clamps invalid days down to a 1..7305 window when KV/D1 are missing", async () => {
+    const result = await loadHistory({} as App.Locals, 9999);
     expect(result.points).toEqual([]);
-    expect(result.rangeDays).toBe(800);
+    expect(result.rangeDays).toBe(7305);
   });
 
   it("returns empty history with the requested rangeDays when D1 throws", async () => {

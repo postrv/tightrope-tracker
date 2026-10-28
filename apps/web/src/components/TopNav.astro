@@ -62,6 +62,7 @@ const recomputeChip = formatChip(updatedAt);
 {(() => {
   const links = compact
     ? [
+        { href: "/budget", label: "Budget" },
         { href: "/#market", label: "Market" },
         { href: "/#fiscal", label: "Fiscal" },
         { href: "/#labour", label: "Labour" },
@@ -72,6 +73,7 @@ const recomputeChip = formatChip(updatedAt);
         { href: "/docs", label: "API" },
       ]
     : [
+        { href: "/budget", label: "Budget" },
         { href: "#market", label: "Market" },
         { href: "#fiscal", label: "Fiscal" },
         { href: "#labour", label: "Labour" },
@@ -166,7 +168,7 @@ nav.top .container { display: flex; align-items: center; justify-content: space-
   border-radius: 0;
   flex-shrink: 0;
 }
-nav.top ul.primary { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--ink-1); text-transform: lowercase; letter-spacing: -0.005em; }
+nav.top ul.primary { display: flex; gap: 18px; list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--ink-1); text-transform: lowercase; letter-spacing: -0.005em; }
 nav.top ul a { transition: color 180ms; }
 .hamburger {
   display: none;

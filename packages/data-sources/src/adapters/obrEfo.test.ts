@@ -123,13 +123,10 @@ describe("parseObrEfoFixture", () => {
     }
   });
 
-  it("on-disk obr-efo fixture has 23.6bn at the newest vintage (regression: 2025 value with 2026 date)", async () => {
-    // Audit regression: the fixture once shipped `cb_headroom: 9.9`
-    // stamped `published: 2026-03-26`, but 9.9bn was the March 2025
-    // crunch figure. The value had never been refreshed even though the
-    // date was mechanically advanced. The new vintages-array shape lets
-    // us preserve historical 9.9 entries (Mar 2025, Oct 2024) while
-    // the newest vintage (head) carries the current 23.6bn figure.
+  it("on-disk OBR fixture uses the detailed October headroom and preserves the March vintage", async () => {
+    // Keep published vintages intact while using the latest detailed table.
+    // The October executive summary rounds 14.5 to 15; the scoring input
+    // must preserve the table precision and the previous March reading.
     const fixtureModule = await import("../fixtures/obr-efo.json", {
       with: { type: "json" },
     });
@@ -140,8 +137,10 @@ describe("parseObrEfoFixture", () => {
     // Newest vintage = head of array (we sort by observed_at desc inside
     // the adapter; the on-disk file is curated in the same order).
     const head = fixture.vintages[0]!;
-    expect(head.observed_at).toBe("2026-03-03T00:00:00Z");
-    expect(head.indicators.cb_headroom!.value).toBe(23.6);
+    expect(head.observed_at).toBe("2026-10-28T00:00:00Z");
+    expect(head.indicators.cb_headroom!.value).toBe(14.5);
+    const march = fixture.vintages.find(v => v.observed_at === "2026-03-03T00:00:00Z");
+    expect(march?.indicators.cb_headroom?.value).toBe(23.6);
   });
 });
 

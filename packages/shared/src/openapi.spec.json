@@ -65,9 +65,14 @@
             "name": "days",
             "in": "query",
             "required": false,
-            "description": "Window length in days (inclusive of today). Minimum 1, maximum 800.",
-            "schema": { "type": "integer", "minimum": 1, "maximum": 800, "default": 30 },
+            "description": "Window length in days (inclusive of today). Minimum 1, maximum 7305.",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 7305, "default": 30 },
             "example": 30
+          },
+          {
+            "name": "resolution", "in": "query", "required": false,
+            "description": "Sampling of recorded scores: auto chooses raw up to 2 days, hourly up to 14 days, daily up to 366 days, otherwise weekly. Wider explicit requests coarsen to remain under 2000 points. Last recording per UTC bucket; never interpolation or a claim of upstream intraday data.",
+            "schema": { "type": "string", "enum": ["auto", "raw", "hourly", "daily", "weekly"], "default": "auto" }
           }
         ],
         "responses": {
@@ -524,9 +529,19 @@
           "rangeDays": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 800,
-            "description": "Maximum range returned. Older data is available in the site's historical archives."
+            "maximum": 7305,
+            "description": "Requested rolling window. Stored coverage may be shorter; no fabricated points."
           },
+          "resolution": { "type": "string", "enum": ["raw", "hourly", "daily", "weekly"] },
+          "requestedResolution": { "type": "string", "enum": ["auto", "raw", "hourly", "daily", "weekly"] },
+          "sampling": { "const": "last_recorded_in_bucket" },
+          "availableFrom": { "type": ["string", "null"] },
+          "availableTo": { "type": ["string", "null"] },
+          "selectedFrom": { "type": ["string", "null"] },
+          "selectedTo": { "type": ["string", "null"] },
+          "pointLimit": { "type": "integer" },
+          "truncated": { "type": "boolean" },
+          "excludedPoints": { "type": "integer", "minimum": 0 },
           "scoreDirection": { "type": "string", "const": "higher_is_better", "description": "Public score polarity for every value in this series." },
           "schemaVersion": { "type": "integer", "const": 2 }
         }

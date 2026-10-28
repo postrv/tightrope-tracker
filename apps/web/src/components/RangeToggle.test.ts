@@ -11,8 +11,10 @@ import { describe, expect, it } from "vitest";
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { parseHTML } from "linkedom";
 import RangeToggle from "./RangeToggle.astro";
+import type { HistoryRange } from "../lib/historyView.js";
+import type { ScoreHistoryResolutionRequest } from "@tightrope/shared";
 
-async function render(props: { current: 30 | 90 | 365 | "all"; basePath?: string }): Promise<Document> {
+async function render(props: { current: HistoryRange; basePath?: string; resolution?: ScoreHistoryResolutionRequest; embed?: boolean }): Promise<Document> {
   const container = await AstroContainer.create();
   const html = await container.renderToString(RangeToggle, { props });
   const { document } = parseHTML(`<!doctype html><html><body>${html}</body></html>`);
@@ -20,16 +22,18 @@ async function render(props: { current: 30 | 90 | 365 | "all"; basePath?: string
 }
 
 describe("RangeToggle", () => {
-  it("renders four range options with the right ?range= queries", async () => {
+  it("renders intraday through all-history windows", async () => {
     const doc = await render({ current: 90 });
     const links = doc.querySelectorAll("a.range-link");
-    expect(links.length).toBe(4);
+    expect(links.length).toBe(6);
     const hrefs = Array.from(links).map((a) => a.getAttribute("href"));
     expect(hrefs).toEqual([
-      "/composite?range=30",
-      "/composite?range=90",
-      "/composite?range=365",
-      "/composite?range=all",
+      "/composite?range=1&resolution=auto",
+      "/composite?range=7&resolution=auto",
+      "/composite?range=30&resolution=auto",
+      "/composite?range=90&resolution=auto",
+      "/composite?range=365&resolution=auto",
+      "/composite?range=all&resolution=auto",
     ]);
   });
 
@@ -52,7 +56,7 @@ describe("RangeToggle", () => {
   it("flows basePath through to the href", async () => {
     const doc = await render({ current: 30, basePath: "/explore" });
     const first = doc.querySelector("a.range-link");
-    expect(first?.getAttribute("href")).toBe("/explore?range=30");
+    expect(first?.getAttribute("href")).toBe("/explore?range=1&resolution=auto");
   });
 
   it("renders an aria-label on the wrapping nav", async () => {
@@ -65,6 +69,11 @@ describe("RangeToggle", () => {
     const doc = await render({ current: "all" });
     const active = doc.querySelector("a.range-link.is-active");
     expect(active?.getAttribute("data-range")).toBe("all");
-    expect(active?.getAttribute("href")).toBe("/composite?range=all");
+    expect(active?.getAttribute("href")).toBe("/composite?range=all&resolution=auto");
+  });
+
+  it("preserves sampling and embed settings when changing range", async () => {
+    const doc = await render({ current: 1, resolution: "hourly", embed: true });
+    expect(doc.querySelector('a[data-range="7"]')?.getAttribute("href")).toBe("/composite?range=7&resolution=hourly&embed=1");
   });
 });

@@ -22,30 +22,22 @@ import {
 } from "~/lib/page-data.js";
 import type { RangeOption } from "~/components/RangeToggle.astro";
 import { summariseFreshness } from "~/lib/freshness.js";
+import { HISTORY_RESOLUTIONS, parseHistoryRange, parseHistoryResolution, RESOLUTION_LABELS, historyHref } from "~/lib/historyView.js";
+import { shortDate, bstTimestamp } from "~/lib/format.js";
 
 // --- range parsing --------------------------------------------------------
 // "all" maps to the maximum D1 window the API serves today. The historical
 // archive beyond this lives in R2 and isn't part of this view yet.
 const url = new URL(Astro.request.url);
-const rawRange = url.searchParams.get("range") ?? "90";
 const embed = url.searchParams.get("embed") === "1";
-
-function parseRange(raw: string): { option: RangeOption; days: number } {
-  if (raw === "all") return { option: "all", days: 800 };
-  const n = Number.parseInt(raw, 10);
-  if (n === 30) return { option: 30, days: 30 };
-  if (n === 90) return { option: 90, days: 90 };
-  if (n === 365) return { option: 365, days: 365 };
-  // Unknown range value falls back to the homepage default.
-  return { option: 90, days: 90 };
-}
-const { option: rangeOption, days } = parseRange(rawRange);
+const { option: rangeOption, days } = parseHistoryRange(url.searchParams.get("range"));
+const resolutionRequest = parseHistoryResolution(url.searchParams.get("resolution"));
 
 // Fetch in parallel: history for the chart, snapshot for the drivers
 // panel, and events spanning the selected range. The long view has its
 // own event query so it cannot lose older annotations to the homepage cap.
 const [history, snapshot, timeline] = await Promise.all([
-  loadHistory(Astro.locals, days),
+  loadHistory(Astro.locals, days, resolutionRequest),
   loadSnapshot(Astro.locals),
   loadTimeline(Astro.locals, days),
 ]);
@@ -54,13 +46,19 @@ const isStale = Boolean(snapshot.headline.stale);
 const freshness = summariseFreshness(snapshot, []);
 const isEmpty = history.points.length === 0;
 const labelByOption: Record<RangeOption, string> = {
+  1: "Last 24 hours",
+  7: "Last 7 days",
   30: "Last 30 days",
   90: "Last 90 days",
   365: "Last year",
   all: "All available history",
 };
 const rangeLabel = labelByOption[rangeOption];
-const canonicalPath = `/composite?range=${rangeOption}`;
+const canonicalPath = historyHref(rangeOption, resolutionRequest);
+const resolution = history.resolution ?? "daily";
+const selectedFrom = history.selectedFrom ?? history.points[0]?.timestamp;
+const selectedTo = history.selectedTo ?? history.points.at(-1)?.timestamp;
+const resolutionAdjusted = resolutionRequest !== "auto" && resolutionRequest !== resolution;
 ---
 <BaseLayout
   title={`Tightrope Tracker — long view (${rangeLabel.toLowerCase()})`}
@@ -69,28 +67,54 @@ const canonicalPath = `/composite?range=${rangeOption}`;
   embed={embed}
 >
   {embed ? null : (
-    <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} freshestAt={freshness.freshestAt} stale={isStale} />
+    <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} freshestAt={freshness.freshestAt} stale={isStale} compact />
   )}
 
   <main id="main" class={embed ? "embed-main" : "container composite-main"}>
     <header class="composite-head">
       <div>
-        <span class="eyebrow">Long view</span>
+        <span class="eyebrow">Score explorer</span>
         <h1 class="composite-title">{rangeLabel.toLowerCase()}</h1>
         <p class="composite-sub">
           Compare the headline and four pillars over time. Inspect a recorded score, toggle pillar lines, or open a source-linked event for context. Below, see the dominant indicators today.
         </p>
       </div>
-      <RangeToggle current={rangeOption} />
+      <RangeToggle current={rangeOption} resolution={resolutionRequest} embed={embed} />
     </header>
 
+    <div class="history-toolbar">
+      <div class="history-explainer"><strong>Time window ≠ sampling.</strong><span> Choose how far back to look, then how much detail to show.</span></div>
+      <form class="resolution-form" method="get" action="/composite">
+        <input type="hidden" name="range" value={rangeOption} />
+        {embed ? <input type="hidden" name="embed" value="1" /> : null}
+        <label for="history-resolution">Sampling</label>
+        <select id="history-resolution" name="resolution">
+          {HISTORY_RESOLUTIONS.map(choice => <option value={choice.value} selected={choice.value === resolutionRequest}>{choice.label}</option>)}
+        </select>
+        <button type="submit">Apply ↗</button>
+      </form>
+    </div>
+
+    <div class="history-coverage" aria-label="History availability and sampling">
+      <div><span class="coverage-label">Showing</span><strong>{history.points.length.toLocaleString("en-GB")} recording{history.points.length === 1 ? "" : "s"}</strong><span>{RESOLUTION_LABELS[resolution]}</span></div>
+      <div><span class="coverage-label">Selected recordings</span><strong>{selectedFrom ? shortDate(selectedFrom) : "No recordings"}{selectedTo && selectedTo.slice(0, 10) !== selectedFrom?.slice(0, 10) ? ` – ${shortDate(selectedTo)}` : ""}</strong><span>{selectedTo ? `Latest ${bstTimestamp(selectedTo)}` : "Try another window or sampling level"}</span></div>
+      <div><span class="coverage-label">Available history</span><strong>{history.availableFrom ? shortDate(history.availableFrom) : selectedFrom ? shortDate(selectedFrom) : "—"}{history.availableTo ? ` – ${shortDate(history.availableTo)}` : ""}</strong><span>Actual stored recordings · no synthetic intraday points</span></div>
+    </div>
+    {resolutionAdjusted || history.truncated || (history.excludedPoints ?? 0) > 0 ? <p class="coverage-notice" role="status">
+      {resolutionAdjusted ? `Showing ${resolution} sampling instead of ${resolutionRequest === "raw" ? "every recording" : resolutionRequest} for this window. ` : ""}
+      {history.truncated ? `The display is limited to ${(history.pointLimit ?? 2000).toLocaleString("en-GB")} points; choose a shorter window or coarser sampling. ` : ""}
+      {(history.excludedPoints ?? 0) > 0 ? `${history.excludedPoints} incomplete or invalid recording${history.excludedPoints === 1 ? " was" : "s were"} excluded.` : ""}
+    </p> : null}
+
     {isEmpty ? (
-      <p class="empty">History for this window hasn't populated yet — recompute writes a new history snapshot every five minutes. Refresh shortly, or pick a shorter range.</p>
+      <p class="empty">No complete recorded scores are available in this window. <a href={historyHref("all", "auto", embed)}>See all available history ↗</a></p>
     ) : (
       <div class="chart-wrap">
         <AnnotatedHeadlineChart history={history} events={timeline} height={420} showPillars={true} />
       </div>
     )}
+
+    <p class="sampling-note">Hourly, daily and weekly views select the last recorded score in each UTC bucket. Finer sampling shows score recalculations; new economic releases follow their own publication calendars. Gaps select the nearest available recording.</p>
 
     <PillarDriversPanel snapshot={snapshot} />
 
@@ -112,7 +136,7 @@ const canonicalPath = `/composite?range=${rangeOption}`;
 </style>
 
 <style>
-.composite-main { padding-top: 32px; padding-bottom: 64px; }
+.composite-main { padding-top: 40px; padding-bottom: 64px; }
 .composite-head {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -120,6 +144,22 @@ const canonicalPath = `/composite?range=${rangeOption}`;
   gap: 24px;
   margin-bottom: 28px;
 }
+.history-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 16px 0; border-top: 1px solid var(--border); }
+.history-explainer { max-width: 460px; font-size: 12px; color: var(--ink-2); }
+.history-explainer strong { color: var(--ink-1); font-weight: 500; }
+.resolution-form { display: flex; align-items: center; gap: 8px; }
+.resolution-form label { font-family: var(--font-mono); text-transform: uppercase; font-size: 9px; letter-spacing: .08em; color: var(--ink-2); }
+.resolution-form select { min-height: 40px; max-width: 170px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-1); color: var(--ink-0); padding: 9px 30px 9px 12px; font-family: var(--font-mono); font-size: 11px; cursor: pointer; }
+.resolution-form button { border: 1px solid var(--border); border-radius: 8px; background: var(--bg-1); color: var(--ink-1); font-family: var(--font-mono); font-size: 10px; padding: 11px 13px; min-height: 40px; }
+.resolution-form button:hover { border-color: var(--accent); }
+.history-coverage { display: grid; grid-template-columns: .8fr 1.1fr 1.1fr; gap: 0; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 18px; overflow: hidden; }
+.history-coverage > div { display: flex; flex-direction: column; align-items: start; gap: 5px; padding: 18px 20px; border-right: 1px solid var(--border-soft); }
+.history-coverage > div:last-child { border: 0; }
+.history-coverage .coverage-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.history-coverage strong { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-0); }
+.history-coverage span:not(.coverage-label) { font-size: 10px; color: var(--ink-2); }
+.coverage-notice { border-left: 2px solid var(--accent-dim); padding: 10px 14px; margin: 0 0 18px; color: var(--ink-1); font-size: 12px; background: color-mix(in srgb, var(--accent-dim) 7%, var(--bg-1)); }
+.sampling-note { color: var(--ink-2); font-size: 11px; line-height: 1.6; margin: -18px 0 28px; max-width: 900px; }
 .composite-title {
   font-family: var(--font-serif);
   font-weight: 700;
@@ -163,5 +203,12 @@ const canonicalPath = `/composite?range=${rangeOption}`;
 @media (max-width: 800px) {
   .composite-head { grid-template-columns: 1fr; }
   .chart-wrap { padding: 16px 12px; }
+  .history-toolbar { align-items: start; flex-direction: column; gap: 12px; }
+  .resolution-form { width: 100%; }
+  .resolution-form select { flex: 1; max-width: none; }
+  .history-coverage { grid-template-columns: 1fr; }
+  .history-coverage > div { border-right: 0; border-bottom: 1px solid var(--border-soft); padding: 13px 16px; gap: 4px; }
+  .history-coverage > div span:last-child { font-size: 10px; }
+  .composite-title { font-size: 40px; }
 }
 </style>

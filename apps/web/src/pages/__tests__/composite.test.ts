@@ -40,11 +40,19 @@ function buildEnv(opts: {
   pillarRows?: StubRow[];
 } = {}): MockEnv {
   const headlineRows = opts.headlineRows ?? [];
-  const pillarRows = opts.pillarRows ?? [];
+  const pillarRows = opts.pillarRows ?? headlineRows.flatMap(row => ["market", "fiscal", "labour", "delivery"].map(pillar_id => ({ ...row, pillar_id })));
 
   function execute(sql: string): Promise<{ results: unknown[] }> {
     const lower = sql.toLowerCase();
     void rangeQuery(sql, 0);
+    if (lower.includes("with selected as")) {
+      return Promise.resolve({ results: headlineRows.map(row => ({ ...row,
+        ...Object.fromEntries(["market", "fiscal", "labour", "delivery"].map(id => [id,
+          pillarRows.filter(p => p.pillar_id === id && p.observed_at <= row.observed_at).sort((a, b) => b.observed_at.localeCompare(a.observed_at))[0]?.value ?? null,
+        ])),
+      })) });
+    }
+    if (lower.includes("min(observed_at) as first")) return Promise.resolve({ results: [{ first: headlineRows[0]?.observed_at ?? null, last: headlineRows.at(-1)?.observed_at ?? null }] });
     if (lower.includes("from headline_scores") && lower.includes("limit 1")) {
       const last = headlineRows[headlineRows.length - 1];
       return Promise.resolve({
@@ -117,6 +125,7 @@ describe("/composite page", () => {
   it("renders the page heading and the range toggle", async () => {
     const doc = await renderComposite("90", buildEnv());
     expect(doc.querySelector("h1.composite-title")?.textContent).toMatch(/last 90 days/);
+    expect(doc.querySelector('nav.top a[href="/#market"]')).not.toBeNull();
     expect(doc.querySelector("nav.range-toggle")).not.toBeNull();
     const active = doc.querySelector("a.range-link.is-active");
     expect(active?.getAttribute("data-range")).toBe("90");
@@ -160,5 +169,18 @@ describe("/composite page", () => {
     const doc = await renderComposite("90", buildEnv());
     const cards = doc.querySelectorAll("article.driver-card");
     expect(cards.length).toBe(4);
+  });
+
+  it("exposes real short-window resolution and controls without manufacturing daily intraday points", async () => {
+    const now = Date.now();
+    const doc = await renderComposite("1&resolution=raw", buildEnv({ headlineRows: [
+      { observed_at: new Date(now - 300_000).toISOString(), value: 42.7 },
+      { observed_at: new Date(now).toISOString(), value: 42.8 },
+    ] }));
+    expect(doc.querySelector("h1.composite-title")?.textContent).toContain("last 24 hours");
+    expect(doc.querySelector(".history-coverage")?.textContent).toContain("Every recorded snapshot");
+    expect(doc.querySelector('select[name="resolution"] option[selected]')?.getAttribute("value")).toBe("raw");
+    expect(doc.querySelector('a[data-range="7"]')?.getAttribute("href")).toContain("resolution=raw");
+    expect(doc.querySelectorAll(".score-chart-data").length).toBe(1);
   });
 });

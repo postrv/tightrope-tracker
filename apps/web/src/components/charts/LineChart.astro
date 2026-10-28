@@ -1,6 +1,6 @@
 ---
 import { shortDate } from "~/lib/format.js";
-import { timeRatio } from "~/lib/scoreChart.js";
+import { timeRatio, scoreGapThreshold, scoreLinePath } from "~/lib/scoreChart.js";
 import { safeJsonForScriptTag } from "~/lib/safeJson.js";
 
 interface Axis {
@@ -8,6 +8,7 @@ interface Axis {
   x: number;
   y: number;
   anchor?: "start" | "middle" | "end";
+  timestamp?: string;
 }
 
 interface Props {
@@ -65,17 +66,17 @@ const datedPoints = interactive ? series.map((value, i) => ({
 })) : [];
 const latest = datedPoints.at(-1);
 const dateTicks: Axis[] = xTicks.length ? xTicks : datedPoints.length > 1 ? [
-  { label: shortDate(datedPoints[0]!.timestamp), x: padL, y: height - 8, anchor: "start" },
-  { label: shortDate(latest!.timestamp), x: padL + plotW, y: height - 8, anchor: "end" },
+  { label: shortDate(datedPoints[0]!.timestamp), timestamp: datedPoints[0]!.timestamp, x: padL, y: height - 8, anchor: "start" },
+  { label: shortDate(latest!.timestamp), timestamp: latest!.timestamp, x: padL + plotW, y: height - 8, anchor: "end" },
 ] : [];
-const d = interactive ? datedPoints.map((point, i) => `${i === 0 ? "M" : "L"}${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(" ") : safeSeries.map((value, i) => {
+const d = interactive ? scoreLinePath(datedPoints, scoreGapThreshold("daily")) : safeSeries.map((value, i) => {
   const x = padL + (safeSeries.length > 1 ? i / (safeSeries.length - 1) : .5) * plotW;
   return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${yFor(value).toFixed(2)}`;
 }).join(" ");
 
 // Build fill path closing to baseline
 let fillD = "";
-if (fillGradientId && safeSeries.length > 1) {
+if (fillGradientId && safeSeries.length > 1 && !d.includes(" M")) {
   const first = `${padL},${padT + plotH}`;
   const last = `${padL + plotW},${padT + plotH}`;
   fillD = `M${first} ${d.replace(/^M/, "L")} L${last} Z`;
@@ -121,21 +122,21 @@ const fullLabel = `${baseLabel}: ${summary}`;
   ) : null}
 
   <g stroke="var(--border-soft)" stroke-width="1">
-    {gridYs.map((y) => (
-      <line x1={padL} y1={y} x2={padL + plotW} y2={y} />
+    {gridYs.map((y, i) => (
+      <line x1={padL} y1={y} x2={padL + plotW} y2={y} data-score-tick={dataMax - (i / (gridLines - 1)) * (dataMax - dataMin)} />
     ))}
   </g>
 
   {maxLabel ? (
-    <text x={padL - 8} y={maxY + 4} text-anchor="end" font-family="var(--font-mono)" font-size="10" fill="var(--ink-2)">{maxLabel}</text>
+    <text x={padL - 8} y={maxY + 4} text-anchor="end" font-family="var(--font-mono)" font-size="10" fill="var(--ink-2)" data-score-tick={dataMax}>{maxLabel}</text>
   ) : null}
   {minLabel ? (
-    <text x={padL - 8} y={minY + 4} text-anchor="end" font-family="var(--font-mono)" font-size="10" fill="var(--ink-2)">{minLabel}</text>
+    <text x={padL - 8} y={minY + 4} text-anchor="end" font-family="var(--font-mono)" font-size="10" fill="var(--ink-2)" data-score-tick={dataMin}>{minLabel}</text>
   ) : null}
 
-  {fillD ? <path d={fillD} fill={`url(#${fillGradientId})`} /> : null}
+  {fillD ? <path d={fillD} fill={`url(#${fillGradientId})`} class="headline-fill" /> : null}
 
-  <path d={d} stroke={stroke} stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  <path d={d} class="headline-line" stroke={stroke} stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
 
   {latest ? <g class="score-crosshair" aria-hidden="true" pointer-events="none">
     <line x1={latest.x} x2={latest.x} y1={padT} y2={padT + plotH} stroke="var(--ink-2)" stroke-dasharray="3 4" opacity="0.6" />
@@ -143,11 +144,11 @@ const fullLabel = `${baseLabel}: ${summary}`;
   </g> : null}
 
   {dateTicks.map((t) => (
-    <text x={t.x} y={t.y} text-anchor={t.anchor ?? "start"} font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)">{t.label}</text>
+    <text x={t.x} y={t.y} text-anchor={t.anchor ?? "start"} font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)" data-chart-date={t.timestamp}>{t.label}</text>
   ))}
 </svg>
 {latest ? <>
-  <script type="application/json" class="score-chart-data" set:html={safeJsonForScriptTag({ points: datedPoints, width, padL, plotW, label: "Market pillar" })} />
+  <script type="application/json" class="score-chart-data" set:html={safeJsonForScriptTag({ points: datedPoints, width, padL, plotW, label: "Market pillar", maxGapMs: scoreGapThreshold("daily"), responsive: { width, height, padL, padR, padT, padB, domainMin: dataMin, domainMax: dataMax } })} />
   <div class="line-readout"><time data-score-date datetime={latest.timestamp}>{shortDate(latest.timestamp)}</time><strong><span data-score-value="headline">{latest.headline.toFixed(1)}</span><small> / 100</small></strong></div>
   <label class="line-scrubber-label">Explore recorded market scores<input class="score-scrubber" type="range" min="0" max={datedPoints.length - 1} value={datedPoints.length - 1} step="1" aria-label="Recorded market score date. Use arrow keys to move through history." /></label>
   <p class="line-hint">Hover to inspect · click to pin · arrow keys on the slider · Escape for latest</p>
@@ -160,6 +161,8 @@ const fullLabel = `${baseLabel}: ${summary}`;
 </script>
 
 <style>
+  .line-chart-wrap svg text { font-size: calc(10px * var(--chart-font-scale, 1)); }
+  .headline-line { vector-effect: non-scaling-stroke; }
   .line-readout { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-top: 1px solid var(--border-soft); padding-top: 10px; font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }
   .line-readout strong { font-size: 19px; color: var(--ink-0); font-weight: 500; font-variant-numeric: tabular-nums; }
   .line-readout small { font-size: 10px; color: var(--ink-2); }

@@ -92,6 +92,8 @@ The API is free and unauthenticated — embed the live score anywhere.
 
 ```
 GET https://api.tightropetracker.uk/api/v1/score
+GET https://api.tightropetracker.uk/api/v1/score/history?days=1&resolution=raw
+GET https://api.tightropetracker.uk/api/v1/score/history?days=7305&resolution=daily
 GET https://api.tightropetracker.uk/api/v1/delivery
 GET https://api.tightropetracker.uk/api/v1/timeline
 GET https://api.tightropetracker.uk/api/v1/mp?postcode=SW1A+1AA

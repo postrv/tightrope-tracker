@@ -1,0 +1,21 @@
+---
+import evidence from "../../../../packages/data-sources/src/fixtures/budget-2026-evidence.json";
+---
+<section class="budget-watch container" aria-labelledby="budget-watch-title">
+  <div class="budget-watch-copy">
+    <span class="eyebrow">28 October · Budget watch</span>
+    <h2 id="budget-watch-title">the Budget is out. <span>track what changes.</span></h2>
+    <p>The OBR now forecasts £{evidence.fiscal.currentBudgetHeadroomGbpBn}bn of current-budget headroom. Compare published forecasts and actual readings against the pre-statement record, with the data gaps visible.</p>
+  </div>
+  <a href="/budget" class="budget-watch-link">Open Budget tracker <span aria-hidden="true">↗</span></a>
+</section>
+<style>
+.budget-watch { display: flex; align-items: center; justify-content: space-between; gap: 28px; margin-top: 12px; margin-bottom: 22px; padding: 24px 28px; border: 1px solid var(--accent); border-radius: 14px; background: linear-gradient(110deg, color-mix(in srgb, var(--accent) 9%, var(--bg-1)), var(--bg-1) 75%); }
+.eyebrow { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .13em; color: var(--ink-2); }
+h2 { margin: 8px 0; font-family: var(--font-serif); font-size: clamp(22px, 2.7vw, 31px); letter-spacing: -.035em; line-height: 1.15; }
+h2 span { color: color-mix(in srgb, var(--accent) 85%, var(--ink-0)); }
+p { margin: 0; max-width: 720px; font-size: 14px; line-height: 1.6; color: var(--ink-1); }
+.budget-watch-link { display: inline-flex; flex-shrink: 0; gap: 14px; align-items: center; border-radius: 999px; padding: 13px 19px; background: var(--accent); color: var(--ink-0); font-family: var(--font-mono); font-size: 12px; }
+.budget-watch-link:focus-visible { outline: 3px solid var(--accent-cool); outline-offset: 4px; }
+@media (max-width: 720px) { .budget-watch { align-items: flex-start; flex-direction: column; padding: 22px; gap: 20px; } }
+</style>

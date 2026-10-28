@@ -1,15 +1,14 @@
+import { readScoreHistory, clampHistoryDays } from "@tightrope/snapshot";
 import type {
-  PillarId,
   ScoreSnapshot,
   ScoreHistory,
-  ScoreHistoryPoint,
+  ScoreHistoryResolutionRequest,
   TodayMovement,
   Trend,
   Iso8601,
 } from "@tightrope/shared";
 import {
   PILLAR_ORDER,
-  SCORE_DIRECTION,
   SCORE_HISTORY_SCHEMA_VERSION,
   SCORE_SCHEMA_VERSION,
   selectBaselineObservations,
@@ -300,20 +299,20 @@ const KV_HISTORY_MAX_AGE_MS = 30 * 60_000;
  * For other windows we go straight to D1 — the homepage only ever asks for
  * 90, but the long-composite page wants 30 / 365 / all.
  */
-export async function getHistory(env: Env, days: number): Promise<ScoreHistory> {
-  const clampedDays = Math.max(1, Math.min(800, Math.floor(days)));
-  if (clampedDays === 90) {
+export async function getHistory(env: Env, days: number, resolution: ScoreHistoryResolutionRequest = "auto"): Promise<ScoreHistory> {
+  const clampedDays = clampHistoryDays(days);
+  if (clampedDays === 90 && (resolution === "auto" || resolution === "daily")) {
     const cached = await safeKvHistory(env);
-    if (cached) return cached;
+    if (cached) return { ...cached, requestedResolution: resolution };
   }
-  return buildHistoryFromD1(env, clampedDays);
+  return buildHistoryFromD1(env, clampedDays, resolution);
 }
 
 async function safeKvHistory(env: Env): Promise<ScoreHistory | null> {
   try {
     const cached = await env.KV.get<ScoreHistory>("score:history:90d", "json");
     if (!cached || cached.schemaVersion !== SCORE_HISTORY_SCHEMA_VERSION) return null;
-    if (!historyIsFresh(cached)) return null;
+    if (cached.sampling !== "last_recorded_in_bucket" || cached.resolution !== "daily" || !historyIsFresh(cached)) return null;
     return cached;
   } catch {
     // KV transient errors should never break the page; let D1 take over.
@@ -329,11 +328,6 @@ function historyIsFresh(history: ScoreHistory): boolean {
   return Date.now() - ts < KV_HISTORY_MAX_AGE_MS;
 }
 
-interface PillarSeriesRow {
-  id: PillarId;
-  observed_at: string;
-  value: number;
-}
 
 /**
  * Mirror of the API's MethodologyBaselines payload shape. We keep this
@@ -426,71 +420,6 @@ export async function buildBaselineSummariesFromD1(env: Env): Promise<Methodolog
  * across app boundaries; the contract is "same rows, same shapes",
  * verified by tests on both sides.
  */
-export async function buildHistoryFromD1(env: Env, days: number): Promise<ScoreHistory> {
-  // Cap matches apps/api/src/handlers/score.ts and the ingest backfill cap so
-  // the long-composite page can serve the full GE-2024-to-today range.
-  const clampedDays = Math.max(1, Math.min(800, Math.floor(days)));
-
-  // Downsample to one row per UTC day (latest per day wins). The recompute
-  // pipeline writes hundreds of rows per day to headline_scores; without
-  // this aggregation the chart shows today repeated and older days hidden.
-  // Mirrors the equivalent SQL-side downsample in apps/api/src/lib/db.ts.
-  const cutoffISO = new Date(Date.now() - clampedDays * 86_400_000).toISOString();
-  const [headlineRows, pillarRows] = await Promise.all([
-    env.DB.prepare(
-      `SELECT h.observed_at, h.value FROM headline_scores h
-       JOIN (
-         SELECT substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
-         FROM headline_scores
-         WHERE observed_at >= ?1
-         GROUP BY substr(observed_at, 1, 10)
-       ) m ON h.observed_at = m.ts
-       ORDER BY h.observed_at ASC`,
-    ).bind(cutoffISO).all<{ observed_at: string; value: number }>(),
-    env.DB.prepare(
-      `SELECT p.pillar_id AS id, p.observed_at, p.value FROM pillar_scores p
-       JOIN (
-         SELECT pillar_id, substr(observed_at, 1, 10) AS day, MAX(observed_at) AS ts
-         FROM pillar_scores
-         WHERE observed_at >= ?1
-         GROUP BY pillar_id, substr(observed_at, 1, 10)
-       ) m ON p.pillar_id = m.pillar_id AND p.observed_at = m.ts
-       UNION ALL
-       SELECT p.pillar_id AS id, p.observed_at, p.value FROM pillar_scores p
-       JOIN (
-         SELECT pillar_id, MAX(observed_at) AS ts
-         FROM pillar_scores
-         WHERE observed_at < ?2
-         GROUP BY pillar_id
-       ) prev ON p.pillar_id = prev.pillar_id AND p.observed_at = prev.ts
-       ORDER BY observed_at ASC`,
-    ).bind(cutoffISO, cutoffISO).all<PillarSeriesRow>(),
-  ]);
-
-  const byPillar: Record<PillarId, PillarSeriesRow[]> = {
-    market: [], fiscal: [], labour: [], delivery: [],
-  };
-  for (const r of pillarRows.results) byPillar[r.id].push(r);
-  for (const p of PILLAR_ORDER) byPillar[p].sort((a, b) => a.observed_at.localeCompare(b.observed_at));
-
-  const cursors: Record<PillarId, number> = { market: 0, fiscal: 0, labour: 0, delivery: 0 };
-  const last: Record<PillarId, number> = {
-    market: 0,
-    fiscal: 0,
-    labour: 0,
-    delivery: 0,
-  };
-
-  const points: ScoreHistoryPoint[] = headlineRows.results.map((r) => {
-    for (const p of PILLAR_ORDER) {
-      const arr = byPillar[p];
-      while (cursors[p] < arr.length && arr[cursors[p]]!.observed_at <= r.observed_at) {
-        last[p] = arr[cursors[p]]!.value;
-        cursors[p] += 1;
-      }
-    }
-    return { timestamp: r.observed_at as Iso8601, headline: r.value, pillars: { ...last } };
-  });
-
-  return { points, rangeDays: clampedDays, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
+export function buildHistoryFromD1(env: Env, days: number, resolution: ScoreHistoryResolutionRequest = "auto"): Promise<ScoreHistory> {
+  return readScoreHistory(env.DB, days, resolution);
 }

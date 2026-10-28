@@ -11,7 +11,7 @@
  */
 import type { AdapterContext, AdapterResult, DataSourceAdapter, RawObservation } from "../types.js";
 import { registerAdapter } from "../registry.js";
-import { fetchOrThrow } from "../lib/errors.js";
+import { AdapterError, fetchOrThrow } from "../lib/errors.js";
 import { sha256Hex } from "../lib/hash.js";
 import { assertFixtureFresh } from "../lib/fixtureFreshness.js";
 import { londonCloseIso } from "../lib/londonClose.js";
@@ -47,7 +47,7 @@ interface EodhdCandle {
   volume: number;
 }
 
-function fetchFromFixture(): AdapterResult {
+function fetchFromFixture(fallbackReason: string): AdapterResult {
   const data = fixture as { observed_at: string; housebuilder_idx: { value: number }; source_url: string };
   // Fallback only: tripping the freshness guard here means BOTH the live
   // EODHD path and the editorial fixture have rotted. Surface it as a loud
@@ -63,8 +63,9 @@ function fetchFromFixture(): AdapterResult {
       sourceId: SOURCE_ID,
       payloadHash: "fixture-fallback",
     }],
-    sourceUrl: data.source_url ?? FIXTURE_URL,
+    sourceUrl: FIXTURE_URL,
     fetchedAt: new Date().toISOString(),
+    fallbackReason: `live retrieval unavailable; serving guarded fixture: ${fallbackReason}`,
   };
 }
 
@@ -76,6 +77,7 @@ async function fetchConstituent(
   fetchImpl: typeof globalThis.fetch,
   apiKey: string,
   symbol: string,
+  failures: string[],
 ): Promise<EodhdCandle[]> {
   const to = new Date();
   const from = new Date(to.getTime() - 7 * 86_400_000);
@@ -84,8 +86,9 @@ async function fetchConstituent(
   let res: Response;
   try {
     res = await fetchOrThrow(fetchImpl, SOURCE_ID, url);
-  } catch {
+  } catch (err) {
     console.warn(`${SOURCE_ID}: fetch failed for ${symbol}`);
+    failures.push(`${symbol}: ${err instanceof AdapterError && err.status ? `HTTP ${err.status}` : "network fetch failed"}`);
     return [];
   }
 
@@ -94,11 +97,13 @@ async function fetchConstituent(
     candles = await res.json() as EodhdCandle[];
   } catch {
     console.warn(`${SOURCE_ID}: invalid JSON for ${symbol}`);
+    failures.push(`${symbol}: invalid JSON`);
     return [];
   }
 
   if (!Array.isArray(candles) || candles.length === 0) {
     console.warn(`${SOURCE_ID}: no candles returned for ${symbol}`);
+    failures.push(`${symbol}: no candles returned`);
     return [];
   }
 
@@ -122,13 +127,14 @@ export const eodhdHousebuildersAdapter: DataSourceAdapter = {
   async fetch(fetchImpl, ctx?: AdapterContext): Promise<AdapterResult> {
     const apiKey = ctx?.secrets?.EODHD_API_KEY;
     if (!apiKey) {
-      return fetchFromFixture();
+      return fetchFromFixture("no EODHD_API_KEY in context");
     }
 
     const sessions = new Map<string, Map<string, { close: number; rebased: number }>>();
+    const failures: string[] = [];
 
     for (const c of CONSTITUENTS) {
-      const candles = await fetchConstituent(fetchImpl, apiKey, c.symbol);
+      const candles = await fetchConstituent(fetchImpl, apiKey, c.symbol, failures);
       for (const candle of candles) {
         const session = sessions.get(candle.date) ?? new Map();
         // One issuer contributes once per session, even if a malformed
@@ -145,7 +151,7 @@ export const eodhdHousebuildersAdapter: DataSourceAdapter = {
       .find((date) => sessions.get(date)!.size >= MIN_CONSTITUENTS);
     if (!latestDate) {
       console.warn(`${SOURCE_ID}: fewer than ${MIN_CONSTITUENTS} constituents share a completed session, falling back to fixture`);
-      return fetchFromFixture();
+      return fetchFromFixture(`fewer than ${MIN_CONSTITUENTS} constituents share a completed session${failures.length ? `; ${failures.join("; ")}` : ""}`);
     }
 
     const session = sessions.get(latestDate)!;

@@ -25,6 +25,10 @@ export interface AdapterResult {
   observations: RawObservation[];
   sourceUrl: string;
   fetchedAt: Iso8601;
+  /** A live feed failed and a guarded local fallback supplied these readings.
+   * The observations remain usable, but the ingestion attempt is degraded.
+   * Omit for deliberate editorial/manual sources such as OBR vintages. */
+  fallbackReason?: string;
   /**
    * Marks adapters that legitimately return zero observations. gov.uk RSS
    * is the canonical example: it harvests timeline-event candidates (side-

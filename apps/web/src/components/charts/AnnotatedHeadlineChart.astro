@@ -303,6 +303,7 @@ const ariaSummary = first !== null && last !== null && lo !== null && hi !== nul
 // Stable IDs derived from chart dimensions so multiple charts on one page
 // don't collide. Astro's slot-style scoping doesn't extend to SVG <defs>.
 const idScope = `chart-${width}x${height}`;
+const eventStamp = (date: string) => date.includes("T") ? bstTimestamp(date) : shortDate(date);
 ---
 <div class="annotated-chart" style={`--chart-accent: var(${accentBand.colourToken});`}>
   <div class="chart-key" aria-label="Chart series and score direction">
@@ -403,7 +404,7 @@ const idScope = `chart-${width}x${height}`;
           role="button"
           aria-pressed="false"
           aria-describedby={tooltipIdFor(a.event.id)}
-          aria-label={`${a.event.title}, ${shortDate(a.event.date)}`}
+          aria-label={`${a.event.title}, ${eventStamp(a.event.date)}`}
           data-event-id={a.event.id}
           data-chart-x={a.xRatio}
           data-chart-score={a.value}
@@ -456,7 +457,7 @@ const idScope = `chart-${width}x${height}`;
           role="button"
           aria-pressed="false"
           aria-describedby={tooltipIdFor(p.annotation.event.id)}
-          aria-label={`${p.annotation.event.title}, ${shortDate(p.annotation.event.date)}`}
+          aria-label={`${p.annotation.event.title}, ${eventStamp(p.annotation.event.date)}`}
           data-event-id={p.annotation.event.id}
         >
           <rect
@@ -526,11 +527,11 @@ const idScope = `chart-${width}x${height}`;
         >
           <div class="tooltip-head">
             <span class="tooltip-cat" style={`color: ${colour}; border-color: ${colour};`}>{EVENT_STYLES[a.event.category].label}</span>
-            <span class="tooltip-date">{shortDate(a.event.date)}</span>
+            <span class="tooltip-date">{eventStamp(a.event.date)}</span>
           </div>
           <div class="tooltip-title">{a.event.title}</div>
           <div class="tooltip-summary">{summary}</div>
-          <div class="tooltip-score">Nearest recorded headline: <strong>{a.value.toFixed(1)} / 100</strong><span>{shortDate(points[a.seriesIndex]!.timestamp)} · {resolution} sampling</span></div>
+          <div class="tooltip-score">Nearest recorded headline: <strong>{a.value.toFixed(1)} / 100</strong><span>{bstTimestamp(points[a.seriesIndex]!.timestamp)} · {resolution} sampling</span></div>
           <div class="tooltip-source">
             {/* SEC-6: a.event.sourceUrl is operator-curated in D1. Allowlist http(s). */}
             Source: {(() => {
@@ -549,7 +550,7 @@ const idScope = `chart-${width}x${height}`;
     <script type="application/json" class="score-chart-data" set:html={safeJsonForScriptTag(sampleData)} />
     <div class="score-inspector">
       <div class="inspector-heading">
-        <div><span class="inspector-eyebrow" data-score-position>Latest · {points.length} / {points.length}</span><time datetime={latestPoint.timestamp} data-score-date>{shortDate(latestPoint.timestamp)}</time></div>
+        <div><span class="inspector-eyebrow" data-score-position>Latest · {points.length} / {points.length}</span><time datetime={latestPoint.timestamp} data-score-date>{bstTimestamp(latestPoint.timestamp)}</time></div>
         <div class="inspector-navigation" aria-label="Move between recordings">
           <button type="button" class="latest-button step-button" data-score-previous aria-label="Previous recorded score">←</button>
           <button type="button" class="latest-button step-button" data-score-next aria-label="Next recorded score">→</button>
@@ -581,7 +582,7 @@ const idScope = `chart-${width}x${height}`;
   {annotations.length ? <details class="event-list">
     <summary>Read the {annotations.length} charted event{annotations.length === 1 ? "" : "s"} & sources</summary>
     <ol>{annotations.map(annotation => <li>
-      <div class="event-list-date"><time datetime={annotation.event.date}>{shortDate(annotation.event.date)}</time><span>{EVENT_STYLES[annotation.event.category].label}</span></div>
+      <div class="event-list-date"><time datetime={annotation.event.date}>{eventStamp(annotation.event.date)}</time><span>{EVENT_STYLES[annotation.event.category].label}</span></div>
       <strong>{annotation.event.title}</strong>
       <p>{annotation.event.summary}</p>
       {safeHref(annotation.event.sourceUrl) ? <a href={safeHref(annotation.event.sourceUrl)!} target="_blank" rel="noopener">{annotation.event.sourceLabel} ↗</a> : <span>{annotation.event.sourceLabel}</span>}

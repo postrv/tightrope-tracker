@@ -65,6 +65,19 @@ afterEach(() => {
 });
 
 describe("recompute cache consistency", () => {
+  it("publishes a degraded live-source audit in the cached snapshot and removes it after recovery", async () => {
+    const { env, sqlite, kv } = setup();
+    try {
+      sqlite.prepare("INSERT INTO ingestion_audit VALUES ('lseg', ?, 'partial')").run(NOW);
+      await recomputeScores(env);
+      expect((JSON.parse(kv.get("score:latest")!) as ScoreSnapshot).sourceHealth)
+        .toMatchObject([{ sourceId: "lseg", status: "partial", lastAttemptAt: NOW }]);
+      sqlite.prepare("UPDATE ingestion_audit SET status = 'success' WHERE source_id = 'lseg'").run();
+      await recomputeScores(env);
+      expect((JSON.parse(kv.get("score:latest")!) as ScoreSnapshot).sourceHealth).toBeUndefined();
+    } finally { sqlite.close(); }
+  });
+
   it("publishes the newly persisted headline and all pillar values to history in the same run", async () => {
     const { env, sqlite, kv } = setup();
     try {

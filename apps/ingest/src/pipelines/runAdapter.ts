@@ -4,6 +4,7 @@ import { closeAuditFailure, closeAuditSuccess, openAudit } from "../lib/audit.js
 import { writeObservations } from "../lib/observations.js";
 import { combineHashes } from "../lib/hash.js";
 import { sanitizeForLog } from "../lib/sanitize.js";
+import { sanitizeAuditReason } from "../lib/auditMetadata.js";
 
 /** Spacing before the single network-class retry. ~10s (BoE/ONS rate courtesy). */
 const RETRY_DELAY_MS = 10_000;
@@ -88,13 +89,20 @@ export async function runAdapter(
     // hash cover ONLY the observations that actually landed (F5a) — a quarantined
     // value must not colour the "did upstream change?" hash. A batch that both
     // wrote AND quarantined closes as 'partial' so /admin/health flags it (F5b).
-    const { written, quarantined } = await writeObservations(env, result.observations);
+    // A fixture is evidence of the last editorial reading, not a fresh live
+    // retrieval. Preserve stored live closes (including same-date revisions)
+    // rather than replacing them with an older bundled copy during an outage.
+    const { written, quarantined } = result.fallbackReason
+      ? { written: [], quarantined: 0 }
+      : await writeObservations(env, result.observations);
     const payloadHash = combineHashes(written.map((o) => o.payloadHash));
     const { status } = await closeAuditSuccess(env.DB, handle, {
       rowsWritten: written.length,
       payloadHash,
       emitsNoObservations: result.emitsNoObservations === true,
       quarantinedCount: quarantined,
+      sourceUrl: result.sourceUrl,
+      ...(result.fallbackReason ? { fallbackReason: sanitizeAuditReason(result.fallbackReason, Object.values(ctx.secrets ?? {})) } : {}),
     });
     opts.onOutcome?.({ status, rowsWritten: written.length });
     return result;

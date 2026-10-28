@@ -39,6 +39,7 @@ describe("eodhdHousebuildersAdapter", () => {
     expect(result.observations[0]!.sourceId).toBe("eodhd_housebuilders");
     expect(result.observations[0]!.payloadHash).toMatch(/^[0-9a-f]{64}$/);
     expect(result.observations[0]!.observedAt).toBe("2026-04-22T15:30:00Z");
+    expect(result.fallbackReason).toBeUndefined();
   });
 
   it("stamps a winter close at 16:30 UTC", async () => {
@@ -108,6 +109,8 @@ describe("eodhdHousebuildersAdapter", () => {
     expect(result.observations).toHaveLength(1);
     expect(result.observations[0]!.indicatorId).toBe("housebuilder_idx");
     expect(result.observations[0]!.payloadHash).toBe("fixture-fallback");
+    expect(result.fallbackReason).toContain("no EODHD_API_KEY");
+    expect(result.sourceUrl).toBe("local:fixtures/housebuilders.json");
   });
 
   it("falls back to fixture on API error", async () => {
@@ -118,6 +121,14 @@ describe("eodhdHousebuildersAdapter", () => {
     );
     expect(result.observations).toHaveLength(1);
     expect(result.observations[0]!.payloadHash).toBe("fixture-fallback");
+    expect(result.fallbackReason).toContain("HTTP 500");
+  });
+
+  it("reports rate limiting without claiming a live composite", async () => {
+    const result = await eodhdHousebuildersAdapter.fetch(async () => new Response("Rate limited", { status: 429 }), CTX_WITH_KEY);
+    expect(result.fallbackReason).toContain("PSN: HTTP 429");
+    expect(result.fallbackReason).toContain("VTY: HTTP 429");
+    expect(result.sourceUrl).toBe("local:fixtures/housebuilders.json");
   });
 
   it("tolerates missing constituents if >= 3 resolve", async () => {

@@ -85,7 +85,7 @@ describe("AnnotatedHeadlineChart", () => {
     // Each marker carries an aria-label including title and date.
     const labels = Array.from(markers).map((m) => m.getAttribute("aria-label") ?? "");
     expect(labels[0]).toMatch(/Event a/);
-    expect(labels[0]).toMatch(/3 Apr/);
+    expect(labels[0]).toContain("2026-04-03 12:00 UTC");
     expect(labels[1]).toMatch(/Event b/);
     expect(labels[2]).toMatch(/Event c/);
   });

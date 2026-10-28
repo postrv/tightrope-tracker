@@ -169,7 +169,7 @@ describe("runAdapter — F5: audit hashes survivors only and marks a mixed batch
 
     const close = runs.find((r) => r.sql.includes("UPDATE ingestion_audit"));
     expect(close, "should close the audit row").toBeDefined();
-    // closeAuditSuccess binds: [status, completed_at, rows_written, payload_hash, error, id]
+    // closeAuditSuccess binds: [status, completed_at, rows_written, payload_hash, error, source_url, id]
     expect(close!.bindings[0]).toBe("partial"); // mixed batch is degraded
     expect(close!.bindings[2]).toBe(1); // rows_written = survivors only
     expect(close!.bindings[3]).toBe(combineHashes(["good-hash"])); // hash excludes the quarantined value

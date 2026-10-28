@@ -253,7 +253,7 @@ async function fixtureObservation(): Promise<{ observation: RawObservation; sour
       sourceId: SOURCE_ID,
       payloadHash: hash,
     },
-    sourceUrl: data.source_url ?? FIXTURE_URL,
+    sourceUrl: FIXTURE_URL,
   };
 }
 
@@ -293,6 +293,7 @@ export const lseFtse250Adapter: DataSourceAdapter = {
         observations: [observation],
         sourceUrl,
         fetchedAt: new Date().toISOString(),
+        fallbackReason: `live retrieval unavailable; serving guarded fixture: ${reasons.join("; ")}`,
       };
     } catch (err) {
       // Surface the live-path root cause in the audit row: "fixture is stale"

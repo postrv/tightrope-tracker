@@ -52,10 +52,10 @@ function makeEnv(opts: { token?: string } = {}): {
         // openAudit: bindings = [id, source_id, started_at, source_url]
         auditSource.set(bindings[0] as string, bindings[1] as string);
       } else if (norm.startsWith("UPDATE ingestion_audit")) {
-        // closeAuditSuccess: bindings = [status, completed_at, rows_written, payload_hash, error, id]
+        // closeAuditSuccess: bindings = [status, completed_at, rows_written, payload_hash, error, source_url, id]
         const status = bindings[0] as string;
         const payloadHash = bindings[3] as string | undefined;
-        const sourceId = auditSource.get(bindings[5] as string);
+        const sourceId = auditSource.get(bindings[6] as string);
         if (sourceId && payloadHash && (status === "success" || status === "unchanged")) {
           lastSuccessHash.set(sourceId, payloadHash);
         }

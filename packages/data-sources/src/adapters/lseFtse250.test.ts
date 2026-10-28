@@ -26,6 +26,7 @@ describe("lseFtse250Adapter — live path", () => {
     expect(obs.indicatorId).toBe("ftse_250");
     expect(obs.value).toBe(23371.4);
     expect(obs.observedAt).toBe("2026-07-10T15:30:00Z");
+    expect(result.fallbackReason).toBeUndefined();
   });
 
   it("falls back to Yahoo ^FTMC when EODHD returns 402", async () => {
@@ -50,6 +51,7 @@ describe("lseFtse250Adapter — live path", () => {
 
     const result = await lseFtse250Adapter.fetch(fetchImpl, LIVE_CTX);
     expect(result.sourceUrl).toContain("query1.finance.yahoo.com");
+    expect(result.fallbackReason).toBeUndefined();
     const obs = result.observations[0]!;
     expect(obs.indicatorId).toBe("ftse_250");
     expect(obs.value).toBe(24718.8);
@@ -60,7 +62,14 @@ describe("lseFtse250Adapter — live path", () => {
     const fetchImpl = (async () => new Response("Payment Required", { status: 402 })) as typeof globalThis.fetch;
     const result = await lseFtse250Adapter.fetch(fetchImpl, LIVE_CTX);
     expect(result.observations[0]!.indicatorId).toBe("ftse_250");
-    expect(result.sourceUrl).toContain("query1.finance.yahoo.com/v8/finance/chart/%5EFTMC");
+    expect(result.sourceUrl).toBe("local:fixtures/ftse-250.json");
+    expect(result.fallbackReason).toContain("HTTP 402");
+  });
+
+  it("reports rate-limited live paths explicitly when serving the fixture", async () => {
+    const result = await lseFtse250Adapter.fetch(async () => new Response("Rate limited", { status: 429 }), LIVE_CTX);
+    expect(result.fallbackReason).toContain("HTTP 429");
+    expect(result.sourceUrl).toBe("local:fixtures/ftse-250.json");
   });
 
   it("skips an in-session EODHD bar and uses the previous completed close", async () => {
@@ -152,7 +161,8 @@ describe("lseFtse250Adapter", () => {
     expect(obs.value).toBeLessThan(40000);
     expect(obs.observedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(obs.payloadHash).toMatch(/^[0-9a-f]{64}$/);
-    expect(result.sourceUrl).toMatch(/^https?:\/\//);
+    expect(result.sourceUrl).toBe("local:fixtures/ftse-250.json");
+    expect(result.fallbackReason).toContain("no EODHD_API_KEY");
   });
 
   it("has a recent observed_at on the shipped fixture (freshness guard can't throw on current build)", async () => {

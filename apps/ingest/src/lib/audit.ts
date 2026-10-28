@@ -1,4 +1,5 @@
 import type { D1Database } from "@cloudflare/workers-types";
+import { sanitizeAuditUrl } from "./auditMetadata.js";
 
 export interface AuditRowInit {
   sourceId: string;
@@ -34,7 +35,7 @@ export async function openAudit(db: D1Database, init: AuditRowInit): Promise<Aud
 export async function closeAuditSuccess(
   db: D1Database,
   handle: AuditHandle,
-  opts: { rowsWritten: number; payloadHash: string; emitsNoObservations?: boolean; quarantinedCount?: number },
+  opts: { rowsWritten: number; payloadHash: string; emitsNoObservations?: boolean; quarantinedCount?: number; fallbackReason?: string; sourceUrl?: string },
 ): Promise<{ status: string }> {
   // A "success" that wrote zero rows is usually a parse regression: the
   // adapter returned 200 OK and a body that parsed into an empty array.
@@ -49,7 +50,12 @@ export async function closeAuditSuccess(
   const quarantined = opts.quarantinedCount ?? 0;
   let status: string;
   let error: string | null;
-  if (isSilentFailure) {
+  if (opts.fallbackReason) {
+    // A guarded fixture does not prove the live feed recovered. The pipeline
+    // deliberately leaves the last good stored observations untouched.
+    status = "partial";
+    error = opts.fallbackReason;
+  } else if (isSilentFailure) {
     // F5b: distinguish "all values quarantined" from a genuine empty parse — an
     // all-quarantined batch DID parse; the plausibility gate withheld it.
     status = "partial";
@@ -82,10 +88,11 @@ export async function closeAuditSuccess(
            completed_at = ?,
            rows_written = ?,
            payload_hash = ?,
-           error = ?
+           error = ?,
+           source_url = ?
        WHERE id = ?`,
     )
-    .bind(status, new Date().toISOString(), opts.rowsWritten, opts.payloadHash, error, handle.id)
+    .bind(status, new Date().toISOString(), opts.rowsWritten, opts.payloadHash, error, sanitizeAuditUrl(opts.sourceUrl ?? handle.sourceUrl), handle.id)
     .run();
   // Returned so callers that need the honest terminal status — the relay admin
   // endpoint surfaces it in its JSON response — don't have to re-query the row.

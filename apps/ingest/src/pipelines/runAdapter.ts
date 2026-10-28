@@ -1,5 +1,4 @@
 import { AdapterError, type DataSourceAdapter, type AdapterResult, type AdapterContext } from "@tightrope/data-sources";
-import { readLatestObservations } from "@tightrope/snapshot";
 import type { Env } from "../env.js";
 import { closeAuditFailure, closeAuditSuccess, openAudit } from "../lib/audit.js";
 import { writeObservations } from "../lib/observations.js";
@@ -66,12 +65,17 @@ export async function runAdapter(
       EODHD_API_KEY: env.EODHD_API_KEY,
       EIA_API_KEY: env.EIA_API_KEY,
     },
-    // D1-backed latest-observation lookup (the snapshot's two-tier selector).
-    // eia_brent pairs its USD print with the relay-fed gbp_usd fix through
-    // this instead of re-fetching the ASN-blocked BoE IADB endpoint.
-    getLatestObservation: async (indicatorId) => {
-      const rows = await readLatestObservations(env.DB);
-      const row = rows.find((r) => r.indicator_id === indicatorId);
+    // EIA Brent's date-aligned FX lookup. The latest FX fix is unsuitable:
+    // EIA publishes Brent with a lag, and pairing that old Brent period to
+    // today's FX both caused >7-day-skew failures and rewrote its GBP price
+    // whenever FX moved. The indexed observed_at lookup is bounded by the
+    // EIA period's next midnight, so later fixes cannot affect the result.
+    getObservationBefore: async (indicatorId, sourceId, beforeIso) => {
+      const row = await env.DB.prepare(
+        `SELECT value, observed_at FROM indicator_observations
+         WHERE indicator_id = ? AND source_id = ? AND observed_at < ?
+         ORDER BY observed_at DESC LIMIT 1`,
+      ).bind(indicatorId, sourceId, beforeIso).first<{ value: number; observed_at: string }>();
       return row && typeof row.value === "number" && Number.isFinite(row.value)
         ? { value: row.value, observedAt: row.observed_at }
         : null;

@@ -113,6 +113,14 @@ export async function loadSnapshot(astroLocals: App.Locals): Promise<ScoreSnapsh
   }
 }
 
+/** Selected-range events for the long view, independent of the homepage's latest-event cap. */
+export async function loadTimeline(astroLocals: App.Locals, days: number): Promise<TimelineEvent[]> {
+  const env = astroLocals.runtime?.env;
+  if (!env?.DB) return [];
+  const cutoff = new Date(Date.now() - (Math.max(1, Math.min(800, days)) + 1) * 86_400_000).toISOString();
+  try { return await getTimelineEvents(env, 500, cutoff); } catch { return []; }
+}
+
 /**
  * Load per-indicator baseline summaries for the /explore simulator.
  *

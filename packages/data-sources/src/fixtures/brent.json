@@ -1,12 +1,12 @@
 {
-  "_comment": "Brent crude (Europe Brent Spot Price FOB) converted to GBP. USD series sourced from EIA daily table at https://www.eia.gov/dnav/pet/hist/rbrted.htm (US federal public-domain). GBP/USD spot is the BoE 4pm daily fix (XUDLUSS). Refreshed weekly by the editorial pipeline. 2026-09-01 refresh: latest EIA Europe Brent Spot print is 2026-08-25 = $88.24/bbl (FRED mirror DCOILBRENTEU; EIA publishes the dated series with a few days' lag), divided by the ingested gbp_usd 4pm fix 1.3571, giving 88.24 / 1.3571 = 65.021 -> 65.02 GBP/bbl. The triplet round-trips: 65.02 x 1.3571 = 88.24. Matches the live eia_brent observation ingested 2026-08-25. Context: Brent retraced from the 18 Aug $95.29 print as the Middle East risk premium eased, but remains well above the pre-conflict $60s.",
-  "as_of": "2026-08-25",
-  "observed_at": "2026-08-25T00:00:00Z",
-  "brent_usd_per_bbl": 88.24,
-  "gbp_usd": 1.3571,
+  "_comment": "Brent crude (Europe Brent Spot Price FOB) converted to GBP. EIA daily price for 2026-10-20 is $115.22/bbl at https://www.eia.gov/dnav/pet/hist/RBRTED.htm (RBRTEd release dated 10/21/2026; 21-23 Oct cells blank, next release listed 10/28/2026 had not replaced the file). The matching 2026-10-20 BoE XUDLUSS 4pm fix already ingested in indicator_observations is 1.3387 USD/GBP. Math.round((115.22 / 1.3387) * 100) / 100 = 86.07 GBP/bbl, the same figure already stored for that day. Refreshed 2026-10-28 so the 14-day fallback guard covers the latest paired print.",
+  "as_of": "2026-10-20",
+  "observed_at": "2026-10-20T00:00:00Z",
+  "brent_usd_per_bbl": 115.22,
+  "gbp_usd": 1.3387,
   "brent_gbp": {
-    "value": 65.02,
+    "value": 86.07,
     "unit": "GBP/bbl"
   },
-  "source_url": "https://www.eia.gov/dnav/pet/hist/rbrted.htm"
+  "source_url": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm"
 }

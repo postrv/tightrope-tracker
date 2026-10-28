@@ -181,6 +181,20 @@
       "release": "RICS UK Residential Market Survey — July 2026",
       "published": "2026-08-13",
       "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/UK-Residential-Market-Survey-July-2026.pdf"
+    },
+    {
+      "observed_at": "2026-08-31T00:00:00Z",
+      "value": -28,
+      "release": "RICS UK Residential Market Survey — August 2026",
+      "published": "2026-09-07",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/August-2026-UK-Residential-Market-Survey.pdf"
+    },
+    {
+      "observed_at": "2026-09-30T00:00:00Z",
+      "value": -32,
+      "release": "RICS UK Residential Market Survey — September 2026",
+      "published": "2026-10-06",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/market-surveys/RICS-UK-Residential-Market-Survey_September-2026.pdf"
     }
   ]
 }

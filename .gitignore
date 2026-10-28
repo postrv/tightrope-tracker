@@ -1,6 +1,7 @@
 # dependencies
 node_modules/
 .pnpm-store/
+.narsil-cache/
 
 # build outputs
 dist/

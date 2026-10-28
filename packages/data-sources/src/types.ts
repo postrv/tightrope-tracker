@@ -69,16 +69,25 @@ export interface HistoricalFetchResult {
 export interface AdapterContext {
   secrets?: Record<string, string | undefined>;
   /**
-   * Latest published observation for an indicator, provided by the ingest
-   * runner (D1-backed, the same two-tier selector the snapshot uses). Lets
-   * an adapter pair against a series another pipeline already ingests —
-   * eia_brent's USD→GBP conversion reads the relay-fed `gbp_usd` fix here
-   * instead of re-fetching the BoE IADB endpoint, whose Workers egress has
-   * been ASN-blocked since 2026-06-10 (the reason the Actions relay exists).
-   * Absent in dev/tests/probe scripts, where adapters fall back exactly as
-   * they do for a missing API key.
+   * Newest published observation from `sourceId` strictly before `beforeIso`.
+   * EIA Brent uses this to pair its dated USD price with the relay-fed BoE FX
+   * fix from the same or a preceding day. A later FX release must not reprice
+   * an already-published Brent period. Absent in dev/probe scripts, where the
+   * adapter falls back to its fixture.
    */
-  getLatestObservation?: (indicatorId: string) => Promise<{ value: number; observedAt: string } | null>;
+  getObservationBefore?: (
+    indicatorId: string,
+    sourceId: string,
+    beforeIso: string,
+  ) => Promise<{ value: number; observedAt: string } | null>;
+  /** Published rows in [fromIso, beforeIso), ordered by observedAt. Historical
+   * Brent uses one D1 read for the BoE fixes needed by an EIA date range. */
+  getObservationsInRange?: (
+    indicatorId: string,
+    sourceId: string,
+    fromIso: string,
+    beforeIso: string,
+  ) => Promise<Array<{ value: number; observedAt: string }>>;
 }
 
 /** Adapter contract -- every source must implement this. */

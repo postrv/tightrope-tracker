@@ -7,7 +7,7 @@ import type { DiscoverConfig } from "../types";
  * fixed landing/collection page the fetcher grabs: NielsenIQ links each month's
  * consumer-confidence article; gov.uk collections link each quarterly release;
  * obr.uk/efo links the exec-summary PDF. This module takes the discovery page's
- * HTML and returns the single NEWEST release URL matching the spec's
+ * HTML or JSON feed and returns the single NEWEST release URL matching the spec's
  * `linkPattern`, so the caller can fetch THAT and hand the release — not the
  * landing page — to the model.
  *
@@ -46,6 +46,28 @@ export function extractHrefs(html: string, baseUrl: string): string[] {
   return out;
 }
 
+/** WordPress news feeds expose post links as JSON rather than HTML anchors. */
+function extractFeedLinks(body: string, baseUrl: string): string[] {
+  if (!body.trimStart().startsWith("[")) return [];
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(parsed)) return [];
+  const out: string[] = [];
+  for (const item of parsed) {
+    if (!item || typeof item !== "object" || typeof (item as { link?: unknown }).link !== "string") continue;
+    try {
+      out.push(new URL((item as { link: string }).link, baseUrl).toString());
+    } catch {
+      /* malformed feed link — skip */
+    }
+  }
+  return out;
+}
+
 /**
  * The newest release URL on a discovery page, or null if nothing matches.
  * `matches` are deduped in document order; the newest-selection strategy is:
@@ -57,7 +79,8 @@ export function discoverReleaseUrl(html: string, discoveryUrl: string, config: D
   const pattern = new RegExp(config.linkPattern, "i");
   const seen = new Set<string>();
   const matches: string[] = [];
-  for (const href of extractHrefs(html, discoveryUrl)) {
+  const feedLinks = extractFeedLinks(html, discoveryUrl);
+  for (const href of feedLinks.length > 0 ? feedLinks : extractHrefs(html, discoveryUrl)) {
     if (!pattern.test(href) || seen.has(href)) continue;
     seen.add(href);
     matches.push(href);

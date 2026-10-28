@@ -1,5 +1,5 @@
 import { getAdapter, listAdapters } from "@tightrope/data-sources";
-import { timingSafeEqual } from "@tightrope/shared";
+import { METHODOLOGY_BASELINES_CACHE_KEY, timingSafeEqual } from "@tightrope/shared";
 import type { Env } from "./env.js";
 import { adminAuthGate } from "./lib/adminBackoff.js";
 import { backfillHistoricalScores } from "./pipelines/backfill.js";
@@ -175,6 +175,7 @@ export async function handleAdminRun(req: Request, env: Env, url: URL): Promise<
           "delivery:latest",
           "timeline:latest",
           "methodology:baselines",
+          METHODOLOGY_BASELINES_CACHE_KEY,
         ] as const;
         const purged: string[] = [];
         const failed: string[] = [];

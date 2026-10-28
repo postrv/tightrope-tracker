@@ -72,6 +72,10 @@ function ecdfPath(): string {
         <li><strong>Headline Tightrope Score.</strong> Weighted <em>geometric</em> mean of the four pillar scores. Geometric at the headline level means one weak pillar pulls the headline down hard — the correct behaviour for a tightrope metric where one failing support cannot be fully offset elsewhere.</li>
       </ol>
 
+      <h3>Baseline samples and the 28 October 2026 correction</h3>
+      <p>Each indicator contributes one sample per reference day. Genuine earlier live publications remain in the baseline. When multiple rows describe the same day, the latest-ingested revision wins; an ingestion-time tie uses the later observation timestamp. Superseded, incorrectly future-dated live snapshots are excluded. Live scoring and the public baseline summaries used by Explore apply the same selection.</p>
+      <p>On 28 October 2026 we corrected a filter that had discarded valid earlier live observations, and removed duplicate midnight/close representations of the same daily publication. A replay with identical current readings changed the headline from 38.3 to 42.8. This was a calculation correction, not a Budget reaction. Weights, score direction and schema v2 are unchanged; earlier score snapshots remain as published, so comparisons across the correction include this calculation change. See the <a href="/corrections">dated corrections log</a> for the evidence and affected values.</p>
+
       <div class="band-table">
         <h3>Score bands</h3>
         <p class="caption">The headline and pillar scores are bucketed into five bands at 20-point steps. Since score schema v2, lower scores are worse: critical is 0–20 and slack is 80–100. The same thresholds drive colour choices throughout the site and the OG-card rendering; change one and the tests in <code>packages/shared/src/bands.test.ts</code> flag the drift.</p>
@@ -237,7 +241,7 @@ function ecdfPath(): string {
       <h2>Pillar quorum &amp; staleness</h2>
       <p>Not every indicator is fresh every day. ONS PSF publishes monthly with a 45-day lag; OBR EFO publishes twice a year; even the BoE's daily rate feed is quiet at weekends. We want the headline score to <em>keep running</em> when a single upstream goes quiet, but we also don't want to publish a pillar score composed mostly of stale readings. The quorum rule is the bright line between those.</p>
       <ul class="bullets">
-        <li><strong>Per-indicator freshness.</strong> Every indicator carries its own <code>maxStaleMs</code> — tuned to the publisher's cadence, not a pillar-wide window. An ONS PSF observation is "fresh" if it is within ~90 days; an OBR EFO figure is "fresh" within ~220 days. See the inputs table above.</li>
+        <li><strong>Per-indicator freshness.</strong> Every indicator carries its own <code>maxStaleMs</code> — tuned to the publisher's cadence, not a pillar-wide window. An ONS PSF observation is "fresh" if it is within ~90 days; an OBR EFO figure is "fresh" within ~255 days. See the inputs table above.</li>
         <li><strong>Pillar quorum = half the <em>observed</em> indicators.</strong> For each pillar we count how many indicators have <em>any</em> observation on file (observedCount). The quorum is <code>ceil(observedCount × 0.5)</code>, floored at 1. If fewer than that many indicators are fresh, the pillar is marked stale.</li>
         <li><strong>Missing &ne; stale.</strong> An indicator with no observations at all (a data-engineering gap) is excluded from the quorum denominator. It shows up in the /sources page as "no data" without tripping the pillar into stale.</li>
         <li><strong>What happens when a pillar is stale.</strong> The ingest recompute still computes a pillar score from the observations on file, but it does <em>not</em> persist a new <code>pillar_scores</code> row for that pillar and does not write the headline row. The UI surfaces the <strong>stale</strong> chip on that pillar tile and on the nav bar.</li>

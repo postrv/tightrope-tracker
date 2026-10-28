@@ -18,6 +18,9 @@ import { summariseFreshness } from "~/lib/freshness.js";
 
 const data = await loadHomepageData(Astro.locals);
 const { snapshot, movements, delivery, timeline, history, headroomVintages, empty } = data;
+const correctionCutoff = Date.now() - 7 * 86_400_000;
+const recentCalculationCorrection = timeline.filter(event => event.category === "methodology" && Date.parse(event.date) >= correctionCutoff && Date.parse(event.date) <= Date.now())
+  .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))[0];
 // Stale banner triggers on quorum-failure (snapshot.headline.stale) but ALSO
 // on per-indicator staleness — a daily indicator past its 7-day window even
 // when the pillar still holds quorum. Keeping the reader honest about which
@@ -65,11 +68,11 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
       </div>
     ) : null}
 
-    <Hero headline={snapshot.headline} freshestAt={freshness.freshestAt} headroomVintages={headroomVintages} />
+    <Hero headline={snapshot.headline} freshestAt={freshness.freshestAt} headroomVintages={headroomVintages} calculationCorrection={recentCalculationCorrection} />
     <HeadlineChartSection history={history} events={timeline} />
     <PillarStrip pillars={snapshot.pillars} />
     <TodayStrip movements={movements} />
-    <MarketSection pillar={snapshot.pillars.market} movements={movements} />
+    <MarketSection pillar={snapshot.pillars.market} movements={movements} history={history} />
     <FiscalSection pillar={snapshot.pillars.fiscal} headroomVintages={headroomVintages} />
     <LabourSection pillar={snapshot.pillars.labour} />
     <DeliverySection commitments={delivery} pillar={snapshot.pillars.delivery} />

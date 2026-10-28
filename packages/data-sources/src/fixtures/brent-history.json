@@ -8,7 +8,7 @@
     "indicator": "Brent crude (Europe Brent Spot Price FOB, EIA series RBRTE) close, in GBP/bbl",
     "formula": "brent_gbp = brent_usd / gbp_usd",
     "release_cadence": "daily (UK + US trading days; both markets must have a print)",
-    "extraction_notes": "USD: EIA RBRTEd.xls (Europe Brent Spot Price FOB, $/bbl) -- US federal public-domain. FX: Bank of England Database series XUDLUSS (US$/GB pound, daily 4pm spot). Range 2024-07-04..2026-10-06. The 2026-04-25 extract emitted 454 rows and stopped at 2026-04-20 because EIA had not yet published 2026-04-21..2026-04-24. The 2026-10-13 extension appended 118 same-day pairs from 2026-04-21 through 2026-10-06, the last published RBRTEd print (later October cells were blank). Days with no same-day XUDLUSS fix are skipped. USD values rounded to 2dp; FX rounded to 4dp (BoE published precision); GBP/bbl computed as brent_usd / gbp_usd then rounded to 2dp. Definition consistency: USD figure is the EIA *spot* price (not a futures front-month settle); FX is the BoE 4pm spot fix. Same-day, same-definition pair."
+    "extraction_notes": "USD: EIA RBRTEd.xls (Europe Brent Spot Price FOB, $/bbl) -- US federal public-domain. FX: Bank of England Database series XUDLUSS (US$/GB pound, daily 4pm spot). Range 2024-07-04..2026-10-20. The 2026-04-25 extract emitted 454 rows and stopped at 2026-04-20 because EIA had not yet published 2026-04-21..2026-04-24. The 2026-10-13 extension appended 118 same-day pairs from 2026-04-21 through 2026-10-06, the last published RBRTEd print (later October cells were blank). The 2026-10-28 extension appended 10 same-day pairs from 2026-10-07 through 2026-10-20 (RBRTEd release dated 10/21/2026; 21-23 Oct cells blank). Days with no same-day XUDLUSS fix are skipped. USD values rounded to 2dp; FX rounded to 4dp (BoE published precision); GBP/bbl computed as Math.round((brent_usd / gbp_usd) * 100) / 100, matching the shipped adapter and the already-published observations. Definition consistency: USD figure is the EIA *spot* price (not a futures front-month settle); FX is the BoE 4pm spot fix. Same-day, same-definition pair."
   },
   "points": [
     {
@@ -4584,6 +4584,86 @@
       "value": 94.46,
       "brent_usd": 125.44,
       "gbp_usd": 1.3279,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-07T00:00:00Z",
+      "value": 95.31,
+      "brent_usd": 126,
+      "gbp_usd": 1.322,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-08T00:00:00Z",
+      "value": 98.43,
+      "brent_usd": 130.18,
+      "gbp_usd": 1.3226,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-09T00:00:00Z",
+      "value": 98.32,
+      "brent_usd": 130.03,
+      "gbp_usd": 1.3225,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-12T00:00:00Z",
+      "value": 98.3,
+      "brent_usd": 129.95,
+      "gbp_usd": 1.322,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-13T00:00:00Z",
+      "value": 94.94,
+      "brent_usd": 125.78,
+      "gbp_usd": 1.3249,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-14T00:00:00Z",
+      "value": 96.16,
+      "brent_usd": 126.55,
+      "gbp_usd": 1.316,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-15T00:00:00Z",
+      "value": 95.34,
+      "brent_usd": 126.35,
+      "gbp_usd": 1.3253,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-16T00:00:00Z",
+      "value": 89.37,
+      "brent_usd": 119.33,
+      "gbp_usd": 1.3353,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-19T00:00:00Z",
+      "value": 89.22,
+      "brent_usd": 118.82,
+      "gbp_usd": 1.3318,
+      "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
+    },
+    {
+      "observed_at": "2026-10-20T00:00:00Z",
+      "value": 86.07,
+      "brent_usd": 115.22,
+      "gbp_usd": 1.3387,
       "url_usd": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
       "url_fx": "https://www.bankofengland.co.uk/boeapps/iadb/?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=XUDLUSS&UsingCodes=Y&Filter=N"
     }

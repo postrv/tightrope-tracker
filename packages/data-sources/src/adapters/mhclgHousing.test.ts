@@ -28,6 +28,27 @@ describe("mhclgHousingAdapter", () => {
       expect(typeof mhclgHousingAdapter.fetchHistorical).toBe("function");
     });
 
+    it("keeps the latest quarterly backfill in step with the live fixture and release dates", async () => {
+      const live = await mhclgHousingAdapter.fetch(globalThis.fetch);
+      const latestObservedAt = live.observations[0]!.observedAt;
+      const historical = await mhclgHousingAdapter.fetchHistorical!(globalThis.fetch, {
+        from: new Date(latestObservedAt),
+        to: new Date(latestObservedAt),
+      });
+
+      expect(historical.observations).toHaveLength(live.observations.length);
+      for (const current of live.observations) {
+        const prior = historical.observations.find((o) => o.indicatorId === current.indicatorId);
+        expect(prior, `${current.indicatorId} missing from latest historical quarter`).toBeDefined();
+        expect(prior).toMatchObject({
+          value: current.value,
+          observedAt: current.observedAt,
+          releasedAt: current.releasedAt,
+          sourceId: current.sourceId,
+        });
+      }
+    });
+
     it("emits hist:-prefixed observations for every quarter in range", async () => {
       const res = (await mhclgHousingAdapter.fetchHistorical!(
         globalThis.fetch,
@@ -65,11 +86,7 @@ describe("mhclgHousingAdapter", () => {
       expect(res.observations.length).toBeLessThanOrEqual(8);
     });
 
-    it("filters out null values (e.g. quarters where a series was not extracted)", async () => {
-      // Q1 2025 planning_consents is null in the fixture (HTML release was not
-      // extractable at curation time). fetchHistorical must skip it rather
-      // than emit a NaN/null-valued observation which writeHistoricalObservations
-      // would reject as non-finite.
+    it("emits the backfilled Q1 2025 planning consent observation", async () => {
       const res = (await mhclgHousingAdapter.fetchHistorical!(
         globalThis.fetch,
         { from: new Date("2025-01-01T00:00:00Z"), to: new Date("2025-06-30T23:59:59Z") },
@@ -77,7 +94,13 @@ describe("mhclgHousingAdapter", () => {
       const q1Planning = res.observations.filter(
         (o) => o.indicatorId === "planning_consents" && o.observedAt.startsWith("2025-03-31"),
       );
-      expect(q1Planning).toHaveLength(0);
+      expect(q1Planning).toHaveLength(1);
+      expect(q1Planning[0]).toMatchObject({
+        value: 60.9,
+        observedAt: "2025-03-31T00:00:00Z",
+        releasedAt: "2025-06-19T00:00:00Z",
+        sourceId: "mhclg",
+      });
     });
 
     it("sorts observations ascending by observedAt", async () => {

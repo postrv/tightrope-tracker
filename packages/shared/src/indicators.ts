@@ -144,7 +144,7 @@ export interface IndicatorDefinition {
    * maxStaleMs`. The value must match the source's publication cadence
    * plus a buffer for weekends / bank holidays / known reporting lag --
    * e.g. BoE daily feeds get ~5 days, ONS PSF (monthly with 45-day lag)
-   * gets ~90 days, OBR EFO (semi-annual) gets ~220 days. Values are
+   * gets ~90 days, OBR EFO (event-driven) gets ~255 days. Values are
    * expressed via the `STALE_*_MS` constants below so each entry is
    * self-documenting.
    */
@@ -215,7 +215,10 @@ const STALE_MHCLG_QUARTERLY_MS = 180 * DAY_MS;
 // 90-day fixture guard. Keep this tighter than the MHCLG housing window.
 const STALE_EDITORIAL_QUARTERLY_MS = 130 * DAY_MS;
 const STALE_ONS_LMS_MS = 180 * DAY_MS;
-const STALE_OBR_SEMIANNUAL_MS = 220 * DAY_MS;
+// The interval from the 3 March 2026 EFO to the next announced 28 October
+// forecast is 239 days. This allows 16 days after that publication for the
+// fixture to be refreshed without marking the latest official vintage stale.
+const STALE_OBR_SEMIANNUAL_MS = 255 * DAY_MS;
 
 const fmtPct = (digits = 2) => (v: number) => `${v.toFixed(digits)}%`;
 const fmtBp = (v: number) => `${v.toFixed(2)}%`;
@@ -616,9 +619,9 @@ export const SOURCES: Record<string, DataSource> = {
     homepage: "https://obr.uk/efo/",
     // Event-driven: an EFO accompanies each fiscal event (~twice yearly, but
     // the exact date is set by the Chancellor, not a calendar). No period, so
-    // amber never fires on a schedule; graceDays 230 red-lines just past the
-    // semi-annual rhythm, matching STALE_OBR_SEMIANNUAL_MS (220d).
-    expectedCadence: "event", graceDays: 230,
+    // amber never fires on a schedule; align the red-line with the indicator
+    // freshness window across the announced March→October 2026 gap.
+    expectedCadence: "event", graceDays: 255,
   },
   ons_psf: {
     id: "ons_psf", name: "ONS -- Public Sector Finances",

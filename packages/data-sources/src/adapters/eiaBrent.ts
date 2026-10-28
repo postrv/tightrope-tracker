@@ -7,16 +7,16 @@
  * the adapter onto the fixture from ~2026-06-29 until the fixture's own
  * freshness guard tripped on 2026-07-12) divided by the BoE XUDLUSS 4pm fix
  * (USD per GBP) to produce a daily GBP-per-barrel reading. The fix is read
- * from OUR OWN ingested `gbp_usd` series via ctx.getLatestObservation — the
- * BoE IADB endpoint has been ASN-blocked from Workers egress since
+ * from OUR OWN ingested `gbp_usd` series for the Brent price's own date via
+ * ctx.getObservationBefore — the BoE IADB endpoint has been ASN-blocked from Workers egress since
  * 2026-06-10 (see the Actions relay), so fetching it directly from this
  * adapter was failing on every tick.
  *
  * Falls back to the editorial weekly fixture when:
  *   - EIA_API_KEY is not present (dev / tests / probe scripts)
  *   - either input is unavailable (EIA empty, no published gbp_usd)
- *   - the EIA print and the fix are more than 7 days apart (a stale
- *     pairing that would silently misprice Brent)
+ *   - no same-day or preceding BoE fix within five calendar days of the EIA
+ *     print (a long holiday gap we cannot safely price)
  * When the fixture path ALSO fails its freshness guard, the thrown error
  * carries the live-path failure reason so the audit row explains the root
  * cause rather than just "fixture is stale".
@@ -31,6 +31,7 @@ import type {
   AdapterContext,
   AdapterResult,
   DataSourceAdapter,
+  HistoricalFetchOptions,
   HistoricalFetchResult,
   RawObservation,
 } from "../types.js";
@@ -47,11 +48,10 @@ const HISTORY_FIXTURE_URL = "local:fixtures/brent-history.json";
 // fallback. 14 days matches the other weekly fixtures and gives a ~one-
 // week grace before the guard trips.
 const MAX_FIXTURE_AGE_MS = 14 * 24 * 60 * 60 * 1000;
-// EIA spot prints and BoE FX should land within a day of each other on
-// weekdays. 7 days of skew is generous — past that we don't trust the
-// pairing and fall back rather than print an arithmetically-stale GBP
-// number.
-const MAX_PAIRING_SKEW_MS = 7 * 24 * 60 * 60 * 1000;
+// A Thursday fix can be nearest to a Tuesday print across the Easter break.
+// Any older fix is too far from the price period.
+const MAX_FX_LAG_MS = 5 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const EIA_BASE = "https://api.eia.gov/v2/petroleum/pri/spt/data/";
 // The v2 SERIES facet id for daily Europe Brent Spot FOB. EIA's own API
@@ -77,12 +77,28 @@ interface BrentHistoryFixture {
 
 interface EiaResponse {
   response?: {
+    total?: string | number;
     data?: Array<{
       period?: string;
       value?: string | number;
       duoarea?: string;
     }>;
   };
+}
+
+type FxFix = { value: number; observedAtIso: string };
+
+/** The price date, not its later publication date, determines the FX fix. */
+function pairingError(eiaPeriod: string, fx: FxFix): string | null {
+  const eiaMs = Date.parse(`${eiaPeriod}T00:00:00Z`);
+  const fxMs = Date.parse(fx.observedAtIso);
+  const fxDayMs = Number.isFinite(fxMs)
+    ? Date.UTC(new Date(fxMs).getUTCFullYear(), new Date(fxMs).getUTCMonth(), new Date(fxMs).getUTCDate())
+    : NaN;
+  const lagMs = eiaMs - fxDayMs;
+  return !Number.isFinite(lagMs) || lagMs < 0 || lagMs > MAX_FX_LAG_MS
+    ? `EIA (${eiaPeriod}) has no same-day or preceding gbp_usd fix within 5 days (nearest ${fx.observedAtIso})`
+    : null;
 }
 
 async function fetchEiaBrentUsd(
@@ -131,28 +147,24 @@ async function fetchEiaBrentUsd(
   return null;
 }
 
-/**
- * USD-per-GBP fix from OUR OWN ingested `gbp_usd` series (relay-fed daily).
- * Replaces the direct BoE IADB fetch, which the upstream ASN block has failed
- * on every tick since 2026-06-10 — the relay already lands this exact series
- * in D1, so re-fetching it here was both broken and redundant.
- */
+/** USD-per-GBP fix from the relay-fed series, bounded to the EIA price date. */
 async function fxFromPublished(
   ctx: AdapterContext | undefined,
-): Promise<{ value: number; observedAtIso: string } | null> {
-  if (!ctx?.getLatestObservation) {
-    console.warn(`${SOURCE_ID}: no getLatestObservation in context (dev/probe run?), cannot pair FX`);
+  beforeIso: string,
+): Promise<FxFix | null> {
+  if (!ctx?.getObservationBefore) {
+    console.warn(`${SOURCE_ID}: no getObservationBefore in context (dev/probe run?), cannot pair FX`);
     return null;
   }
   let fx: { value: number; observedAt: string } | null;
   try {
-    fx = await ctx.getLatestObservation("gbp_usd");
+    fx = await ctx.getObservationBefore("gbp_usd", "boe_fx", beforeIso);
   } catch (err) {
     console.warn(`${SOURCE_ID}: gbp_usd lookup failed -- ${(err as Error)?.message ?? String(err)}`);
     return null;
   }
   if (!fx || !Number.isFinite(fx.value) || fx.value <= 0) {
-    console.warn(`${SOURCE_ID}: no published gbp_usd observation to pair with`);
+    console.warn(`${SOURCE_ID}: no published gbp_usd observation before ${beforeIso} to pair with`);
     return null;
   }
   return { value: fx.value, observedAtIso: fx.observedAt };
@@ -163,19 +175,20 @@ async function liveObservation(
   apiKey: string,
   ctx: AdapterContext | undefined,
 ): Promise<{ observation: RawObservation; sourceUrl: string } | { reason: string }> {
-  const [eia, fx] = await Promise.all([
-    fetchEiaBrentUsd(fetchImpl, apiKey),
-    fxFromPublished(ctx),
-  ]);
+  const eia = await fetchEiaBrentUsd(fetchImpl, apiKey);
   // The reason strings surface in the audit row when the fixture path also
   // fails — "fixture is stale" alone hid a two-week live-path outage in July.
-  if (!eia && !fx) return { reason: "EIA returned no usable rows AND no published gbp_usd fix" };
   if (!eia) return { reason: "EIA returned no usable Brent rows" };
-  if (!fx) return { reason: "no published gbp_usd fix to pair with" };
   const eiaIso = `${eia.period}T00:00:00Z`;
-  const skewMs = Math.abs(Date.parse(eiaIso) - Date.parse(fx.observedAtIso));
-  if (!Number.isFinite(skewMs) || skewMs > MAX_PAIRING_SKEW_MS) {
-    const reason = `EIA (${eia.period}) and gbp_usd fix (${fx.observedAtIso}) more than 7 days apart`;
+  const eiaMs = Date.parse(eiaIso);
+  if (!Number.isFinite(eiaMs)) return { reason: `invalid EIA period ${eia.period}` };
+  // The BoE 16:00 fix on the price date is eligible, but tomorrow's fix is
+  // excluded. EIA's weekly publication lag must not cause each new FX relay
+  // to reprice the same historical Brent observation.
+  const fx = await fxFromPublished(ctx, new Date(eiaMs + DAY_MS).toISOString());
+  if (!fx) return { reason: `no published gbp_usd fix on or before EIA period ${eia.period}` };
+  const reason = pairingError(eia.period, fx);
+  if (reason) {
     console.warn(`${SOURCE_ID}: ${reason}, falling back`);
     return { reason };
   }
@@ -221,6 +234,105 @@ async function fixtureObservation(): Promise<{ observation: RawObservation; sour
   };
 }
 
+/** Rebuild missing daily Brent history from official EIA prices and the
+ * relay-fed BoE FX observations already held in D1. The query is date-bounded
+ * and uses one FX read for the whole range. */
+async function historicalFromEia(
+  fetchImpl: typeof globalThis.fetch,
+  opts: HistoricalFetchOptions,
+  ctx: AdapterContext,
+  apiKey: string,
+): Promise<HistoricalFetchResult> {
+  const { fromMs, toMs } = rangeUtcBounds(opts);
+  const startDay = opts.from.toISOString().slice(0, 10);
+  const endDay = opts.to.toISOString().slice(0, 10);
+  const params = new URLSearchParams();
+  params.set("api_key", apiKey);
+  params.set("frequency", "daily");
+  params.set("data[0]", "value");
+  params.set("facets[series][]", EIA_BRENT_SERIES);
+  params.set("start", startDay);
+  params.set("end", endDay);
+  params.set("sort[0][column]", "period");
+  params.set("sort[0][direction]", "asc");
+  params.set("length", "5000");
+  const response = await fetchOrThrow(fetchImpl, SOURCE_ID, `${EIA_BASE}?${params.toString()}`);
+  const body = (await response.json()) as EiaResponse;
+  const rows = body.response?.data;
+  if (!Array.isArray(rows)) {
+    throw new AdapterError({ sourceId: SOURCE_ID, sourceUrl: EIA_BASE, message: "EIA historical response has no data array" });
+  }
+  const total = Number(body.response?.total ?? rows.length);
+  if (Number.isFinite(total) && total > rows.length) {
+    throw new AdapterError({
+      sourceId: SOURCE_ID,
+      sourceUrl: EIA_BASE,
+      message: `EIA historical response truncated (${rows.length}/${total}); narrow the requested range`,
+    });
+  }
+  // The daily 14-day catch-up should fail its audit if EIA silently returns
+  // an empty result (as it did when an incorrect series facet was queried).
+  // A short manual range can legitimately contain only a weekend or holiday.
+  const rangeDays = Math.floor((toMs - fromMs) / DAY_MS) + 1;
+  if (rangeDays >= 7 && rows.length === 0) {
+    throw new AdapterError({
+      sourceId: SOURCE_ID,
+      sourceUrl: EIA_BASE,
+      message: `EIA returned no Brent prices for ${startDay} to ${endDay}`,
+    });
+  }
+
+  // Include the five-day grace before the first requested price date. The
+  // upper bound includes a same-day 16:00 BoE fix for the final EIA period.
+  const fxFrom = new Date(Date.parse(`${startDay}T00:00:00Z`) - MAX_FX_LAG_MS).toISOString();
+  const fxBefore = new Date(Date.parse(`${endDay}T00:00:00Z`) + DAY_MS).toISOString();
+  const fxRows = await ctx.getObservationsInRange!("gbp_usd", "boe_fx", fxFrom, fxBefore);
+  const fixes: FxFix[] = fxRows
+    .filter((row) => Number.isFinite(row.value) && row.value > 0 && Number.isFinite(Date.parse(row.observedAt)))
+    .map((row) => ({ value: row.value, observedAtIso: row.observedAt }))
+    .sort((a, b) => a.observedAtIso.localeCompare(b.observedAtIso));
+
+  const observations: RawObservation[] = [];
+  let invalidEiaRows = 0;
+  let unpairedEiaRows = 0;
+  let fxIndex = 0;
+  let nearestFx: FxFix | null = null;
+  for (const row of [...rows].sort((a, b) => (a.period ?? "").localeCompare(b.period ?? ""))) {
+    const period = row.period;
+    if (!period || !/^\d{4}-\d{2}-\d{2}$/.test(period)) { invalidEiaRows++; continue; }
+    const periodMs = Date.parse(`${period}T00:00:00Z`);
+    const usd = typeof row.value === "string" ? Number(row.value) : row.value;
+    if (!Number.isFinite(periodMs) || periodMs < fromMs || periodMs > toMs) continue;
+    if (typeof usd !== "number" || !Number.isFinite(usd) || usd <= 0) { invalidEiaRows++; continue; }
+    const fxCutoff = new Date(periodMs + DAY_MS).toISOString();
+    while (fxIndex < fixes.length && fixes[fxIndex]!.observedAtIso < fxCutoff) {
+      nearestFx = fixes[fxIndex]!;
+      fxIndex++;
+    }
+    if (!nearestFx || pairingError(period, nearestFx)) { unpairedEiaRows++; continue; }
+    const value = Math.round((usd / nearestFx.value) * 100) / 100;
+    const observedAt = `${period}T00:00:00Z`;
+    observations.push({
+      indicatorId: "brent_gbp",
+      value,
+      observedAt,
+      sourceId: SOURCE_ID,
+      payloadHash: `hist:${await sha256Hex(`eia:${period}:${usd}|fx:${nearestFx.observedAtIso}:${nearestFx.value}`)}`,
+    });
+  }
+  const notes: string[] = [];
+  if (invalidEiaRows) notes.push(`${invalidEiaRows} EIA rows had no usable date or price`);
+  if (unpairedEiaRows) notes.push(`${unpairedEiaRows} EIA price dates lacked a BoE fix within five days`);
+  if (rangeDays >= 7 && observations.length === 0) {
+    throw new AdapterError({
+      sourceId: SOURCE_ID,
+      sourceUrl: EIA_BASE,
+      message: `No EIA Brent prices could be paired with BoE FX for ${startDay} to ${endDay}`,
+    });
+  }
+  return buildHistoricalResult(observations, `${EIA_BASE}?series=${EIA_BRENT_SERIES}`, notes);
+}
+
 export const eiaBrentAdapter: DataSourceAdapter = {
   id: SOURCE_ID,
   name: "EIA Brent spot in GBP -- live (fixture fallback)",
@@ -260,10 +372,21 @@ export const eiaBrentAdapter: DataSourceAdapter = {
       throw err;
     }
   },
-  // Historical mode reads brent-history.json (EIA RBRTE daily spot ÷ BoE
-  // XUDLUSS GBP/USD daily fix, 2024-07 → 2026-04). Days where either
-  // upstream had no print are dropped at fixture-build time.
-  async fetchHistorical(_fetchImpl, opts): Promise<HistoricalFetchResult> {
+  // With EIA credentials and D1 context, historical mode reads official EIA
+  // daily prices and joins them to the stored BoE fixes. Offline mode retains
+  // brent-history.json (2024-07 → 2026-10) for tests and local probes.
+  async fetchHistorical(fetchImpl, opts, ctx): Promise<HistoricalFetchResult> {
+    const apiKey = ctx?.secrets?.EIA_API_KEY;
+    if (ctx && (apiKey || ctx.getObservationsInRange)) {
+      if (!apiKey || !ctx.getObservationsInRange) {
+        throw new AdapterError({
+          sourceId: SOURCE_ID,
+          sourceUrl: EIA_BASE,
+          message: "EIA historical backfill requires EIA_API_KEY and D1 BoE FX lookup",
+        });
+      }
+      return historicalFromEia(fetchImpl, opts, ctx, apiKey);
+    }
     const { fromMs, toMs } = rangeUtcBounds(opts);
     const data = history as unknown as BrentHistoryFixture;
     const observations: RawObservation[] = [];

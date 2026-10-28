@@ -1,4 +1,5 @@
 import type {
+  AdapterContext,
   DataSourceAdapter,
   HistoricalFetchResult,
   RawObservation,
@@ -45,15 +46,17 @@ export interface BackfillObservationsResult {
 /**
  * Orchestrate a single adapter's historical backfill:
  *   1. Open `ingestion_audit` row with `source_id = "<adapter.id>:historical"`.
- *   2. Call `adapter.fetchHistorical(globalThis.fetch, { from, to })`.
+ *   2. Call `adapter.fetchHistorical` with the requested range and a
+ *      D1-backed context for sources that pair historical series.
  *   3. Hand the observations to `writeHistoricalObservations` (idempotent,
  *      with `dryRun` and `overwrite` honoured).
  *   4. Close the audit row with the combined payload hash of everything
  *      written, or fail it with the thrown error.
  *
- * KV caches are NOT invalidated here. The backfill rebuilds observations, not
- * scores; the caller follows up with `/admin/run?source=backfill-scores` which
- * owns KV invalidation.
+ * KV caches are NOT invalidated here. Recompute current scores after a raw
+ * backfill, then refresh any affected cached views. Rebuild historical scores
+ * only after checking publication dates and existing live score snapshots:
+ * that route can add synthetic end-of-day rows alongside authentic snapshots.
  */
 export async function backfillObservations(
   env: Env,
@@ -70,9 +73,25 @@ export async function backfillObservations(
   });
 
   try {
+    const ctx: AdapterContext = {
+      secrets: { EIA_API_KEY: env.EIA_API_KEY },
+      getObservationsInRange: async (indicatorId, sourceId, fromIso, beforeIso) => {
+        const rows = await env.DB.prepare(
+          `SELECT value, observed_at FROM indicator_observations
+           WHERE indicator_id = ? AND source_id = ?
+             AND observed_at >= ? AND observed_at < ?
+           ORDER BY observed_at ASC`,
+        ).bind(indicatorId, sourceId, fromIso, beforeIso)
+          .all<{ value: number; observed_at: string }>();
+        return (rows.results ?? [])
+          .filter((row) => typeof row.value === "number" && Number.isFinite(row.value))
+          .map((row) => ({ value: row.value, observedAt: row.observed_at }));
+      },
+    };
     const result: HistoricalFetchResult = await adapter.fetchHistorical(
       opts.fetchImpl ?? globalThis.fetch,
       { from: opts.from, to: opts.to },
+      ctx,
     );
 
     const write = await writeHistoricalObservations(env.DB, result.observations, {

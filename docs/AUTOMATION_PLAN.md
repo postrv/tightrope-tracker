@@ -73,9 +73,9 @@ Also review `delivery_commitments` and `timeline_events` content (last
 touched April): until Phase 1.3/1.4 land, updates go through
 `db/patches/*.sql` + `wrangler d1 execute` per existing patch precedent.
 
-**Procedure per fixture** — follow `docs/RUNBOOK.md` §7 exactly (edit JSON →
-adapter tests → regenerate seed → seed-artifact guards → commit naming the
-upstream release → deploy → recompute). Then:
+**Procedure per fixture** — follow `docs/RUNBOOK.md` §7.5 (edit JSON and its
+history, run adapter tests, deploy, run the affected pipeline, and recompute).
+The seed generator reads `seedValues.ts`, not the fixtures. Then:
 
 ```bash
 # force the pipelines that own the refreshed sources
@@ -83,9 +83,11 @@ curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "https://ingest.tightropetracker.u
 curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "https://ingest.tightropetracker.uk/admin/run?source=delivery"
 curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "https://ingest.tightropetracker.uk/admin/run?source=labour"
 
-# MHCLG back-series + score backfill (memory of prior runs: this exact sequence)
-curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "https://ingest.tightropetracker.uk/admin/run?source=backfill-observations&adapter=mhclg&overwrite=true"
-curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "https://ingest.tightropetracker.uk/admin/run?source=backfill-scores&days=365&overwrite=true"
+# Dry-run the exact MHCLG release window, inspect the result, then preserve
+# existing observations unless correcting a documented published value.
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "https://ingest.tightropetracker.uk/admin/run?source=backfill-observations&adapter=mhclg&from=2026-04-01&to=2026-06-30&dryRun=true"
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "https://ingest.tightropetracker.uk/admin/run?source=backfill-observations&adapter=mhclg&from=2026-04-01&to=2026-06-30&overwrite=false"
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" "https://ingest.tightropetracker.uk/admin/run?source=recompute"
 
 # verify
 curl -H "x-admin-token: $ADMIN_TOKEN" "https://ingest.tightropetracker.uk/admin/health"   # all chips green

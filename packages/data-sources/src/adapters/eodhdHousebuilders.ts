@@ -14,6 +14,7 @@ import { registerAdapter } from "../registry.js";
 import { fetchOrThrow } from "../lib/errors.js";
 import { sha256Hex } from "../lib/hash.js";
 import { assertFixtureFresh } from "../lib/fixtureFreshness.js";
+import { londonCloseIso } from "../lib/londonClose.js";
 import fixture from "../fixtures/housebuilders.json" with { type: "json" };
 
 const SOURCE_ID = "eodhd_housebuilders";
@@ -75,7 +76,7 @@ async function fetchConstituent(
   fetchImpl: typeof globalThis.fetch,
   apiKey: string,
   symbol: string,
-): Promise<EodhdCandle | null> {
+): Promise<EodhdCandle[]> {
   const to = new Date();
   const from = new Date(to.getTime() - 7 * 86_400_000);
   const url = `${API_BASE}/${symbol}.LSE?api_token=${apiKey}&fmt=json&from=${formatDate(from)}&to=${formatDate(to)}&order=d`;
@@ -85,7 +86,7 @@ async function fetchConstituent(
     res = await fetchOrThrow(fetchImpl, SOURCE_ID, url);
   } catch {
     console.warn(`${SOURCE_ID}: fetch failed for ${symbol}`);
-    return null;
+    return [];
   }
 
   let candles: EodhdCandle[];
@@ -93,15 +94,26 @@ async function fetchConstituent(
     candles = await res.json() as EodhdCandle[];
   } catch {
     console.warn(`${SOURCE_ID}: invalid JSON for ${symbol}`);
-    return null;
+    return [];
   }
 
   if (!Array.isArray(candles) || candles.length === 0) {
     console.warn(`${SOURCE_ID}: no candles returned for ${symbol}`);
-    return null;
+    return [];
   }
 
-  return candles[0]!;
+  // Providers can expose today's daily bar before the cash session closes.
+  // Keep the whole window so the composite can use a common completed
+  // session even when one constituent's latest bar is delayed.
+  return candles.filter((candle) => {
+    if (!candle || typeof candle.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(candle.date)) return false;
+    const dayMs = Date.parse(`${candle.date}T00:00:00Z`);
+    if (!Number.isFinite(dayMs) || new Date(dayMs).toISOString().slice(0, 10) !== candle.date) return false;
+    const closeMs = Date.parse(londonCloseIso(candle.date));
+    // Allow the closing auction five minutes to settle, matching FTSE 250.
+    return Number.isFinite(closeMs) && closeMs + 5 * 60_000 <= to.getTime()
+      && Number.isFinite(candle.close) && candle.close > 0;
+  });
 }
 
 export const eodhdHousebuildersAdapter: DataSourceAdapter = {
@@ -113,32 +125,34 @@ export const eodhdHousebuildersAdapter: DataSourceAdapter = {
       return fetchFromFixture();
     }
 
-    const rebasedValues: number[] = [];
-    let latestDate = "";
-    const rawParts: string[] = [];
+    const sessions = new Map<string, Map<string, { close: number; rebased: number }>>();
 
     for (const c of CONSTITUENTS) {
-      const candle = await fetchConstituent(fetchImpl, apiKey, c.symbol);
-      if (!candle) continue;
-
-      const close = candle.close;
-      if (!Number.isFinite(close) || close <= 0) {
-        console.warn(`${SOURCE_ID}: invalid close for ${c.symbol}: ${close}`);
-        continue;
+      const candles = await fetchConstituent(fetchImpl, apiKey, c.symbol);
+      for (const candle of candles) {
+        const session = sessions.get(candle.date) ?? new Map();
+        // One issuer contributes once per session, even if a malformed
+        // upstream response repeats a row.
+        if (!session.has(c.symbol)) session.set(c.symbol, {
+          close: candle.close,
+          rebased: (candle.close / c.rebase2019) * 100,
+        });
+        sessions.set(candle.date, session);
       }
-
-      rebasedValues.push((close / c.rebase2019) * 100);
-      if (candle.date > latestDate) latestDate = candle.date;
-      rawParts.push(`${c.symbol}:${close}`);
     }
 
-    if (rebasedValues.length < MIN_CONSTITUENTS) {
-      console.warn(`${SOURCE_ID}: only ${rebasedValues.length}/${CONSTITUENTS.length} constituents resolved, falling back to fixture`);
+    const latestDate = [...sessions.keys()].sort().reverse()
+      .find((date) => sessions.get(date)!.size >= MIN_CONSTITUENTS);
+    if (!latestDate) {
+      console.warn(`${SOURCE_ID}: fewer than ${MIN_CONSTITUENTS} constituents share a completed session, falling back to fixture`);
       return fetchFromFixture();
     }
 
+    const session = sessions.get(latestDate)!;
+    const rebasedValues = [...session.values()].map((part) => part.rebased);
+    const rawParts = [...session.entries()].map(([symbol, part]) => `${symbol}:${part.close}`);
     const composite = rebasedValues.reduce((a, b) => a + b, 0) / rebasedValues.length;
-    const observedAt = latestDate.includes("T") ? latestDate : `${latestDate}T16:30:00Z`;
+    const observedAt = londonCloseIso(latestDate);
     const payloadHash = await sha256Hex(rawParts.join("|"));
 
     const observations: RawObservation[] = [{

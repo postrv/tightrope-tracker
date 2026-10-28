@@ -1,14 +1,19 @@
 ---
-import { pathFromSeries } from "~/lib/format.js";
+import { shortDate } from "~/lib/format.js";
+import { timeRatio } from "~/lib/scoreChart.js";
+import { safeJsonForScriptTag } from "~/lib/safeJson.js";
 
 interface Axis {
   label: string;
   x: number;
   y: number;
+  anchor?: "start" | "middle" | "end";
 }
 
 interface Props {
   series: readonly number[];
+  timestamps?: readonly string[];
+  domain?: readonly [number, number];
   width?: number;
   height?: number;
   stroke?: string;
@@ -26,6 +31,8 @@ interface Props {
 
 const {
   series,
+  timestamps,
+  domain,
   width = 600,
   height = 240,
   stroke = "var(--accent)",
@@ -47,12 +54,24 @@ const padB = 30;
 const plotW = width - padL - padR;
 const plotH = height - padT - padB;
 
-const d = pathFromSeries(
-  safeSeries,
-  plotW,
-  plotH,
-  1,
-).replace(/([ML])([\d.]+),([\d.]+)/g, (_m, op, x, y) => `${op}${(Number(x) + padL).toFixed(2)},${(Number(y) + padT).toFixed(2)}`);
+const interactive = Boolean(timestamps?.length === series.length && timestamps.every(timestamp => Number.isFinite(Date.parse(timestamp))));
+const dataMin = domain?.[0] ?? Math.min(...safeSeries);
+const dataMax = domain?.[1] ?? Math.max(...safeSeries);
+const yFor = (value: number) => padT + plotH - ((value - dataMin) / (dataMax - dataMin || 1)) * plotH;
+const datedPoints = interactive ? series.map((value, i) => ({
+  timestamp: timestamps![i]!, headline: value, pillars: {},
+  x: padL + timeRatio(timestamps![i]!, timestamps![0]!, timestamps![timestamps!.length - 1]!) * plotW,
+  y: yFor(value),
+})) : [];
+const latest = datedPoints.at(-1);
+const dateTicks: Axis[] = xTicks.length ? xTicks : datedPoints.length > 1 ? [
+  { label: shortDate(datedPoints[0]!.timestamp), x: padL, y: height - 8, anchor: "start" },
+  { label: shortDate(latest!.timestamp), x: padL + plotW, y: height - 8, anchor: "end" },
+] : [];
+const d = interactive ? datedPoints.map((point, i) => `${i === 0 ? "M" : "L"}${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(" ") : safeSeries.map((value, i) => {
+  const x = padL + (safeSeries.length > 1 ? i / (safeSeries.length - 1) : .5) * plotW;
+  return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${yFor(value).toFixed(2)}`;
+}).join(" ");
 
 // Build fill path closing to baseline
 let fillD = "";
@@ -84,8 +103,9 @@ const summary = first !== null && last !== null && lo !== null && hi !== null
 const baseLabel = ariaLabel ?? "Line chart of time-series data";
 const fullLabel = `${baseLabel}: ${summary}`;
 ---
+<div class:list={["line-chart-wrap", { "interactive-score-chart": interactive }]}>
 <svg
-  class="chart"
+  class="chart chart-svg"
   viewBox={`0 0 ${width} ${height}`}
   preserveAspectRatio="none"
   role="img"
@@ -117,7 +137,33 @@ const fullLabel = `${baseLabel}: ${summary}`;
 
   <path d={d} stroke={stroke} stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
 
-  {xTicks.map((t) => (
-    <text x={t.x} y={t.y} font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)">{t.label}</text>
+  {latest ? <g class="score-crosshair" aria-hidden="true" pointer-events="none">
+    <line x1={latest.x} x2={latest.x} y1={padT} y2={padT + plotH} stroke="var(--ink-2)" stroke-dasharray="3 4" opacity="0.6" />
+    <circle cx={latest.x} cy={latest.y} r="4" fill={stroke} stroke="var(--bg-1)" stroke-width="2" />
+  </g> : null}
+
+  {dateTicks.map((t) => (
+    <text x={t.x} y={t.y} text-anchor={t.anchor ?? "start"} font-family="IBM Plex Mono" font-size="9.5" fill="var(--ink-2)">{t.label}</text>
   ))}
 </svg>
+{latest ? <>
+  <script type="application/json" class="score-chart-data" set:html={safeJsonForScriptTag({ points: datedPoints, width, padL, plotW, label: "Market pillar" })} />
+  <div class="line-readout"><time data-score-date datetime={latest.timestamp}>{shortDate(latest.timestamp)}</time><strong><span data-score-value="headline">{latest.headline.toFixed(1)}</span><small> / 100</small></strong></div>
+  <label class="line-scrubber-label">Explore recorded market scores<input class="score-scrubber" type="range" min="0" max={datedPoints.length - 1} value={datedPoints.length - 1} step="1" aria-label="Recorded market score date. Use arrow keys to move through history." /></label>
+  <p class="line-hint">Hover to inspect · click to pin · arrow keys on the slider · Escape for latest</p>
+</> : null}
+</div>
+
+<script>
+  import { initialiseScoreCharts } from "~/lib/scoreChartInteraction.js";
+  initialiseScoreCharts();
+</script>
+
+<style>
+  .line-readout { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-top: 1px solid var(--border-soft); padding-top: 10px; font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }
+  .line-readout strong { font-size: 19px; color: var(--ink-0); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .line-readout small { font-size: 10px; color: var(--ink-2); }
+  .line-scrubber-label { display: block; font-family: var(--font-mono); color: var(--ink-2); font-size: 9px; margin-top: 8px; }
+  .score-scrubber { display: block; width: 100%; height: 28px; accent-color: var(--accent); cursor: ew-resize; margin: 0; }
+  .line-hint { margin: 0; font-size: 9px; line-height: 1.5; color: var(--ink-2); }
+</style>

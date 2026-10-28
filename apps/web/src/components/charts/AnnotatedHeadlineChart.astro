@@ -19,6 +19,9 @@ import { BANDS, bandFor, PILLAR_ORDER, PILLARS } from "@tightrope/shared";
 import { shortDate } from "~/lib/format.js";
 import { mapEventsToChart } from "~/lib/chartAnnotations.js";
 import { safeHref } from "~/lib/safeHref.js";
+import { safeJsonForScriptTag } from "~/lib/safeJson.js";
+import { timeRatio } from "~/lib/scoreChart.js";
+import { EVENT_STYLES, PILLAR_STYLES } from "~/lib/chartTheme.js";
 
 interface Props {
   history: ScoreHistory;
@@ -95,7 +98,12 @@ const bandRegions = BANDS.flatMap((band) => {
 });
 
 // --- headline path --------------------------------------------------------
-const points = history.points;
+const points = history.points.filter(p => Number.isFinite(p.headline) && Number.isFinite(Date.parse(p.timestamp)))
+  .slice().sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
+function xFor(timestamp: string): number {
+  if (!points.length) return padL + plotW / 2;
+  return padL + timeRatio(timestamp, points[0]!.timestamp, points[points.length - 1]!.timestamp) * plotW;
+}
 const headlineSeries = points.map((p) => p.headline);
 const latestHeadline = headlineSeries.length ? headlineSeries[headlineSeries.length - 1]! : 0;
 const accentBand = bandFor(latestHeadline);
@@ -110,7 +118,7 @@ function pointsToPath(series: readonly number[]): string {
   }
   return series
     .map((v, i) => {
-      const x = padL + (i / (series.length - 1)) * plotW;
+      const x = xFor(points[i]!.timestamp);
       const y = yFor(v);
       return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
     })
@@ -129,7 +137,13 @@ const pillarPaths = showPillars
   : [];
 
 // --- annotations ----------------------------------------------------------
-const annotations = mapEventsToChart(history, events);
+const annotations = mapEventsToChart({ ...history, points }, events);
+const eventKey = [...new Set(annotations.map(a => a.event.category))].map(category => ({
+  ...EVENT_STYLES[category],
+  count: annotations.filter(a => a.event.category === category).length,
+}));
+const latestPoint = points[points.length - 1];
+const sampleData = { width, padL, plotW, points: points.map(point => ({ ...point, x: xFor(point.timestamp), y: yFor(point.headline) })) };
 
 /** Titles are abbreviated to keep the SVG legible — the full title remains
  * accessible via the tooltip and label hover/focus target.
@@ -246,26 +260,8 @@ const placedLabels = placeLabels(labelledAnnotations);
 // relief is the permanent label + legend + tooltip. `political` gets its
 // own teal — this window mixes Westminster and war events, and both wearing
 // ink-0 made the two kinds indistinguishable.
-const CATEGORY_COLOUR: Record<TimelineCategory, string> = {
-  fiscal: "var(--band-acute)",
-  monetary: "var(--band-strain)",
-  market: "var(--band-strain)",
-  geopolitical: "var(--ink-0)",
-  political: "var(--cat-political)",
-  policy: "var(--ink-2)",
-  delivery: "var(--ink-2)",
-};
-const CATEGORY_LABEL: Record<TimelineCategory, string> = {
-  fiscal: "Fiscal",
-  monetary: "Monetary",
-  market: "Market",
-  geopolitical: "Geopolitical",
-  political: "Political",
-  policy: "Policy",
-  delivery: "Delivery",
-};
 function colourFor(category: TimelineCategory): string {
-  return CATEGORY_COLOUR[category] ?? "var(--accent)";
+  return EVENT_STYLES[category]?.colour ?? "var(--accent)";
 }
 
 function tooltipIdFor(eventId: string): string {
@@ -282,7 +278,7 @@ if (points.length > 0) {
   const step = points.length === 1 ? 1 : (points.length - 1) / (TARGET_TICKS - 1);
   for (let i = 0; i < TARGET_TICKS; i++) {
     const idx = Math.min(points.length - 1, Math.round(i * step));
-    const x = points.length === 1 ? padL + plotW / 2 : padL + (idx / (points.length - 1)) * plotW;
+    const x = xFor(points[idx]!.timestamp);
     // End ticks hug the plot edges: a centred label at the last point would
     // overflow the 16px right pad and clip mid-glyph ("12 Jul 2…").
     const anchor = i === 0 ? "start" : i === TARGET_TICKS - 1 ? "end" : "middle";
@@ -308,6 +304,16 @@ const ariaSummary = first !== null && last !== null && lo !== null && hi !== nul
 const idScope = `chart-${width}x${height}`;
 ---
 <div class="annotated-chart" style={`--chart-accent: var(${accentBand.colourToken});`}>
+  <div class="chart-key" aria-label="Chart series and score direction">
+    <span class="series-key"><span class="line-swatch headline-swatch" aria-hidden="true"></span><strong>Headline score</strong></span>
+    <span class="score-direction">0–100 · higher = more room to move ↑</span>
+    {showPillars ? <div class="pillar-key" aria-label="Toggle pillar lines">
+      {PILLAR_ORDER.map(p => <button type="button" class="pillar-key-button" data-toggle-pillar={p} aria-pressed="true" title={`Show or hide ${PILLARS[p].shortTitle} line`}>
+        <svg width="22" height="10" aria-hidden="true"><line x1="0" y1="5" x2="22" y2="5" stroke={PILLAR_STYLES[p].colour} stroke-width="2" stroke-dasharray={PILLAR_STYLES[p].dash} /></svg>
+        {PILLARS[p].shortTitle}
+      </button>)}
+    </div> : null}
+  </div>
   <svg
     class="chart-svg"
     viewBox={`0 0 ${width} ${height}`}
@@ -349,6 +355,8 @@ const idScope = `chart-${width}x${height}`;
       <path
         d={p.d}
         class={`pillar-line pillar-${p.id}`}
+        stroke={PILLAR_STYLES[p.id].colour}
+        stroke-dasharray={PILLAR_STYLES[p.id].dash}
         fill="none"
         stroke-width="1"
         stroke-linecap="round"
@@ -372,6 +380,11 @@ const idScope = `chart-${width}x${height}`;
       stroke-linecap="round"
       stroke-linejoin="round"
     />
+
+    {latestPoint ? <g class="score-crosshair" aria-hidden="true" pointer-events="none">
+      <line x1={xFor(latestPoint.timestamp)} x2={xFor(latestPoint.timestamp)} y1={padT} y2={padT + plotH} />
+      <circle cx={xFor(latestPoint.timestamp)} cy={yFor(latestPoint.headline)} r="4" />
+    </g> : null}
 
     {/* Event annotations. */}
     {annotations.map((a) => {
@@ -404,7 +417,7 @@ const idScope = `chart-${width}x${height}`;
           {/* The thin ink ring is the contrast relief for the palette's pale
               hues (amber prints ~2:1 on cream) — every dot stays findable
               regardless of its category colour. */}
-          <circle cx={cx} cy={cy} r="5" fill={colour} class="marker-dot" stroke="var(--ink-0)" stroke-opacity="0.35" stroke-width="1" />
+          <circle cx={cx} cy={cy} r="5" fill={a.event.category === "methodology" ? "var(--bg-1)" : colour} class="marker-dot" stroke={a.event.category === "methodology" ? colour : "var(--ink-0)"} stroke-opacity={a.event.category === "methodology" ? "1" : "0.35"} stroke-width="1" stroke-dasharray={EVENT_STYLES[a.event.category].dash} />
           <circle cx={cx} cy={cy} r="2" fill="var(--bg-0)" class="marker-dot-inner" />
         </g>
       );
@@ -474,7 +487,7 @@ const idScope = `chart-${width}x${height}`;
 
     {/* X-axis date ticks. data-tick-i lets the mobile CSS hide alternates
         without re-running the layout — at 6 ticks across an ~340px phone
-        the labels overlap; on mobile we render only indices 0/2/4. */}
+        the labels overlap; on mobile we retain the first and last ticks. */}
     {dateTicks.map((t, i) => (
       <text
         x={t.x}
@@ -503,11 +516,12 @@ const idScope = `chart-${width}x${height}`;
           style={`left: ${leftPct.toFixed(2)}%;`}
         >
           <div class="tooltip-head">
-            <span class="tooltip-cat" style={`color: ${colour}; border-color: ${colour};`}>{CATEGORY_LABEL[a.event.category]}</span>
+            <span class="tooltip-cat" style={`color: ${colour}; border-color: ${colour};`}>{EVENT_STYLES[a.event.category].label}</span>
             <span class="tooltip-date">{shortDate(a.event.date)}</span>
           </div>
           <div class="tooltip-title">{a.event.title}</div>
           <div class="tooltip-summary">{summary}</div>
+          <div class="tooltip-score">Nearest recorded headline: <strong>{a.value.toFixed(1)} / 100</strong></div>
           <div class="tooltip-source">
             {/* SEC-6: a.event.sourceUrl is operator-curated in D1. Allowlist http(s). */}
             Source: {(() => {
@@ -521,13 +535,99 @@ const idScope = `chart-${width}x${height}`;
       );
     })}
   </div>
+
+  {latestPoint ? <>
+    <script type="application/json" class="score-chart-data" set:html={safeJsonForScriptTag(sampleData)} />
+    <div class="score-inspector">
+      <div class="inspector-heading">
+        <div><span class="inspector-eyebrow" data-score-position>Latest · {points.length} / {points.length}</span><time datetime={latestPoint.timestamp} data-score-date>{shortDate(latestPoint.timestamp)}</time></div>
+        <button type="button" class="latest-button" data-score-reset>Latest ↗</button>
+      </div>
+      <dl class="score-readout" aria-label="Scores at selected recording">
+        <div class="headline-readout"><dt>Headline</dt><dd><span data-score-value="headline">{latestPoint.headline.toFixed(1)}</span><small>/100</small></dd></div>
+        {PILLAR_ORDER.map(p => <div><dt>{PILLARS[p].shortTitle}</dt><dd data-score-value={p}>{Number.isFinite(latestPoint.pillars[p]) ? latestPoint.pillars[p].toFixed(1) : "—"}</dd></div>)}
+      </dl>
+      <label class="scrubber-label">Explore recorded scores
+        <input class="score-scrubber" type="range" min="0" max={points.length - 1} value={points.length - 1} step="1" aria-label="Recorded score date. Use arrow keys to move through history." />
+      </label>
+      <p class="inspector-hint">Hover to inspect · tap or click to pin · use the slider or arrow keys. Daily recordings; gaps select the nearest available score. Escape returns to latest.</p>
+    </div>
+  </> : null}
+
+  <div class="band-key" aria-label="Score bands">
+    {BANDS.map(band => <span style={`--key-colour: var(${band.colourToken});`}><i aria-hidden="true"></i>{band.label} <b>{band.min}–{band.max > 100 ? "100" : `<${band.max}`}</b></span>)}
+  </div>
+  {eventKey.length ? <div class="event-key" aria-label="Event marker key">
+    <span class="key-heading">Event markers</span>
+    {eventKey.map(item => <span class="event-key-item"><i style={`background: ${item.dash ? "transparent" : item.colour}; ${item.dash ? `border-style: dashed; border-color: ${item.colour};` : ""}`} aria-hidden="true"></i>{item.label} <b>{item.count}</b></span>)}
+    <p>Events provide context. A nearby score move does not establish cause.</p>
+  </div> : null}
+  {annotations.length ? <details class="event-list">
+    <summary>Read the {annotations.length} charted event{annotations.length === 1 ? "" : "s"} & sources</summary>
+    <ol>{annotations.map(annotation => <li>
+      <div class="event-list-date"><time datetime={annotation.event.date}>{shortDate(annotation.event.date)}</time><span>{EVENT_STYLES[annotation.event.category].label}</span></div>
+      <strong>{annotation.event.title}</strong>
+      <p>{annotation.event.summary}</p>
+      {safeHref(annotation.event.sourceUrl) ? <a href={safeHref(annotation.event.sourceUrl)!} target="_blank" rel="noopener">{annotation.event.sourceLabel} ↗</a> : <span>{annotation.event.sourceLabel}</span>}
+    </li>)}</ol>
+  </details> : null}
 </div>
+
+<script>
+  import { initialiseScoreCharts } from "~/lib/scoreChartInteraction.js";
+  initialiseScoreCharts();
+</script>
 
 <style>
 .annotated-chart {
   position: relative;
   width: 100%;
 }
+.chart-key { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 20px; margin: 0 0 16px; font-size: 12px; color: var(--ink-1); }
+.series-key { display: inline-flex; align-items: center; gap: 8px; }
+.series-key strong { font-weight: 600; }
+.line-swatch { display: inline-block; width: 26px; border-top: 3px solid var(--chart-accent); }
+.score-direction { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }
+.pillar-key { display: flex; gap: 6px; flex-wrap: wrap; width: 100%; }
+.pillar-key-button { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border); background: var(--bg-0); color: var(--ink-1); border-radius: 999px; padding: 7px 11px; font-family: var(--font-mono); font-size: 11px; min-height: 34px; }
+.pillar-key-button[aria-pressed="false"] { opacity: .5; background: transparent; text-decoration: line-through; }
+.pillar-key-button:hover { border-color: var(--ink-2); }
+.score-crosshair line { stroke: var(--ink-2); stroke-dasharray: 3 4; stroke-opacity: .65; }
+.score-crosshair circle { fill: var(--chart-accent); stroke: var(--bg-1); stroke-width: 2; }
+.score-inspector { border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px 12px; background: var(--bg-0); margin-top: 12px; }
+.inspector-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.inspector-heading > div { display: flex; gap: 6px; flex-direction: column; }
+.inspector-eyebrow { font-family: var(--font-mono); font-size: 9px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .1em; }
+.inspector-heading time { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-0); }
+.latest-button { font-family: var(--font-mono); font-size: 10px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 6px; color: var(--ink-1); padding: 9px 11px; min-height: 34px; }
+.latest-button:hover { border-color: var(--accent); }
+.score-readout { display: grid; grid-template-columns: 1.2fr repeat(4, 1fr); margin: 16px 0; gap: 12px; }
+.score-readout > div { border-left: 1px solid var(--border); padding-left: 14px; }
+.score-readout > div:first-child { border-left: 3px solid var(--chart-accent); padding-left: 10px; }
+.score-readout dt { font-size: 11px; color: var(--ink-2); }
+.score-readout dd { font-family: var(--font-mono); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; margin: 3px 0 0; color: var(--ink-0); line-height: 1.25; }
+.score-readout dd small { font-size: 10px; margin-left: 3px; color: var(--ink-2); font-weight: 400; }
+.scrubber-label { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--ink-2); }
+.score-scrubber { display: block; width: 100%; accent-color: var(--accent); cursor: ew-resize; margin: 4px 0 0; height: 30px; }
+.inspector-hint { font-size: 10px; color: var(--ink-2); line-height: 1.5; margin: 4px 0 0; }
+.band-key { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 18px 0; }
+.band-key > span { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; color: var(--ink-2); }
+.band-key i { display: inline-block; height: 7px; width: 16px; background: var(--key-colour); border-radius: 2px; border: 1px solid color-mix(in srgb, var(--ink-0) 15%, transparent); }
+.band-key b { font-family: var(--font-mono); font-size: 9px; font-weight: 400; }
+.event-key { display: flex; flex-wrap: wrap; gap: 9px 16px; align-items: center; border-top: 1px solid var(--border-soft); padding-top: 14px; color: var(--ink-1); font-family: var(--font-mono); font-size: 10px; }
+.key-heading { text-transform: uppercase; letter-spacing: .08em; font-size: 9px; color: var(--ink-2); }
+.event-key-item { display: inline-flex; align-items: center; gap: 6px; }
+.event-key-item i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ink-0) 30%, transparent); }
+.event-key-item b { font-weight: 400; color: var(--ink-2); }
+.event-key p { width: 100%; margin: 0; font-family: var(--font-sans); color: var(--ink-2); font-size: 11px; }
+.event-list { border-top: 1px solid var(--border-soft); margin-top: 14px; font-size: 12px; }
+.event-list summary { cursor: pointer; color: var(--ink-1); padding: 13px 0 3px; font-weight: 500; min-height: 36px; }
+.event-list ol { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 24px; }
+.event-list li { border-top: 1px solid var(--border-soft); padding-top: 12px; }
+.event-list-date { display: flex; justify-content: space-between; gap: 12px; color: var(--ink-2); font-family: var(--font-mono); font-size: 9px; margin-bottom: 6px; }
+.event-list strong { color: var(--ink-0); font-weight: 500; }
+.event-list p { color: var(--ink-1); margin: 5px 0 8px; line-height: 1.5; }
+.event-list a { color: var(--ink-2); font-family: var(--font-mono); font-size: 10px; text-decoration: underline; text-underline-offset: 2px; }
 .chart-svg {
   width: 100%;
   height: auto;
@@ -539,11 +639,7 @@ const idScope = `chart-${width}x${height}`;
 .headline-line { stroke: var(--chart-accent); }
 
 /* Faint pillar series (only rendered when showPillars=true). */
-.pillar-line { opacity: 0.45; }
-.pillar-market { stroke: var(--band-strain); stroke-dasharray: 1 0; }
-.pillar-fiscal { stroke: var(--band-acute); stroke-dasharray: 4 3; }
-.pillar-labour { stroke: var(--accent-cool); stroke-dasharray: 6 3; }
-.pillar-delivery { stroke: var(--ink-2); stroke-dasharray: 2 4; }
+.pillar-line { opacity: 0.65; }
 
 /* Permanent event labels. Hidden on small viewports so the chart stays
    legible — the tap-target dot remains accessible. */
@@ -610,15 +706,29 @@ const idScope = `chart-${width}x${height}`;
   stroke: var(--border);
 }
 @media (max-width: 600px) {
+  .chart-key { gap: 8px; margin-bottom: 10px; }
+  .score-direction { width: 100%; margin-left: 0; font-size: 9px; }
+  .score-inspector { padding: 12px; }
+  .inspector-heading time { font-size: 10px; }
+  .score-readout { gap: 8px; grid-template-columns: repeat(4, 1fr); }
+  .score-readout .headline-readout { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; }
+  .score-readout > div { padding-left: 8px; }
+  .score-readout dd { font-size: 17px; }
+  .score-readout .headline-readout dd { font-size: 25px; }
+  .score-readout dt { font-size: 10px; }
+  .band-key { gap: 6px 12px; }
+  .band-key b { font-size: 8px; }
+  .event-key { gap: 9px 12px; }
+  .event-list ol { grid-template-columns: 1fr; }
   /* Hide permanent labels on phones — at viewBox-scaled font sizes they
      render at ~4px CSS and become illegible. Markers stay tappable; the
      section-level "tap any dot" hint tells readers what to do. */
   .event-label { display: none; }
   /* Six date ticks crowd into ~340px of phone width; alternate odd
-     indices so the remaining three (0/2/4) breathe. */
+     interior indices so three date labels breathe. */
   .date-tick[data-tick-i="1"],
   .date-tick[data-tick-i="3"],
-  .date-tick[data-tick-i="5"] { display: none; }
+  .date-tick[data-tick-i="4"] { display: none; }
 }
 
 /* Markers — keyboard-focusable, with a soft halo on focus/hover. */
@@ -717,6 +827,7 @@ const idScope = `chart-${width}x${height}`;
 .tooltip-date { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-2); }
 .tooltip-title { font-family: var(--font-serif); font-size: 14px; color: var(--ink-0); margin-bottom: 4px; line-height: 1.3; }
 .tooltip-summary { font-size: 12.5px; color: var(--ink-1); line-height: 1.45; margin-bottom: 6px; }
+.tooltip-score { font-family: var(--font-mono); font-size: 10px; padding-top: 6px; margin: 6px 0; border-top: 1px solid var(--border-soft); }
 .tooltip-source { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-2); }
 .tooltip-source a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; }
 .tooltip-source a:hover { color: var(--accent-dim); }

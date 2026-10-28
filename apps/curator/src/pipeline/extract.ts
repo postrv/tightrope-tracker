@@ -48,6 +48,17 @@ export async function runExtraction(
   let lastError = "no attempts";
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     const { messages, schema } = buildPrompt(spec, workingText, framing);
+    // A re-roll of the identical prompt repeated the MHCLG duplicate-component
+    // error through all three attempts. Tell the model which contract failed,
+    // without echoing any model-generated text back into the prompt. The strict
+    // derivation validator still rejects duplicates, omissions and conflicts.
+    const deriveError = /^(DERIVE_[A-Z_]+):/.exec(lastError)?.[1];
+    if (deriveError && spec.derive) {
+      messages.push({
+        role: "user",
+        content: `The previous extraction failed validation (${deriveError}). Re-read the source and correct the component set. Return at most one entry for each listed component key, using its latest reference period and verbatim quote. Do not repeat a component because the source mentions it more than once. Omit unsupported figures; never invent a replacement.`,
+      });
+    }
     let raw: string;
     try {
       raw = await runModelJson(env, spec.modelId, messages, schema);

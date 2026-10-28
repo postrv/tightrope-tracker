@@ -18,6 +18,9 @@
 import type { BaselineSummary } from "@tightrope/methodology";
 import { summariseBaseline } from "@tightrope/methodology";
 import {
+  selectBaselineObservations,
+  METHODOLOGY_BASELINES_CACHE_KEY,
+  type BaselineObservationRow,
   BASELINE_START_ISO,
   COVID_EXCLUDE_START_ISO,
   COVID_EXCLUDE_END_ISO,
@@ -48,12 +51,7 @@ export interface MethodologyBaselinesPayload {
  */
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
-const KV_KEY = "methodology:baselines";
-
-interface BaselineRow {
-  indicator_id: string;
-  value: number;
-}
+const KV_KEY = METHODOLOGY_BASELINES_CACHE_KEY;
 
 function isFresh(payload: MethodologyBaselinesPayload): boolean {
   if (payload.schemaVersion !== 1) return false;
@@ -99,15 +97,15 @@ export async function buildBaselinesPayload(env: Env): Promise<MethodologyBaseli
   const db = env.DB;
   const res = await db
     .prepare(
-      `SELECT indicator_id, value
+      `SELECT indicator_id, source_id, observed_at, value, released_at, payload_hash, ingested_at
        FROM indicator_observations
        WHERE observed_at >= ?
          AND NOT (observed_at >= ? AND observed_at <= ?)
        ORDER BY indicator_id, observed_at ASC`,
     )
     .bind(BASELINE_START_ISO, COVID_EXCLUDE_START_ISO, COVID_EXCLUDE_END_ISO)
-    .all<BaselineRow>();
-  const rows = res.results ?? [];
+    .all<BaselineObservationRow>();
+  const rows = selectBaselineObservations(res.results ?? []);
   const byIndicator = new Map<string, number[]>();
   for (const row of rows) {
     if (!Number.isFinite(row.value)) continue;

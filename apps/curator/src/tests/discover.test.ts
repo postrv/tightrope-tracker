@@ -26,6 +26,20 @@ describe("discoverReleaseUrl", () => {
     expect(url).toBe("https://nielseniq.com/global/en/news-center/2026/consumer-confidence-stay-at-23-in-june/");
   });
 
+  it("follows the newest English confidence release from NIQ's date-ordered JSON feed", () => {
+    const feed = JSON.stringify([
+      { link: "https://nielseniq.com/global/de/news-center/2026/konsumklima-mit-deutlichem-dampfer/" },
+      { link: "https://nielseniq.com/global/en/news-center/2026/consumer-confidence-up-one-point-in-september-to-13/" },
+      { link: "https://nielseniq.com/global/en/news-center/2026/headline-score-up-three-points-to-14-in-august/" },
+      { link: "https://nielseniq.com/global/en/news-center/2026/consumer-confidence-up-six-points-to-17-in-july/" },
+    ]);
+    const url = discoverReleaseUrl(feed, "https://nielseniq.com/wp-json/wp/v2/news_center", {
+      linkPattern: "/global/en/news-center/\\d{4}/(consumer-confidence-|headline-score-)",
+      newest: "first",
+    });
+    expect(url).toBe("https://nielseniq.com/global/en/news-center/2026/consumer-confidence-up-one-point-in-september-to-13/");
+  });
+
   it("returns null when nothing matches", () => {
     expect(discoverReleaseUrl(NIQ, "https://x", { linkPattern: "/does-not-exist/", newest: "first" })).toBeNull();
   });

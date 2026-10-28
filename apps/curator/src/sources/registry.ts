@@ -82,21 +82,19 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
   },
   {
     // GfK's UK consumer-confidence business moved to NIQ (NielsenIQ). The
-    // barometer landing page carries a "Latest press releases" list linking each
-    // month's article, newest first. FOLLOW-LINK (implemented 2026-07-07): the
-    // headline index sits in the linked article, not the landing page, so
-    // `discover` fetches the landing page and follows to the newest
-    // /news-center/YYYY/consumer-confidence-* article. Verified from residential
-    // egress: the June article states "Overall Index Score was unchanged at -23
-    // in June." Stays review-only until shadow sign-off.
+    // barometer landing page stopped linking recent confidence articles by
+    // October 2026; the curator kept extracting July. The publisher's public
+    // WordPress feed is date-ordered and includes the current releases. Filter
+    // its consumer-confidence lead-source category, then follow the newest
+    // English article matching either headline slug used in 2026.
     sourceId: "gfk_confidence",
     kind: "observation",
     indicatorIds: ["consumer_confidence"],
-    urls: ["https://nielseniq.com/global/en/landing-page/consumer-confidence-barometer/"],
+    urls: ["https://nielseniq.com/wp-json/wp/v2/news_center?lead_source=15171&per_page=100&orderby=date&order=desc&_fields=link"],
     format: "html",
     discover: {
-      // The landing page lists articles newest-first; take the first match.
-      linkPattern: "/news-center/\\d{4}/consumer-confidence-",
+      // Feed is newest-first; NIQ used both slug prefixes in 2026.
+      linkPattern: "/global/en/news-center/\\d{4}/(consumer-confidence-|headline-score-)",
       newest: "first",
     },
     cadence: "monthly",
@@ -201,9 +199,9 @@ export const CAPTURE_SPECS: CaptureSpec[] = [
     agreementTolerance: 0.5,
     allowAutoPublish: false,
     modelId: DEFAULT_MODEL,
-    // v2 (2026-07-12): the brief now lists raw components instead of the
-    // derived indicators, plus the do-not-sum instruction block.
-    promptVersion: "v2",
+    // v3 (2026-10-28): one latest-period entry per raw component, including
+    // targeted validation feedback on retries; duplicate rejection stays strict.
+    promptVersion: "v3",
     // 5024 MITIGATION (2026-07-12): the artefact is the FULL statistical-
     // release doc for BOTH collections. Anchors keep the component sentences
     // in the truncation window (the same fix that cleared obr_efo and

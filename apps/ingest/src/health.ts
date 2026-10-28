@@ -1,5 +1,5 @@
 import type { Env } from "./env.js";
-import { computeSourceCadence, type SourceCadenceEntry } from "@tightrope/shared";
+import { computeSourceCadence, computeSourceHealth, type SourceCadenceEntry } from "@tightrope/shared";
 import { readLatestObservations } from "@tightrope/snapshot";
 import { timingSafeEqual } from "./admin.js";
 import { adminAuthGate } from "./lib/adminBackoff.js";
@@ -18,7 +18,7 @@ import { adminAuthGate } from "./lib/adminBackoff.js";
  *
  * Response shape:
  *   {
- *     ok: boolean,                // false if anything is in failure/partial/dlq
+ *     ok: boolean,                // false if an active source has an actionable failure
  *     checkedAt: ISO8601,
  *     adapters: [
  *       {
@@ -91,6 +91,12 @@ export async function handleAdminHealth(req: Request, env: Env): Promise<Respons
         ? Math.round((now - Date.parse(lastSuccess)) / 60000)
         : null;
       const cadence = cadenceBySource.get(r.source_id);
+      // The curator records a disabled spec as an `unchanged` audit with an
+      // explicit skip reason. Its old observation is still useful history,
+      // but a red cadence chip would imply that the disabled fetch is late.
+      // Other adapters (including the hand-refreshed RICS fixture) still
+      // surface their own audit failures normally.
+      const disabledSkip = r.status === "unchanged" && r.error?.startsWith("skipped: disabled") === true;
       return {
         sourceId: r.source_id,
         lastAttemptAt: r.started_at,
@@ -100,13 +106,21 @@ export async function handleAdminHealth(req: Request, env: Env): Promise<Respons
         lastSuccessAt: lastSuccess ?? null,
         minutesSinceLastSuccess,
         // null for sources with no observations / no declared cadence.
-        cadenceState: cadence?.state ?? null,
+        cadenceState: disabledSkip ? null : cadence?.state ?? null,
         expectedCadence: cadence?.cadence ?? null,
       };
     })
     .sort((a, b) => a.sourceId.localeCompare(b.sourceId));
 
-  const ok = adapters.every((a) => a.lastAttemptStatus === "success");
+  // Use the same actionable-source filter as the public health surface:
+  // unknown DLQ plumbing rows, retired adapters and one-off historical
+  // backfills remain visible above for forensics but must not fail the
+  // aggregate years after they ran.
+  const ok = computeSourceHealth(
+    latestAttempts.results.map((r) => ({ sourceId: r.source_id, startedAt: r.started_at, status: r.status })),
+    successBy,
+    now,
+  ).length === 0;
 
   return json({ ok, checkedAt: new Date().toISOString(), adapters });
 }

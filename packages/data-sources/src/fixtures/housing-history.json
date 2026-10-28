@@ -17,7 +17,7 @@
       "implemented_in": "Implemented in packages/shared/src/derivations.ts (single code home; drift-guarded by packages/data-sources/src/fixtures/housingDerivation.test.ts — a value/raw pair that disagrees with the formula fails CI). This prose block remains the rationale + primary-source citation record."
     }
   },
-  "baseline_note": "Observations span 2022-Q2 through 2025-Q4 — the era in which MHCLG publishes the headline figures on HTML landing pages. Earlier releases are PDF-only and were not extracted in this iteration. ECDF normalisation against ~15 quarterly points gives a coarse but meaningful percentile ranking; more depth can be added by manually extracting older PDFs.",
+  "baseline_note": "Observations span 2022-Q2 through 2026-Q2 — the era in which MHCLG publishes the headline figures on HTML statistical-release pages. Earlier releases are PDF-only and were not extracted in this iteration. ECDF normalisation against this quarterly back-series gives a coarse but meaningful percentile ranking; more depth can be added by manually extracting older PDFs.",
   "points": [
     {
       "observed_at": "2022-06-30T00:00:00Z",
@@ -214,11 +214,12 @@
         "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-january-to-march-2025"
       },
       "planning_consents": {
-        "value": null,
-        "_note": "Q1 2025 planning statistical-release HTML was not extractable via automated fetch at curation time. Leave null so the backfill skips this quarter for planning_consents; the Q4 2024 carry-forward continues to cover dates in Q1 2025.",
+        "value": 60.9,
+        "raw_decisions_granted": 7000,
+        "_note": "The statistical release reports 900 major and 6,100 minor residential decisions granted, totalling 7,000.",
         "release": "Planning applications in England: January to March 2025",
         "published": "2025-06-19",
-        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-january-to-march-2025"
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-january-to-march-2025/planning-applications-in-england-january-to-march-2025-statistical-release--2"
       }
     },
     {
@@ -293,6 +294,24 @@
         "release": "Planning applications in England: January to March 2026",
         "published": "2026-06-19",
         "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-january-to-march-2026"
+      }
+    },
+    {
+      "observed_at": "2026-06-30T00:00:00Z",
+      "period": "2026 Q2",
+      "housing_trajectory": {
+        "value": 47.7,
+        "raw_completions_sa": 35800,
+        "release": "Housing supply: indicators of new supply, England: April to June 2026",
+        "published": "2026-09-24",
+        "url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2026/housing-supply-indicators-of-new-supply-england-april-to-june-2026"
+      },
+      "planning_consents": {
+        "value": 60,
+        "raw_decisions_granted": 6900,
+        "release": "Planning applications in England: April to June 2026",
+        "published": "2026-09-24",
+        "url": "https://www.gov.uk/government/statistics/planning-applications-in-england-april-to-june-2026/planning-applications-in-england-april-to-june-2026-statistical-release"
       }
     }
   ]

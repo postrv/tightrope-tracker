@@ -1,12 +1,12 @@
 {
-  "_comment": "FTSE 250 index level at most recent London close. The FTSE 250 is a cleaner read on the domestic UK economy than the FTSE 100 (which is dominated by global commodity and pharma names). LSEG does not expose a free index-level JSON feed; the number is transcribed from the published closing price. The adapter's freshness guard rejects fixtures older than 14 days so a missed refresh surfaces in the ingest audit. 2026-09-01 refresh: last completed session is Friday 28 August 2026 = 24938.8 (Yahoo Finance ^FTMC daily; Monday 31 August was the Summer bank holiday, Tuesday 1 September session still open at refresh). Live path tries EODHD FTMC.INDX then Yahoo ^FTMC, skipping any in-progress daily bar until 16:35 Europe/London. TODO(source): an authorised LSEG index-licence vendor would let us drop this fixture.",
-  "as_of": "2026-08-28",
-  "observed_at": "2026-08-28T16:30:00Z",
+  "_comment": "FTSE 250 index level at the most recent completed London close. The FTSE 250 is a cleaner read on the domestic UK economy than the FTSE 100 (which is dominated by global commodity and pharma names). LSEG does not expose a free index-level JSON feed; the number is transcribed from the Yahoo Finance ^FTMC daily chart close. The adapter's freshness guard rejects fixtures older than 14 days so a missed refresh surfaces in the ingest audit. 2026-10-28 refresh: completed 27 October session close was 24,716.400390625, rounded to one decimal (24,716.4), from Yahoo Finance ^FTMC daily chart. The 28 October bar was still in progress before the 16:30 London close and is not used. The observed_at is 16:30 GMT = 16:30 UTC after the 25 October clock change. Live path tries EODHD FTMC.INDX then Yahoo ^FTMC, skipping any in-progress daily bar until 16:35 Europe/London. TODO(source): an authorised LSEG index-licence vendor would let us drop this fixture.",
+  "as_of": "2026-10-27",
+  "observed_at": "2026-10-27T16:30:00Z",
   "ftse_250": {
-    "value": 24938.8,
+    "value": 24716.4,
     "unit": "index",
-    "source": "Yahoo Finance ^FTMC (FTSE 250) daily close, 28 August 2026"
+    "source": "Yahoo Finance ^FTMC (FTSE 250) daily close, 27 October 2026"
   },
-  "source_url": "https://www.londonstockexchange.com/indices/ftse-250",
+  "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EFTMC?interval=1d&range=10d",
   "release_schedule": "Every London trading day at ~16:30; editorial fixture refreshed weekly."
 }

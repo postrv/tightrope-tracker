@@ -18,9 +18,10 @@ import PillarDriversPanel from "~/components/PillarDriversPanel.astro";
 import {
   loadHistory,
   loadSnapshot,
-  loadHomepageData,
+  loadTimeline,
 } from "~/lib/page-data.js";
 import type { RangeOption } from "~/components/RangeToggle.astro";
+import { summariseFreshness } from "~/lib/freshness.js";
 
 // --- range parsing --------------------------------------------------------
 // "all" maps to the maximum D1 window the API serves today. The historical
@@ -41,17 +42,16 @@ function parseRange(raw: string): { option: RangeOption; days: number } {
 const { option: rangeOption, days } = parseRange(rawRange);
 
 // Fetch in parallel: history for the chart, snapshot for the drivers
-// panel, and the timeline window the chart annotates. The homepage data
-// helper is convenient for the timeline + snapshot — drivers don't need
-// movements / delivery rows so we pull those out with a discard.
-const [history, snapshot, page] = await Promise.all([
+// panel, and events spanning the selected range. The long view has its
+// own event query so it cannot lose older annotations to the homepage cap.
+const [history, snapshot, timeline] = await Promise.all([
   loadHistory(Astro.locals, days),
   loadSnapshot(Astro.locals),
-  loadHomepageData(Astro.locals),
+  loadTimeline(Astro.locals, days),
 ]);
-const { timeline } = page;
 
 const isStale = Boolean(snapshot.headline.stale);
+const freshness = summariseFreshness(snapshot, []);
 const isEmpty = history.points.length === 0;
 const labelByOption: Record<RangeOption, string> = {
   30: "Last 30 days",
@@ -69,7 +69,7 @@ const canonicalPath = `/composite?range=${rangeOption}`;
   embed={embed}
 >
   {embed ? null : (
-    <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} stale={isStale} />
+    <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} freshestAt={freshness.freshestAt} stale={isStale} />
   )}
 
   <main id="main" class={embed ? "embed-main" : "container composite-main"}>
@@ -78,7 +78,7 @@ const canonicalPath = `/composite?range=${rangeOption}`;
         <span class="eyebrow">Long view</span>
         <h1 class="composite-title">{rangeLabel.toLowerCase()}</h1>
         <p class="composite-sub">
-          Headline Tightrope Score over the selected range, annotated with the events that moved it. Below, the four pillars name their dominant indicators today.
+          Compare the headline and four pillars over time. Inspect a recorded score, toggle pillar lines, or open a source-linked event for context. Below, see the dominant indicators today.
         </p>
       </div>
       <RangeToggle current={rangeOption} />
@@ -88,7 +88,7 @@ const canonicalPath = `/composite?range=${rangeOption}`;
       <p class="empty">History for this window hasn't populated yet — recompute writes a new history snapshot every five minutes. Refresh shortly, or pick a shorter range.</p>
     ) : (
       <div class="chart-wrap">
-        <AnnotatedHeadlineChart history={history} events={timeline} height={420} showPillars={false} />
+        <AnnotatedHeadlineChart history={history} events={timeline} height={420} showPillars={true} />
       </div>
     )}
 
@@ -100,7 +100,7 @@ const canonicalPath = `/composite?range=${rangeOption}`;
   </main>
 
   {embed ? null : (
-    <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={isStale} />
+    <SiteFooter updatedAt={snapshot.headline.updatedAt} freshestAt={freshness.freshestAt} stale={isStale} />
   )}
 </BaseLayout>
 
@@ -131,10 +131,11 @@ const canonicalPath = `/composite?range=${rangeOption}`;
 }
 .composite-sub { color: var(--ink-1); font-size: 15px; max-width: 640px; margin: 0; line-height: 1.55; }
 .chart-wrap {
-  background: var(--bg-1);
-  border: 1px solid var(--border-soft);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent-dim) 5%, var(--bg-1)), var(--bg-1) 65%);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px 24px 8px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
   margin-bottom: 32px;
   /* See HeadlineChartSection: tooltip clamping needs the wrap to allow
      overflow so the box-shadow / outer edge isn't clipped during the
@@ -161,6 +162,6 @@ const canonicalPath = `/composite?range=${rangeOption}`;
 
 @media (max-width: 800px) {
   .composite-head { grid-template-columns: 1fr; }
-  .chart-wrap { padding: 14px 8px 4px; }
+  .chart-wrap { padding: 16px 12px; }
 }
 </style>

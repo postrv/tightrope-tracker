@@ -1,5 +1,6 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import {
+  selectBaselineObservations,
   BASELINE_START_ISO,
   COVID_EXCLUDE_START_ISO,
   COVID_EXCLUDE_END_ISO,
@@ -73,60 +74,11 @@ export async function readBaselineObservations(db: D1Database): Promise<Observat
     )
     .bind(BASELINE_START_ISO, COVID_EXCLUDE_START_ISO, COVID_EXCLUDE_END_ISO)
     .all<ObservationRow>();
-  return res.results ?? [];
+  return selectBaselineObservations(res.results ?? []);
 }
 
-/**
- * "Live" rows: anything that's not historical backfill (`hist:*`) and
- * not a seed (`seed*`). Adapters write a sha256 hex digest. Historical
- * backfill writes `hist:<indicator_id>:<iso>`. Seeds write `seed_*`.
- * NULL is treated as live for safety with any pre-payload-hash data.
- */
-function isLiveRow(payloadHash: string | null | undefined): boolean {
-  if (payloadHash === null || payloadHash === undefined) return true;
-  if (payloadHash.startsWith("hist:")) return false;
-  if (payloadHash.startsWith("seed")) return false;
-  return true;
-}
-
-/**
- * Drop "stale-live" rows: live observations that have been superseded
- * by a more recently-ingested row for the same `(indicator_id,
- * source_id)` pair. Historical (`hist:*`) and seed (`seed*`) rows
- * pass through unmodified — they represent past publications, not
- * a current live snapshot, and many of them legitimately exist per
- * indicator/source.
- *
- * Caller-side defence against fixture-supersede bugs: when an editorial
- * fixture's `observed_at` moves backwards, the previously-written live
- * row remains in D1 and would otherwise be picked up as "the value as
- * of cutoff day" by `buildDailyPillarSparkline`. Filtering here
- * restores the invariant that each (indicator, source) pair has at
- * most one live row in the working set.
- */
-export function filterStaleLiveRows(
-  rows: readonly ObservationRow[],
-): ObservationRow[] {
-  // Pass 1: latest ingested_at per (indicator_id, source_id) for live rows.
-  const latestIngested = new Map<string, string>();
-  for (const r of rows) {
-    if (!isLiveRow(r.payload_hash)) continue;
-    const key = `${r.indicator_id}|${r.source_id ?? ""}`;
-    const ts = r.ingested_at ?? "";
-    const prev = latestIngested.get(key);
-    if (prev === undefined || ts > prev) latestIngested.set(key, ts);
-  }
-  // Pass 2: keep the live row whose ingested_at matches the per-pair max,
-  // plus all hist:/seed rows. A hash collision on ingested_at (two writes
-  // at the same millisecond, same pair) would emit both — harmless because
-  // the value would be identical (INSERT OR REPLACE overwrote).
-  return rows.filter((r) => {
-    if (!isLiveRow(r.payload_hash)) return true;
-    const key = `${r.indicator_id}|${r.source_id ?? ""}`;
-    const want = latestIngested.get(key);
-    return (r.ingested_at ?? "") === want;
-  });
-}
+// Shared with the public baseline summaries so /explore uses the same samples.
+export { filterStaleLiveRows } from "@tightrope/shared";
 
 export interface HeadlineRow { observed_at: string; value: number; }
 export interface PillarRow { pillar_id: PillarId; observed_at: string; value: number; }

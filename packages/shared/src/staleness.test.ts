@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { INDICATORS, indicatorsForPillar } from "./indicators.js";
+import { INDICATORS, SOURCES, indicatorsForPillar } from "./indicators.js";
 import { evaluatePillarFreshness, freshnessAnchorMs, maxStaleMsForIndicator } from "./staleness.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -33,6 +33,18 @@ describe("maxStaleMsForIndicator", () => {
   it("obr_efo fiscal indicators tolerate the 6-month publication cadence", () => {
     expect(INDICATORS.cb_headroom!.maxStaleMs).toBeGreaterThan(OBR_HALFYEAR_MS);
     expect(INDICATORS.psnfl_trajectory!.maxStaleMs).toBeGreaterThan(OBR_HALFYEAR_MS);
+  });
+
+  it("keeps the March 2026 OBR vintage fresh until after the announced October release", () => {
+    const vintage = "2026-03-03T00:00:00Z";
+    const defs = [INDICATORS.cb_headroom!, INDICATORS.psnfl_trajectory!];
+    const latest = new Map(defs.map((def) => [def.id, { value: 0, observedAt: vintage }]));
+    expect(defs.map((def) => def.maxStaleMs)).toEqual([255 * DAY_MS, 255 * DAY_MS]);
+    expect(SOURCES.obr_efo!.graceDays).toBe(255);
+    expect(evaluatePillarFreshness("fiscal", defs, latest, new Date("2026-10-13T12:00:00Z")).stale)
+      .toBe(false);
+    expect(evaluatePillarFreshness("fiscal", defs, latest, new Date("2026-11-14T00:00:00Z")).stale)
+      .toBe(true);
   });
 
   it("quarterly delivery indicators tolerate a full quarter between releases", () => {
@@ -163,7 +175,7 @@ describe("evaluatePillarFreshness", () => {
     // The production regression this whole refactor exists to fix:
     // cb_headroom / psnfl_trajectory sit at ~23 days old between EFO
     // releases. Under the old pillar-wide 7-day slow window they were
-    // flagged stale; under per-indicator windows (220d for OBR) they
+    // flagged stale; under per-indicator windows (255d for OBR) they
     // must read as fresh.
     const defs = indicatorsForPillar("fiscal");
     const m = latestMap([
@@ -200,8 +212,8 @@ describe("evaluatePillarFreshness", () => {
   it("flags a pillar stale when fewer than half of the observed indicators are fresh", () => {
     const defs = indicatorsForPillar("fiscal");
     const m = latestMap([
-      ["cb_headroom", 500],          // past 220d window -> stale
-      ["psnfl_trajectory", 500],     // past 220d window -> stale
+      ["cb_headroom", 500],          // past 255d window -> stale
+      ["psnfl_trajectory", 500],     // past 255d window -> stale
       ["borrowing_outturn", 500],    // past 90d window  -> stale
       ["debt_interest", 1],
       ["ilg_share", 1],

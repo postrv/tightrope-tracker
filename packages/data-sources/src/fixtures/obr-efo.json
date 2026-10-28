@@ -1,6 +1,14 @@
 {
   "_comment": "Hand-maintained record of OBR Economic & Fiscal Outlook headline figures, one entry per OBR publication. The adapter's live `fetch()` emits the head-of-list (newest) entry; `fetchHistorical()` emits one observation per vintage inside the requested range so backfilled days carry the right cb_headroom / psnfl_trajectory through to the next vintage. Values are nominal GBP billions for headroom and percentage points of GDP for psnfl trajectory. Update whenever OBR publishes (twice yearly + any in-year update). TODO(source): swap for OBR's headline-data CSV ingest once OBR exposes one at a stable URL.",
   "publication": "OBR EFO (hand-curated)",
+  "_headroom_audit": {
+    "checked_on": "2026-10-28",
+    "definition": "Target-year current-budget surplus, in GBP billions, using the detailed OBR tables rather than rounded executive-summary text. A negative current-budget deficit in the target year is positive headroom.",
+    "2026-03-03": "OBR March 2026 EFO, Annex A fiscal aggregates: 2029-30 current-budget deficit -23.6. Source: https://assets.publishing.service.gov.uk/media/69a6d7b62e1f4fbda4252208/economic-and-fiscal-outlook-march-2026-web-accessible.pdf",
+    "2025-11-26": "OBR November 2025 EFO, Table A.9: 2029-30 current-budget deficit -21.7. The executive summary rounds the margin to 22 billion; the previous fixture used that rounded number. Source: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/",
+    "2025-03-26": "OBR March 2025 EFO, paragraphs 1.3 and 7.6: post-policy current-budget target margin 9.9. Source: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/",
+    "2024-10-30": "OBR October 2024 EFO, paragraph 7.6: post-policy current-budget target margin 9.9. Source: https://obr.uk/docs/dlm_uploads/OBR_Economic_and_fiscal_outlook_Oct_2024.pdf"
+  },
   "vintages": [
     {
       "label": "Spring Forecast 2026",
@@ -15,7 +23,7 @@
       "label": "Autumn Budget 2025",
       "observed_at": "2025-11-26T00:00:00Z",
       "indicators": {
-        "cb_headroom": { "value": 22.0, "unit": "GBPbn" },
+        "cb_headroom": { "value": 21.7, "unit": "GBPbn" },
         "psnfl_trajectory": { "value": 0.0, "unit": "pp" }
       },
       "source_url": "https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/"

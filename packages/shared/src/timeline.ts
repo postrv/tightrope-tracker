@@ -1,4 +1,4 @@
-export type TimelineCategory = "monetary" | "fiscal" | "geopolitical" | "political" | "policy" | "market" | "delivery";
+export type TimelineCategory = "monetary" | "fiscal" | "geopolitical" | "political" | "policy" | "market" | "delivery" | "methodology";
 
 export interface TimelineEvent {
   id: string;

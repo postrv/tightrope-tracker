@@ -5,13 +5,17 @@ import type { ScoreSnapshot } from "@tightrope/shared";
 
 // Mock the pipeline stages so dispatchCron's control flow can be exercised
 // without a real D1/upstream. recomputeScores is the one we drive per-test.
-const { recomputeMock, ingestMarketMock, todayMock } = vi.hoisted(() => ({
+const { recomputeMock, ingestMarketMock, ingestFiscalMock, brentCatchupMock, todayMock } = vi.hoisted(() => ({
   recomputeMock: vi.fn(),
   ingestMarketMock: vi.fn(async () => undefined),
+  ingestFiscalMock: vi.fn(async () => undefined),
+  brentCatchupMock: vi.fn(async () => undefined),
   todayMock: vi.fn(async () => undefined),
 }));
 vi.mock("../pipelines/recompute.js", () => ({ recomputeScores: recomputeMock }));
 vi.mock("../pipelines/market.js", () => ({ ingestMarket: ingestMarketMock }));
+vi.mock("../pipelines/fiscal.js", () => ({ ingestFiscal: ingestFiscalMock }));
+vi.mock("../pipelines/brentCatchup.js", () => ({ backfillRecentBrent: brentCatchupMock }));
 vi.mock("../pipelines/todayMovements.js", () => ({ updateTodayMovements: todayMock }));
 
 const { dispatchCron } = await import("../index.js");
@@ -33,7 +37,31 @@ beforeEach(() => {
   globalThis.fetch = fetchSpy as unknown as typeof globalThis.fetch;
   recomputeMock.mockReset();
   ingestMarketMock.mockClear();
+  ingestFiscalMock.mockClear();
+  brentCatchupMock.mockClear();
   todayMock.mockClear();
+});
+
+describe("daily Brent catch-up dispatch", () => {
+  it("runs once in the 02:00 UTC branch before recompute", async () => {
+    const order: string[] = [];
+    ingestFiscalMock.mockImplementationOnce(async () => { order.push("fiscal"); });
+    brentCatchupMock.mockImplementationOnce(async () => { order.push("brent"); });
+    recomputeMock.mockImplementationOnce(async () => { order.push("recompute"); return FAKE_SNAPSHOT; });
+
+    await dispatchCron("0 2 * * *", {} as Env);
+
+    expect(order).toEqual(["fiscal", "brent", "recompute"]);
+    expect(brentCatchupMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not run on the five-minute market branch", async () => {
+    recomputeMock.mockResolvedValueOnce(FAKE_SNAPSHOT);
+
+    await dispatchCron("*/5 * * * *", {} as Env);
+
+    expect(brentCatchupMock).not.toHaveBeenCalled();
+  });
 });
 afterEach(() => {
   vi.restoreAllMocks();

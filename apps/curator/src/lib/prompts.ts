@@ -85,6 +85,7 @@ function deriveInstruction(spec: CaptureSpec): string[] {
   return [
     "",
     "Report ONLY the raw printed figures listed above, exactly as printed, each with its verbatim sentence. Do NOT sum figures, annualise them, or compute ratios or percentages — derived measures are computed downstream. Do NOT report any figure that is not listed above.",
+    "Emit at most ONE entry per listed component key: the latest reference period only. Repeated mentions of the same figure in a summary and the body are one observation, not separate entries. Do not include previous periods or a year-ending total alongside the current quarter.",
   ];
 }
 

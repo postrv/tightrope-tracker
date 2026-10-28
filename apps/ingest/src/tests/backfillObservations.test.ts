@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type {
+  AdapterContext,
   DataSourceAdapter,
   HistoricalFetchOptions,
   HistoricalFetchResult,
@@ -17,13 +18,15 @@ import type { Env } from "../env.js";
  * Minimal D1 stub. Records every batch() insert so we can assert what was
  * written, plus first()/run() stubs for audit open/close statements.
  */
-function makeEnv(): {
+function makeEnv(fxRows: Array<{ value: number; observed_at: string }> = []): {
   env: Env;
   batches: Array<Array<{ sql: string; bindings: readonly unknown[] }>>;
   auditRows: Array<{ sql: string; bindings: readonly unknown[] }>;
+  selects: Array<{ sql: string; bindings: readonly unknown[] }>;
 } {
   const batches: Array<Array<{ sql: string; bindings: readonly unknown[] }>> = [];
   const auditRows: Array<{ sql: string; bindings: readonly unknown[] }> = [];
+  const selects: Array<{ sql: string; bindings: readonly unknown[] }> = [];
   interface Stmt {
     sql: string;
     bindings: readonly unknown[];
@@ -41,7 +44,10 @@ function makeEnv(): {
       if (/INSERT|UPDATE/.test(sql)) auditRows.push({ sql, bindings });
       return { success: true };
     },
-    all: async () => ({ results: [] }),
+    all: async () => {
+      selects.push({ sql, bindings });
+      return { results: sql.includes("SELECT value, observed_at FROM indicator_observations") ? fxRows : [] };
+    },
   });
   const env = {
     DB: {
@@ -55,7 +61,7 @@ function makeEnv(): {
       delete: async () => undefined,
     },
   } as unknown as Env;
-  return { env, batches, auditRows };
+  return { env, batches, auditRows, selects };
 }
 
 async function mockAdapter(): Promise<DataSourceAdapter> {
@@ -96,6 +102,39 @@ async function mockAdapter(): Promise<DataSourceAdapter> {
 }
 
 describe("backfillObservations pipeline", () => {
+  it("passes EIA credentials and a bounded D1 FX series into historical adapters", async () => {
+    const { env, selects } = makeEnv([
+      { value: 1.25, observed_at: "2026-05-01T16:00:00Z" },
+    ]);
+    env.EIA_API_KEY = "test-eia-key";
+    let observedContext: AdapterContext | undefined;
+    const adapter: DataSourceAdapter = {
+      id: "context-probe",
+      name: "Context probe",
+      async fetch() { throw new Error("live fetch not used"); },
+      async fetchHistorical(_fetchImpl, _opts, ctx) {
+        observedContext = ctx;
+        const rows = await ctx?.getObservationsInRange?.(
+          "gbp_usd", "boe_fx", "2026-04-26T00:00:00Z", "2026-05-02T00:00:00Z",
+        );
+        expect(rows).toEqual([{ value: 1.25, observedAt: "2026-05-01T16:00:00Z" }]);
+        return {
+          observations: [], sourceUrl: "https://example.com", fetchedAt: new Date().toISOString(),
+          earliestObservedAt: null, latestObservedAt: null,
+        };
+      },
+    };
+    await backfillObservations(env, adapter, {
+      from: new Date("2026-05-01T00:00:00Z"), to: new Date("2026-05-01T23:59:59Z"),
+      dryRun: true, overwrite: false,
+    });
+    expect(observedContext?.secrets?.EIA_API_KEY).toBe("test-eia-key");
+    expect(selects).toHaveLength(1);
+    expect(selects[0]?.bindings).toEqual([
+      "gbp_usd", "boe_fx", "2026-04-26T00:00:00Z", "2026-05-02T00:00:00Z",
+    ]);
+  });
+
   it("fetches from the adapter, writes via writeHistoricalObservations, and opens+closes an audit row", async () => {
     const { env, batches, auditRows } = makeEnv();
     const adapter = await mockAdapter();
@@ -219,6 +258,26 @@ describe("backfillObservations pipeline", () => {
       overwrite: false,
     });
     expect(batches[0]![0]!.sql).toContain("INSERT OR IGNORE INTO indicator_observations");
+  });
+
+  it("reports zero written when D1 ignores an existing historical observation", async () => {
+    const db = {
+      prepare: () => ({ bind: () => ({}) }),
+      batch: async () => [{ success: true, meta: { changes: 0 } }],
+    } as unknown as Env["DB"];
+    const observation: RawObservation = {
+      indicatorId: "brent_gbp",
+      value: 95,
+      observedAt: "2026-05-01T00:00:00Z",
+      sourceId: "eia_brent",
+      payloadHash: "hist:existing",
+    };
+    const result = await writeHistoricalObservations(db, [observation], {
+      dryRun: false,
+      overwrite: false,
+    });
+    expect(result.attempted).toBe(1);
+    expect(result.written).toBe(0);
   });
 
   it("throws on adapter with no fetchHistorical", async () => {

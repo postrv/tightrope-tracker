@@ -12,6 +12,9 @@ import {
   SCORE_DIRECTION,
   SCORE_HISTORY_SCHEMA_VERSION,
   SCORE_SCHEMA_VERSION,
+  selectBaselineObservations,
+  METHODOLOGY_BASELINES_CACHE_KEY,
+  type BaselineObservationRow,
   BASELINE_START_ISO,
   COVID_EXCLUDE_START_ISO,
   COVID_EXCLUDE_END_ISO,
@@ -203,13 +206,13 @@ export async function getDeliveryCommitments(env: Env): Promise<DeliveryCommitme
   }));
 }
 
-export async function getTimelineEvents(env: Env, limit = 40): Promise<TimelineEvent[]> {
+export async function getTimelineEvents(env: Env, limit = 40, since?: string): Promise<TimelineEvent[]> {
   const res = await env.DB
     .prepare(
       `SELECT id, event_date, title, summary, category, source_label, source_url, score_delta
-       FROM timeline_events ORDER BY event_date DESC LIMIT ?`,
+       FROM timeline_events ${since ? "WHERE event_date >= ?2" : ""} ORDER BY event_date DESC LIMIT ?1`,
     )
-    .bind(limit)
+    .bind(limit, ...(since ? [since] : []))
     .all<{
       id: string; event_date: string; title: string; summary: string; category: string;
       source_label: string; source_url: string | null; score_delta: number | null;
@@ -348,7 +351,7 @@ export interface MethodologyBaselinesPayload {
   baselines: Record<string, BaselineSummary>;
 }
 
-const KV_BASELINES_KEY = "methodology:baselines";
+const KV_BASELINES_KEY = METHODOLOGY_BASELINES_CACHE_KEY;
 const KV_BASELINES_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 /**
@@ -383,15 +386,15 @@ function baselinesAreFresh(p: MethodologyBaselinesPayload): boolean {
 export async function buildBaselineSummariesFromD1(env: Env): Promise<MethodologyBaselinesPayload> {
   const res = await env.DB
     .prepare(
-      `SELECT indicator_id, value
+      `SELECT indicator_id, source_id, observed_at, value, released_at, payload_hash, ingested_at
        FROM indicator_observations
        WHERE observed_at >= ?
          AND NOT (observed_at >= ? AND observed_at <= ?)
        ORDER BY indicator_id, observed_at ASC`,
     )
     .bind(BASELINE_START_ISO, COVID_EXCLUDE_START_ISO, COVID_EXCLUDE_END_ISO)
-    .all<{ indicator_id: string; value: number }>();
-  const rows = res.results ?? [];
+    .all<BaselineObservationRow>();
+  const rows = selectBaselineObservations(res.results ?? []);
   const byIndicator = new Map<string, number[]>();
   for (const row of rows) {
     if (!Number.isFinite(row.value)) continue;

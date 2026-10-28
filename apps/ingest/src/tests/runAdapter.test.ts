@@ -8,12 +8,14 @@ import type { Env } from "../env.js";
  * Minimal D1 + DLQ stub. Records every run() so we can assert the audit row
  * was closed success vs failure, and captures DLQ sends.
  */
-function makeEnv(): {
+function makeEnv(fxLookupRow?: { value: number; observed_at: string }): {
   env: Env;
   runs: Array<{ sql: string; bindings: readonly unknown[] }>;
+  reads: Array<{ sql: string; bindings: readonly unknown[] }>;
   dlqSends: unknown[];
 } {
   const runs: Array<{ sql: string; bindings: readonly unknown[] }> = [];
+  const reads: Array<{ sql: string; bindings: readonly unknown[] }> = [];
   const dlqSends: unknown[] = [];
 
   interface Stmt {
@@ -33,7 +35,13 @@ function makeEnv(): {
       return { success: true };
     },
     // lastSuccessPayloadHash lookup → no prior success.
-    first: async <T>() => null as unknown as T | null,
+    first: async <T>() => {
+      if (sql.includes("SELECT value, observed_at FROM indicator_observations")) {
+        reads.push({ sql, bindings });
+        return (fxLookupRow ?? null) as T | null;
+      }
+      return null as T | null;
+    },
     // readPreviousLive → no prior live rows (jump gate skipped).
     all: async <T>() => ({ results: [] as T[] }),
   });
@@ -45,7 +53,7 @@ function makeEnv(): {
     },
     DLQ: { send: async (m: unknown) => { dlqSends.push(m); } },
   } as unknown as Env;
-  return { env, runs, dlqSends };
+  return { env, runs, reads, dlqSends };
 }
 
 function makeAdapter(fetch: DataSourceAdapter["fetch"]): DataSourceAdapter {
@@ -69,6 +77,21 @@ function parseError(): AdapterError {
 const noSleep = { retryDelayMs: 10_000, sleep: vi.fn(async () => undefined) };
 
 describe("runAdapter — bounded network retry", () => {
+  it("offers a source-specific, date-bounded FX lookup to adapters", async () => {
+    const { env, reads } = makeEnv({ value: 1.3279, observed_at: "2026-10-06T16:00:00Z" });
+    const adapter = makeAdapter(async (_fetch, ctx) => {
+      const fx = await ctx?.getObservationBefore?.("gbp_usd", "boe_fx", "2026-10-07T00:00:00Z");
+      expect(fx).toEqual({ value: 1.3279, observedAt: "2026-10-06T16:00:00Z" });
+      return OK_RESULT;
+    });
+
+    await runAdapter(env, adapter);
+    expect(reads).toHaveLength(1);
+    expect(reads[0]!.sql).toContain("source_id = ? AND observed_at < ?");
+    expect(reads[0]!.sql).toContain("ORDER BY observed_at DESC LIMIT 1");
+    expect(reads[0]!.bindings).toEqual(["gbp_usd", "boe_fx", "2026-10-07T00:00:00Z"]);
+  });
+
   it("retries once on a retryable failure and succeeds on the second attempt", async () => {
     const { env, runs } = makeEnv();
     const fetch = vi.fn()

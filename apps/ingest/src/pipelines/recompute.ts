@@ -52,10 +52,10 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   ]);
   if (recentRaw.length === 0) return null;
 
-  // Apply the same stale-live filter to both windows. This drops live rows
-  // that have been superseded by a more recently-ingested row for the
-  // same (indicator_id, source_id), keeping all hist:/seed rows. Without
-  // this, an editorial fixture whose `observed_at` moved backwards leaves
+  // Apply the same stale-live filter to both windows. Keep genuine earlier
+  // live publications and all hist:/seed rows; drop only later-dated live
+  // snapshots superseded by a current snapshot with a corrected earlier date.
+  // Without this, an editorial fixture whose `observed_at` moved backwards leaves
   // the daily-pillar-sparkline picking the stale row when scanning by
   // `observed_at <= cutoff`. See packages/data-sources fixture audit notes.
   const recent = filterStaleLiveRows(recentRaw);
@@ -222,7 +222,22 @@ export async function recomputeScores(env: Env): Promise<ScoreSnapshot | null> {
   // only ever contains points that were fresh when written. The API's latest
   // read still returns the last-fresh row; the pillar.stale/headline.stale
   // flags are inferred at serve time from the observed_at age.
-  await persistScores(env, snapshot, updatedAt, { skipHeadline: anyStale, skipPillars: stalePillarIds });
+  const persistOptions = { skipHeadline: anyStale, skipPillars: stalePillarIds };
+  await persistScores(env, snapshot, updatedAt, persistOptions);
+
+  // These queries ran before the write above. Include exactly the rows just
+  // persisted so the history cache and snapshot agree in this invocation,
+  // rather than leaving the chart one cron behind. Stale computations never
+  // enter history, matching the D1 persistence contract.
+  if (!persistOptions.skipHeadline) {
+    headlineHist.push({ observed_at: updatedAt, value: snapshot.headline.value });
+  }
+  for (const p of PILLAR_ORDER) {
+    if (persistOptions.skipPillars.includes(p)) continue;
+    pillarHistByPillar[p].push({ observed_at: updatedAt, value: snapshot.pillars[p].value });
+  }
+  snapshot.headline.sparkline90d = downsampleLatestPerDay(headlineHist).slice(-90);
+
   // Single-writer: primeSnapshotCache / primeHistoryCache (@tightrope/snapshot)
   // own score:latest and score:history:90d.
   await primeSnapshotCache(env.KV, snapshot);
@@ -311,7 +326,7 @@ async function readSourceHealth(env: Env): Promise<readonly SourceHealthEntry[]>
  * previous day's value (or 0 at the start). Empty days at the *front* are
  * dropped so the chart doesn't render a leading flat shelf.
  */
-function buildDailyPillarSparkline(
+export function buildDailyPillarSparkline(
   pillarId: PillarId,
   pillarIndicators: readonly IndicatorDefinition[],
   recent: readonly ObservationRow[],
@@ -336,10 +351,13 @@ function buildDailyPillarSparkline(
     for (const def of pillarIndicators) {
       const arr = byIndicator.get(def.id);
       if (!arr || arr.length === 0) continue;
-      // Linear scan from latest backwards; arr is ascending by observed_at.
+      // A reference period can precede its publication by weeks or months.
+      // Walk in reference-period order but only use prints public by this
+      // day's cutoff; a later period whose release is still in the future
+      // must not hide an older, already-published print.
       let pick: ObservationRow | undefined;
       for (let j = arr.length - 1; j >= 0; j--) {
-        const ts = new Date(arr[j]!.observed_at).getTime();
+        const ts = Date.parse(arr[j]!.released_at ?? arr[j]!.observed_at);
         if (ts <= cutoffMs) { pick = arr[j]!; break; }
       }
       if (!pick) continue;
@@ -347,6 +365,7 @@ function buildDailyPillarSparkline(
         indicatorId: def.id,
         value: pick.value,
         observedAt: pick.observed_at,
+        ...(pick.released_at ? { releasedAt: pick.released_at } : {}),
         baseline: baselineByIndicator.get(def.id) ?? [],
       });
     }

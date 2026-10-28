@@ -23,6 +23,12 @@ export default defineConfig({
   },
   compressHTML: true,
   vite: {
+    // Astro can inline a small bundled module even when it has imports.
+    // Keep executable JS external so the per-request CSP's 'self' rule
+    // covers chart interactions; a generated inline module has no nonce.
+    build: {
+      assetsInlineLimit: (filePath) => filePath.endsWith(".js") ? false : undefined,
+    },
     resolve: {
       // pnpm workspace source-mapping: let Vite transpile the TS in shared/methodology.
       // preserveSymlinks must be false for pnpm to resolve hoisted deps properly.

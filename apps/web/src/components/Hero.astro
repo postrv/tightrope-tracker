@@ -1,8 +1,9 @@
 ---
-import type { HeadlineScore } from "@tightrope/shared";
+import type { HeadlineScore, TimelineEvent } from "@tightrope/shared";
 import { bandFor, BANDS, OBR_LATEST_VINTAGE_LABEL, OBR_TARGET_YEAR_LABEL, PILLARS } from "@tightrope/shared";
 import TightropeWalker from "./TightropeWalker.astro";
-import { eyebrowDate, signedDelta, trendArrow, trendClass, trendDescriptor } from "~/lib/format.js";
+import { eyebrowDate, shortDate, signedDelta, trendArrow, trendClass, trendDescriptor } from "~/lib/format.js";
+import { safeHref } from "~/lib/safeHref.js";
 
 interface Props {
   headline: HeadlineScore;
@@ -21,13 +22,17 @@ interface Props {
    * AND the intuitive £Bn anchor (down = less fiscal freedom).
    */
   headroomVintages?: ReadonlyArray<{ value: number; observedAt: string }>;
+  /** A recent published calculation correction, surfaced beside score comparisons. */
+  calculationCorrection?: TimelineEvent;
 }
 
-const { headline, freshestAt, headroomVintages = [] } = Astro.props;
+const { headline, freshestAt, headroomVintages = [], calculationCorrection } = Astro.props;
+const correctionHref = safeHref(calculationCorrection?.sourceUrl) ?? "https://tightropetracker.uk/corrections";
 const band = BANDS.find((b) => b.id === headline.band) ?? bandFor(headline.value);
 const bandColour = band.colourToken;
 const dominantLabel = PILLARS[headline.dominantPillar]?.title ?? "The biggest drag";
-const scoreRounded = Math.round(headline.value);
+const scoreRounded = Math.round(headline.value * 10) / 10;
+const scoreDisplay = scoreRounded.toFixed(1);
 const editorial = headline.editorial || `${dominantLabel} is the biggest drag. See the sections below for the drivers.`;
 
 const delta24 = headline.delta24h;
@@ -111,8 +116,8 @@ function headroomDateLabel(iso: string): string {
               <span class="card-direction" title="The composite. Higher numbers mean more room to move; lower numbers mean the rope is closer to giving way.">↑ HIGHER = BETTER</span>
             </div>
             <div>
-              <div class="score-num" data-target={scoreRounded} aria-label={`Tightrope Score: ${scoreRounded} out of 100`}>
-                <span class="score-value">{scoreRounded}</span><span class="sub">/100</span>
+              <div class="score-num" data-target={scoreRounded} aria-label={`Tightrope Score: ${scoreDisplay} out of 100`}>
+                <span class="score-value">{scoreDisplay}</span><span class="sub">/100</span>
               </div>
               <div class="delta-row" aria-label="Composite changes over time">
                 <span title="Baseline: one UTC day before the latest reading.">1d <span class={trendClass(delta24)}>{trendArrow(delta24)} {signedDelta(delta24, 1)}{trendDescriptor(delta24) ? <span class="trend-word"> {trendDescriptor(delta24)}</span> : null}</span></span>
@@ -131,6 +136,10 @@ function headroomDateLabel(iso: string): string {
               {isStale ? <span class="stale-chip" role="status" title="One or more pillars have not received fresh indicator data within the staleness window.">Stale data</span> : null}
               <span class="band-label">{band.editorialLabel}</span>
             </div>
+            {calculationCorrection ? <p class="calculation-note">
+              <a href={correctionHref}>Score calculation corrected on {shortDate(calculationCorrection.date)}.</a>
+              {" "}Comparisons across this date include a calculation change.
+            </p> : null}
           </div>
 
           {headroomCurrent ? (
@@ -207,6 +216,8 @@ function headroomDateLabel(iso: string): string {
   background: var(--band-colour, var(--accent));
 }
 .headroom-card::before { background: var(--accent); }
+.calculation-note { border-top: 1px solid var(--border); padding-top: 12px; margin: 0; font-size: 11px; color: var(--ink-1); line-height: 1.5; }
+.calculation-note a { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 2px; font-weight: 600; }
 .card-header {
   display: flex; flex-direction: column; gap: 4px;
 }
@@ -310,7 +321,7 @@ function headroomDateLabel(iso: string): string {
   if (!valueEl) return;
   const target = Number(el.dataset.target ?? valueEl.textContent ?? "0");
   if (!Number.isFinite(target)) return;
-  if (reduce) { valueEl.textContent = String(target); return; }
+  if (reduce) { valueEl.textContent = target.toFixed(1); return; }
 
   const dur = 900;
   const t0 = performance.now();
@@ -318,7 +329,7 @@ function headroomDateLabel(iso: string): string {
   function frame(t) {
     const p = Math.min(1, (t - t0) / dur);
     const eased = 1 - Math.pow(1 - p, 3);
-    valueEl.textContent = String(Math.round(target * eased));
+    valueEl.textContent = (target * eased).toFixed(1);
     if (p < 1) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

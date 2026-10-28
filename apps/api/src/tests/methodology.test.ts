@@ -6,7 +6,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { handleMethodologyBaselines } from "../handlers/methodology.js";
 
-interface BaselineRow { indicator_id: string; value: number }
+interface BaselineRow { indicator_id: string; value: number; observed_at?: string; ingested_at?: string; payload_hash?: string; source_id?: string }
 
 interface KvStub {
   get: <T = unknown>(key: string, fmt?: "json") => Promise<T | null>;
@@ -28,7 +28,7 @@ function makeEnv(opts: {
   const loaderCalls: Counter = { value: 0 };
   const kv: KvStub = {
     get: async <T,>(key: string) => {
-      if (key !== "methodology:baselines") return null;
+      if (key !== "methodology:baselines:reference-days-v2") return null;
       return opts.cached as unknown as T | null;
     },
     put: async (key: string, value: string) => {
@@ -39,7 +39,7 @@ function makeEnv(opts: {
     prepare: () => ({
       bind: () => {
         loaderCalls.value++;
-        return { all: async () => ({ results: opts.rows }) };
+        return { all: async () => ({ results: opts.rows.map((row, index) => ({ observed_at: `2026-04-${String(index + 1).padStart(2, "0")}T16:00:00Z`, ...row })) }) };
       },
     }),
   };
@@ -103,7 +103,7 @@ describe("/api/v1/methodology/baselines", () => {
       expect(knots[i]!.v).toBeGreaterThanOrEqual(knots[i - 1]!.v);
     }
     // The handler primes KV after a miss.
-    expect(kvWrites.find((w) => w.key === "methodology:baselines")).toBeDefined();
+    expect(kvWrites.find((w) => w.key === "methodology:baselines:reference-days-v2")).toBeDefined();
   });
 
   it("rebuilds when the cache exists but is older than 24 hours", async () => {
@@ -125,6 +125,19 @@ describe("/api/v1/methodology/baselines", () => {
 
     await handleMethodologyBaselines(makeRequest(), env, ctx);
     expect(loaderCalls.value, "D1 should rebuild past the 24h gate").toBeGreaterThan(0);
+  });
+
+  it("uses one reference-day sample and the latest-ingested revision", async () => {
+    const rows: BaselineRow[] = [
+      { indicator_id: "gilt_10y", observed_at: "2026-10-26T00:00:00Z", value: 5.3, payload_hash: "hist:old", ingested_at: "2026-10-27T09:00:00Z" },
+      { indicator_id: "gilt_10y", observed_at: "2026-10-26T16:00:00Z", value: 5.35, payload_hash: "hist:revision", ingested_at: "2026-10-28T09:00:00Z" },
+      { indicator_id: "gilt_10y", observed_at: "2026-10-27T16:00:00Z", value: 5.4, payload_hash: "live", ingested_at: "2026-10-28T09:00:00Z" },
+    ];
+    const { env, ctx } = makeEnv({ cached: null, rows });
+    const res = await handleMethodologyBaselines(makeRequest(), env, ctx);
+    const body = await res.json() as { baselines: Record<string, { n: number; knots: Array<{ v: number }> }> };
+    expect(body.baselines.gilt_10y!.n).toBe(2);
+    expect(body.baselines.gilt_10y!.knots[0]!.v).toBe(5.35);
   });
 
   it("rejects unknown query parameters", async () => {

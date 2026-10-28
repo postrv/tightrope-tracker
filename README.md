@@ -62,12 +62,29 @@ pnpm dev:ingest       # Ingest worker (scheduled) at http://localhost:8789
 pnpm dev:curator      # Curator worker (AI capture, scheduled) at http://localhost:8790
 ```
 
-All tests and typecheck:
+All tests and typecheck (use Node 22.13+ for the SQLite integration tests;
+CI runs Node 22):
 
 ```bash
 pnpm -r typecheck
 pnpm -r test
 ```
+
+## Code intelligence
+
+The workspace pins `narsil-mcp` **1.7.2**. After `pnpm install`, start it from
+the repository root with the local binary:
+
+```bash
+pnpm exec narsil-mcp --repos . --git --call-graph --persist --watch --index-path .narsil-cache
+```
+
+Configure your MCP client to run that command in this directory (the local
+Forge gateway already does this). Use `list_repos` / `get_index_status` to
+confirm the indexed repository is `tightrope`, then use its symbol, dependency
+and code-search tools. Watch mode updates changed files; call `reindex` with
+`{"repo":"tightrope"}` after substantial edit batches and before a final review.
+The generated cache is local and excluded from Git.
 
 ## Public API
 

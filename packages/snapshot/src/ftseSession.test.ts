@@ -80,7 +80,8 @@ describe("FTSE same-session live row survives a hist backfill", () => {
     const hist = history.points.find((point) => point.observed_at.slice(0, 10) === liveDay);
     expect(hist, `history has no point on ${liveDay}`).toBeDefined();
     expect(hist!.observed_at).toBe(live.observed_at);
-    expect(live.ftse_250.value).toBe(24339.2);
+    expect(live.observed_at).toBe("2026-10-27T16:30:00Z");
+    expect(live.ftse_250.value).toBe(24716.4);
     expect(hist!.value).not.toBe(live.ftse_250.value);
 
     const { sqlite, db } = openObservations();
@@ -95,7 +96,7 @@ describe("FTSE same-session live row survives a hist backfill", () => {
     // writer refuses today. Move the clock to the next UTC day so the
     // shipped overwrite path actually issues the insert.
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-10-14T12:00:00.000Z"));
+    vi.setSystemTime(new Date("2026-10-28T12:00:00.000Z"));
 
     const result = await writeHistoricalObservations(db, [{
       indicatorId: "ftse_250",
@@ -111,13 +112,13 @@ describe("FTSE same-session live row survives a hist backfill", () => {
     const stored = sqlite.prepare(
       `SELECT value, payload_hash FROM indicator_observations WHERE indicator_id = 'ftse_250'`,
     ).get() as { value: number; payload_hash: string };
-    expect(stored.value).toBe(24339.2);
+    expect(stored.value).toBe(24716.4);
     expect(stored.payload_hash).toBe(liveHash);
 
     const selected = await readLatestObservations(db);
     const winner = selected.find((row) => row.indicator_id === "ftse_250");
     expect(winner?.observed_at).toBe(live.observed_at);
-    expect(winner?.value).toBe(24339.2);
+    expect(winner?.value).toBe(24716.4);
     sqlite.close();
   });
 

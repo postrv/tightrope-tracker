@@ -4,7 +4,7 @@
     "primary_source": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount",
     "indicator": "BACS-administered direct debit failure rate, monthly, % of total direct debit transactions, total all categories, non-seasonally adjusted (NSA)",
     "release_cadence": "monthly dataset release accompanying the ONS 'Economic activity and social change in the UK, real-time indicators' bulletin (typically published mid-month, reporting data through ~6 weeks earlier)",
-    "extraction_notes": "All 21 monthly values extracted directly from sheet '1.DD Failure Rates Total NSA' of the ONS xlsx published 23 April 2026 (data coverage Jan 2021 – Mar 2026, file: directdebittransactionsandfailuresdataset230426.xlsx). Source values are decimal fractions (e.g. 0.0214 = 2.14%); rounded to one decimal in this fixture. The xlsx is republished each month with revisions, so the latest edition is the canonical source for the entire historical series — each point's URL therefore points to the dataset landing page rather than the specific edition in which the month first appeared. The 'release' / 'published' fields identify the bulletin release in which each month was first reported. ANCHOR DISCREPANCY: the live fixture packages/data-sources/src/fixtures/ons-rti.json reports 1.8% for April 2026 (observed 2026-04-10), but the ONS Total NSA series shows 2.41% for March 2026 (the most recent month available as of the 23 April 2026 release; April 2026 data is not yet published). The 1.8% figure does not correspond to any month in the Total NSA series for the period covered here — closest matches are sub-categories such as Mortgages (~0.85–1.2%) or Water (~1.0–1.2%), neither of which is the headline figure. Recommend reconciling the live fixture against this authoritative series before launch. 2026-07-03 refresh: added Apr-2026 (raw 2.34% → 2.3) and May-2026 (raw 2.34% → 2.3) from the 18 June 2026 edition (directdebittransactionsandfailuresdataset180626.xlsx); April 2026 first appeared in the 21 May 2026 real-time-indicators release, May 2026 in the 18 June 2026 release. In the 2026 edition the Total NSA series has shifted from sheet '1.DD Failure Rates Total NSA' to sheet '2.DD Failure Rates Total NSA' (a 'Total SA' sheet was inserted as sheet 1). The live fixture packages/data-sources/src/fixtures/ons-rti.json is now reconciled to this series (shipping May 2026 = 2.34%), resolving the earlier 1.8% anchor discrepancy."
+    "extraction_notes": "The curated series stores one decimal place, matching its historical convention; the live fixture keeps the ONS chart CSV's two-decimal figure. The 'published' field records when each reference month first appeared, and the adapter persists it as released_at to avoid historical lookahead. The ONS 17 September 2026 bulletin Figure 4 CSV reports Total NSA August = 2.41% (rounded here to 2.4); the accompanying 2026 dataset workbook sheet '2.DD Failure Rates Total NSA' gives 2.40%, a 0.01 percentage-point disagreement between official artefacts. July similarly differs (chart 2.44%, workbook 2.43%). This series follows the chart CSV for the latest live value. The workbook is available at https://www.ons.gov.uk/file?uri=%2Feconomy%2Feconomicoutputandproductivity%2Foutput%2Fdatasets%2Fmonthlydirectdebitfailurerateandaveragetransactionamount%2F2026%2Fdirectdebittransactionsandfailuresdataset170926.xlsx . Earlier curated points cite the dataset landing page; the August point cites the bulletin chart CSV."
   },
   "points": [
     {
@@ -181,6 +181,20 @@
       "release": "ONS Monthly Direct Debit failure rate dataset (2026 edition) accompanying real-time indicators bulletin, 20 August 2026 (Figure 4 CSV Total NSA Jul 2026 = 2.44, rounded to 1 decimal per this file's convention)",
       "published": "2026-08-20",
       "url": "https://www.ons.gov.uk/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount"
+    },
+    {
+      "observed_at": "2026-08-31T00:00:00Z",
+      "value": 2.4,
+      "release": "ONS real-time indicators bulletin, 17 September 2026, Figure 4 CSV Total NSA Aug 2026 = 2.41%, rounded to 1 decimal per this file's convention",
+      "published": "2026-09-17",
+      "url": "https://www.ons.gov.uk/generator?format=csv&uri=%2Feconomy%2Feconomicoutputandproductivity%2Foutput%2Fbulletins%2Feconomicactivityandsocialchangeintheukrealtimeindicators%2F17september2026%2Fe89d6cd5"
+    },
+    {
+      "observed_at": "2026-09-30T00:00:00Z",
+      "value": 2.4,
+      "release": "ONS real-time indicators bulletin, 22 October 2026, Figure 4 CSV Total column Sep 2026 = 2.43, rounded to 1 decimal per this file's convention. August in the same column is 2.41, continuing the series this file already stores.",
+      "published": "2026-10-22",
+      "url": "https://www.ons.gov.uk/generator?uri=/economy/economicoutputandproductivity/output/bulletins/economicactivityandsocialchangeintheukrealtimeindicators/22october2026/cdf5f508&format=csv"
     }
   ]
 }

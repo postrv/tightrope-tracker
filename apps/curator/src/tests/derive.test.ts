@@ -148,6 +148,29 @@ describe("derivation inside the extraction loop", () => {
     expect(ai.calls).toHaveLength(2);
   });
 
+  it("corrects a duplicated component on retry with targeted validation feedback", async () => {
+    const ai = makeAi({
+      run: (_model, inputs) => {
+        const correction = inputs.messages.some((m) => m.content.includes("previous extraction failed validation (DERIVE_DUPLICATE_COMPONENT)"));
+        return modelJson(correction ? componentValues() : [...componentValues(), componentValues()[1]!]);
+      },
+    });
+    const spec = derivedSpec();
+    const result = await extractFromArtifact(makeEnv({ db: makeFakeDb(), ai: ai.AI }), spec, artifact(spec));
+    expect(result.values).toHaveLength(2);
+    expect(result.values.find((v) => v.indicatorId === "planning_consents")!.value).toBeCloseTo(58.26, 2);
+    expect(ai.calls).toHaveLength(2);
+  });
+
+  it("still fails after all retries when duplicate components persist", async () => {
+    const ai = makeAi({ run: () => modelJson([...componentValues(), componentValues()[1]!]) });
+    const spec = derivedSpec();
+    await expect(extractFromArtifact(makeEnv({ db: makeFakeDb(), ai: ai.AI }), spec, artifact(spec)))
+      .rejects.toThrow(/DERIVE_DUPLICATE_COMPONENT/);
+    expect(ai.calls).toHaveLength(3);
+    expect(ai.calls.every((call) => call.response_format !== undefined)).toBe(true);
+  });
+
   it("coerces a thousands-separated component string in the schema-free rescue", async () => {
     const quoted = JSON.stringify({
       values: [
@@ -189,6 +212,7 @@ describe("derivation inside the extraction loop", () => {
       expect(prompt).toContain("major_granted");
       expect(prompt).toContain("minor_granted");
       expect(prompt).toContain("Do NOT sum figures");
+      expect(prompt).toContain("at most ONE entry per listed component key");
       // The derived ids must not be presented as extraction targets. They
       // only ever appear if a component description mentions them — ours don't.
       expect(prompt).not.toContain("housing_trajectory");

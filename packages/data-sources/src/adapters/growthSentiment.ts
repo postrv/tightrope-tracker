@@ -53,6 +53,8 @@ interface SentimentSlot {
    *  (e.g. August PMI/GfK out, August RICS not yet). Falls back to the
    *  fixture-level `observed_at`, which also drives the freshness guard. */
   observed_at?: string;
+  /** Publication date of this monthly print, for point-in-time score history. */
+  published?: string;
 }
 
 interface GrowthSentimentFixture {
@@ -63,7 +65,7 @@ interface GrowthSentimentFixture {
   source_url: string;
 }
 
-interface HistoryPoint { observed_at: string; value: number }
+interface HistoryPoint { observed_at: string; value: number; published?: string }
 interface HistoryFixture { points: readonly HistoryPoint[] }
 
 const BINDINGS: ReadonlyArray<{ indicatorId: string; fixtureKey: keyof GrowthSentimentFixture; sourceId: string }> = [
@@ -127,6 +129,7 @@ export const growthSentimentAdapter: DataSourceAdapter = {
         indicatorId: b.indicatorId,
         value: v,
         observedAt,
+        ...releasedAtFromDate(slot?.published),
         sourceId: b.sourceId,
         payloadHash: hash,
       });
@@ -165,6 +168,7 @@ export const growthSentimentAdapter: DataSourceAdapter = {
           indicatorId: binding.indicatorId,
           value: point.value,
           observedAt: point.observed_at,
+          ...releasedAtFromDate(point.published),
           sourceId: binding.sourceId,
           payloadHash: await historicalPayloadHash(binding.indicatorId, point.observed_at, point.value),
         });
@@ -184,5 +188,11 @@ export const growthSentimentAdapter: DataSourceAdapter = {
     return buildHistoricalResult(observations, FIXTURE_URL, notes);
   },
 };
+
+function releasedAtFromDate(published: string | undefined): { releasedAt: string } | {} {
+  if (typeof published !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(published)) return {};
+  const releasedAt = `${published}T00:00:00Z`;
+  return Number.isFinite(Date.parse(releasedAt)) ? { releasedAt } : {};
+}
 
 registerAdapter(growthSentimentAdapter);

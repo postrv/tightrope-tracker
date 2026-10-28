@@ -39,6 +39,7 @@ import { AdapterError, fetchOrThrow } from "../lib/errors.js";
 import { historicalPayloadHash, sha256Hex } from "../lib/hash.js";
 import { assertFixtureFresh } from "../lib/fixtureFreshness.js";
 import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
+import { londonCloseIso } from "../lib/londonClose.js";
 
 const SOURCE_ID = "lseg";
 const FIXTURE_URL = "local:fixtures/ftse-250.json";
@@ -161,7 +162,7 @@ async function fetchFromEodhd(
   }
   const close = latest.close;
   const day = latest.date.slice(0, 10);
-  const observedAt = latest.date.includes("T") ? latest.date : `${day}T16:30:00Z`;
+  const observedAt = latest.date.includes("T") ? latest.date : londonCloseIso(day);
   const payloadHash = await sha256Hex(`${EODHD_TICKER}:${latest.date}:${close}`);
   return {
     observation: {
@@ -217,7 +218,7 @@ async function fetchFromYahoo(
     return { reason: "no usable completed Yahoo ^FTMC close" };
   }
   const day = sessionYmdFromUnix(ts);
-  const observedAt = `${day}T16:30:00Z`;
+  const observedAt = londonCloseIso(day);
   const payloadHash = await sha256Hex(`yahoo:^FTMC:${day}:${close}`);
   return {
     observation: {
@@ -308,7 +309,7 @@ export const lseFtse250Adapter: DataSourceAdapter = {
     }
   },
   // Historical mode reads ftse-250-history.json (Yahoo ^FTMC daily closes
-  // 2024-07 → 2026-08). Yahoo's prints can drift ~1% from the LSEG closing-
+  // 2024-07 → 2026-10). Yahoo's prints can drift ~1% from the LSEG closing-
   // auction print on the most recent days; the live `fetch()` above remains
   // the authority for the head value, so historical rows never overwrite a
   // live row at the same observedAt.

@@ -1,0 +1,7 @@
+# Keep generated state and local operator credentials out of code intelligence.
+.narsil-cache/
+.wrangler/
+.env*
+.dev.vars*
+*.local
+*.local.*

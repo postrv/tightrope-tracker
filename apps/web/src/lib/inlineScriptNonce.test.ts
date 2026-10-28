@@ -5,9 +5,9 @@
  *
  * The original SEC-10 migration tagged every `is:inline` script with the
  * Astro.locals.cspNonce, but it missed bare `<script>` tags. Astro processes
- * those: scripts that contain `import`/`export` get bundled to a separate
- * `_astro/<hash>.js` file and emitted as `<script type="module" src="...">`
- * (which `script-src 'self'` covers); scripts that are tiny and standalone
+ * those: scripts get bundled and may be emitted as a separate
+ * `_astro/<hash>.js` file (which `script-src 'self'` covers); small scripts,
+ * including ones with imports after bundling,
  * get bundled and INLINED into the HTML as `<script type="module">…</script>`
  * — and those inline blocks need a nonce. Production CSP was blocking all
  * four inlined-bundled scripts (TopNav menu, Hero score animation,
@@ -16,7 +16,7 @@
  *
  * The check is deliberately conservative: we require every bare `<script>`
  * to either be marked `is:inline` + nonce, or contain an `import` statement
- * (which guarantees Astro externalises it). False positives are easy to
+ * (with astro.config.mjs preventing JS asset inlining). False positives are easy to
  * fix; false negatives let the regression back in.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -96,7 +96,7 @@ function classify(block: ScriptBlock): Violation | null {
   }
 
   // Bare `<script>`: Astro will bundle it. If the body has any import/export
-  // statement, Astro externalises it as a module file (script-src 'self'
+  // statement, the project config keeps the bundle external (script-src 'self'
   // covers that). Otherwise Astro may inline the bundled output, and the
   // emitted inline tag won't carry our per-request nonce.
   const bodyHasModuleStatement = /(^|\n|;)\s*(import|export)\s/.test(block.body);

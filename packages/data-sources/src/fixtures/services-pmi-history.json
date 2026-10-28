@@ -1,5 +1,5 @@
 {
-  "_comment": "S&P Global / CIPS UK Services PMI Business Activity Index, FINAL print. One observation per monthly final press release.",
+  "_comment": "S&P Global / CIPS UK Services PMI Business Activity Index. One observation per monthly final press release, plus the August 2026 flash print that was used before its final revision. The flash uses its own release-day observed_at so point-in-time backfills preserve what was known from 21 August to 2 September.",
   "methodology": {
     "primary_source": "https://www.pmi.spglobal.com/",
     "indicator": "Services PMI Business Activity Index — FINAL (50 = no change)",
@@ -31,6 +31,9 @@
     { "observed_at": "2026-04-30T00:00:00Z", "value": 52.7, "release": "S&P Global / CIPS UK Services PMI — April 2026 final", "published": "2026-05-06", "url": "https://investinglive.com/news/uk-april-final-services-pmi-527-vs-520-prelim-20260506/" },
     { "observed_at": "2026-05-31T00:00:00Z", "value": 49.3, "release": "S&P Global / CIPS UK Services PMI — May 2026 final", "published": "2026-06-03", "url": "https://investinglive.com/news/uk-may-final-services-pmi-493-vs-479-prelim-20260603/" },
     { "observed_at": "2026-06-30T00:00:00Z", "value": 48.8, "release": "S&P Global / CIPS UK Services PMI — June 2026 final", "published": "2026-07-03", "url": "https://investinglive.com/news/uk-june-final-services-pmi-488-vs-487-prelim-20260703/" },
-    { "observed_at": "2026-07-31T00:00:00Z", "value": 52.1, "release": "S&P Global / CIPS UK Services PMI — July 2026 final", "published": "2026-08-05", "url": "https://www.pmi.spglobal.com/Public/Home/PressRelease/754c679147324e39ab67e212c7466ab3" }
+    { "observed_at": "2026-07-31T00:00:00Z", "value": 52.1, "release": "S&P Global / CIPS UK Services PMI — July 2026 final", "published": "2026-08-05", "url": "https://www.pmi.spglobal.com/Public/Home/PressRelease/754c679147324e39ab67e212c7466ab3" },
+    { "observed_at": "2026-08-21T00:00:00Z", "value": 52.8, "release": "S&P Global / CIPS UK Services PMI — August 2026 flash", "published": "2026-08-21", "url": "https://www.fxstreet.com/news/united-kingdom-flash-services-pmi-expands-faster-to-528-in-august-beats-518-estimates-202608210833", "note": "Provisional August flash print retained for point-in-time scoring before the final September 3 release." },
+    { "observed_at": "2026-08-31T00:00:00Z", "value": 52.5, "release": "S&P Global / CIPS UK Services PMI — August 2026 final", "published": "2026-09-03", "url": "https://www.pmi.spglobal.com/Public/Home/PressRelease/23453dfdab0048ee8a69994752851579", "note": "September final release cites August final 52.5; replaces the August flash 52.8." },
+    { "observed_at": "2026-09-30T00:00:00Z", "value": 52.1, "release": "S&P Global / CIPS UK Services PMI — September 2026 final", "published": "2026-10-05", "url": "https://www.pmi.spglobal.com/Public/Home/PressRelease/23453dfdab0048ee8a69994752851579" }
   ]
 }

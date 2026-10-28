@@ -15,6 +15,7 @@
  * and reports which keys it deleted so the caller can confirm.
  */
 import { describe, expect, it } from "vitest";
+import { METHODOLOGY_BASELINES_CACHE_KEY } from "@tightrope/shared";
 import { handleAdminRun } from "../admin.js";
 import type { Env } from "../env.js";
 
@@ -75,7 +76,7 @@ describe("handleAdminRun — source=purge-cache", () => {
     expect(kvDeletes).toEqual([]);
   });
 
-  it("deletes the five public KV keys and reports them in the response", async () => {
+  it("deletes public KV keys including both baseline cache generations", async () => {
     const { env, kvDeletes } = makeEnv();
     const { req, url } = makeReq("secret-token");
     const res = await handleAdminRun(req, env, url);
@@ -88,6 +89,7 @@ describe("handleAdminRun — source=purge-cache", () => {
       "delivery:latest",
       "timeline:latest",
       "methodology:baselines",
+      METHODOLOGY_BASELINES_CACHE_KEY,
     ]));
     expect(new Set(kvDeletes)).toEqual(new Set(body.purged));
   });
@@ -101,8 +103,8 @@ describe("handleAdminRun — source=purge-cache", () => {
     const { req: req2, url: url2 } = makeReq("secret-token");
     const res2 = await handleAdminRun(req2, env, url2);
     expect(res2.status).toBe(200);
-    // Each call deleted all five keys; total of 10 delete events.
-    expect(kvDeletes.length).toBe(10);
+    // Each call deletes both the legacy and corrected baseline cache keys.
+    expect(kvDeletes.length).toBe(12);
   });
 
   it("rejects non-POST methods", async () => {

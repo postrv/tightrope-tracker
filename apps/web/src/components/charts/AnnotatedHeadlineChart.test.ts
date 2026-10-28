@@ -142,6 +142,44 @@ describe("AnnotatedHeadlineChart", () => {
     expect(doc.querySelectorAll("path.pillar-line").length).toBe(0);
   });
 
+  it("provides an accessible date slider and exact headline/pillar readout", async () => {
+    const doc = await render({ history: buildHistory(), events: [] });
+    const slider = doc.querySelector("input.score-scrubber");
+    expect(slider?.getAttribute("type")).toBe("range");
+    expect(slider?.getAttribute("max")).toBe("13");
+    expect(doc.querySelector('[data-score-value="headline"]')?.textContent).toBe("63.0");
+    expect(doc.querySelector('[data-score-value="market"]')?.textContent).toBe("73.0");
+    expect(doc.querySelectorAll("[data-score-value]").length).toBe(5);
+  });
+
+  it("positions the line and inspection points by elapsed time when history has gaps", async () => {
+    const h = buildHistory();
+    h.points = [point("2026-04-01", 50), point("2026-04-02", 51), point("2026-04-11", 60)];
+    const doc = await render({ history: h, events: [] });
+    const data = JSON.parse(doc.querySelector(".score-chart-data")!.textContent ?? "");
+    const middle = data.points[1].x;
+    expect((middle - data.padL) / data.plotW).toBeCloseTo(0.1);
+    expect(doc.querySelector("path.headline-line")?.getAttribute("d")).toContain(`L${middle.toFixed(2)},`);
+  });
+
+  it("shows matching pillar line controls and contextual event keys", async () => {
+    const doc = await render({ history: buildHistory(), events: [ev("a", "2026-04-03")], showPillars: true });
+    expect(doc.querySelectorAll("button[data-toggle-pillar][aria-pressed=true]").length).toBe(4);
+    expect(doc.querySelector(".event-key")?.textContent).toMatch(/Fiscal/);
+    expect(doc.querySelector(".event-key")?.textContent).toMatch(/does not establish cause/);
+    expect(doc.querySelector(".tooltip-score")?.textContent).toMatch(/51.0/);
+  });
+
+  it("identifies tracker corrections as methodology, with a dashed marker and correction source", async () => {
+    const doc = await render({ history: buildHistory(), events: [ev("correction", "2026-04-03", {
+      category: "methodology", title: "Baseline calculation corrected", sourceLabel: "Tracker corrections", sourceUrl: "https://tightropetracker.uk/corrections",
+    })] });
+    expect(doc.querySelector(".marker-dot")?.getAttribute("stroke-dasharray")).toBe("2 2");
+    expect(doc.querySelector(".tooltip-cat")?.textContent).toBe("Methodology");
+    expect(doc.querySelector(".event-key")?.textContent).toContain("Methodology");
+    expect(doc.querySelector(".tooltip-source a")?.getAttribute("href")).toBe("https://tightropetracker.uk/corrections");
+  });
+
   it("renders y-axis labels at the canonical band boundaries", async () => {
     const doc = await render({ history: buildHistory(), events: [] });
     // Six labels: 0, 20, 40, 60, 80, 100 — pulled from BANDS.

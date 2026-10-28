@@ -43,7 +43,10 @@ const MANIFEST: FixtureSpec[] = [
   { file: "housebuilders.json", maxAgeDays: 14 },
   { file: "housing-history.json", maxAgeDays: Infinity, skipReason: "historical backfill dataset with no single observed_at" },
   { file: "housing.json", maxAgeDays: 180 },
-  { file: "obr-efo.json", maxAgeDays: 210 },
+  // The March 2026 EFO is the latest until the announced 28 October 2026
+  // forecast. 255 days from 3 March ends on 13 November, giving 16 days
+  // after that release for the editorial fixture to be refreshed.
+  { file: "obr-efo.json", maxAgeDays: 255 },
   { file: "ons-rti.json", maxAgeDays: 60 },
   { file: "rics-price-balance-history.json", maxAgeDays: Infinity, skipReason: HIST_SKIP },
   { file: "services-pmi-history.json", maxAgeDays: Infinity, skipReason: HIST_SKIP },

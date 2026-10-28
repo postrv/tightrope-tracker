@@ -73,9 +73,9 @@ indicators are missing and why.
 
 ```bash
 # Manually trigger an ingest + recompute. Substitute the correct source.
-curl -H "x-admin-token: $ADMIN_TOKEN" \
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" \
   "https://ingest.tightropetracker.uk/admin/run?source=market"
-curl -H "x-admin-token: $ADMIN_TOKEN" \
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" \
   "https://ingest.tightropetracker.uk/admin/run?source=recompute"
 ```
 
@@ -147,7 +147,7 @@ Then force a recompute so KV is primed from fresh data rather than the
 seed's placeholder scores:
 
 ```bash
-curl -H "x-admin-token: $ADMIN_TOKEN" \
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" \
   "https://ingest.tightropetracker.uk/admin/run?source=recompute"
 ```
 
@@ -172,7 +172,7 @@ wrangler d1 execute tightrope_db --remote \
 **Replay a failed ingest manually**
 
 ```bash
-curl -H "x-admin-token: $ADMIN_TOKEN" \
+curl -X POST -H "x-admin-token: $ADMIN_TOKEN" \
   "https://ingest.tightropetracker.uk/admin/run?source=<source>"
 ```
 
@@ -206,12 +206,12 @@ old value was ever written to a shared channel.
 
 The non-API sources (OBR EFO PDF, MHCLG live tables, PMI / consumer-confidence
 / RICS press releases, ONS DD failure rate, delivery milestones, timeline
-events) used to be hand-refreshed JSON fixtures. **`apps/curator` now owns
-their freshness**: a daily poll hashes each source, extracts on change,
-verifies against deterministic gates, and either auto-publishes (numeric
-series, once signed off) or queues the candidate for human review. The
-fixtures still exist, but their role has shifted — they are the **dev/seed
-fallback tier**, not the live freshness path (see §7.6).
+events) used to be hand-refreshed JSON fixtures. `apps/curator` polls sources,
+extracts on change, and checks candidates against deterministic gates. It can
+auto-publish a numeric series once that source has been signed off and the
+curator is in live mode; otherwise it records shadow candidates for review.
+The fixtures remain the adapter fallback and, for shadow-only sources, supply
+the live reading until publication is enabled (see §7.5).
 
 Everything below assumes the curator is deployed and `ADMIN_TOKEN` (curator's,
 distinct from ingest's) and `CURATOR_PUBLIC_URL` are set. Until a source is
@@ -338,31 +338,40 @@ trail; that is the one thing the whole pipeline exists to prevent.
 ### 7.5 When hand-editing a fixture is still correct
 
 The fixture files (`packages/data-sources/src/fixtures/*.json`) remain the
-seed/fallback tier. Hand-edit one when:
+adapter fallback tier. Hand-edit one when:
 
-- **Seed parity.** After the curator auto-publishes or you approve a
-  milestone/housing capture, the live D1 value is fresh but the fixture (which
-  seeds a *fresh* deployment) is stale. The Tue/Wed digest reminds you which
-  approved values to fold back. This is at-leisure housekeeping — publishing
-  never depends on it — but a fresh preview/prod rebuild seeds wrong until you
-  do. Follow the refresh procedure below.
+- **Fallback parity.** After the curator auto-publishes or you approve a
+  milestone/housing capture, the live D1 value may be fresh while the adapter
+  fixture is stale. The Tue/Wed digest reminds you which approved values to
+  fold back. Follow the refresh procedure below.
 - **Curator outage / a source not yet on the curator.** If the curator is down
   or a source has not been onboarded, refresh its fixture by hand exactly as
   before so the fallback path stays fresh.
 
-**Refresh procedure** (unchanged from the pre-curator playbook):
+**Refresh procedure:**
 
 1. Edit the fixture JSON in place. Keep the `_comment` field honest about which
-   vintage is shipping.
+   vintage is shipping, and update the matching `*-history.json` file if the
+   release belongs in the historical series.
 2. Run the affected adapter tests: `pnpm --filter @tightrope/data-sources test <adapter-name>`.
-3. Regenerate the seed: `pnpm tsx db/seed/generate.ts > db/seed/seed.sql`.
-4. Re-run the seed-artifact guards: `pnpm --filter @tightrope/shared test seedArtifact`.
-   Run `pnpm --filter @tightrope/shared test seedArtifact` after any
-   seed-adjacent change.
-5. Commit naming the upstream release, e.g. "Refresh OBR EFO fixture for
+3. Commit naming the upstream release, e.g. "Refresh OBR EFO fixture for
    2026-03-26 Spring Statement (headroom 23.6bn)".
-6. After deploy, trigger a recompute so KV picks up the new values:
-   `curl -H "x-admin-token: $ADMIN_TOKEN" https://ingest.tightropetracker.uk/admin/run?source=recompute`.
+4. After deploy, run the affected live pipeline. For a historical fixture,
+   dry-run `backfill-observations` for the exact release window, inspect its
+   dates and values, then write with `overwrite=false` unless a correction is
+   documented. Recompute current scores and refresh affected cached views.
+
+`db/seed/generate.ts` uses the fixed values in
+`packages/shared/src/seedValues.ts`; editing a fixture does not change
+`db/seed/seed.sql`. Regenerate the seed and run its guards only when deliberately
+changing those first-boot values.
+
+Do not routinely run `backfill-scores` after an observation backfill. It adds
+23:59 UTC synthetic score rows alongside live snapshots, and its historical
+indicator set differs from live scoring. Check publication dates and compare
+the existing score history before deciding that historical score rows need
+repair. Daily Brent coverage is maintained by the 02:00 UTC EIA catch-up,
+which runs after the BoE FX relay and preserves existing price dates.
 
 **Detecting silent staleness.** Fixtures still carry a `published` date;
 `assertFixtureFresh` throws `AdapterError` with `ingestion_audit.status =
@@ -642,3 +651,56 @@ After the burst subsides:
 
 See also: [DEPLOYMENT.md](./DEPLOYMENT.md) for one-time provisioning steps
 and the CI pipeline overview.
+
+## Budget readiness audit — 28 October 2026
+
+The baseline-sampling correction is disclosed in the public corrections log
+and as a distinct methodology annotation. A same-input replay after the FTSE
+catch-up changed 38.3 to 42.8 (Market/Fiscal/Labour/Delivery:
+34.0/50.9/58.2/34.6). The earlier published headline was 38.2. This change is
+a computation correction, not a Budget reaction. Weights and score schema v2
+are unchanged; previously published score snapshots remain as published.
+
+`selectBaselineObservations` now retains genuine earlier live publications,
+excludes superseded wrong future dates, and takes one sample per indicator
+reference day. The same helper feeds ingest and web/API baseline summaries.
+The cache generation is `methodology:baselines:reference-days-v2`; manual
+purges clear both that key and the legacy key. Recompute caches include the
+scores persisted during that invocation, so the chart and headline agree
+without waiting for another cron.
+
+Completed source repairs used the existing audited historical pipeline:
+
+- FTSE: 22 September–26 October, `overwrite=false`; 17 timestamped rows
+  inserted, including the three missing trading dates (22 September,
+  23 and 26 October). Reference-day deduplication prevents legacy close-time
+  variants from counting twice in the baseline.
+- OBR: 26 November 2025 only, `overwrite=true`; the historical headroom
+  precision is £21.7bn, matching EFO Table A.9, instead of rounded £22.0bn.
+  Current ranks are unchanged. The March 2026 vintage remains £23.6bn.
+- DMO: 22 October long-stock share recovered as a historical row from
+  deterministic quarantine capture 2297, value 30.673965664751584. Its
+  original SHA256 matches the accepted same-date `ilg_share` sibling. The
+  dry run rejected nothing; `overwrite=false` inserted one row. The capture
+  was marked reviewed/approved with the historical observation key. An old
+  quarantine must use this historical path: publishing it as a new live row
+  would incorrectly make it the latest-ingested live snapshot.
+
+The forced curator verification completed with all nine sources successful
+or unchanged. MHCLG prompt v3 cleared the duplicate-component extraction
+failure and produced the existing Q2 figures (47.73/60) in shadow mode.
+Publication gates remain active: the second-extraction check was unavailable,
+and the quarter was already published. No AI capture was promoted to live.
+
+At 13:20–13:21 UTC the official OBR still listed March as its latest EFO,
+EIA still ended on 20 October, and no official Budget speech had been found.
+Keep the Budget annotation explicitly scheduled until a primary publication
+supports updating it. Use the quote-anchored artefact relay for the new EFO;
+do not infer forecast headroom from a speech. After 16:35 London, refresh
+equity fixtures only from completed closes. The housebuilder adapter now
+requires a common completed session across its constituent quorum.
+
+Validation: the workspace tests and typechecks passed, followed by targeted
+SQLite cache-consistency and UI transparency regressions, a production web
+build, desktop/mobile interaction checks, and public API verification.
+CI uses Node 22 because the SQLite integration tests require Node 22.13+.

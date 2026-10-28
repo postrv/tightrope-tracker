@@ -7,6 +7,7 @@ import { handleDeliveryCommitmentPatch } from "./deliveryCommitment.js";
 import { handleRelay } from "./relay.js";
 import { handleAdminHealth } from "./health.js";
 import { ingestDelivery } from "./pipelines/delivery.js";
+import { backfillRecentBrent } from "./pipelines/brentCatchup.js";
 import { ingestFiscal } from "./pipelines/fiscal.js";
 import { ingestLabour } from "./pipelines/labour.js";
 import { ingestMarket } from "./pipelines/market.js";
@@ -110,7 +111,7 @@ async function recordDlqAudit(env: Env, messageId: string, body: DlqPayload): Pr
  */
 export const CRON_BRANCHES = {
   "*/5 * * * *": "market+recompute+today",
-  "0 2 * * *": "fiscal+recompute",
+  "0 2 * * *": "fiscal+brent-history+recompute",
   "15 2 * * *": "labour+recompute",
   "30 2 * * *": "delivery+recompute",
 } as const;
@@ -135,6 +136,7 @@ export async function dispatchCron(cron: string, env: Env, ctx?: ExecutionContex
     }
     case "0 2 * * *":
       await runStage("ingestFiscal", () => ingestFiscal(env));
+      await runStage("backfillRecentBrent", () => backfillRecentBrent(env));
       await runRecompute(env, ctx);
       return;
     case "15 2 * * *":

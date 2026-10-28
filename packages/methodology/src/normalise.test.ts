@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { selectBaselineObservations } from "@tightrope/shared";
 import {
   clamp,
   ecdf,
@@ -76,6 +77,25 @@ describe("ecdf", () => {
 });
 
 describe("normalisedScore", () => {
+  it("ranks against retained publication history with one sample per reference day", () => {
+    const row = (day: string, value: number, ingested: string) => ({
+      indicator_id: "ilg_share", source_id: "dmo", observed_at: day,
+      value, ingested_at: ingested, payload_hash: "live-dmo",
+    });
+    const rows = [
+      row("2026-10-20T00:00:00Z", 24, "2026-10-21T02:00:00Z"),
+      row("2026-10-21T00:00:00Z", 25, "2026-10-22T02:00:00Z"),
+      row("2026-10-22T00:00:00Z", 26, "2026-10-23T02:00:00Z"),
+      row("2026-10-22T16:00:00Z", 26, "2026-10-23T02:00:00Z"),
+    ];
+    const baseline = selectBaselineObservations(rows).map(r => r.value);
+    expect(normalisedScore(26, baseline, true)).toBeCloseTo(100 / 6);
+    // Keeping just the newest live reading incorrectly makes an extreme
+    // observation neutral; counting duplicate closes biases its rank too.
+    expect(normalisedScore(26, [26], true)).toBe(50);
+    expect(normalisedScore(26, rows.map(r => r.value), true)).toBe(25);
+  });
+
   it("rising-is-bad maps a tail observation low", () => {
     const baseline = Array.from({ length: 100 }, (_, i) => i + 1);
     const score = normalisedScore(98, baseline, true);

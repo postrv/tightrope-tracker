@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import ftseFixture from "../fixtures/ftse-250.json" with { type: "json" };
 import { lseFtse250Adapter } from "./lseFtse250.js";
 import type { AdapterContext } from "../types.js";
 
@@ -24,7 +25,7 @@ describe("lseFtse250Adapter — live path", () => {
     const obs = result.observations[0]!;
     expect(obs.indicatorId).toBe("ftse_250");
     expect(obs.value).toBe(23371.4);
-    expect(obs.observedAt).toBe("2026-07-10T16:30:00Z");
+    expect(obs.observedAt).toBe("2026-07-10T15:30:00Z");
   });
 
   it("falls back to Yahoo ^FTMC when EODHD returns 402", async () => {
@@ -52,15 +53,14 @@ describe("lseFtse250Adapter — live path", () => {
     const obs = result.observations[0]!;
     expect(obs.indicatorId).toBe("ftse_250");
     expect(obs.value).toBe(24718.8);
-    expect(obs.observedAt).toBe("2026-08-21T16:30:00Z");
+    expect(obs.observedAt).toBe("2026-08-21T15:30:00Z");
   });
 
   it("falls back to the fixture on HTTP 402 (plan gating) without throwing", async () => {
     const fetchImpl = (async () => new Response("Payment Required", { status: 402 })) as typeof globalThis.fetch;
     const result = await lseFtse250Adapter.fetch(fetchImpl, LIVE_CTX);
     expect(result.observations[0]!.indicatorId).toBe("ftse_250");
-    expect(result.sourceUrl).not.toContain("eodhd.com"); // fixture attribution, not the failed live URL
-    expect(result.sourceUrl).not.toContain("finance.yahoo.com");
+    expect(result.sourceUrl).toContain("query1.finance.yahoo.com/v8/finance/chart/%5EFTMC");
   });
 
   it("skips an in-session EODHD bar and uses the previous completed close", async () => {
@@ -83,7 +83,7 @@ describe("lseFtse250Adapter — live path", () => {
     const result = await lseFtse250Adapter.fetch(fetchImpl, LIVE_CTX);
     const obs = result.observations[0]!;
     expect(obs.value).toBe(24938.8);
-    expect(obs.observedAt).toBe("2026-08-28T16:30:00Z");
+    expect(obs.observedAt).toBe("2026-08-28T15:30:00Z");
     expect(result.sourceUrl).toContain("eodhd.com");
   });
 
@@ -107,7 +107,7 @@ describe("lseFtse250Adapter — live path", () => {
     const result = await lseFtse250Adapter.fetch(fetchImpl, LIVE_CTX);
     const obs = result.observations[0]!;
     expect(obs.value).toBe(24477.7);
-    expect(obs.observedAt).toBe("2026-09-01T16:30:00Z");
+    expect(obs.observedAt).toBe("2026-09-01T15:30:00Z");
   });
 
   it("skips an in-session Yahoo bar and uses the previous completed close", async () => {
@@ -136,7 +136,7 @@ describe("lseFtse250Adapter — live path", () => {
     const obs = result.observations[0]!;
     expect(result.sourceUrl).toContain("query1.finance.yahoo.com");
     expect(obs.value).toBe(24938.8);
-    expect(obs.observedAt).toBe("2026-08-28T16:30:00Z");
+    expect(obs.observedAt).toBe("2026-08-28T15:30:00Z");
   });
 });
 
@@ -157,5 +157,17 @@ describe("lseFtse250Adapter", () => {
 
   it("has a recent observed_at on the shipped fixture (freshness guard can't throw on current build)", async () => {
     await expect(lseFtse250Adapter.fetch(globalThis.fetch)).resolves.toBeDefined();
+  });
+
+  it("serves the 27 October London close from the fallback fixture", async () => {
+    const fx = ftseFixture as { observed_at: string; ftse_250: { value: number } };
+    const result = await lseFtse250Adapter.fetch(globalThis.fetch);
+    expect(fx.observed_at).toBe("2026-10-27T16:30:00Z");
+    expect(fx.ftse_250.value).toBe(24716.4);
+    expect(result.observations[0]).toMatchObject({
+      indicatorId: "ftse_250",
+      observedAt: "2026-10-27T16:30:00Z",
+      value: 24716.4,
+    });
   });
 });

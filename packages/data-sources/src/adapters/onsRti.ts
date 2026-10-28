@@ -35,10 +35,16 @@ import { buildHistoricalResult, rangeUtcBounds } from "../lib/historical.js";
 
 const SOURCE_ID = "ons_rti";
 
+/** ONS fixture release dates are bare UTC calendar dates. */
+function publishedToIso(published: string): string {
+  return published.includes("T") ? published : `${published}T00:00:00Z`;
+}
+
 const PAYROLL = { cdid: "K54L", dataset: "EMP" } as const; // PAYE payroll, MoM %
 
 interface RtiFixture {
   observed_at: string;
+  published?: string;
   dd_failure_rate: { value: number };
   source_url: string;
 }
@@ -46,6 +52,7 @@ interface RtiFixture {
 interface DdHistoryPoint {
   observed_at: string;
   value: number;
+  published?: string;
 }
 
 interface DdHistoryFixture {
@@ -81,6 +88,7 @@ export const onsRtiAdapter: DataSourceAdapter = {
         observedAt: fx.observed_at,
         sourceId: SOURCE_ID,
         payloadHash: fHash,
+        ...(fx.published ? { releasedAt: publishedToIso(fx.published) } : {}),
       });
     }
 
@@ -127,6 +135,7 @@ export const onsRtiAdapter: DataSourceAdapter = {
         observedAt: point.observed_at,
         sourceId: SOURCE_ID,
         payloadHash: await historicalPayloadHash("dd_failure_rate", point.observed_at, point.value),
+        ...(point.published ? { releasedAt: publishedToIso(point.published) } : {}),
       });
     }
 

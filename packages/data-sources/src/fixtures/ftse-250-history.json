@@ -4,7 +4,7 @@
     "primary_source": "https://query1.finance.yahoo.com/v8/finance/chart/%5EFTMC?interval=1d",
     "indicator": "FTSE 250 (^FTMC) \u2014 daily close as reported by Yahoo Finance",
     "release_cadence": "daily (LSE trading days, Mon-Fri excluding UK bank holidays)",
-    "extraction_notes": "Pulled v8 chart JSON for ^FTMC at daily granularity covering 2024-07-04 to 2026-04-24. Yahoo's response excludes weekends and LSE holidays. Closes rounded to nearest integer to match the live fixture style. Each timestamp is the 16:30 Europe/London close (15:30 UTC during BST, 16:30 UTC in winter), the same instant the live adapter stamps with londonCloseIso, so a same-session backfill ties the live row instead of sorting after it. KNOWN ANCHOR DRIFT: Yahoo's 2026-04-23 close is 22765, while the live fixture (sourced from the LSEG closing-level page) records 22984 \u2014 a ~0.96% gap that recurs across the most recent weeks (Yahoo runs ~150-220 points light vs LSEG end-of-auction prints in late April 2026). For trend / percentile work this is immaterial; for absolute headline comparison the live LSEG fixture remains authoritative for the latest single value. 2026-08-23 refresh: extended the daily series through 2026-08-21 (Yahoo ^FTMC v8 chart) so the Jul\u2013Aug gap left by the EODHD 402 outage can be backfilled. 2026-09-01 refresh: extended through 2026-08-28 (last completed session; 31 Aug was the Summer bank holiday). 2026-10-13 refresh: extended through 2026-10-13 (Yahoo ^FTMC v8 chart daily close). Values still rounded to nearest integer. The live ftse-250.json head keeps its own one-decimal print and was not replaced with the rounded Yahoo close."
+    "extraction_notes": "Pulled v8 chart JSON for ^FTMC at daily granularity covering 2024-07-04 to 2026-04-24. Yahoo's response excludes weekends and LSE holidays. Closes rounded to nearest integer to match the live fixture style. Each timestamp is the 16:30 Europe/London close (15:30 UTC during BST, 16:30 UTC in winter), the same instant the live adapter stamps with londonCloseIso, so a same-session backfill ties the live row instead of sorting after it. KNOWN ANCHOR DRIFT: Yahoo's 2026-04-23 close is 22765, while the live fixture (sourced from the LSEG closing-level page) records 22984 \u2014 a ~0.96% gap that recurs across the most recent weeks (Yahoo runs ~150-220 points light vs LSEG end-of-auction prints in late April 2026). For trend / percentile work this is immaterial; for absolute headline comparison the live LSEG fixture remains authoritative for the latest single value. 2026-08-23 refresh: extended the daily series through 2026-08-21 (Yahoo ^FTMC v8 chart) so the Jul\u2013Aug gap left by the EODHD 402 outage can be backfilled. 2026-09-01 refresh: extended through 2026-08-28 (last completed session; 31 Aug was the Summer bank holiday). 2026-10-13 refresh: extended through 2026-10-13 (Yahoo ^FTMC v8 chart daily close). Values still rounded to nearest integer. The live ftse-250.json head keeps its own one-decimal print and was not replaced with the rounded Yahoo close. 2026-10-28 refresh: appended 14-27 October completed sessions (Yahoo ^FTMC v8 chart). The 28 October bar was still in progress and was not appended. Timestamps follow londonCloseIso: 15:30 UTC through 23 October (BST), 16:30 UTC from 26 October (GMT)."
   },
   "points": [
     {
@@ -2890,6 +2890,56 @@
     {
       "observed_at": "2026-10-13T15:30:00Z",
       "value": 24339,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-10-14T15:30:00Z",
+      "value": 24361,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-10-15T15:30:00Z",
+      "value": 24425,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-10-16T15:30:00Z",
+      "value": 24534,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-10-19T15:30:00Z",
+      "value": 24379,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-10-20T15:30:00Z",
+      "value": 24365,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-10-21T15:30:00Z",
+      "value": 24440,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-10-22T15:30:00Z",
+      "value": 24212,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-10-23T15:30:00Z",
+      "value": 24237,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-10-26T16:30:00Z",
+      "value": 24501,
+      "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
+    },
+    {
+      "observed_at": "2026-10-27T16:30:00Z",
+      "value": 24716,
       "url": "https://finance.yahoo.com/quote/%5EFTMC/history"
     }
   ]

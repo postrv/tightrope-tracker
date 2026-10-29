@@ -73,7 +73,7 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
     <BudgetWatch />
     <HeadlineChartSection history={history} events={timeline} />
     <PillarStrip pillars={snapshot.pillars} />
-    <TodayStrip movements={movements} />
+    <TodayStrip movements={movements} contributions={snapshot.pillars.market.contributions} />
     <MarketSection pillar={snapshot.pillars.market} movements={movements} history={history} />
     <FiscalSection pillar={snapshot.pillars.fiscal} headroomVintages={headroomVintages} />
     <LabourSection pillar={snapshot.pillars.labour} />

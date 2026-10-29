@@ -9,6 +9,7 @@ import type {
 } from "@tightrope/shared";
 import {
   PILLAR_ORDER,
+  INDICATORS,
   SCORE_HISTORY_SCHEMA_VERSION,
   SCORE_SCHEMA_VERSION,
   selectBaselineObservations,
@@ -73,7 +74,7 @@ function hasContributions(snapshot: ScoreSnapshot): boolean {
 
 
 /**
- * Today-movement rows feeding both the intraday strip and the per-pillar
+ * Latest published changes feeding both the change strip and the per-pillar
  * "live readings" tiles on the homepage. The strip caller slices to the
  * top 8 movers itself; we deliberately do not LIMIT here so per-pillar
  * components (MarketSection, etc.) can look up specific indicator IDs
@@ -81,13 +82,18 @@ function hasContributions(snapshot: ScoreSnapshot): boolean {
  * or ftse_250 would render as "—" on a quiet day.
  */
 export async function getTodayMovements(env: Env): Promise<TodayMovement[]> {
+  // Persisted rows can outlive a retired indicator. Keep those archive rows,
+  // but exclude them before ranking so they cannot displace current cards.
+  const marketIds = Object.values(INDICATORS).filter(i => i.pillar === "market").map(i => i.id);
   const res = await env.DB
     .prepare(
       `SELECT indicator_id, label, latest_value, display_value, change, change_pct,
               change_display, direction, worsening, sparkline, gloss, observed_at
        FROM today_movements
+       WHERE indicator_id IN (${marketIds.map(() => "?").join(", ")})
        ORDER BY worsening DESC, ABS(change_pct) DESC`,
     )
+    .bind(...marketIds)
     .all<{
       indicator_id: string; label: string; latest_value: number; display_value: string;
       change: number; change_pct: number | null; change_display: string;
@@ -104,7 +110,7 @@ export async function getTodayMovements(env: Env): Promise<TodayMovement[]> {
   return (res.results as TodayRow[]).map((r: TodayRow) => ({
     indicatorId: r.indicator_id,
     label: r.label,
-    unit: "",
+    unit: INDICATORS[r.indicator_id]!.unit,
     latestValue: r.latest_value,
     displayValue: r.display_value,
     change: r.change,
@@ -114,7 +120,7 @@ export async function getTodayMovements(env: Env): Promise<TodayMovement[]> {
     worsening: r.worsening === 1,
     sparkline: parseSparklineSafe(r.sparkline, r.indicator_id),
     gloss: r.gloss,
-    sourceId: "",
+    sourceId: INDICATORS[r.indicator_id]!.sourceId,
     observedAt: r.observed_at as Iso8601,
   }));
 }

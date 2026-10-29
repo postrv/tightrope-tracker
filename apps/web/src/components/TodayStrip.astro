@@ -1,5 +1,6 @@
 ---
-import type { TodayMovement } from "@tightrope/shared";
+import type { IndicatorContribution, TodayMovement } from "@tightrope/shared";
+import { INDICATORS, SOURCES } from "@tightrope/shared";
 import Sparkline from "./charts/Sparkline.astro";
 import ProvenanceBadge from "./ProvenanceBadge.astro";
 import { shortDate } from "~/lib/format.js";
@@ -7,32 +8,45 @@ import { ageBand, ageShort } from "~/lib/freshness.js";
 
 interface Props {
   movements: TodayMovement[];
+  /** Existing snapshot metadata; only exact matching readings supply release dates. */
+  contributions?: readonly IndicatorContribution[];
 }
 
-const { movements } = Astro.props;
+const { movements, contributions = [] } = Astro.props;
 const now = Date.now();
 ---
 <section class="today" id="today" aria-labelledby="today-title">
   <div class="container">
-    <h2 class="sec-title" id="today-title">What moved today</h2>
-    <p class="today-sub">Updated every five minutes during UK market hours. Hover any tile for the full source and timestamp.</p>
+    <h2 class="sec-title" id="today-title">Latest published changes</h2>
+    <p class="today-sub">Changes versus the previous stored reading, which may be a prior market session or monthly release. Each card shows its source date.</p>
 
     {movements.length === 0 ? (
-      <p class="today-empty">Intraday feed quiet. The next refresh runs at the top of the hour.</p>
+      <p class="today-empty">No published changes are available yet. Sources update on their own release schedules.</p>
     ) : (
       <div class="today-scroll">
         {movements.slice(0, 8).map((m) => {
           const colour = m.worsening ? "var(--band-acute)" : "var(--band-slack)";
-          const band = ageBand(m.observedAt, m.indicatorId, now);
-          const ageLabel = ageShort(m.observedAt, now);
+          const def = INDICATORS[m.indicatorId];
+          const isMonthly = SOURCES[def?.sourceId ?? ""]?.expectedCadence === "monthly";
+          const contribution = contributions.find(c => c.indicatorId === m.indicatorId
+            && c.rawValue === m.latestValue && Date.parse(c.observedAt) === Date.parse(m.observedAt));
+          const releasedAt = contribution?.releasedAt && Number.isFinite(Date.parse(contribution.releasedAt))
+            ? contribution.releasedAt : undefined;
+          const band = ageBand(m.observedAt, m.indicatorId, now, releasedAt);
+          const ageLabel = ageShort(releasedAt ?? m.observedAt, now);
+          const referenceDate = Number.isFinite(Date.parse(m.observedAt))
+            ? new Date(m.observedAt).toLocaleDateString("en-GB", { month: "short", year: "numeric", timeZone: "UTC" })
+            : "Unavailable";
+          const dateLabel = isMonthly ? `Reference period · ${referenceDate}` : `Observed · ${shortDate(m.observedAt)}`;
+          const dateDetail = `${dateLabel}${releasedAt ? `. Released ${shortDate(releasedAt)}` : ""}. Freshness: ${band}.`;
           return (
-            <div class="today-card" data-tip={`Observed ${m.observedAt}`}>
+            <div class="today-card" data-indicator={m.indicatorId} data-tip={dateDetail}>
               <div class="label-row">
                 <span class="label">{m.label}</span>
                 <ProvenanceBadge indicatorId={m.indicatorId} compact />
               </div>
               <span class="val">{m.displayValue}</span>
-              <span class={`chg ${m.worsening ? "up" : "dn"}`}>{m.changeDisplay}</span>
+              <span class={`chg ${m.worsening ? "up" : "dn"}`}>{m.changeDisplay} <span class="comparison-label">vs previous reading</span></span>
               <Sparkline
                 series={m.sparkline && m.sparkline.length ? m.sparkline : [0, 0]}
                 stroke={colour}
@@ -43,13 +57,14 @@ const now = Date.now();
               <span class="gloss">{m.gloss}</span>
               <span
                 class={`age-stamp age-${band}`}
-                title={`Indicator observation: ${m.observedAt}. Cadence band: ${band}.`}
-                aria-label={`Observed on ${shortDate(m.observedAt)}, ${band}`}
+                title={dateDetail}
+                aria-label={dateDetail}
               >
                 <span class="age-dot" aria-hidden="true"></span>
-                <span class="age-date">{shortDate(m.observedAt)}</span>
+                <span class="age-date">{dateLabel}</span>
                 {band === "stale" || band === "ageing" ? <span class="age-rel">· {ageLabel} ago</span> : null}
               </span>
+              {releasedAt ? <span class="release-date">Released · <time datetime={releasedAt}>{shortDate(releasedAt)}</time></span> : null}
             </div>
           );
         })}
@@ -97,6 +112,7 @@ const now = Date.now();
 .today-card .chg { font-family: var(--font-mono); font-size: 11.5px; }
 .today-card .chg.up { color: var(--band-acute); }
 .today-card .chg.dn { color: var(--band-slack); }
+.comparison-label { display: block; margin-top: 3px; color: var(--ink-2); font-size: 10px; }
 .today-card .gloss { font-size: 11px; color: var(--ink-1); line-height: 1.4; margin-top: auto; }
 
 /* Age stamp: visible date + colour-coded dot. The date is read at a glance;
@@ -105,7 +121,7 @@ const now = Date.now();
    thresholds come from INDICATORS[id].maxStaleMs — fresh on a monthly fixture
    means something different to fresh on a daily yield. */
 .age-stamp {
-  display: inline-flex; align-items: center; gap: 6px;
+  display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px;
   font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em;
   color: var(--ink-2);
   padding-top: 4px;
@@ -123,6 +139,7 @@ const now = Date.now();
 .age-stamp.age-stale { color: var(--band-acute); }
 .age-stamp.age-unknown .age-dot { background: var(--ink-3); }
 .age-rel { color: inherit; opacity: 0.85; }
+.release-date { color: var(--ink-2); font-family: var(--font-mono); font-size: 10px; line-height: 1.4; }
 
 @media (max-width: 920px) {
   .today-scroll { grid-template-columns: repeat(2, 1fr); }

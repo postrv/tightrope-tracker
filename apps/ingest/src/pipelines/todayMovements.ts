@@ -113,12 +113,12 @@ async function persistMovements(env: Env, movements: readonly TodayMovement[]): 
 
 function glossFor(indicatorId: string, change: number): string {
   const def = INDICATORS[indicatorId]!;
-  if (change === 0) return `${def.label}: unchanged on the session.`;
+  if (change === 0) return `${def.label}: unchanged since previous reading.`;
   const dir = change > 0 ? "up" : "down";
   const mag = def.unit === "%"
     ? `${Math.round(Math.abs(change) * 100)}bp`
     : Math.abs(change).toFixed(2);
-  return `${def.label}: ${dir} ${mag} on the session.`;
+  return `${def.label}: ${dir} ${mag} since previous reading.`;
 }
 
 function formatChangeDisplay(indicatorId: string, change: number): string {

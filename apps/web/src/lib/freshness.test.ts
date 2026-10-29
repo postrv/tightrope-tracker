@@ -167,4 +167,19 @@ describe("summariseFreshness", () => {
     expect(result.ageingIndicators.map((r) => r.indicatorId)).not.toContain("housing_trajectory");
     expect(result.ageingIndicators.map((r) => r.indicatorId)).not.toContain("planning_consents");
   });
+
+  it("uses release dates for freshness and does not advertise future reference periods as new data", () => {
+    const s = snap({
+      services_pmi: { observedAt: "2026-04-30T00:00:00Z", releasedAt: "2026-04-23T08:30:00Z" },
+      gilt_10y: "2026-04-26T16:00:00Z",
+      unemployment: "2026-05-31T00:00:00Z",
+    });
+    const result = summariseFreshness(s, [], NOW);
+    expect(result.freshestAt).toBe("2026-04-26T16:00:00.000Z");
+    expect(result.freshestAgeDays).toBeGreaterThan(0);
+    expect(result.staleIndicators).toEqual([]);
+    expect(summariseFreshness(snap({ services_pmi: {
+      observedAt: "2026-04-30T00:00:00Z", releasedAt: "2026-04-23T08:30:00Z",
+    } }), [], NOW).freshestAt).toBe("2026-04-23T08:30:00.000Z");
+  });
 });

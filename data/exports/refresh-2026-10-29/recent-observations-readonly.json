@@ -1,0 +1,4304 @@
+[
+  {
+    "indicator_id": "bics_rollout",
+    "observed_at": "2026-09-01T00:00:00Z",
+    "value": 81.4,
+    "source_id": "desnz",
+    "ingested_at": "2026-10-29T11:15:58.070Z",
+    "payload_hash": "ad654ea2046ac658b81fc304af6af2454f87192bc1102b68c07f2c711bc9e509",
+    "released_at": null
+  },
+  {
+    "indicator_id": "borrowing_outturn",
+    "observed_at": "2026-09-01T00:00:00Z",
+    "value": 24.52,
+    "source_id": "ons_psf",
+    "ingested_at": "2026-10-29T11:15:49.570Z",
+    "payload_hash": "7c67f94e7780369ed9dab6342d1b3370f86e5bd2eed8aa5d6f5e94e67067dd3b",
+    "released_at": "2026-10-20T23:00:00.000Z"
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-08-26T16:00:00Z",
+    "value": 3.4702,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:3e52b090b87c36752b6a0da689bf3d03aaecf00ac9690ea4d769d6ed430218a6",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-08-27T16:00:00Z",
+    "value": 3.5082,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:22ae46e269cce29bea655c66bf94c83f48a2e1cbb2c5efb9686cde1154bbabba",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-08-28T16:00:00Z",
+    "value": 3.5452,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:0d38c932df8b98870471029c656c78ef103bdc63eea29e5ef62d5f6dca5c18d6",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-01T16:00:00Z",
+    "value": 3.5955,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:007764b6b9cbe83d8fb5caada7f55d12654cc235b6585d74f858f7dd461dc0b0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-02T16:00:00Z",
+    "value": 3.642,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:011e3acbf4c29cd6782a75e1b9c428717afde6582c3baed47d7833db8d870c4c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-03T16:00:00Z",
+    "value": 3.6173,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:0e32c709c528c7a8cd2e39f3a7033787ed861415f450ae3004361d3edff94b29",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-04T16:00:00Z",
+    "value": 3.5936,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:9c9a35678388b69a2d9066011d3b81035a2b0708f39f20b0b1a5ded2d0a9f161",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-07T16:00:00Z",
+    "value": 3.6315,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:ca10623345215a286faea6e9ee7e3a1bb054de623f049874a3583ffe8aab1254",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-08T16:00:00Z",
+    "value": 3.6228,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:87b0dd6eb48daa5251c4732b51020efb69bf2d940230df84903eca3c3ec0b672",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-09T16:00:00Z",
+    "value": 3.655,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:c261c2f5efb02419c0eaa28d4dbd2181090a0f45999b02a6989c93b82fac3c75",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-10T16:00:00Z",
+    "value": 3.7155,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:1b3c1a6b79d7de18fdb4f521d795200c614cc903a7c588b5caa49d194580e0ef",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-11T16:00:00Z",
+    "value": 3.6911,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:96e0b7d642ebeda7b3fbeab0ce937b2f43473311cdd5bb5c68ba33bd8110dd63",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-14T16:00:00Z",
+    "value": 3.7266,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:2cafa9633618afc67b7a76403be4945701f1a606d684d2974e17b7bd78438798",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-15T16:00:00Z",
+    "value": 3.7044,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:b96a792ff623ec8a03c57106c401d3fec173e5950fc788bb94728f3c7fe626a8",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-16T16:00:00Z",
+    "value": 3.7102,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:9cea0d944f0d7212693d3942cecc0fd543edf2ebe5f3abff300adcf83036ea1a",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-17T16:00:00Z",
+    "value": 3.7051,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:bb354159c9998e1c69cfca07f3858e21e45d0b4661974929f7b8a92ae4ba1a31",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-18T16:00:00Z",
+    "value": 3.7596,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:c7567b4cabbc6b35f66d3791a289e972a5c13126d6260700e16931ac38c3b606",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-21T16:00:00Z",
+    "value": 3.6862,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:232221ea147b660f0cc627afc84f6e7e828e9398d9c808cb36667ba380347068",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-22T16:00:00Z",
+    "value": 3.6614,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:5d8a5bf589445fd4680b094b5334adc9124e2d114bf392ca2d504b1b34d1c0fb",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-23T16:00:00Z",
+    "value": 3.7079,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:30d8464af436e9ed9fa5fe9aa1e267b121ecac0640d34908562a817bdbbd7f3b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-24T16:00:00Z",
+    "value": 3.7768,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:d8986358e833904d0d369312821f5d44b94ecbfeb6d101728a9289fbf52e9f30",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-25T16:00:00Z",
+    "value": 3.7311,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:de0c781263b189bfba0d6e9208f1dc52df1a7982fd485ffe45c4070bf3bb7c1b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-28T16:00:00Z",
+    "value": 3.7527,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:425a1f773343dfd0afee3a8ab60d183346e2a7843d9087b34880b77c5bc97b8c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-29T16:00:00Z",
+    "value": 3.6773,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:120d4508c1b71342bbaea2a38b92657c18bde0bc89b81718689a491c6fed7ac0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-09-30T16:00:00Z",
+    "value": 3.7014,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:c67c06cb07b75e041e1811e27f6c5fc71564c3426e0b5e7d6a859545c6aaa15c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-01T16:00:00Z",
+    "value": 3.7163,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:397e3525cb327d38b9f34a9ab26793d77455f99188ff92868caf1df3cd538466",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-02T16:00:00Z",
+    "value": 3.6942,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:30e24b6579d625592be36e09ab66d047f737ecf0a779b6d0e018f21f42d1d3ed",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-05T16:00:00Z",
+    "value": 3.6722,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:94e4b31000ee114904f80b7736bd3792efbfbbdedc4f6f661e11822bad3f27c5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-06T16:00:00Z",
+    "value": 3.6439,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:0d7962ebdbc8aedbb9fe0e4bf78a19a00f960058d2f092d52469fc40240084b5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-07T16:00:00Z",
+    "value": 3.6727,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:254cbb74a80c3baa95a165499c48d374242d7acc133a085bbe0127381af43bb0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-08T16:00:00Z",
+    "value": 3.7162,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:bee5cd9db8c13d2df9cba822024b553f06ef0461037565fb8aa571093c36c70e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-09T16:00:00Z",
+    "value": 3.6986,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:8146d789fddbe194cde8bf78f3beafc488b654f29c79bfd5f34fbf7a29c4f1f4",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-12T16:00:00Z",
+    "value": 3.7039,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:1b7fb575a96f92d2520b88c1242eee232355e822d483fb1747491ce03c266f25",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-13T16:00:00Z",
+    "value": 3.697,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:743a0c6d2451228faaaf3a4c3cbf63e60409d95297426a5a3298c1fa431364bd",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-14T16:00:00Z",
+    "value": 3.6966,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:94998ec7925ebfa2c4600183928badecdc4f902e61de2a272bd4936fce4c0c12",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-15T16:00:00Z",
+    "value": 3.6807,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:3280cd320895f94edcf0db3eed1dc1f046ebe8ce0baba1565bc0918903b7e6c6",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-16T16:00:00Z",
+    "value": 3.6526,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:0e300313bccfc498434b91245da422cfa899b953e2946e0edbd33c1535e1697e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-19T16:00:00Z",
+    "value": 3.6464,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:10fa69346ec668e0bb45379e8ae4b9d3ca7796bb82756eebdecf8d4e284f6c15",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-20T16:00:00Z",
+    "value": 3.6292,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:3fb5861bf0c2440d4d3615caef21f6c3ef9c15b2dc33dbe61e2a076a1e72cf37",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-21T16:00:00Z",
+    "value": 3.6841,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:299f12c7be0924fdee72f8917832da420970d1e9089012794fb524298eb29f37",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-22T16:00:00Z",
+    "value": 3.6762,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:83d34310a806b82c17bdeb15f1ea75d10061a4c779243d12584de0c58ef084d8",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-23T16:00:00Z",
+    "value": 3.6843,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:34.568Z",
+    "payload_hash": "source-correction:88d08954ead8ea447ac3affd6580c06d39427dd11234bff5a9da9ee77a1a45ad",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-26T16:00:00Z",
+    "value": 3.6941,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T18:17:36.342Z",
+    "payload_hash": "183bfd76cbc5d2cd13a508a5600cdf2a7b0a94afa09e580d161c61cfd9207473",
+    "released_at": null
+  },
+  {
+    "indicator_id": "breakeven_5y",
+    "observed_at": "2026-10-27T16:00:00Z",
+    "value": 3.6633,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-29T09:33:36.682Z",
+    "payload_hash": "cdfbf3e3e6c807aee15201debffd65e3f802f5cd21ff0a190b9120ece3d7e467",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-08-26T00:00:00Z",
+    "value": 64.59,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:70163c6593c3fae402434b7bf7864713def83913540450beebc6399f82091825",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-08-27T00:00:00Z",
+    "value": 66.4,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:112bf4b8df95a1838d94e71f902b0c27acf37880daee9e6b7fd10af4b2537bc3",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-08-28T00:00:00Z",
+    "value": 66.13,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:ca38de7cebcb9ed990e374c79bba6f13eb81d8f75776e1a4609bc58d15b93962",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-01T00:00:00Z",
+    "value": 70.93,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:401fe87564e21b4f514ff07c4615af00fcf1f34a2487376e53cc6f422394fc97",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-02T00:00:00Z",
+    "value": 72.26,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:45a50993a921b8994aad1af856f3f34e82ad6be667567496c88df5e68266c25a",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-03T00:00:00Z",
+    "value": 74.36,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:ce403db2d523cd38e3fe63aa14fc52b4c3421baa979663abc02692387248fe44",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-04T00:00:00Z",
+    "value": 75.65,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:4bf8407283b189a0f92632e8ed8464550572e2ff6971084491e2bd7942e12b89",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-07T00:00:00Z",
+    "value": 77.13,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:69db0fda3a15b9a5ec3184164913c4f2ac00a92bb63af4094beb6d99f037f8c7",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-08T00:00:00Z",
+    "value": 78.3,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:1518d88f11c7ceb62b0f636a196c8d5c9918e8866e41d4d8bd00f143efbabe78",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-09T00:00:00Z",
+    "value": 80.74,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:8fb54326cce622e4f3d0bf93ff18bd68c2e86b7c799af8ac84da2ba394113c49",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-10T00:00:00Z",
+    "value": 89.41,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:4dc6c7cbd01e56671c85f300b28cbd9cea6dc7213c474ee0dd7bd74cf9cdcc01",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-11T00:00:00Z",
+    "value": 87.26,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:365f555759a7992558f8f1a42fe55da2c7a588b650f56512a09ddf2ad1aefd13",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-14T00:00:00Z",
+    "value": 89.97,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:ee7066b8f2efb76e82faf0aa400f486cd73e24179fcfd0a70db438a16dc423af",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-15T00:00:00Z",
+    "value": 96.98,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:df908762f5d9e4714e39bfdd2a62aeee1d3f8436445745eb03c5296644389a55",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-16T00:00:00Z",
+    "value": 95.02,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:8cb486283c6405050172a304c63ecb4574765ae7630c49f03d8fb96fe0894a80",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-17T00:00:00Z",
+    "value": 90.75,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:63bb9e6e885c28c34c52b8349342ac77f6dc2b414b4d2c024fa614a4c12678d4",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-18T00:00:00Z",
+    "value": 89.56,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:c567acab1bd599ba2bf991775c9c874bf9fbaa600618b6ab261dfd95f32167b6",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-21T00:00:00Z",
+    "value": 86.85,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:1f21696d924c8f5916df4f3d6bbd4defd6904e6f79222041ea141766c8c25c5e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-22T00:00:00Z",
+    "value": 86.07,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:b317e9cbe4cded83ba61116ad124446f050d265fbc0f09196dd0f983217dcbe4",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-23T00:00:00Z",
+    "value": 88.54,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:dabaeef47723e721184bccbb08ad2bcd29bdd51320f9ee0ede8f32b6a162103f",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-24T00:00:00Z",
+    "value": 91.47,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:a40de742f3abbf3231d5f730c5af5581ab263a6041d717e2d08166d9be9b7e58",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-25T00:00:00Z",
+    "value": 87.58,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:b7a3ea7f55a122457704c99772fc4716c21a523f4a6db884e55a4e9f94440ff7",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-28T00:00:00Z",
+    "value": 90.54,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:1a94449e12f3244f1babc84c0bd3710cb2d85e3977142f2e5e424cd51d09cc93",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-29T00:00:00Z",
+    "value": 86.24,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:adfdf49bf5e4a52bc361694f5ca48d8f5914b3120ae95064d418fb4ffa39a8c3",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-09-30T00:00:00Z",
+    "value": 87.25,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:ef5e96f9bd1853ad1fc7a8a067b4590e9cdc32bf681f8c9be4de658e78adebca",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-01T00:00:00Z",
+    "value": 86.91,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:5cfbec6173d3bb1efcc08c0a9468702926acea660d678c1887cae232e40fedf9",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-02T00:00:00Z",
+    "value": 102.28,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:96e524188d32dbc2d83002b4c828bec2b4a3385552e059f5a7b97e2015ae1bf0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-05T00:00:00Z",
+    "value": 94.93,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-13T16:08:05.194Z",
+    "payload_hash": "hist:623aa13825d09d9caea16ab2457023a7056db5c58c15c62b0da5a9b452d90566",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-06T00:00:00Z",
+    "value": 94.46,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-15T15:30:14.405Z",
+    "payload_hash": "a313cc98d96f0085e0b727456fe9b1abb8aa94f0deba392e462db869639e5df4",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-07T00:00:00Z",
+    "value": 95.31,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-16T02:00:24.605Z",
+    "payload_hash": "hist:f166c33df21323c06b9d055afced5ebd34f3dae36c7b8e3d86b2b54cf19486d5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-08T00:00:00Z",
+    "value": 98.43,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-16T02:00:24.605Z",
+    "payload_hash": "hist:ea2b726e4b3bac47646900625916ffc3fae6546ef7661f049e3941c9d04ce398",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-09T00:00:00Z",
+    "value": 98.32,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-16T02:00:24.605Z",
+    "payload_hash": "hist:b17ac5f4864dc9607b6d56612af21cbd8f7390f87319f262f8aafb7d10221e7d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-12T00:00:00Z",
+    "value": 98.3,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-16T02:00:24.605Z",
+    "payload_hash": "hist:f1466413511b97440d4d5bf8a9973bd4b34ea4c38f6285c2261110b7f4463e29",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-13T00:00:00Z",
+    "value": 94.94,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-16T02:00:24.605Z",
+    "payload_hash": "hist:6526e8886c8ac7eeaf67eb6d57a749abf3c4760336750c031e410d0073f12519",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-14T00:00:00Z",
+    "value": 96.16,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-21T15:30:27.435Z",
+    "payload_hash": "0b6dfaa0d9615f681e5af4e4b69e6bde433175f87d0986e6674af620480d8384",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-15T00:00:00Z",
+    "value": 95.34,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-22T02:00:48.261Z",
+    "payload_hash": "hist:b4d9a668093b06b33f4dafed96f1c9fc8db82403a82ee1c564f80d59f6caae3a",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-16T00:00:00Z",
+    "value": 89.37,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-22T02:00:48.261Z",
+    "payload_hash": "hist:23cb4d2b219abf37eb6b2761b79ef0916d5798fed21a7f222e4ef680503c16d5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-19T00:00:00Z",
+    "value": 89.22,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-22T02:00:48.261Z",
+    "payload_hash": "hist:f5cdc02b08b7cedd997b341206f9ad77ee9005134497fe7e1f84758e6af06784",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-20T00:00:00Z",
+    "value": 86.07,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-28T16:30:27.259Z",
+    "payload_hash": "b0ee738ce1f7051f0ac849f806be645802dff2f83adf1cd9ab1ecb647c1a27cd",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-21T00:00:00Z",
+    "value": 87.69,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-28T17:32:25.506Z",
+    "payload_hash": "hist:493898cc3ffa61c8b05ef2fdae0010bf0ff0a1326594ed09cac2614290248dea",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-22T00:00:00Z",
+    "value": 93.83,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-28T17:32:25.506Z",
+    "payload_hash": "hist:0d286b92ab2d9a6e32648e8cbc069f643f683f3eeac173e7177a3c576b02bede",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-23T00:00:00Z",
+    "value": 95.84,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-28T17:32:25.506Z",
+    "payload_hash": "hist:83b933897d075676d4e9d5d516c92d7bc8aa697903136b536300ac54ca25c193",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-26T00:00:00Z",
+    "value": 95.99,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-28T17:32:25.506Z",
+    "payload_hash": "hist:c08fb3ca897a4f5b6d55c6f2ec3b9b25dfb220ec60a74fca26cff967113e2ff5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "brent_gbp",
+    "observed_at": "2026-10-27T00:00:00Z",
+    "value": 92.47,
+    "source_id": "eia_brent",
+    "ingested_at": "2026-10-29T11:15:45.633Z",
+    "payload_hash": "7664af6045805af0d91208afea6abf77c460390763a3a1e583d9794750db6050",
+    "released_at": null
+  },
+  {
+    "indicator_id": "cb_headroom",
+    "observed_at": "2026-10-28T00:00:00Z",
+    "value": 14.5,
+    "source_id": "obr_efo",
+    "ingested_at": "2026-10-29T11:15:48.001Z",
+    "payload_hash": "accdce61c28badebace8214f328f61b793135890f7171947ae53a916a3acb575",
+    "released_at": "2026-10-28T13:29:19Z"
+  },
+  {
+    "indicator_id": "consumer_confidence",
+    "observed_at": "2026-08-31T00:00:00Z",
+    "value": -14,
+    "source_id": "gfk_confidence",
+    "ingested_at": "2026-10-13T16:04:50.348Z",
+    "payload_hash": "hist:496b566ca27b76f47a03aaadb33951fce433a5ae2132a2ef7f088a8e91801111",
+    "released_at": "2026-08-21T00:00:00Z"
+  },
+  {
+    "indicator_id": "consumer_confidence",
+    "observed_at": "2026-09-30T00:00:00Z",
+    "value": -13,
+    "source_id": "gfk_confidence",
+    "ingested_at": "2026-10-28T12:05:29.415Z",
+    "payload_hash": "48503ebf568d087501f1339b8c139f294a1c797adfd1840b8ee0c74938b0b442",
+    "released_at": "2026-09-25T00:00:00Z"
+  },
+  {
+    "indicator_id": "dd_failure_rate",
+    "observed_at": "2026-08-31T00:00:00Z",
+    "value": 2.41,
+    "source_id": "ons_rti",
+    "ingested_at": "2026-10-28T02:15:17.668Z",
+    "payload_hash": "ffe82bd36cbc2a2dd2ca6e9b29a7ff72971bbaf3b78243d01485e2de2ef11635",
+    "released_at": "2026-09-17T00:00:00Z"
+  },
+  {
+    "indicator_id": "dd_failure_rate",
+    "observed_at": "2026-09-30T00:00:00Z",
+    "value": 2.43,
+    "source_id": "ons_rti",
+    "ingested_at": "2026-10-29T11:15:55.397Z",
+    "payload_hash": "cb1c32a06e7feecea0c4d9ef0b2d0cf6edb6d7cdaa0e55ea273fe8af669572e9",
+    "released_at": "2026-10-22T00:00:00Z"
+  },
+  {
+    "indicator_id": "debt_interest",
+    "observed_at": "2026-09-01T00:00:00Z",
+    "value": 10.933,
+    "source_id": "ons_psf",
+    "ingested_at": "2026-10-29T11:15:49.570Z",
+    "payload_hash": "56e3bf137fbb764fb5ea198af5644816c5e7da756e1b818631a8b2aafd9dc620",
+    "released_at": "2026-10-20T23:00:00.000Z"
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-08-26T16:30:00Z",
+    "value": 24961.9,
+    "source_id": "lseg",
+    "ingested_at": "2026-08-26T13:40:19.221Z",
+    "payload_hash": "a76b5a698403fdd6e9b0adc1c26065e18cbb4bda64a07bcf2ce5c51134694446",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-08-27T16:30:00Z",
+    "value": 24898.9,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-01T15:30:18.743Z",
+    "payload_hash": "2600d84558b08e124e6270770df5ffb153aa619dab7511fafdaf923dd5dadc97",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-08-28T16:30:00Z",
+    "value": 24938.8,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-01T12:26:00.000Z",
+    "payload_hash": "695f012044a924d99537cd31522e3f5616ddb3f417daafe0bd67e0a2f5c04f4e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-01T16:30:00Z",
+    "value": 24521.3,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-02T15:30:18.292Z",
+    "payload_hash": "b99a20c2aad7188f734db2e2f88fbcad6f4416d53a7a2e86aae7b827a526258e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-02T16:30:00Z",
+    "value": 24324.1,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-03T15:30:18.915Z",
+    "payload_hash": "44793ccca771bde22906b1974a3d6924fca7a8c697b61f55e72cf07e8ae5101c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-03T16:30:00Z",
+    "value": 24496.1,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-04T15:30:54.651Z",
+    "payload_hash": "0ee88b85290b77193d9231fb9303a67682d6d95726f7fb0bc82dda56304485a7",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-04T16:30:00Z",
+    "value": 24584.7,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-07T15:30:22.134Z",
+    "payload_hash": "c4b2b68db0386c4dcbbcec99b7b6419f0f853929e8aa8c48e6c1e7533ddf0aca",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-07T16:30:00Z",
+    "value": 24506.7,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-08T15:30:19.307Z",
+    "payload_hash": "d890aa389d9ecf8c06cd0c6d49db492e4860b93909e32441c131cdd5911da54c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-08T16:30:00Z",
+    "value": 24348.9,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-09T15:30:18.831Z",
+    "payload_hash": "9af5844243229991508376634a0ee1ffb6ab39a7c7c011a0ecdda53cabe1001c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-09T16:30:00Z",
+    "value": 24108.7,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-10T15:30:58.371Z",
+    "payload_hash": "8c111c43bec1ecd8aab06cef5e8dbb8e75a01e5d5c7353ef49c1c0bf1038dd6a",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-10T16:30:00Z",
+    "value": 23885.9,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-11T15:30:51.173Z",
+    "payload_hash": "93139d356d34ea86ab4072af19f3859c1650dfd3e14f4a681ae90711381aa764",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-11T16:30:00Z",
+    "value": 23975.7,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-14T15:30:14.477Z",
+    "payload_hash": "8da7903c6b03dc76327d4e638c51f494f204d381e584b68995cbf11c2ba4f4b9",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-14T16:30:00Z",
+    "value": 23834.5,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-15T15:30:20.165Z",
+    "payload_hash": "e1d8d25b8c83c7deb7ebb17cf49dc375fc539e23120fdc3436f7e7a9c53ae417",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-15T16:30:00Z",
+    "value": 23818.7,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-16T15:30:20.239Z",
+    "payload_hash": "a14a78af6ce2e0443817232c5f0a8f61b8a1a5eef16b1dccc0a2cb1c29b4f235",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-16T16:30:00Z",
+    "value": 24070.2,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-17T15:30:21.888Z",
+    "payload_hash": "4778c4e63bd3d95adc5b77fd871e5cbcc7f8e9278894719d00b6ac61140f175d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-17T16:30:00Z",
+    "value": 24352.1,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-18T15:30:09.537Z",
+    "payload_hash": "5ced94a0f647bba84f544e37a0e2871c6b218859af76cd2268cdca3815243eaf",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-18T16:30:00Z",
+    "value": 24205.4,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-21T15:26:04.377Z",
+    "payload_hash": "3d406c917911c9b686e58eb19332997f14c3a18091039181adc48975ed2926d5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-21T16:30:00Z",
+    "value": 24491.4,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-23T15:26:02.225Z",
+    "payload_hash": "5a5f45032c2857b1e0c96127101ee249e19971acf04a9f762c38fd29ed126cce",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-22T15:30:00Z",
+    "value": 24527,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:edf8484ec0ee78257f1bd29216c032e681da01929e39df752bfae4035d6f6d8e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-23T15:30:00Z",
+    "value": 24362,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:0534f9b9a19920d022bcb9b5ecad1741c0e12e824a66c7a34be651debf566a98",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-23T16:30:00Z",
+    "value": 24361.6,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-24T15:26:07.230Z",
+    "payload_hash": "c3d1349170a9b250c694c030582a2b6150da984c6370fde1fae37687bc0dd78a",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-24T15:30:00Z",
+    "value": 24154,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:7e6fbe1c803f717b6f5c5056849401f3000fcfb1cbc1c7efa9ea6bcfdb06c3d6",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-24T16:30:00Z",
+    "value": 24154.3,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-25T15:26:06.759Z",
+    "payload_hash": "543fd3f6a6dde90d732c465a5f9475aed4e0decbc914a3a058599b34a2c3d4ea",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-25T15:30:00Z",
+    "value": 24261,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:50aa0400b95748a8d21e3c43d925c91a07a092ef496736eea29dcf2778eae026",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-25T16:30:00Z",
+    "value": 24261.1,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-28T15:26:04.123Z",
+    "payload_hash": "b2857c8a17853d25829ffdd81b6b947088ed4c4a4df3cbb5aef17694a69a4461",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-28T15:30:00Z",
+    "value": 24335,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:f2cb1df6dd3b68dc75ff0ad6b654f3d4accb50e1f45ec981c2d210996b6eaeea",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-28T16:30:00Z",
+    "value": 24335.3,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-29T15:30:17.793Z",
+    "payload_hash": "9e23907f0ef6ff2004c4ca083e140e42986feb7241d65b9dad81b38b1513a42c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-29T15:30:00Z",
+    "value": 24375,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:c9740d14f7ea428478fb64d3234d984de44a47930e78ef6e446dda74ec43d43e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-29T16:30:00Z",
+    "value": 24374.8,
+    "source_id": "lseg",
+    "ingested_at": "2026-09-30T15:30:16.680Z",
+    "payload_hash": "fc6b1402392b258790b31adbc5dab9ec0e7aae97dda28fb355d8b4999959db7a",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-30T15:30:00Z",
+    "value": 24540,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:b186fc56c87189702073ecf94976db11d4b0782884c13f52c1a6c27ffd549fc6",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-09-30T16:30:00Z",
+    "value": 24540,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-01T15:30:17.422Z",
+    "payload_hash": "2e38199431c1498e1dc01bb8c2ef3d531e5b415cd074dc9778c52e5762d41cb4",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-01T15:30:00Z",
+    "value": 24143,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:42dad2017ab524e2bd06c1849bfa127d2766500757d899e143a4ccf30a3bbca3",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-01T16:30:00Z",
+    "value": 24143.2,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-02T15:30:19.555Z",
+    "payload_hash": "c3b7f3a5612196628e41f735e3564c6140883838114398ff66cf91b49ed43a4f",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-02T15:30:00Z",
+    "value": 24194,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:8c1fdc8cac517b2893223df41c3c5cda49a1cd5acd1439a57e870545b4dbd8f3",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-02T16:30:00Z",
+    "value": 24194.2,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-05T15:30:13.250Z",
+    "payload_hash": "895e8a40458165c35856e0eefdd5590bba17fb59591d5dd8ab9c7cd522bfe3ee",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-05T15:30:00Z",
+    "value": 24124,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:ef8fce6cffd092527a206fcb8206e3d61213dc875f3cbf72b6bfef38b3f774ec",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-05T16:30:00Z",
+    "value": 24123.8,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-06T15:30:22.210Z",
+    "payload_hash": "93b4bed9298039dc1dc538b6361ae6ad740df29960a976aed1591ca592ebcd43",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-06T15:30:00Z",
+    "value": 24215,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:f737130140e1909495719d5effadfafb51548e8085c2d44907339f10f6a1acad",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-06T16:30:00Z",
+    "value": 24215.3,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-07T15:30:17.243Z",
+    "payload_hash": "f8ef2c6a1c527a2b05e636981831c0240af27a9690bd2b87404ac932b2b2e7f2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-07T15:30:00Z",
+    "value": 24037,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:88039d662e5b8b4a586fb794772e488f79ba16ae9a575df825b5da30ea07bc36",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-07T16:30:00Z",
+    "value": 24036.8,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-08T15:30:17.033Z",
+    "payload_hash": "8baf0da623154174935ed64d4f9d9f824400420de4c5ccd27d4d335f47a5523f",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-08T15:30:00Z",
+    "value": 23944,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:6999813ef637520813efb801883f087d53e4cd9c4c8bfb07750ca230d2abc275",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-08T16:30:00Z",
+    "value": 23943.9,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-09T15:30:42.535Z",
+    "payload_hash": "074249ed9d6437a16b1c0c1a2ef3f10096dc49eff7bf73a7f66cac3e1f119783",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-09T15:30:00Z",
+    "value": 24214,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:d2d9083776d4a2310bb755feda09b1fc556ba6ce5db6b8af5e95a0f766ef380b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-09T16:30:00Z",
+    "value": 24213.8,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-12T15:30:17.415Z",
+    "payload_hash": "c4bab965a2226717b16d0ab75cb45d6cdb6e5e98c7650255c5e45cc10e15d642",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-12T15:30:00Z",
+    "value": 24328,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:c04b3a8b780ceb84a7f5952105dd4b7297e1b8497b2a5d10021042404d58acf0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-12T16:30:00Z",
+    "value": 24328.1,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-13T15:30:23.601Z",
+    "payload_hash": "615474a565b8997a17158df3b18ba690e2c25ee9007edd87f024dff8c245ff0c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-13T15:30:00Z",
+    "value": 24339.2,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-14T15:30:30.431Z",
+    "payload_hash": "fb2fbf83552875f9c373ab63d4bf4adb08caefe1b8dc46267ff1401666b6c6bb",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-14T15:30:00Z",
+    "value": 24360.8,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-15T15:30:20.180Z",
+    "payload_hash": "dbe704a392594abe527988f3bd931ca487f8c840ecd3ca4ae267d180278dd749",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-15T15:30:00Z",
+    "value": 24424.8,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-16T15:30:13.860Z",
+    "payload_hash": "7fa225be66eee817bcb7d596561182793f4ce4881b9962c1b3bee673bdd8b90c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-16T15:30:00Z",
+    "value": 24533.9,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-19T15:30:27.730Z",
+    "payload_hash": "73138b8f355311108f918209fa8ecc97dfb11f5e75df7ffea6d3cc434fe633db",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-19T15:30:00Z",
+    "value": 24378.5,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-20T15:30:30.456Z",
+    "payload_hash": "92b0a5b42e862612d7720ff19730acd2103449010a18aac23316bf90c39b8263",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-20T15:30:00Z",
+    "value": 24364.8,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-22T15:30:33.715Z",
+    "payload_hash": "818ac259a1b7331414635fc615eb44f11ee8e6c037f7a2ef38a62837684787c2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-21T15:30:00Z",
+    "value": 24439.8,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-22T15:01:40.684Z",
+    "payload_hash": "992d6da36d7f599356e05b3d61c134254b39e14a53437e0e9df39f6b1101fac4",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-22T15:30:00Z",
+    "value": 24211.7,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-23T15:28:47.213Z",
+    "payload_hash": "962a37c2cd1e5ede42d9f36951708b5e63a7c6feff104958e4024a1e6ab4bfcf",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-23T15:30:00Z",
+    "value": 24237,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:3491122b1adfc325fa0e790c661cdabd4c840fdd2ef2f1fead9eee5004544b67",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-26T16:30:00Z",
+    "value": 24501,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T13:07:35.201Z",
+    "payload_hash": "hist:9694fc7a625a0b7bb94076cbe455e1dafd778dc250a0c149f4bc719f9453ccf5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-27T16:30:00Z",
+    "value": 24716.4,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-28T16:30:29.277Z",
+    "payload_hash": "2fa8d1c6604c76a8ad6e6b8c5afc981e1b43b12d97951f088280b886675f49ee",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ftse_250",
+    "observed_at": "2026-10-28T16:30:00Z",
+    "value": 24639.3,
+    "source_id": "lseg",
+    "ingested_at": "2026-10-29T07:00:28.618Z",
+    "payload_hash": "e6532c27cd5619ec8d42187cb5ca5a2c23da3a2f833184dafdc351cb13fa2724",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-08-26T16:00:00Z",
+    "value": 85.8052,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-08-27T13:00:16.197Z",
+    "payload_hash": "fea19e7c2e0fc762169b8c089cd2b19aff9b0f9088a442611675f46927fcf26b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-08-27T16:00:00Z",
+    "value": 85.7596,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-08-31T09:39:46.679Z",
+    "payload_hash": "2afd72cc41c5a933f7c8fe93d38f1448c355a99aa6c29dae85d9a9b0dea280a2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-08-28T16:00:00Z",
+    "value": 85.8245,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-01T19:32:21.553Z",
+    "payload_hash": "e3e5e1802eade840e114d254dd9ac459126c32feadd721ad2a2886ed765a7457",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-01T16:00:00Z",
+    "value": 85.6888,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-02T15:40:03.460Z",
+    "payload_hash": "417ee3d2457c121954fe53c65699177d8593850d1393848706b807be09082e04",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-02T16:00:00Z",
+    "value": 85.4576,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-03T15:37:42.762Z",
+    "payload_hash": "21311231d0a7c7556ad7171277e5a8e12d0ae5d32ad123718d83b93a2a904444",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-03T16:00:00Z",
+    "value": 85.3438,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-04T15:37:03.037Z",
+    "payload_hash": "ac8bb621aebbdab6c5af4206ee0eb02147f00de37c0977388b0e81b616b66b9e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-04T16:00:00Z",
+    "value": 85.3291,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-07T15:36:24.123Z",
+    "payload_hash": "3e0157b6ad40fcea075c00680725b92ad8428fe3b18f789a86ec957a2948153b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-07T16:00:00Z",
+    "value": 85.4308,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-08T15:38:35.547Z",
+    "payload_hash": "880be79f8937c008fa2e9dca4cf239826e8d02f4b405bc828777fe094edd4d69",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-08T16:00:00Z",
+    "value": 85.4688,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-09T15:38:36.690Z",
+    "payload_hash": "60b95f6454348da98b7287b2e1b9f703853698678baa6b096825dd7f11bc71d1",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-09T16:00:00Z",
+    "value": 85.4561,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-10T15:37:23.538Z",
+    "payload_hash": "4d974421054512bf7e72814cac9888b0598663b684508d10580729d36a732c58",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-10T16:00:00Z",
+    "value": 85.4105,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-11T15:37:00.489Z",
+    "payload_hash": "8afe34cde79e6db9eabb817ba7dc2516dec1728a60b2a5a79de51597c1fe3a1c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-11T16:00:00Z",
+    "value": 85.4725,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-14T15:38:54.442Z",
+    "payload_hash": "9a260f8c353cf5638bbca88d35fa3b4348226aba0fcfad23892ed9dc1287aa97",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-14T16:00:00Z",
+    "value": 85.4831,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-15T15:37:41.215Z",
+    "payload_hash": "e1cecdc3879b735a499ec184476f1481346f15d13d34a50073da016a96ac5a79",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-15T16:00:00Z",
+    "value": 85.5725,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-16T15:37:32.771Z",
+    "payload_hash": "4d57ed122765ae10d374c268702704c8090a1644a41812422508dd5426510cf1",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-16T16:00:00Z",
+    "value": 85.3784,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-18T09:37:03.161Z",
+    "payload_hash": "17a9bce86a785faac14ee3cb4f825dcde8a91b623eadd544083661e05a24437b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-17T16:00:00Z",
+    "value": 84.973,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-18T15:37:34.491Z",
+    "payload_hash": "4f0f31b96db88de04ec34b94ef9ba934f06d6e6b5703bdfa4fa554d658911813",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-18T16:00:00Z",
+    "value": 85.1567,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-21T15:37:10.565Z",
+    "payload_hash": "cecf450bbaf8ec3fcb3b80d3c93144aa3d4b3cb503bcca1b0c24f940171f732e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-21T16:00:00Z",
+    "value": 85.1494,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-22T15:37:10.009Z",
+    "payload_hash": "7351907841ba30f95435c7758e0c9c8eace690b83a7c51d0bd5dd8822a82f162",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-22T16:00:00Z",
+    "value": 85.0826,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-23T15:39:28.304Z",
+    "payload_hash": "857f61663104079121291e3374773649e97486a15cfedf1445e190d8c54d3898",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-23T16:00:00Z",
+    "value": 84.7912,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-24T15:38:49.603Z",
+    "payload_hash": "cd3607bd51daa17ba1ec936a4c4f48efe0e1578df83e759c3e857e58f4e9a4e4",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-24T16:00:00Z",
+    "value": 84.654,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-25T15:38:07.829Z",
+    "payload_hash": "3e39bd0c7a51774e1da02026932e96c7fdf7435b84e74f4a6c78a468b77fab35",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-25T16:00:00Z",
+    "value": 84.6848,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-28T15:40:50.912Z",
+    "payload_hash": "98a36d5480ead6cdf9443e63ef20d4640d6ed39c1cbcad6075d613e462425ca2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-28T16:00:00Z",
+    "value": 84.8734,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-29T15:41:14.870Z",
+    "payload_hash": "290a15b5dfca2946ce1cd5126ced29cc5bc7899ad1c61ed8e14805c2694ef42e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-29T16:00:00Z",
+    "value": 84.745,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-30T15:42:02.155Z",
+    "payload_hash": "bbd9fabf51756ded2d8bda5e73c092ec4dbb96ceabbdbc3cb78fc9d7797d1516",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-09-30T16:00:00Z",
+    "value": 85.1191,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-01T15:41:00.638Z",
+    "payload_hash": "af17df5ba165eaa260ed428e7b6c1c611d274c3fe3a7fc507c2bc57988f8e087",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-01T16:00:00Z",
+    "value": 85.0274,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-02T15:41:17.760Z",
+    "payload_hash": "e8073db1a4ad5754c0644f0dfafe1332c62bc54394e9cd0fbef440c38cda6c94",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-02T16:00:00Z",
+    "value": 85.1596,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-05T15:41:55.487Z",
+    "payload_hash": "dd6381b8e4b5e5f5c671050588a0ddb7e16eaaec6db0edbef4631d024664c83c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-05T16:00:00Z",
+    "value": 85.249,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-06T15:40:11.447Z",
+    "payload_hash": "e96c140d0c977074190be25964b79713567fde51c88a6578eba352f1c5358aa2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-06T16:00:00Z",
+    "value": 85.4243,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-07T15:46:39.471Z",
+    "payload_hash": "682fab99ab12484650311ecd368f5c858ec828d0a9c05f53f2f81f074bff3c22",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-07T16:00:00Z",
+    "value": 85.295,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-08T15:42:32.919Z",
+    "payload_hash": "9dd14e9d170d918c8b0a8c61b99852d85bc24acee5345e0fe70acfd3f00ac841",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-08T16:00:00Z",
+    "value": 85.2857,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-09T15:41:26.821Z",
+    "payload_hash": "74d207935ef56bf9360d6a147d8603d22a0abe027ff4a426a7ae4616efcc1c40",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-09T16:00:00Z",
+    "value": 85.3223,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-12T15:43:18.002Z",
+    "payload_hash": "b4e96400701b2926d0a20d00f44053f48aaebb71dacf05c3ea1c8549e9bb1545",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-12T16:00:00Z",
+    "value": 85.3482,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-13T15:42:36.473Z",
+    "payload_hash": "09efcae795069d50c90ad33389129f052c9da4b22994be50e8bbdd48d22492f9",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-13T16:00:00Z",
+    "value": 85.4145,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-14T15:42:37.758Z",
+    "payload_hash": "286ae5535e95f7492904c5d5806926892665195c2796636ea85f3548556b9816",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-14T16:00:00Z",
+    "value": 85.158,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-15T15:40:53.904Z",
+    "payload_hash": "97f96aaa6ab8baaebc91cf46d1fd05019f3689b8a0c112feda1a8969638edecc",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-15T16:00:00Z",
+    "value": 85.3922,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-16T15:38:28.169Z",
+    "payload_hash": "8a92a08cd361b943e35369488d64faea2f0a677f900d1e6210a6481de0ef43da",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-16T16:00:00Z",
+    "value": 85.7843,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-19T15:39:16.819Z",
+    "payload_hash": "20d2eb2162debde0ec81b953daa862e27b1816dfd16e816d198bf3a45bddcdcb",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-19T16:00:00Z",
+    "value": 85.6896,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-20T15:40:05.560Z",
+    "payload_hash": "6b9084cfe1de3a1b0d8ad4ad15e46d560711a776b06873d653ea632da127dbd8",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-20T16:00:00Z",
+    "value": 86.0083,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-21T15:41:56.751Z",
+    "payload_hash": "5a49ef9400bf06ebf30406bacd1e8b04b5e0db0838d2111fe6d0e98d5fe724a9",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-21T16:00:00Z",
+    "value": 86.035,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-22T15:40:27.106Z",
+    "payload_hash": "cd01c135c6c0e3cb4d42ecedb2b3dfe2639a8a7a10a84b36bc2e47ecdec7f5e6",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-22T16:00:00Z",
+    "value": 85.9793,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-23T15:42:06.404Z",
+    "payload_hash": "b52603df0af640181d012ecf6f4bcdf2e05432e01152aeedc50913beb6ba0ebb",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-23T16:00:00Z",
+    "value": 86.1213,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-26T15:51:26.798Z",
+    "payload_hash": "75344018bbfa0189af9bb364b35095e1945fa33fc5e0976d07a2c63d97610a17",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-26T16:00:00Z",
+    "value": 86.0051,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-27T15:42:18.487Z",
+    "payload_hash": "0e56eaa920d9a7548cabf7c6b4ecad20bcf4243a6e95ea396ebf4d24fdef232c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-27T16:00:00Z",
+    "value": 85.8916,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-28T15:35:48.358Z",
+    "payload_hash": "e9a5abbb76578b6c7083de4d148f2eef78bb36eb59af33133cb480c89dff6fff",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_twi",
+    "observed_at": "2026-10-28T16:00:00Z",
+    "value": 85.8635,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-29T09:33:32.835Z",
+    "payload_hash": "9e2652295a2b278bd2d1053e5b2a58aa4236a4c10444d01e10dc282349ba9bfb",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-08-26T16:00:00Z",
+    "value": 1.3588,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-08-27T13:00:16.197Z",
+    "payload_hash": "fea19e7c2e0fc762169b8c089cd2b19aff9b0f9088a442611675f46927fcf26b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-08-27T16:00:00Z",
+    "value": 1.3582,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-08-31T09:39:46.679Z",
+    "payload_hash": "2afd72cc41c5a933f7c8fe93d38f1448c355a99aa6c29dae85d9a9b0dea280a2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-08-28T16:00:00Z",
+    "value": 1.3571,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-01T19:32:21.553Z",
+    "payload_hash": "e3e5e1802eade840e114d254dd9ac459126c32feadd721ad2a2886ed765a7457",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-01T16:00:00Z",
+    "value": 1.3538,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-02T15:40:03.460Z",
+    "payload_hash": "417ee3d2457c121954fe53c65699177d8593850d1393848706b807be09082e04",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-02T16:00:00Z",
+    "value": 1.3506,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-03T15:37:42.762Z",
+    "payload_hash": "21311231d0a7c7556ad7171277e5a8e12d0ae5d32ad123718d83b93a2a904444",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-03T16:00:00Z",
+    "value": 1.3518,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-04T15:37:03.037Z",
+    "payload_hash": "ac8bb621aebbdab6c5af4206ee0eb02147f00de37c0977388b0e81b616b66b9e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-04T16:00:00Z",
+    "value": 1.3515,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-07T15:36:24.123Z",
+    "payload_hash": "3e0157b6ad40fcea075c00680725b92ad8428fe3b18f789a86ec957a2948153b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-07T16:00:00Z",
+    "value": 1.3545,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-08T15:38:35.547Z",
+    "payload_hash": "880be79f8937c008fa2e9dca4cf239826e8d02f4b405bc828777fe094edd4d69",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-08T16:00:00Z",
+    "value": 1.3553,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-09T15:38:36.690Z",
+    "payload_hash": "60b95f6454348da98b7287b2e1b9f703853698678baa6b096825dd7f11bc71d1",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-09T16:00:00Z",
+    "value": 1.3563,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-10T15:37:23.538Z",
+    "payload_hash": "4d974421054512bf7e72814cac9888b0598663b684508d10580729d36a732c58",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-10T16:00:00Z",
+    "value": 1.3531,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-11T15:37:00.489Z",
+    "payload_hash": "8afe34cde79e6db9eabb817ba7dc2516dec1728a60b2a5a79de51597c1fe3a1c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-11T16:00:00Z",
+    "value": 1.353,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-14T15:38:54.442Z",
+    "payload_hash": "9a260f8c353cf5638bbca88d35fa3b4348226aba0fcfad23892ed9dc1287aa97",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-14T16:00:00Z",
+    "value": 1.3476,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-15T15:37:41.215Z",
+    "payload_hash": "e1cecdc3879b735a499ec184476f1481346f15d13d34a50073da016a96ac5a79",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-15T16:00:00Z",
+    "value": 1.3488,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-16T15:37:32.771Z",
+    "payload_hash": "4d57ed122765ae10d374c268702704c8090a1644a41812422508dd5426510cf1",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-16T16:00:00Z",
+    "value": 1.3454,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-18T09:37:03.161Z",
+    "payload_hash": "17a9bce86a785faac14ee3cb4f825dcde8a91b623eadd544083661e05a24437b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-17T16:00:00Z",
+    "value": 1.3353,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-18T15:37:34.491Z",
+    "payload_hash": "4f0f31b96db88de04ec34b94ef9ba934f06d6e6b5703bdfa4fa554d658911813",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-18T16:00:00Z",
+    "value": 1.3361,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-21T15:37:10.565Z",
+    "payload_hash": "cecf450bbaf8ec3fcb3b80d3c93144aa3d4b3cb503bcca1b0c24f940171f732e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-21T16:00:00Z",
+    "value": 1.3374,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-22T15:37:10.009Z",
+    "payload_hash": "7351907841ba30f95435c7758e0c9c8eace690b83a7c51d0bd5dd8822a82f162",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-22T16:00:00Z",
+    "value": 1.3348,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-23T15:39:28.304Z",
+    "payload_hash": "857f61663104079121291e3374773649e97486a15cfedf1445e190d8c54d3898",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-23T16:00:00Z",
+    "value": 1.3265,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-24T15:38:49.603Z",
+    "payload_hash": "cd3607bd51daa17ba1ec936a4c4f48efe0e1578df83e759c3e857e58f4e9a4e4",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-24T16:00:00Z",
+    "value": 1.322,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-25T15:38:07.829Z",
+    "payload_hash": "3e39bd0c7a51774e1da02026932e96c7fdf7435b84e74f4a6c78a468b77fab35",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-25T16:00:00Z",
+    "value": 1.3246,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-28T15:40:50.912Z",
+    "payload_hash": "98a36d5480ead6cdf9443e63ef20d4640d6ed39c1cbcad6075d613e462425ca2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-28T16:00:00Z",
+    "value": 1.3251,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-29T15:41:14.870Z",
+    "payload_hash": "290a15b5dfca2946ce1cd5126ced29cc5bc7899ad1c61ed8e14805c2694ef42e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-29T16:00:00Z",
+    "value": 1.3214,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-09-30T15:42:02.155Z",
+    "payload_hash": "bbd9fabf51756ded2d8bda5e73c092ec4dbb96ceabbdbc3cb78fc9d7797d1516",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-09-30T16:00:00Z",
+    "value": 1.3285,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-01T15:41:00.638Z",
+    "payload_hash": "af17df5ba165eaa260ed428e7b6c1c611d274c3fe3a7fc507c2bc57988f8e087",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-01T16:00:00Z",
+    "value": 1.3212,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-02T15:41:17.760Z",
+    "payload_hash": "e8073db1a4ad5754c0644f0dfafe1332c62bc54394e9cd0fbef440c38cda6c94",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-02T16:00:00Z",
+    "value": 1.3249,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-05T15:41:55.487Z",
+    "payload_hash": "dd6381b8e4b5e5f5c671050588a0ddb7e16eaaec6db0edbef4631d024664c83c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-05T16:00:00Z",
+    "value": 1.3221,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-06T15:40:11.447Z",
+    "payload_hash": "e96c140d0c977074190be25964b79713567fde51c88a6578eba352f1c5358aa2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-06T16:00:00Z",
+    "value": 1.3279,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-07T15:46:39.471Z",
+    "payload_hash": "682fab99ab12484650311ecd368f5c858ec828d0a9c05f53f2f81f074bff3c22",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-07T16:00:00Z",
+    "value": 1.322,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-08T15:42:32.919Z",
+    "payload_hash": "9dd14e9d170d918c8b0a8c61b99852d85bc24acee5345e0fe70acfd3f00ac841",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-08T16:00:00Z",
+    "value": 1.3226,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-09T15:41:26.821Z",
+    "payload_hash": "74d207935ef56bf9360d6a147d8603d22a0abe027ff4a426a7ae4616efcc1c40",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-09T16:00:00Z",
+    "value": 1.3225,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-12T15:43:18.002Z",
+    "payload_hash": "b4e96400701b2926d0a20d00f44053f48aaebb71dacf05c3ea1c8549e9bb1545",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-12T16:00:00Z",
+    "value": 1.322,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-13T15:42:36.473Z",
+    "payload_hash": "09efcae795069d50c90ad33389129f052c9da4b22994be50e8bbdd48d22492f9",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-13T16:00:00Z",
+    "value": 1.3249,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-14T15:42:37.758Z",
+    "payload_hash": "286ae5535e95f7492904c5d5806926892665195c2796636ea85f3548556b9816",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-14T16:00:00Z",
+    "value": 1.316,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-15T15:40:53.904Z",
+    "payload_hash": "97f96aaa6ab8baaebc91cf46d1fd05019f3689b8a0c112feda1a8969638edecc",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-15T16:00:00Z",
+    "value": 1.3253,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-16T15:38:28.169Z",
+    "payload_hash": "8a92a08cd361b943e35369488d64faea2f0a677f900d1e6210a6481de0ef43da",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-16T16:00:00Z",
+    "value": 1.3353,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-19T15:39:16.819Z",
+    "payload_hash": "20d2eb2162debde0ec81b953daa862e27b1816dfd16e816d198bf3a45bddcdcb",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-19T16:00:00Z",
+    "value": 1.3318,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-20T15:40:05.560Z",
+    "payload_hash": "6b9084cfe1de3a1b0d8ad4ad15e46d560711a776b06873d653ea632da127dbd8",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-20T16:00:00Z",
+    "value": 1.3387,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-21T15:41:56.751Z",
+    "payload_hash": "5a49ef9400bf06ebf30406bacd1e8b04b5e0db0838d2111fe6d0e98d5fe724a9",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-21T16:00:00Z",
+    "value": 1.3384,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-22T15:40:27.106Z",
+    "payload_hash": "cd01c135c6c0e3cb4d42ecedb2b3dfe2639a8a7a10a84b36bc2e47ecdec7f5e6",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-22T16:00:00Z",
+    "value": 1.3363,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-23T15:42:06.404Z",
+    "payload_hash": "b52603df0af640181d012ecf6f4bcdf2e05432e01152aeedc50913beb6ba0ebb",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-23T16:00:00Z",
+    "value": 1.3387,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-26T15:51:26.798Z",
+    "payload_hash": "75344018bbfa0189af9bb364b35095e1945fa33fc5e0976d07a2c63d97610a17",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-26T16:00:00Z",
+    "value": 1.3347,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-27T15:42:18.487Z",
+    "payload_hash": "0e56eaa920d9a7548cabf7c6b4ecad20bcf4243a6e95ea396ebf4d24fdef232c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-27T16:00:00Z",
+    "value": 1.3313,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-28T15:35:48.358Z",
+    "payload_hash": "e9a5abbb76578b6c7083de4d148f2eef78bb36eb59af33133cb480c89dff6fff",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gbp_usd",
+    "observed_at": "2026-10-28T16:00:00Z",
+    "value": 1.3301,
+    "source_id": "boe_fx",
+    "ingested_at": "2026-10-29T09:33:32.835Z",
+    "payload_hash": "9e2652295a2b278bd2d1053e5b2a58aa4236a4c10444d01e10dc282349ba9bfb",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-08-26T16:00:00Z",
+    "value": 5.0929,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-08-31T09:39:44.180Z",
+    "payload_hash": "160b4ef61f5bd8c4bcde93f06ae79ae2bd13e9dc27c12200da4c63551315b3ac",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-08-27T16:00:00Z",
+    "value": 5.1055,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-01T19:32:20.170Z",
+    "payload_hash": "e5d9ec9e86253fd0b79e8476628fd6b2c25ea24bc55b4c1e06741eadf9b91a06",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-08-28T16:00:00Z",
+    "value": 5.141,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-02T15:40:01.436Z",
+    "payload_hash": "10c0c05687fea1e62f4542e0218fe35fb1c17355604d04119efc44b37b6a9a10",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-01T16:00:00Z",
+    "value": 5.2068,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-03T15:37:40.289Z",
+    "payload_hash": "21551f9c9866f5dddc0f2e9681f5d29345055aa9051b7af9cd799b48c139f454",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-02T16:00:00Z",
+    "value": 5.2416,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-04T15:37:01.519Z",
+    "payload_hash": "4138fb3ab49faff2c1db7109c971edc04708c1d973a73ed201f1d0dd6c057f77",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-03T16:00:00Z",
+    "value": 5.1575,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-07T15:36:23.120Z",
+    "payload_hash": "d8769c4be73637cabb3118e526f22c10fbac96a6b8a77e2c5511ee6c00f5ebb8",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-04T16:00:00Z",
+    "value": 5.1425,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-08T15:38:34.555Z",
+    "payload_hash": "321d6fb931beb55af5ee6f6cd3f6f9731d6c2fcf5a64ae1e982150cbf94eeeab",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-07T16:00:00Z",
+    "value": 5.1775,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-09T15:38:35.381Z",
+    "payload_hash": "78784ab9e9f3239f1ef2f767a98841dfa631e73e25b31d1212243d70d8fb0c75",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-08T16:00:00Z",
+    "value": 5.1626,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-10T15:37:22.373Z",
+    "payload_hash": "c4fbbe2181278ab45968e687be8c2a28f89492be663c299cabd4c89579ee1fe5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-09T16:00:00Z",
+    "value": 5.2493,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-11T15:36:59.221Z",
+    "payload_hash": "f3b5ba8091c17862631e5243ac15c8971595c0600190f112a3267493ac7343d5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-10T16:00:00Z",
+    "value": 5.3572,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-14T15:38:53.301Z",
+    "payload_hash": "9c3fe97108d81cec5ff5172bb09e187640c2b64caa9f210b3cc08ff92501ab8d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-11T16:00:00Z",
+    "value": 5.3483,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-15T15:37:39.889Z",
+    "payload_hash": "8d45fa99ba2e927f8a89daa3bf7c890a30e7f0eae5a57268a8bf71e4a70b3426",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-14T16:00:00Z",
+    "value": 5.3882,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-16T15:37:31.390Z",
+    "payload_hash": "5dc95491c099c5bb405c68070d27edd0f49a64fab5901389f3a9f12b908d75b7",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-15T16:00:00Z",
+    "value": 5.3861,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-18T09:37:02.285Z",
+    "payload_hash": "8dca92b11f3b695e1d78b7f8367ead9ba81855d840a33386da57feb1d8395ab4",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-16T16:00:00Z",
+    "value": 5.2876,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-18T15:37:33.034Z",
+    "payload_hash": "585c456eaa4bf0b1a596636874ffe85dcd66cc40a9488f40282ab1c1cde9906e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-17T16:00:00Z",
+    "value": 5.2074,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-21T15:37:09.419Z",
+    "payload_hash": "e570faa2867cf80ced138a3d47b650eb23f14b7c170e66ab57b4149db46c9149",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-18T16:00:00Z",
+    "value": 5.2899,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-22T15:37:08.796Z",
+    "payload_hash": "9e56885efba42843d75ee87d519abd05d96ea06f0b2de6321b4f2f7f608384bc",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-21T16:00:00Z",
+    "value": 5.1935,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-23T15:39:27.265Z",
+    "payload_hash": "aa318433113967cb74f08a90c87ae3974c6c9744c728646ab5b752c5879e83a3",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-22T16:00:00Z",
+    "value": 5.2113,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-24T15:38:48.396Z",
+    "payload_hash": "8dc6a1e745c19de22457e8e35cfc635e68f4e775fdcd29909d64203fe593777a",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-23T16:00:00Z",
+    "value": 5.3055,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-25T15:38:06.752Z",
+    "payload_hash": "205c34bbdf780df64f10241de85de10063a7808ee024baafaba06103afad6970",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-24T16:00:00Z",
+    "value": 5.3613,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-28T15:40:49.400Z",
+    "payload_hash": "576e580b711d4ca6f6eae3e1dad742ef6c73ed6a3844f85d051eb4faff5f8fee",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-25T16:00:00Z",
+    "value": 5.3842,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-29T15:41:13.413Z",
+    "payload_hash": "25bfad145775e80502cf85e4ef09217178ba7e74e9dae85119e1ee3d4503b3d0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-28T16:00:00Z",
+    "value": 5.4123,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-30T15:41:59.098Z",
+    "payload_hash": "b89241144dc950f5a8f4fab9745a904333dc40c0d1046ec36d1932efeb385c2c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-29T16:00:00Z",
+    "value": 5.3807,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-01T15:40:59.650Z",
+    "payload_hash": "1c355532fc540492bf948b56ebd5988d96a52cdd847d6442ad20ea1107436b6c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-09-30T16:00:00Z",
+    "value": 5.4028,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-02T15:41:16.726Z",
+    "payload_hash": "7f2cb36fc4ae5383780686526ef6e4172c928b9468e58cf11832cc9733f31c9c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-01T16:00:00Z",
+    "value": 5.424,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-05T15:41:54.432Z",
+    "payload_hash": "3137bbeeadf91eccbe79111f68deb4404b2430668a0e267a670bacf8e7645b7b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-02T16:00:00Z",
+    "value": 5.354,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-06T15:40:09.502Z",
+    "payload_hash": "00b27fc9eb8d0f3a84fbdf53b8332a96b8e0143f2cdb1fb723bb81c802fc4a90",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-05T16:00:00Z",
+    "value": 5.4191,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-07T15:46:38.489Z",
+    "payload_hash": "d7993d51e525609f59c11365e3e9948963584662a18d5b7eb93f3f4aadba637e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-06T16:00:00Z",
+    "value": 5.3677,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-08T15:42:29.737Z",
+    "payload_hash": "ad7f851c8a527759370cc0b8dcc0aeab5197f57b64e4699e449d1ed58c6b87aa",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-07T16:00:00Z",
+    "value": 5.4412,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-09T15:41:25.135Z",
+    "payload_hash": "6ae06368dede827cdb829ff9a0872ee7833da2d60c8a97d3537841130199496c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-08T16:00:00Z",
+    "value": 5.4781,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-12T15:43:16.422Z",
+    "payload_hash": "072b00878beaefd7c353d2aec3e8e3127f614c20af36781c39bccd03efbde0e2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-09T16:00:00Z",
+    "value": 5.4452,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-13T15:42:35.519Z",
+    "payload_hash": "304b749705dffdce05790b25c2cf1abf47b962f4fad6ed419a60e8f06d896c86",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-12T16:00:00Z",
+    "value": 5.4287,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-14T15:42:35.571Z",
+    "payload_hash": "fbd723337adae4e487278ee70adbf334098211355c78962366e8f5c5b850e748",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-13T16:00:00Z",
+    "value": 5.4278,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-15T15:40:52.704Z",
+    "payload_hash": "6194ee87a8bb892f7843ac679edd2fdb5e4703c041824ef8baf6f50ae0b2f137",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-14T16:00:00Z",
+    "value": 5.4199,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-16T15:38:26.754Z",
+    "payload_hash": "8b330939df317dc2598b4d771296ef6f158d251ecdc1dbcaeb164bcfe0f3a178",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-15T16:00:00Z",
+    "value": 5.3435,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-19T15:39:15.445Z",
+    "payload_hash": "ac9d413ea5739dc97deb6ebb4794a08043104705f9fc844edfc2840faf0b1458",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-16T16:00:00Z",
+    "value": 5.3373,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-20T15:40:04.200Z",
+    "payload_hash": "bca4fb21d45a89a5987f6b196ccddf7a5d9e7ecdc1e9fb609c1505402f21cc38",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-19T16:00:00Z",
+    "value": 5.4136,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-21T15:41:54.925Z",
+    "payload_hash": "a9b5f45ea93da1cbfb1afe55f22bcf64ad33d4564f9ea17274eff18dd3f0f21f",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-20T16:00:00Z",
+    "value": 5.3841,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-22T15:40:25.320Z",
+    "payload_hash": "b4d498b68073462e911798fe5b282de18f8847f6cb3395d64e9fbf02427762d2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-21T16:00:00Z",
+    "value": 5.3682,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-23T15:42:05.369Z",
+    "payload_hash": "e303f32465b77b43085e8f23933bfdd38022bb13c18b715671a4355bad66a3f5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-22T16:00:00Z",
+    "value": 5.312,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-26T15:51:24.778Z",
+    "payload_hash": "94195ab868279ed71466e8f086e3bb3cca625c939cbd32eb4fc744cdcf7468e0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-23T16:00:00Z",
+    "value": 5.3475,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-27T15:42:16.104Z",
+    "payload_hash": "fc795040088a7f32c550bf201f318e10642550a75333e3c771f3c74aa41ef84c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-26T16:00:00Z",
+    "value": 5.3259,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T15:35:46.800Z",
+    "payload_hash": "daa9437c012667c583419cbc003d07cfac02b15ad46f14a9192e17da32d069b2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_10y",
+    "observed_at": "2026-10-27T16:00:00Z",
+    "value": 5.3223,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-29T09:33:31.060Z",
+    "payload_hash": "504f317dc9084000fbb2ce360f90f1900b20e41cd1d5d2c14107f50cb0064b40",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-08-26T16:00:00Z",
+    "value": 5.7942,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-08-31T09:39:44.180Z",
+    "payload_hash": "160b4ef61f5bd8c4bcde93f06ae79ae2bd13e9dc27c12200da4c63551315b3ac",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-08-27T16:00:00Z",
+    "value": 5.7999,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-01T19:32:20.170Z",
+    "payload_hash": "e5d9ec9e86253fd0b79e8476628fd6b2c25ea24bc55b4c1e06741eadf9b91a06",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-08-28T16:00:00Z",
+    "value": 5.824,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-02T15:40:01.436Z",
+    "payload_hash": "10c0c05687fea1e62f4542e0218fe35fb1c17355604d04119efc44b37b6a9a10",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-01T16:00:00Z",
+    "value": 5.8845,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-03T15:37:40.289Z",
+    "payload_hash": "21551f9c9866f5dddc0f2e9681f5d29345055aa9051b7af9cd799b48c139f454",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-02T16:00:00Z",
+    "value": 5.9164,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-04T15:37:01.519Z",
+    "payload_hash": "4138fb3ab49faff2c1db7109c971edc04708c1d973a73ed201f1d0dd6c057f77",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-03T16:00:00Z",
+    "value": 5.841,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-07T15:36:23.120Z",
+    "payload_hash": "d8769c4be73637cabb3118e526f22c10fbac96a6b8a77e2c5511ee6c00f5ebb8",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-04T16:00:00Z",
+    "value": 5.8225,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-08T15:38:34.555Z",
+    "payload_hash": "321d6fb931beb55af5ee6f6cd3f6f9731d6c2fcf5a64ae1e982150cbf94eeeab",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-07T16:00:00Z",
+    "value": 5.8562,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-09T15:38:35.381Z",
+    "payload_hash": "78784ab9e9f3239f1ef2f767a98841dfa631e73e25b31d1212243d70d8fb0c75",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-08T16:00:00Z",
+    "value": 5.8358,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-10T15:37:22.373Z",
+    "payload_hash": "c4fbbe2181278ab45968e687be8c2a28f89492be663c299cabd4c89579ee1fe5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-09T16:00:00Z",
+    "value": 5.9065,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-11T15:36:59.221Z",
+    "payload_hash": "f3b5ba8091c17862631e5243ac15c8971595c0600190f112a3267493ac7343d5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-10T16:00:00Z",
+    "value": 5.9666,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-14T15:38:53.301Z",
+    "payload_hash": "9c3fe97108d81cec5ff5172bb09e187640c2b64caa9f210b3cc08ff92501ab8d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-11T16:00:00Z",
+    "value": 5.9643,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-15T15:37:39.889Z",
+    "payload_hash": "8d45fa99ba2e927f8a89daa3bf7c890a30e7f0eae5a57268a8bf71e4a70b3426",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-14T16:00:00Z",
+    "value": 5.9568,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-16T15:37:31.390Z",
+    "payload_hash": "5dc95491c099c5bb405c68070d27edd0f49a64fab5901389f3a9f12b908d75b7",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-15T16:00:00Z",
+    "value": 5.9723,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-18T09:37:02.285Z",
+    "payload_hash": "8dca92b11f3b695e1d78b7f8367ead9ba81855d840a33386da57feb1d8395ab4",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-16T16:00:00Z",
+    "value": 5.8951,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-18T15:37:33.034Z",
+    "payload_hash": "585c456eaa4bf0b1a596636874ffe85dcd66cc40a9488f40282ab1c1cde9906e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-17T16:00:00Z",
+    "value": 5.7726,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-21T15:37:09.419Z",
+    "payload_hash": "e570faa2867cf80ced138a3d47b650eb23f14b7c170e66ab57b4149db46c9149",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-18T16:00:00Z",
+    "value": 5.7894,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-22T15:37:08.796Z",
+    "payload_hash": "9e56885efba42843d75ee87d519abd05d96ea06f0b2de6321b4f2f7f608384bc",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-21T16:00:00Z",
+    "value": 5.7367,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-23T15:39:27.265Z",
+    "payload_hash": "aa318433113967cb74f08a90c87ae3974c6c9744c728646ab5b752c5879e83a3",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-22T16:00:00Z",
+    "value": 5.7681,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-24T15:38:48.396Z",
+    "payload_hash": "8dc6a1e745c19de22457e8e35cfc635e68f4e775fdcd29909d64203fe593777a",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-23T16:00:00Z",
+    "value": 5.8458,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-25T15:38:06.752Z",
+    "payload_hash": "205c34bbdf780df64f10241de85de10063a7808ee024baafaba06103afad6970",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-24T16:00:00Z",
+    "value": 5.9034,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-28T15:40:49.400Z",
+    "payload_hash": "576e580b711d4ca6f6eae3e1dad742ef6c73ed6a3844f85d051eb4faff5f8fee",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-25T16:00:00Z",
+    "value": 5.9312,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-29T15:41:13.413Z",
+    "payload_hash": "25bfad145775e80502cf85e4ef09217178ba7e74e9dae85119e1ee3d4503b3d0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-28T16:00:00Z",
+    "value": 5.9618,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-09-30T15:41:59.098Z",
+    "payload_hash": "b89241144dc950f5a8f4fab9745a904333dc40c0d1046ec36d1932efeb385c2c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-29T16:00:00Z",
+    "value": 5.9483,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-01T15:40:59.650Z",
+    "payload_hash": "1c355532fc540492bf948b56ebd5988d96a52cdd847d6442ad20ea1107436b6c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-09-30T16:00:00Z",
+    "value": 5.9766,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-02T15:41:16.726Z",
+    "payload_hash": "7f2cb36fc4ae5383780686526ef6e4172c928b9468e58cf11832cc9733f31c9c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-01T16:00:00Z",
+    "value": 6.0143,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-05T15:41:54.432Z",
+    "payload_hash": "3137bbeeadf91eccbe79111f68deb4404b2430668a0e267a670bacf8e7645b7b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-02T16:00:00Z",
+    "value": 5.9242,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-06T15:40:09.502Z",
+    "payload_hash": "00b27fc9eb8d0f3a84fbdf53b8332a96b8e0143f2cdb1fb723bb81c802fc4a90",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-05T16:00:00Z",
+    "value": 5.9909,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-07T15:46:38.489Z",
+    "payload_hash": "d7993d51e525609f59c11365e3e9948963584662a18d5b7eb93f3f4aadba637e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-06T16:00:00Z",
+    "value": 5.9401,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-08T15:42:29.737Z",
+    "payload_hash": "ad7f851c8a527759370cc0b8dcc0aeab5197f57b64e4699e449d1ed58c6b87aa",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-07T16:00:00Z",
+    "value": 6.0228,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-09T15:41:25.135Z",
+    "payload_hash": "6ae06368dede827cdb829ff9a0872ee7833da2d60c8a97d3537841130199496c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-08T16:00:00Z",
+    "value": 6.0428,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-12T15:43:16.422Z",
+    "payload_hash": "072b00878beaefd7c353d2aec3e8e3127f614c20af36781c39bccd03efbde0e2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-09T16:00:00Z",
+    "value": 6.0036,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-13T15:42:35.519Z",
+    "payload_hash": "304b749705dffdce05790b25c2cf1abf47b962f4fad6ed419a60e8f06d896c86",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-12T16:00:00Z",
+    "value": 5.9708,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-14T15:42:35.571Z",
+    "payload_hash": "fbd723337adae4e487278ee70adbf334098211355c78962366e8f5c5b850e748",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-13T16:00:00Z",
+    "value": 5.9603,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-15T15:40:52.704Z",
+    "payload_hash": "6194ee87a8bb892f7843ac679edd2fdb5e4703c041824ef8baf6f50ae0b2f137",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-14T16:00:00Z",
+    "value": 5.9565,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-16T15:38:26.754Z",
+    "payload_hash": "8b330939df317dc2598b4d771296ef6f158d251ecdc1dbcaeb164bcfe0f3a178",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-15T16:00:00Z",
+    "value": 5.8726,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-19T15:39:15.445Z",
+    "payload_hash": "ac9d413ea5739dc97deb6ebb4794a08043104705f9fc844edfc2840faf0b1458",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-16T16:00:00Z",
+    "value": 5.8634,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-20T15:40:04.200Z",
+    "payload_hash": "bca4fb21d45a89a5987f6b196ccddf7a5d9e7ecdc1e9fb609c1505402f21cc38",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-19T16:00:00Z",
+    "value": 5.9312,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-21T15:41:54.925Z",
+    "payload_hash": "a9b5f45ea93da1cbfb1afe55f22bcf64ad33d4564f9ea17274eff18dd3f0f21f",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-20T16:00:00Z",
+    "value": 5.8766,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-22T15:40:25.320Z",
+    "payload_hash": "b4d498b68073462e911798fe5b282de18f8847f6cb3395d64e9fbf02427762d2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-21T16:00:00Z",
+    "value": 5.8388,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-23T15:42:05.369Z",
+    "payload_hash": "e303f32465b77b43085e8f23933bfdd38022bb13c18b715671a4355bad66a3f5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-22T16:00:00Z",
+    "value": 5.7609,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-26T15:51:24.778Z",
+    "payload_hash": "94195ab868279ed71466e8f086e3bb3cca625c939cbd32eb4fc744cdcf7468e0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-23T16:00:00Z",
+    "value": 5.8075,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-27T15:42:16.104Z",
+    "payload_hash": "fc795040088a7f32c550bf201f318e10642550a75333e3c771f3c74aa41ef84c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-26T16:00:00Z",
+    "value": 5.7873,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-28T15:35:46.800Z",
+    "payload_hash": "daa9437c012667c583419cbc003d07cfac02b15ad46f14a9192e17da32d069b2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "gilt_30y",
+    "observed_at": "2026-10-27T16:00:00Z",
+    "value": 5.7796,
+    "source_id": "boe_yields",
+    "ingested_at": "2026-10-29T09:33:31.060Z",
+    "payload_hash": "504f317dc9084000fbb2ce360f90f1900b20e41cd1d5d2c14107f50cb0064b40",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-08-26T16:30:00Z",
+    "value": 55.4,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-08-27T02:00:23.595Z",
+    "payload_hash": "3b55bd97b51612ce2fddfb0493486e472a12d8be1480b64c1d59f64d75eb1a55",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-08-27T16:30:00Z",
+    "value": 54.5,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-08-28T02:00:24.552Z",
+    "payload_hash": "cedfcfdd2ad8352bfcb9945d9315116277abf131d2ba9b4c365eccec0d3a45da",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-08-28T16:30:00Z",
+    "value": 54.5,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-01T02:00:25.712Z",
+    "payload_hash": "a9f36da43151f2cc858b92896856e87e65a0f999d96e952bb8762db0636d05b9",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-01T16:30:00Z",
+    "value": 53.1,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-02T02:00:25.293Z",
+    "payload_hash": "b85c0bb6c21f8b088f5fe5ee2ae9e0a5ae1aef1775f88fecccf3b783c351c7fe",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-02T16:30:00Z",
+    "value": 52.2,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-03T02:00:25.845Z",
+    "payload_hash": "27d3e169ad032fa79d2a1221c0b187565c0ffa2c557329e894bd7d782e88e771",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-03T16:30:00Z",
+    "value": 52.5,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-04T02:01:01.998Z",
+    "payload_hash": "077c36b7401cf9da6897d55b4b1bd1d7b752fe0bf5f780e50e568e4ef4322a57",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-04T16:30:00Z",
+    "value": 52.6,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-07T02:00:25.681Z",
+    "payload_hash": "8175857eddffcdb94c684e895f029cf5056926cc5ef328cb0dc30a10bb4ce653",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-07T16:30:00Z",
+    "value": 51.9,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-08T02:00:25.757Z",
+    "payload_hash": "1c198eae7b81b84ad37d4e02f898bad1ede50829739a60db0ee9025517ae2f20",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-08T16:30:00Z",
+    "value": 51.6,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-09T02:00:24.091Z",
+    "payload_hash": "d725b59953543d657a0f510941850d081846578664462b52d8c8a77e17d14217",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-09T16:30:00Z",
+    "value": 50.7,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-10T02:01:09.043Z",
+    "payload_hash": "331181c340e81c8c1ff3165a84ac19f744cef3bf9292717505ef7e4ba215f3e8",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-10T16:30:00Z",
+    "value": 49.7,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-11T02:01:06.422Z",
+    "payload_hash": "6a8ee20d3ec9c1cc9075d676235adbed9fcc8d5669baf87b9e6ba73b9fd4dc62",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-11T16:30:00Z",
+    "value": 49.9,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-14T02:00:20.502Z",
+    "payload_hash": "c5e4bdc26b04c064e905fcef9aaaa02cbeee544797b86000897f9c1d8667688f",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-14T16:30:00Z",
+    "value": 48.8,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-15T02:00:26.098Z",
+    "payload_hash": "6b9cfe78d30cc2729673f5f63fde0015842df635c8846a2745915706e24cb2fd",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-15T16:30:00Z",
+    "value": 49.1,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-16T02:00:24.264Z",
+    "payload_hash": "bbfb1f52b43b7cd46fc7e0bf74a393c16a292d9b6d965f03a64596b58631361c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-16T16:30:00Z",
+    "value": 52.2,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-17T02:00:21.889Z",
+    "payload_hash": "4b7f1abb686973c124d3473147db7bc8828d097d0c6325979224315faf73c0e5",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-17T16:30:00Z",
+    "value": 52.3,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-18T02:00:18.937Z",
+    "payload_hash": "9352a5a710c3afacf08ecb7067968ecf9f41c84394a6e5114193c93523acd67c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-18T16:30:00Z",
+    "value": 51.1,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-21T02:01:31.281Z",
+    "payload_hash": "7e3434e247d6ef2d8b2e61cac7468af26c2cb3cf8c8bb68db5bfc4bcc38f4894",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-21T16:30:00Z",
+    "value": 51.3,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-22T02:01:32.067Z",
+    "payload_hash": "f66c2f010feead739ae1d86e30efc1316d0d2104dba65e3dc1815c0e54096b83",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-22T16:30:00Z",
+    "value": 52.4,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-23T02:01:34.469Z",
+    "payload_hash": "5a4152c0ae4262c2bf553f027c6cc9770d2cc2562608acff30f496e6c851d40e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-23T16:30:00Z",
+    "value": 51.7,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-24T02:01:33.730Z",
+    "payload_hash": "f57238b7b5fb74182e558b864b8215be1041893d8201cce7905656eaa5a73e2d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-24T16:30:00Z",
+    "value": 51,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-25T02:01:34.524Z",
+    "payload_hash": "635ea3d2642c716409a763f6edd259789fedf9f04b3aa4b9b313674b974db06b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-25T16:30:00Z",
+    "value": 51.6,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-28T02:01:30.580Z",
+    "payload_hash": "cf547208380133fa6d6c1f4fb16e18bd47e380f63c3248f86a4d96cc9fe36c2d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-28T16:30:00Z",
+    "value": 56.2,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-29T02:00:39.745Z",
+    "payload_hash": "23578658a4a165b4f4450f713ac69d690ecad2290b5240d0636c1a345a2bfb35",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-29T16:30:00Z",
+    "value": 55.3,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-09-30T02:00:23.587Z",
+    "payload_hash": "9eeaa5e480dac5e1818b4196cc4897d9261ac65ab33a549b383e80e68da14148",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-09-30T16:30:00Z",
+    "value": 54.5,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-01T02:00:41.666Z",
+    "payload_hash": "bd4b6cb83c0aa251d84b3e1122f0795fa052d4a2f09257d0694983fd28168ff0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-01T16:30:00Z",
+    "value": 52,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-02T02:00:20.610Z",
+    "payload_hash": "0314e60b7209a32171db9133d9bbdc86cec282d0b0e666ac9f938fcc27d5906f",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-02T16:30:00Z",
+    "value": 52,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-05T02:00:37.539Z",
+    "payload_hash": "3022ded8c001e81fde318a4bf9b70168cbeae976f9ce8f81d0cac804ae58b4e1",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-05T16:30:00Z",
+    "value": 50.7,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-06T02:00:23.370Z",
+    "payload_hash": "c9af257e5e04acc541f8ebb02ec8c6f0185a6dfd55bb8b675e733ef637a3cf9f",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-06T16:30:00Z",
+    "value": 51.4,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-07T02:00:41.303Z",
+    "payload_hash": "0b7b755f3cbf86cb3d4c71e1c9c03cc9e9f8086abd5a9e268e5a44d4dd7176e6",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-07T16:30:00Z",
+    "value": 50.1,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-08T02:00:15.657Z",
+    "payload_hash": "5adbb0ae5a0a566b27f95a557ed58a57f2d966f0129af21fc1056e29783d52e9",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-08T16:30:00Z",
+    "value": 49.1,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-09T02:00:39.487Z",
+    "payload_hash": "d386a5076e3e342b5cb00a3318835244b7c869da3f815a2073c37add4ab00a9e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-09T16:30:00Z",
+    "value": 48.8,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-12T02:00:12.502Z",
+    "payload_hash": "3f2beabe7f9078e64f0aa166aab0dc5387def8a37c8d9635d68527c0ea69317d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-12T16:30:00Z",
+    "value": 49.3,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-13T02:00:18.828Z",
+    "payload_hash": "422c206e6d0a7470be0f580ec5e06cd9a689060f3b72547fb1a54cc4a7f1147b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-13T15:30:00Z",
+    "value": 49.2,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-14T02:00:27.604Z",
+    "payload_hash": "71d045f5d96e85bebdf79d3eb22e9f3af8cf23233e98221259727b57885828a8",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-14T15:30:00Z",
+    "value": 50.6,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-15T02:00:30.582Z",
+    "payload_hash": "0564b9a69bfc1e51c9461fb4ccabe8a99227f7e3acf5f7b9a710403df5454252",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-15T15:30:00Z",
+    "value": 51.7,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-16T02:00:20.449Z",
+    "payload_hash": "ee069a359c4ec7dbdaeb839e7918238b8c9ba0014b8ceb4ef41c72e526f9354d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-16T15:30:00Z",
+    "value": 51.8,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-19T02:00:15.817Z",
+    "payload_hash": "4cdf5bb61434495b726dc369944f88b3902e59d2fc9f401310a1444e0d3b101e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-19T15:30:00Z",
+    "value": 51,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-20T02:00:31.602Z",
+    "payload_hash": "80c89eb4e49d03da482f5f388ec55cc07b66adf193172706e909e4f410669d48",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-20T15:30:00Z",
+    "value": 52.8,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-21T02:00:29.689Z",
+    "payload_hash": "e7a41dfd9fe6c6336ee37f90e176783e2d0fdead3c305649c54953d7684bdcac",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-21T15:30:00Z",
+    "value": 53,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-22T02:00:41.987Z",
+    "payload_hash": "b6b3cac51c0dda697ce60d816cbb7cd6e1a493a38b8bdd6ea047c4ac02189e9b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-22T15:30:00Z",
+    "value": 53.4,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-23T02:00:42.149Z",
+    "payload_hash": "c3eb7989034c408df666f9ed59ba5a8083e53cf18b82af87c27a1271df6a9640",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-23T15:30:00Z",
+    "value": 54.1,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-26T02:15:48.943Z",
+    "payload_hash": "59331fb5422c2bafa5080e8cfcc6f7f28383ceed5101dfd618e27b00547323de",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-26T16:30:00Z",
+    "value": 54.4,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-27T02:00:43.686Z",
+    "payload_hash": "08ee340e16f8e051bdeb944f1d9640b7600ca914dcc4065feed108800d583c41",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-27T16:30:00Z",
+    "value": 55.8,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-28T12:15:35.260Z",
+    "payload_hash": "fixture-fallback",
+    "released_at": null
+  },
+  {
+    "indicator_id": "housebuilder_idx",
+    "observed_at": "2026-10-28T16:30:00Z",
+    "value": 52.6,
+    "source_id": "eodhd_housebuilders",
+    "ingested_at": "2026-10-29T02:00:42.206Z",
+    "payload_hash": "9a63a50480aa3b54bd5ccf587193d94867e3d1ae9453d2db9c63c12439551167",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-08-26T00:00:00Z",
+    "value": 24.178674937863047,
+    "source_id": "dmo",
+    "ingested_at": "2026-08-28T02:00:22.052Z",
+    "payload_hash": "a2c745c228881e4bdb205eba84566c5833c9380313691674c9ffb529357fc084",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-08-27T00:00:00Z",
+    "value": 24.180295182123672,
+    "source_id": "dmo",
+    "ingested_at": "2026-08-29T02:00:21.357Z",
+    "payload_hash": "fff9b73d9034325b542fa989b778ca6e8bf2642842cfa3f8dc2ad88d12b5403c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-08-28T00:00:00Z",
+    "value": 24.1867521238989,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-02T02:00:19.831Z",
+    "payload_hash": "e1e50dcfd2cadbd0a78bb0c624845e3e85099d6176f3b78498f6a61aa622f848",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-01T00:00:00Z",
+    "value": 24.18554854919734,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-03T02:00:20.666Z",
+    "payload_hash": "458a25fc2dd9062a5e8056796ffedebb24bb54cf6958f6c93b87b921a45e8b89",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-02T00:00:00Z",
+    "value": 24.189179531968367,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-04T02:00:57.356Z",
+    "payload_hash": "b8531a4cb397ff22a3e3637bb05b01a5c909d916d63cf978138a8cfeb96a3a3e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-03T00:00:00Z",
+    "value": 24.192796979412854,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-05T02:00:37.121Z",
+    "payload_hash": "3deeeea0da770e2a851258bd36e6fa68f1dc303ca24d0cefa29088607287ed87",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-04T00:00:00Z",
+    "value": 24.228577544347317,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-08T02:00:18.699Z",
+    "payload_hash": "38369d9023ac2623df89ce00fb10350a2cdb40ff3865d14d35f241099ce305d6",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-07T00:00:00Z",
+    "value": 24.232194687030457,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-09T02:00:18.291Z",
+    "payload_hash": "2ebce4b235aefe4f8be5753383b81e64ed417c2ef6db48e1bbd3cc0b60c41066",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-08T00:00:00Z",
+    "value": 24.235808495493753,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-10T02:01:03.562Z",
+    "payload_hash": "edd953f725c1c04a0d0bac602a3f10e2d911174feb05e8e5d063fdea932a5b99",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-09T00:00:00Z",
+    "value": 24.204127891006163,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-11T02:01:02.081Z",
+    "payload_hash": "70fb0348976a0318c09e1ccf779ad161aa98c2fcb6bd428564f71f7a17455761",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-10T00:00:00Z",
+    "value": 24.207738408599088,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-12T02:00:55.058Z",
+    "payload_hash": "76347e54064d203f2a31ed97e48200d8b7fc3823baf372735df1d5360f83846f",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-11T00:00:00Z",
+    "value": 24.1771614278186,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-15T02:00:19.757Z",
+    "payload_hash": "7e70d1c4202b0a4ed8bd2ea3198f5b465a73e43cba9426e274745883f1fdd0fb",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-14T00:00:00Z",
+    "value": 24.180760221661014,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-16T02:00:16.295Z",
+    "payload_hash": "dbd4f491f1b621c2a7bcfa59689fe07c633ab63b0cf0b5eb83f9df06c30488a9",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-15T00:00:00Z",
+    "value": 24.18437836449149,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-17T02:00:13.794Z",
+    "payload_hash": "f50aeb7f3e2d5c577c20e7a73f9b6de5ee67d2a23d4a8454f288c1c3708a5488",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-16T00:00:00Z",
+    "value": 24.17144888129124,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-18T02:00:11.479Z",
+    "payload_hash": "2fdba28ab1cc27e2a3582ca3d7823a5799246f557faacd82ff0e4534737f1245",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-17T00:00:00Z",
+    "value": 24.175054861729514,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-19T02:00:26.269Z",
+    "payload_hash": "9bdf4a215addea4d83efab65e159b6689d5966b6f81ae8fa8352f7c54d9bebcf",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-18T00:00:00Z",
+    "value": 24.185879706095157,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-22T02:01:28.869Z",
+    "payload_hash": "cdb585333f2837216872a4cfff2478f658f588304511c3d83b0a70cbf62e087e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-21T00:00:00Z",
+    "value": 24.18948741761704,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-23T02:01:32.478Z",
+    "payload_hash": "3f2129c0ec0735d1dec5a28f19095cb6c6759ed376c4db507a5976c23f19bc5d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-22T00:00:00Z",
+    "value": 24.19309707502699,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-24T02:01:31.897Z",
+    "payload_hash": "9947227f1026c47d446ebf5253bf2f800eb90896576ee34160224f1eb877759b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-23T00:00:00Z",
+    "value": 24.15107593005391,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-25T02:01:32.630Z",
+    "payload_hash": "88d274776562d3cec04761e35821f7cf1f8ec8d531418f578c23fdb0b7354afc",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-24T00:00:00Z",
+    "value": 24.15467703280352,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-26T02:01:12.750Z",
+    "payload_hash": "50c4c83e0a4a94ef6a9c60cb1a98334eb5bf637a41e0161ac848b31b2be9ff61",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-25T00:00:00Z",
+    "value": 24.16547830493845,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-29T02:00:37.106Z",
+    "payload_hash": "777d889f854c5e3dc6b22a8b846e564d76933e4c04c40da109f7a53caf0683f2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-28T00:00:00Z",
+    "value": 24.16907536708865,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-30T02:00:19.361Z",
+    "payload_hash": "bcb8f16b01da5da76b81af0fb3dc5af31c3c19911f929bdb0c3f506b4694a270",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-29T00:00:00Z",
+    "value": 24.172675201806022,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-01T02:00:39.095Z",
+    "payload_hash": "f62a413e6fc1e14fbc777a08df1d1c7ab0604bb3157bafba28580209a646b518",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-09-30T00:00:00Z",
+    "value": 24.13256039972797,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-02T02:00:14.287Z",
+    "payload_hash": "ea3175c6f4f78df67afdb490fc704e8993bf092684e55d2ce4783424c5ea22e7",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-01T00:00:00Z",
+    "value": 24.140001543787353,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-03T02:00:36.531Z",
+    "payload_hash": "d3c29ff671faf46c646883cce4f705115f1d8d8098224aa5a64ceb693b7f3a8c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-02T00:00:00Z",
+    "value": 24.15003144510191,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-06T02:00:18.136Z",
+    "payload_hash": "e977e9f4ac160dde4cae60fc2e6a05c017dbee6ea38374daafae22a2bf429709",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-05T00:00:00Z",
+    "value": 24.153376657267383,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-07T02:00:35.098Z",
+    "payload_hash": "ae076b7ed116f9eccf1d2f48e03ff4673f5f26517ed0a040b854b2a1c5ffc9c2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-06T00:00:00Z",
+    "value": 24.15672366451486,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-08T02:00:09.443Z",
+    "payload_hash": "629dc72e07b0a29129dc2634bbbb94ee8c077795538d08099e0535c7225d39b0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-07T00:00:00Z",
+    "value": 24.194673342458984,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-09T02:00:35.999Z",
+    "payload_hash": "df696158a9bbb3c4861da4065f134fd4811576c0a0322b0a7e87c21837e78e73",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-08T00:00:00Z",
+    "value": 24.177462919205617,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-10T02:00:14.309Z",
+    "payload_hash": "394e01b0d88bbbb9726d441ef929924343dd3154fe2f76d46d569ba8822efbef",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-09T00:00:00Z",
+    "value": 24.18750252019375,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-13T02:00:12.047Z",
+    "payload_hash": "21683f3ceb9036c9f8bf86c6153ec559c679730a00c08946936e449628a9ed31",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-12T00:00:00Z",
+    "value": 24.19084692322034,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-14T02:00:24.839Z",
+    "payload_hash": "4630c3b364aa4457a06041b4a1925486a2d78360f4c5271dbd97b6d174df4146",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-13T00:00:00Z",
+    "value": 24.194190789265548,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-15T02:00:23.660Z",
+    "payload_hash": "f8f445ce73b5b42e4c90485cc1b5777a33eb983fabef720bf61326485bcc6f5e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-14T00:00:00Z",
+    "value": 24.193418123128225,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-16T02:00:13.807Z",
+    "payload_hash": "4e006a5d7bd0c4ffe7bffb2f4e7f9f79f7820cd20673881d05920e70ba19614c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-15T00:00:00Z",
+    "value": 24.15574688818839,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-17T02:00:13.103Z",
+    "payload_hash": "d192dd22e68a1a68afe4a29161159866ff548250e099fd8df13db6409e6b4578",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-16T00:00:00Z",
+    "value": 24.165762737854404,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-20T02:00:28.523Z",
+    "payload_hash": "8eed96f864c6489988139c4e82b081da40ec297ea49409d82272a0bb12688165",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-19T00:00:00Z",
+    "value": 24.1690908957912,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-21T02:00:26.492Z",
+    "payload_hash": "77006dcb615724ca7e15b88150bc2c0efaabded3598f86cfedb8b22cdb3ba11b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-20T00:00:00Z",
+    "value": 24.451426872764067,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-22T02:00:39.606Z",
+    "payload_hash": "67f88d3d1ee6c863951bed4c0b228994391619f2ebc9e0af8e34827f29badf89",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-21T00:00:00Z",
+    "value": 24.419209625082708,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-23T02:00:39.707Z",
+    "payload_hash": "2ae69ee4fb1699443648c8008e8f2f3405044b5b2d06fa34a3cba452468ca68d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-22T00:00:00Z",
+    "value": 24.422565063674124,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-24T02:00:39.540Z",
+    "payload_hash": "451d703cddd34f10a0a78ac72609eee0f09116d257c983a5fee90dd6e9864c96",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-23T00:00:00Z",
+    "value": 24.47278414331609,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-27T02:00:42.145Z",
+    "payload_hash": "248a27ff6005af6b9f80a284d195d75a54295ae26ba631792f381faa9c975777",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-26T00:00:00Z",
+    "value": 24.476139543029674,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-28T02:00:39.110Z",
+    "payload_hash": "d1cef857768aa9d3a761222728ed2d14bb0c10b906ee28cd06a1606329a42c6d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-27T00:00:00Z",
+    "value": 24.47949830594804,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-29T02:00:40.208Z",
+    "payload_hash": "d5b280a4ddd24dd1fa9e766431d6723d4bc071d0f2f163796d62762c5e57dfe8",
+    "released_at": null
+  },
+  {
+    "indicator_id": "ilg_share",
+    "observed_at": "2026-10-28T00:00:00Z",
+    "value": 24.445222989423403,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-29T11:15:52.215Z",
+    "payload_hash": "f223e207f217649359c63390b11f99ae6e8c6e399f78ee90d6ed495ac285ad00",
+    "released_at": null
+  },
+  {
+    "indicator_id": "industrial_strategy",
+    "observed_at": "2026-09-01T00:00:00Z",
+    "value": 74,
+    "source_id": "dbt",
+    "ingested_at": "2026-10-29T11:15:58.070Z",
+    "payload_hash": "ad654ea2046ac658b81fc304af6af2454f87192bc1102b68c07f2c711bc9e509",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-08-26T00:00:00Z",
+    "value": 32.03647799758295,
+    "source_id": "dmo",
+    "ingested_at": "2026-08-28T02:00:22.052Z",
+    "payload_hash": "a2c745c228881e4bdb205eba84566c5833c9380313691674c9ffb529357fc084",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-08-27T00:00:00Z",
+    "value": 32.03647799758295,
+    "source_id": "dmo",
+    "ingested_at": "2026-08-29T02:00:21.357Z",
+    "payload_hash": "fff9b73d9034325b542fa989b778ca6e8bf2642842cfa3f8dc2ad88d12b5403c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-08-28T00:00:00Z",
+    "value": 32.03647799758295,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-02T02:00:19.831Z",
+    "payload_hash": "e1e50dcfd2cadbd0a78bb0c624845e3e85099d6176f3b78498f6a61aa622f848",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-01T00:00:00Z",
+    "value": 32.03647799758295,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-03T02:00:20.666Z",
+    "payload_hash": "458a25fc2dd9062a5e8056796ffedebb24bb54cf6958f6c93b87b921a45e8b89",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-02T00:00:00Z",
+    "value": 32.03647799758295,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-04T02:00:57.356Z",
+    "payload_hash": "b8531a4cb397ff22a3e3637bb05b01a5c909d916d63cf978138a8cfeb96a3a3e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-03T00:00:00Z",
+    "value": 32.03647799758295,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-05T02:00:37.121Z",
+    "payload_hash": "3deeeea0da770e2a851258bd36e6fa68f1dc303ca24d0cefa29088607287ed87",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-04T00:00:00Z",
+    "value": 32.03647799758295,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-08T02:00:18.699Z",
+    "payload_hash": "38369d9023ac2623df89ce00fb10350a2cdb40ff3865d14d35f241099ce305d6",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-07T00:00:00Z",
+    "value": 32.03647799758295,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-09T02:00:18.291Z",
+    "payload_hash": "2ebce4b235aefe4f8be5753383b81e64ed417c2ef6db48e1bbd3cc0b60c41066",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-08T00:00:00Z",
+    "value": 32.03647799758295,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-10T02:01:03.562Z",
+    "payload_hash": "edd953f725c1c04a0d0bac602a3f10e2d911174feb05e8e5d063fdea932a5b99",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-09T00:00:00Z",
+    "value": 32.16711201329949,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-11T02:01:02.081Z",
+    "payload_hash": "70fb0348976a0318c09e1ccf779ad161aa98c2fcb6bd428564f71f7a17455761",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-10T00:00:00Z",
+    "value": 32.16711201329949,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-12T02:00:55.058Z",
+    "payload_hash": "76347e54064d203f2a31ed97e48200d8b7fc3823baf372735df1d5360f83846f",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-11T00:00:00Z",
+    "value": 32.094536088687605,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-15T02:00:19.757Z",
+    "payload_hash": "7e70d1c4202b0a4ed8bd2ea3198f5b465a73e43cba9426e274745883f1fdd0fb",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-14T00:00:00Z",
+    "value": 32.094536088687605,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-16T02:00:16.295Z",
+    "payload_hash": "dbd4f491f1b621c2a7bcfa59689fe07c633ab63b0cf0b5eb83f9df06c30488a9",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-15T00:00:00Z",
+    "value": 32.094536088687605,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-17T02:00:13.794Z",
+    "payload_hash": "f50aeb7f3e2d5c577c20e7a73f9b6de5ee67d2a23d4a8454f288c1c3708a5488",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-16T00:00:00Z",
+    "value": 32.06559733442435,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-18T02:00:11.479Z",
+    "payload_hash": "2fdba28ab1cc27e2a3582ca3d7823a5799246f557faacd82ff0e4534737f1245",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-17T00:00:00Z",
+    "value": 32.06559733442435,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-19T02:00:26.269Z",
+    "payload_hash": "9bdf4a215addea4d83efab65e159b6689d5966b6f81ae8fa8352f7c54d9bebcf",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-18T00:00:00Z",
+    "value": 32.06559733442435,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-22T02:01:28.869Z",
+    "payload_hash": "cdb585333f2837216872a4cfff2478f658f588304511c3d83b0a70cbf62e087e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-21T00:00:00Z",
+    "value": 32.06559733442435,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-23T02:01:32.478Z",
+    "payload_hash": "3f2129c0ec0735d1dec5a28f19095cb6c6759ed376c4db507a5976c23f19bc5d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-22T00:00:00Z",
+    "value": 32.06559733442435,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-24T02:01:31.897Z",
+    "payload_hash": "9947227f1026c47d446ebf5253bf2f800eb90896576ee34160224f1eb877759b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-23T00:00:00Z",
+    "value": 31.985885019770343,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-25T02:01:32.630Z",
+    "payload_hash": "88d274776562d3cec04761e35821f7cf1f8ec8d531418f578c23fdb0b7354afc",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-24T00:00:00Z",
+    "value": 31.985885019770343,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-26T02:01:12.750Z",
+    "payload_hash": "50c4c83e0a4a94ef6a9c60cb1a98334eb5bf637a41e0161ac848b31b2be9ff61",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-25T00:00:00Z",
+    "value": 31.985885019770343,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-29T02:00:37.106Z",
+    "payload_hash": "777d889f854c5e3dc6b22a8b846e564d76933e4c04c40da109f7a53caf0683f2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-28T00:00:00Z",
+    "value": 31.985885019770343,
+    "source_id": "dmo",
+    "ingested_at": "2026-09-30T02:00:19.361Z",
+    "payload_hash": "bcb8f16b01da5da76b81af0fb3dc5af31c3c19911f929bdb0c3f506b4694a270",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-29T00:00:00Z",
+    "value": 31.985885019770343,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-01T02:00:39.095Z",
+    "payload_hash": "f62a413e6fc1e14fbc777a08df1d1c7ab0604bb3157bafba28580209a646b518",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-09-30T00:00:00Z",
+    "value": 31.909649257950324,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-02T02:00:14.287Z",
+    "payload_hash": "ea3175c6f4f78df67afdb490fc704e8993bf092684e55d2ce4783424c5ea22e7",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-01T00:00:00Z",
+    "value": 31.909649257950324,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-03T02:00:36.531Z",
+    "payload_hash": "d3c29ff671faf46c646883cce4f705115f1d8d8098224aa5a64ceb693b7f3a8c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-02T00:00:00Z",
+    "value": 31.909649257950324,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-06T02:00:18.136Z",
+    "payload_hash": "e977e9f4ac160dde4cae60fc2e6a05c017dbee6ea38374daafae22a2bf429709",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-05T00:00:00Z",
+    "value": 31.909649257950324,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-07T02:00:35.098Z",
+    "payload_hash": "ae076b7ed116f9eccf1d2f48e03ff4673f5f26517ed0a040b854b2a1c5ffc9c2",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-06T00:00:00Z",
+    "value": 31.909649257950324,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-08T02:00:09.443Z",
+    "payload_hash": "629dc72e07b0a29129dc2634bbbb94ee8c077795538d08099e0535c7225d39b0",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-07T00:00:00Z",
+    "value": 31.909649257950324,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-09T02:00:35.999Z",
+    "payload_hash": "df696158a9bbb3c4861da4065f134fd4811576c0a0322b0a7e87c21837e78e73",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-08T00:00:00Z",
+    "value": 31.873899209608066,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-10T02:00:14.309Z",
+    "payload_hash": "394e01b0d88bbbb9726d441ef929924343dd3154fe2f76d46d569ba8822efbef",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-09T00:00:00Z",
+    "value": 31.873899209608066,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-13T02:00:12.047Z",
+    "payload_hash": "21683f3ceb9036c9f8bf86c6153ec559c679730a00c08946936e449628a9ed31",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-12T00:00:00Z",
+    "value": 31.873899209608066,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-14T02:00:24.839Z",
+    "payload_hash": "4630c3b364aa4457a06041b4a1925486a2d78360f4c5271dbd97b6d174df4146",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-13T00:00:00Z",
+    "value": 31.873899209608066,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-15T02:00:23.660Z",
+    "payload_hash": "f8f445ce73b5b42e4c90485cc1b5777a33eb983fabef720bf61326485bcc6f5e",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-14T00:00:00Z",
+    "value": 31.889160836415968,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-16T02:00:13.807Z",
+    "payload_hash": "4e006a5d7bd0c4ffe7bffb2f4e7f9f79f7820cd20673881d05920e70ba19614c",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-15T00:00:00Z",
+    "value": 31.81788233370394,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-17T02:00:13.103Z",
+    "payload_hash": "d192dd22e68a1a68afe4a29161159866ff548250e099fd8df13db6409e6b4578",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-16T00:00:00Z",
+    "value": 31.81788233370394,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-20T02:00:28.523Z",
+    "payload_hash": "8eed96f864c6489988139c4e82b081da40ec297ea49409d82272a0bb12688165",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-19T00:00:00Z",
+    "value": 31.81788233370394,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-21T02:00:26.492Z",
+    "payload_hash": "77006dcb615724ca7e15b88150bc2c0efaabded3598f86cfedb8b22cdb3ba11b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-20T00:00:00Z",
+    "value": 32.30397976913412,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-22T02:00:39.606Z",
+    "payload_hash": "67f88d3d1ee6c863951bed4c0b228994391619f2ebc9e0af8e34827f29badf89",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-21T00:00:00Z",
+    "value": 32.241788634862864,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-23T02:00:39.707Z",
+    "payload_hash": "2ae69ee4fb1699443648c8008e8f2f3405044b5b2d06fa34a3cba452468ca68d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-22T00:00:00Z",
+    "value": 30.673965664751584,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-28T13:26:11.786Z",
+    "payload_hash": "hist:451d703cddd34f10a0a78ac72609eee0f09116d257c983a5fee90dd6e9864c96",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-23T00:00:00Z",
+    "value": 30.673965664751584,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-27T02:00:42.145Z",
+    "payload_hash": "248a27ff6005af6b9f80a284d195d75a54295ae26ba631792f381faa9c975777",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-26T00:00:00Z",
+    "value": 30.673965664751584,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-28T02:00:39.110Z",
+    "payload_hash": "d1cef857768aa9d3a761222728ed2d14bb0c10b906ee28cd06a1606329a42c6d",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-27T00:00:00Z",
+    "value": 30.673965664751584,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-29T02:00:40.208Z",
+    "payload_hash": "d5b280a4ddd24dd1fa9e766431d6723d4bc071d0f2f163796d62762c5e57dfe8",
+    "released_at": null
+  },
+  {
+    "indicator_id": "issuance_long_share",
+    "observed_at": "2026-10-28T00:00:00Z",
+    "value": 30.611564690428878,
+    "source_id": "dmo",
+    "ingested_at": "2026-10-29T11:15:52.215Z",
+    "payload_hash": "f223e207f217649359c63390b11f99ae6e8c6e399f78ee90d6ed495ac285ad00",
+    "released_at": null
+  },
+  {
+    "indicator_id": "mortgage_2y_fix",
+    "observed_at": "2026-08-31T16:00:00Z",
+    "value": 4.92,
+    "source_id": "boe_mortgage_rates",
+    "ingested_at": "2026-10-06T15:40:13.910Z",
+    "payload_hash": "8aff3a7b745e68809645d2c121e7823f9863f7d79b05e29499bc0f14664ee59b",
+    "released_at": null
+  },
+  {
+    "indicator_id": "mortgage_2y_fix",
+    "observed_at": "2026-09-30T16:00:00Z",
+    "value": 5.13,
+    "source_id": "boe_mortgage_rates",
+    "ingested_at": "2026-10-29T09:33:38.202Z",
+    "payload_hash": "8db5685d3889087b1022dbc313b958105c42d71ee88747dbfaae43786ee91af3",
+    "released_at": null
+  },
+  {
+    "indicator_id": "new_towns_milestones",
+    "observed_at": "2026-09-01T00:00:00Z",
+    "value": 68,
+    "source_id": "gov_uk",
+    "ingested_at": "2026-10-29T11:15:58.070Z",
+    "payload_hash": "ad654ea2046ac658b81fc304af6af2454f87192bc1102b68c07f2c711bc9e509",
+    "released_at": null
+  },
+  {
+    "indicator_id": "psnfl_trajectory",
+    "observed_at": "2026-10-28T00:00:00Z",
+    "value": 0,
+    "source_id": "obr_efo",
+    "ingested_at": "2026-10-29T11:15:48.001Z",
+    "payload_hash": "accdce61c28badebace8214f328f61b793135890f7171947ae53a916a3acb575",
+    "released_at": "2026-10-28T13:29:19Z"
+  },
+  {
+    "indicator_id": "rics_price_balance",
+    "observed_at": "2026-08-31T00:00:00Z",
+    "value": -28,
+    "source_id": "rics_rms",
+    "ingested_at": "2026-10-13T16:04:50.348Z",
+    "payload_hash": "hist:7b97129feeb4b4010a6ccd618ecf2b59e54f203370d314a80df46dda3196a34b",
+    "released_at": "2026-09-07T00:00:00Z"
+  },
+  {
+    "indicator_id": "rics_price_balance",
+    "observed_at": "2026-09-30T00:00:00Z",
+    "value": -32,
+    "source_id": "rics_rms",
+    "ingested_at": "2026-10-29T11:15:46.952Z",
+    "payload_hash": "acd482f55b7d6c4e6f48be2e8ab8f61ed2db48d788d639b6a537892e1fe59b5d",
+    "released_at": "2026-10-06T00:00:00Z"
+  },
+  {
+    "indicator_id": "services_pmi",
+    "observed_at": "2026-08-31T00:00:00Z",
+    "value": 52.5,
+    "source_id": "sp_global_pmi",
+    "ingested_at": "2026-10-13T16:04:50.348Z",
+    "payload_hash": "hist:0194106e5990f7740b9ffb02b6d53f0298458bc2d71d2e905c3df1a7751b26b6",
+    "released_at": "2026-09-03T00:00:00Z"
+  },
+  {
+    "indicator_id": "services_pmi",
+    "observed_at": "2026-09-30T00:00:00Z",
+    "value": 52.1,
+    "source_id": "sp_global_pmi",
+    "ingested_at": "2026-10-29T11:15:46.952Z",
+    "payload_hash": "acd482f55b7d6c4e6f48be2e8ab8f61ed2db48d788d639b6a537892e1fe59b5d",
+    "released_at": "2026-10-05T00:00:00Z"
+  },
+  {
+    "indicator_id": "smr_programme",
+    "observed_at": "2026-09-01T00:00:00Z",
+    "value": 62,
+    "source_id": "gov_uk",
+    "ingested_at": "2026-10-29T11:15:58.070Z",
+    "payload_hash": "ad654ea2046ac658b81fc304af6af2454f87192bc1102b68c07f2c711bc9e509",
+    "released_at": null
+  }
+]

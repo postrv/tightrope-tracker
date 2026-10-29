@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-29T11:20:07.522Z",
+  "result": {
+    "adapter": "eia_brent",
+    "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+    "fetchedAt": "2026-10-29T11:20:06.474Z",
+    "from": "2026-10-15T00:00:00.000Z",
+    "to": "2026-10-28T23:59:59.999Z",
+    "observationsFetched": 9,
+    "rowsAttempted": 9,
+    "rowsWritten": 0,
+    "rowsRejected": [],
+    "earliestObservedAt": "2026-10-15T00:00:00Z",
+    "latestObservedAt": "2026-10-27T00:00:00Z",
+    "notes": [],
+    "dryRun": false
+  },
+  "audit": {
+    "source_id": "eia_brent:historical",
+    "started_at": "2026-10-29T11:20:05.106Z",
+    "completed_at": "2026-10-29T11:20:06.990Z",
+    "status": "unchanged",
+    "rows_written": 0,
+    "error": null,
+    "source_url": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm"
+  }
+}

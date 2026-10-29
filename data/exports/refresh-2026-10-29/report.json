@@ -1,0 +1,51 @@
+{
+  "status": "REFRESHED_AND_VERIFIED",
+  "date": "2026-10-29",
+  "headlineBeforeRefresh": 37.0,
+  "headlineAfterRefresh": 37.1,
+  "newObservations": 2,
+  "rawObservationsAfter": 17071,
+  "changedIndicators": [
+    "ilg_share",
+    "issuance_long_share"
+  ],
+  "unchangedOtherCurrentReadings": 29,
+  "sourceGapReview": {
+    "from": "2026-09-01",
+    "to": "2026-10-28",
+    "primaryObservationsCompared": 248,
+    "missingReferenceDates": 0,
+    "valueDifferences": 0,
+    "duplicateDateContradictions": 0
+  },
+  "brentCatchup": {
+    "fetched": 9,
+    "inserted": 0,
+    "rejected": 0,
+    "status": "unchanged",
+    "existingObservationsOverwritten": false
+  },
+  "publishedScoreHistoryRewritten": false,
+  "futureDMOCatchupUTC": [
+    "09:45 Monday-Friday",
+    "15:45 Monday-Friday"
+  ],
+  "limitations": [
+    "Latest source date is a reference or release timestamp; it is distinct from score computation and fetch time.",
+    "No unfinished 29 October equity session or not-yet-published BoE/EIA observation was manufactured.",
+    "The source gap review covers the stated recent range, not every historical series."
+  ],
+  "evidenceSha256": {
+    "boe_breakevens-primary-2026-10-29.csv": "87675841f885f689061b23ed58a37c3d77557f848b0f7ddfb8fe03ef30468f3d",
+    "boe_fx-primary-2026-10-29.csv": "69f1e031724e7c0240433921ea94e9652180e0da91ddf1264b4f784f799c58d9",
+    "boe_yields-primary-2026-10-29.csv": "168fb1fb48ba503be093a11b3e9f279fc0c50f28730adca42fa5c62b2617b764",
+    "brent-catchup-verification.json": "2c6fd10772384e3d2d4f49146a0128cdbca3d999978f0022c3de11b4b7000471",
+    "dmo-D1A-2026-10-29.xml": "f223e207f217649359c63390b11f99ae6e8c6e399f78ee90d6ed495ac285ad00",
+    "dmo-evidence.json": "a721cf45cfef67f3eed3623a1c621c85567e6f4809ba1f6d3983cc362b639e57",
+    "eia_brent-primary-2026-10-29.html": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+    "forced-public-refresh.json": "41bd551c5f63f3a5bfe8a76da8cc825bb294f997f0b3eb5f30a0ae110f08ced1",
+    "post-refresh-verification.json": "eb61f00fd502367f645f70ec73e4a9df75af3d018dabf551b2607430bb583ba5",
+    "recent-observations-readonly.json": "34c81cd5489ab365fec6f128fc63b0becb6826a98e36f952febcbbea4c563be5",
+    "source-gap-audit.json": "e773c2b757cdba9d453114a90be271a09d98a08a08f9967cf2cdc29c15b2d95e"
+  }
+}

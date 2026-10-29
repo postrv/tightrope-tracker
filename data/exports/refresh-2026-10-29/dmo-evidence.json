@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-29T11:17:38.211Z",
+  "archive": {
+    "url": "https://www.dmo.gov.uk/data/XmlDataReport?reportCode=D1A",
+    "status": 200,
+    "sha256": "f223e207f217649359c63390b11f99ae6e8c6e399f78ee90d6ed495ac285ad00"
+  },
+  "result": {
+    "observations": [
+      {
+        "indicatorId": "ilg_share",
+        "value": 24.445222989423403,
+        "observedAt": "2026-10-28T00:00:00Z",
+        "sourceId": "dmo",
+        "payloadHash": "f223e207f217649359c63390b11f99ae6e8c6e399f78ee90d6ed495ac285ad00"
+      },
+      {
+        "indicatorId": "issuance_long_share",
+        "value": 30.611564690428878,
+        "observedAt": "2026-10-28T00:00:00Z",
+        "sourceId": "dmo",
+        "payloadHash": "f223e207f217649359c63390b11f99ae6e8c6e399f78ee90d6ed495ac285ad00"
+      }
+    ],
+    "sourceUrl": "https://www.dmo.gov.uk/data/XmlDataReport?reportCode=D1A",
+    "fetchedAt": "2026-10-29T11:17:38.210Z"
+  }
+}

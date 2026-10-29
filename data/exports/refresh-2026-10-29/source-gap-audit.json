@@ -1,0 +1,1865 @@
+{
+  "checkedAt": "2026-10-29T11:18:50.072Z",
+  "mode": "READ_ONLY_ADAPTER_REPLAY_NO_PRODUCTION_WRITES",
+  "range": {
+    "from": "2026-09-01T00:00:00.000Z",
+    "to": "2026-10-28T00:00:00.000Z"
+  },
+  "storedReadCount": 478,
+  "results": [
+    {
+      "adapter": "boe_yields",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDMNZC%2CIUDLNZC&Datefrom=01%2FSep%2F2026&Dateto=29%2FOct%2F2026&UsingCodes=Y",
+      "sourceFetchedAt": "2026-10-29T11:18:48.573Z",
+      "sourcePath": "boe_yields-primary-2026-10-29.csv",
+      "sourceSha256": "168fb1fb48ba503be093a11b3e9f279fc0c50f28730adca42fa5c62b2617b764",
+      "historicalCount": 82,
+      "earliest": "2026-09-01T16:00:00Z",
+      "latest": "2026-10-27T16:00:00Z",
+      "latestLive": [
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3223,
+          "observedAt": "2026-10-27T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "168fb1fb48ba503be093a11b3e9f279fc0c50f28730adca42fa5c62b2617b764"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.7796,
+          "observedAt": "2026-10-27T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "168fb1fb48ba503be093a11b3e9f279fc0c50f28730adca42fa5c62b2617b764"
+        }
+      ],
+      "missingReferenceDays": [],
+      "existingValueDifferences": [],
+      "notes": [],
+      "observations": [
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.2068,
+          "observedAt": "2026-09-01T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:53434a186a3b71feb971922055e2b16a754ac06cb676400fe97fff324fda7623"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.8845,
+          "observedAt": "2026-09-01T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:9243f203c7262e3d929ea5ba653462f667a1a8b5634ea8d2326feef3e598e01b"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.2416,
+          "observedAt": "2026-09-02T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:2da97f8a7de529f4141c1be24f8e1e57da208a67be3c652a106e5176fb5b320a"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9164,
+          "observedAt": "2026-09-02T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:0043cf2710447929112461d1fcce0dd15906772b16133763a93ad207dae1d0f2"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.1575,
+          "observedAt": "2026-09-03T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:b51f7c365dee1a54a806ec3dfe79b93bbcc2cd5f4ff6f38f1828250c2e5c9a18"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.841,
+          "observedAt": "2026-09-03T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:fb30e7b7d0c93147acfb514212c01fc277f873b06b93853416beff3400261aa0"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.1425,
+          "observedAt": "2026-09-04T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:4d44a75e3deb679bfd289b64db5e669ce60d6913d9a566492f6884be5295b0ab"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.8225,
+          "observedAt": "2026-09-04T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:6ebe584baf3aa3b723ceab040f47c473609ecf1d693410d351132bf15cfcd712"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.1775,
+          "observedAt": "2026-09-07T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:fa13480836dbb0745c1589ade5960ae01857177fafee3a2162a8adf6c5043b0f"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.8562,
+          "observedAt": "2026-09-07T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:992b1d15ea22eefafd7abb24de5a72b3c8feca9fce3a2376ccb851026a573ad8"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.1626,
+          "observedAt": "2026-09-08T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:6f52e50a6f972337532f5216a0d759c6c3b6a240e28a57f41756de6635f569ef"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.8358,
+          "observedAt": "2026-09-08T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:ddfd09a81e1e1db72e42c12ab41b03e4848931f1acd4c066d05357ba24f717eb"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.2493,
+          "observedAt": "2026-09-09T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:576ca3510d906388d5fe97d9bc2e1b8435e41d77764f6023e5fcc29fd6f9c5c8"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9065,
+          "observedAt": "2026-09-09T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:b1b1a8706bf689523815058733c0dd56e7f43b49cab385c1c1d0605409787eb1"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3572,
+          "observedAt": "2026-09-10T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:984752f8716533be1bb1197c1041e69d7403721a8ecc6f2fffb87b1b23be9751"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9666,
+          "observedAt": "2026-09-10T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:7b370fb6717d4cd2d3cf6c28c5e7d5e556eb038d32b94aaf004b07d9e3d2d5c4"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3483,
+          "observedAt": "2026-09-11T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:e42550b8c1382e0257147ab511d2463647e65dee5bd3da976e58783675142963"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9643,
+          "observedAt": "2026-09-11T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:06f8c805b8cb950fcaebb3ebfbe2c8d9eae30313a9529429cb3073a12c40f214"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3882,
+          "observedAt": "2026-09-14T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:b6b5ca951d5b02d1c82d0e41dc89eaea7c0360d0d5d326b11f2f3dd3ac18143d"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9568,
+          "observedAt": "2026-09-14T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:d7214f987b08c10a530e25dbf9d30f3fde946497e0f37a9be37a961e54eac7cb"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3861,
+          "observedAt": "2026-09-15T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:814dabcea44d411790f3ba6ee1436db51c0b2451734f55030276496555a6c152"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9723,
+          "observedAt": "2026-09-15T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:f91573eec145b025bae69fc132cee1c2847e2d09a9a91ea5f51f75bddd4ac8d7"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.2876,
+          "observedAt": "2026-09-16T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:61a22f2aba3c255eb32151081ee0ac35c8168f59f1d229fd41140bfd863edd68"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.8951,
+          "observedAt": "2026-09-16T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:940e6fcbe59317fbaa36e12e7042e7504060ad531cdad6c6450df59ed97e4f2f"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.2074,
+          "observedAt": "2026-09-17T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:dfe18d242a04d312a142e11db22d7f1beabcd77681a2d9776d2dd507c57ec688"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.7726,
+          "observedAt": "2026-09-17T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:c68042af7d1a4b2a75dd4b51cc4c290e3cb9b9a74fcb55b8cd86cb28b5a8ea13"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.2899,
+          "observedAt": "2026-09-18T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:312ed8e965b32dcec76e684b65f93900a7b63f6fad8f3bda3d32e7233f286475"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.7894,
+          "observedAt": "2026-09-18T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:8ead127bc25552ea422fec196afe7db6f34de8764cc75ee6c904a4ce958b4ac7"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.1935,
+          "observedAt": "2026-09-21T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:8f5dd2f56d5c86f93595728ddac58033cdded9f371ed35cd7d5673ba35cb644c"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.7367,
+          "observedAt": "2026-09-21T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:1b78e4d4b8978497abb57a33a58e56d8efb8c85ae456d2433cb7079e157b719c"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.2113,
+          "observedAt": "2026-09-22T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:d26b216d36e1a5be90d0a03b7c83b89d3aa0a6c5cbd867395320f2dc54046d73"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.7681,
+          "observedAt": "2026-09-22T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:37493afb9d1ac7a7c5165638ad0387a5c2edf13fb99e2c404423aaa45fa0c90e"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3055,
+          "observedAt": "2026-09-23T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:f2b2771a35776dcf97db988c1838607f819f89a45018df99e41abbab00b02a32"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.8458,
+          "observedAt": "2026-09-23T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:3860d94ac6ea2837781ded5e671c80e00a175ef59ca0210ec67f2041d22d3144"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3613,
+          "observedAt": "2026-09-24T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:55d01b977a458d2a33625051b4ba4ed21a8cd8eca3521c4e6560fbf271062674"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9034,
+          "observedAt": "2026-09-24T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:be37174c3921efa42d31bdd0996b4944b339f036e89a37592e2945708ced2ed9"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3842,
+          "observedAt": "2026-09-25T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:41587556002db358a306f979a90995a91bd2b33c4485a17a3009e5edd7e092b4"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9312,
+          "observedAt": "2026-09-25T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:23180ea3779394d4fd2405517700c4655673ad5d4a36960c3e8e413b680d0737"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.4123,
+          "observedAt": "2026-09-28T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:5d8f6783b9447cb387cce164449c7fc771584d5663bf9cae3b2700684f7e3540"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9618,
+          "observedAt": "2026-09-28T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:d0f160b7e3e61bfd294385ae5222d10a7990ae457c6effcc8eaf36e4f8d34cde"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3807,
+          "observedAt": "2026-09-29T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:e346dc909c2eb243e7dbb25766f907f7a7e06fa7ef7e8f0daec76727aee0aa0d"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9483,
+          "observedAt": "2026-09-29T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:c5e03946ff3113e64180cc89b79a6b243b3c402635767f81122daa1600ee60ed"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.4028,
+          "observedAt": "2026-09-30T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:62483832edc6a978d8db9c9a448954a5d1275f8c17f968bf3f406124d5bcf6e4"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9766,
+          "observedAt": "2026-09-30T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:017bb1dbe4bb5be950379418b5df7d422dfcd9b66c18fa8e2eeadd851afe64d2"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.424,
+          "observedAt": "2026-10-01T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:93b25206377d46663bac9424b3daa6d94adb401c8a6305d9a9d79d6d5580f42c"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 6.0143,
+          "observedAt": "2026-10-01T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:205a4ec720a552d1a06daa4976a0a18a5f6323aeda636f567a8d51ed176122f1"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.354,
+          "observedAt": "2026-10-02T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:b5df98ff14930570ef2531697dfdc004611c68b89006ce9f4a650d641605715a"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9242,
+          "observedAt": "2026-10-02T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:3fc297119c511d5eb45d61de6d5c7258b296af91b38ae9ecc71545fcdb82d393"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.4191,
+          "observedAt": "2026-10-05T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:bad55f97f2b92ea0eb5ab2d3cbcae5611cf2cec10eecd2ef14e210aa140f87ed"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9909,
+          "observedAt": "2026-10-05T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:0ba5d79f1b65b3eb132772f6128c40faf6354b5bfbab33ec190a7ed1bdf36b7d"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3677,
+          "observedAt": "2026-10-06T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:aa0bae0d1b5f10a36a4ea80022f6fdb6e0042b5be8f46b9e501f0279587abf36"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9401,
+          "observedAt": "2026-10-06T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:8544d2a0f0a613460bc49b4d30c3b5c89f68d487af3faaae6887c00a3cd055b2"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.4412,
+          "observedAt": "2026-10-07T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:41cf7019a8679ea52980f6b8f2175c8ee3fab541e96322dc5a55edd9db24e597"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 6.0228,
+          "observedAt": "2026-10-07T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:64f36fdc3946c08cb62dd9896babf3635f6223d7b356c5e7ebd1524ffef3d837"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.4781,
+          "observedAt": "2026-10-08T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:a2789a87a7b2522afc8c549acea603df08e4414c2b591abec91dd480f287aa9b"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 6.0428,
+          "observedAt": "2026-10-08T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:a29011b9082697ed65a81f91011ebb5823098b45b4f5984dc3c7862b5cd935ce"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.4452,
+          "observedAt": "2026-10-09T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:5ea341ee9db6eaf4614be1a70ba10f083931efbae4f39e323b9edb7ee927da6f"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 6.0036,
+          "observedAt": "2026-10-09T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:7cce264b4ef09a5c2143821b1793cbe8423da0fc67023083f29c6e2fb7d76ed7"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.4287,
+          "observedAt": "2026-10-12T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:d773b44ac83c6bc1ea13bc26082dd137ef15b43d467367f1546e0e84cb8910d9"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9708,
+          "observedAt": "2026-10-12T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:118d0f6e7abaac0dcc8aeabcbc6e2d676b0846d0c4589550582b53582230bac1"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.4278,
+          "observedAt": "2026-10-13T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:354985f2427da52453633c05d075f6930ba4bd6319a08dfa4d66571aaad016d5"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9603,
+          "observedAt": "2026-10-13T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:e0caff5e499dbb972a85ed8a7a3be9fdcd910758022c263bb8f0c2c51b47e96f"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.4199,
+          "observedAt": "2026-10-14T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:2f63274f1d640f76b9ae24dd0393c00129e1b46e9b7869526fc8f06f4875d600"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9565,
+          "observedAt": "2026-10-14T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:3640a91ab11a825d6254f96a3a38d144d34f1fe8446ec313a194a8c76bff0d5f"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3435,
+          "observedAt": "2026-10-15T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:c9c25d7210ac7d0b3efa82403aef3bf9ca72c3e6ff59df3ad03514be2edff3e7"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.8726,
+          "observedAt": "2026-10-15T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:4c0bc48452ec3de962bc1c4ee9370416d156144762d96b6f0ff63ecb54bd5a5b"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3373,
+          "observedAt": "2026-10-16T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:2e7de101be9e687cf6adbde031d6c53113bcfbf9e04b47bf273c31e2414d7077"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.8634,
+          "observedAt": "2026-10-16T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:740745b429553cdd16fc4f8860f3c9df603accdba65564abac957819e40cb3b4"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.4136,
+          "observedAt": "2026-10-19T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:eb0656ce575676c33eb9d103b3dd9f73dc175baaa0125f58c6fdf14af11a8d74"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.9312,
+          "observedAt": "2026-10-19T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:3c184738a12cd46d8e43f437531191b7ea627ed466bc1daef35c429476f59fa4"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3841,
+          "observedAt": "2026-10-20T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:095b9f21587ce1839b56326d7b5d1893d428b1f99df9ff4337341f236f250769"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.8766,
+          "observedAt": "2026-10-20T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:c48dfa9c45f29ced747bd1c1b8db56995db6c71e99979ef994b27affbac2b810"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3682,
+          "observedAt": "2026-10-21T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:7adead39ead97055d270404349ca60d3c40dfff693dbe1bc40ffc9d6148607f1"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.8388,
+          "observedAt": "2026-10-21T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:321941c914ae36f41877bc334324d0969ed476f755907607cefad60f3fb7933c"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.312,
+          "observedAt": "2026-10-22T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:2e7f03fedca4a52b8964e79b53e19899869905452013a25973430f5a5ba600b0"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.7609,
+          "observedAt": "2026-10-22T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:3b2ec1cd04b4d33f5c08dceff129b4ddf1ee2fe0a37e4fe641ce0813018b6203"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3475,
+          "observedAt": "2026-10-23T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:2d4463e460d3404c78171526996c0c7d74023c0fe23b06c43465c7c4831fb9f3"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.8075,
+          "observedAt": "2026-10-23T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:722b31e213dd2e1dd82b56179183b665887a4e45ebef731c4256cae6cd5a6cc2"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3259,
+          "observedAt": "2026-10-26T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:3854e357d1b4818ed2fbc47f0691d3af80d0160f360e00ded552a8db5b39cba9"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.7873,
+          "observedAt": "2026-10-26T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:4346a1d7ae4d4f43a9358fee92e88d3769241bfec820b048de55e730236b0d33"
+        },
+        {
+          "indicatorId": "gilt_10y",
+          "value": 5.3223,
+          "observedAt": "2026-10-27T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:58ea45176aab89b32b3b77df3feddc84e27795b67201c18d789428d70dc7cc79"
+        },
+        {
+          "indicatorId": "gilt_30y",
+          "value": 5.7796,
+          "observedAt": "2026-10-27T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:21f1b8d2fa2e6e4691b1b65ffa08333a318da74649379fa3893407c74a913e24"
+        }
+      ],
+      "conflictingSameDayRows": [],
+      "missingExactTimestampKeys": []
+    },
+    {
+      "adapter": "boe_fx",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=XUDLUSS%2CXUDLBK67&Datefrom=01%2FSep%2F2026&Dateto=29%2FOct%2F2026&UsingCodes=Y",
+      "sourceFetchedAt": "2026-10-29T11:18:49.030Z",
+      "sourcePath": "boe_fx-primary-2026-10-29.csv",
+      "sourceSha256": "69f1e031724e7c0240433921ea94e9652180e0da91ddf1264b4f784f799c58d9",
+      "historicalCount": 84,
+      "earliest": "2026-09-01T16:00:00Z",
+      "latest": "2026-10-28T16:00:00Z",
+      "latestLive": [
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3301,
+          "observedAt": "2026-10-28T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "69f1e031724e7c0240433921ea94e9652180e0da91ddf1264b4f784f799c58d9"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.8635,
+          "observedAt": "2026-10-28T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "69f1e031724e7c0240433921ea94e9652180e0da91ddf1264b4f784f799c58d9"
+        }
+      ],
+      "missingReferenceDays": [],
+      "existingValueDifferences": [],
+      "notes": [],
+      "observations": [
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3538,
+          "observedAt": "2026-09-01T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:fadcc80027a427cbe87bb897e8981d99e13a55c9e2d2d56bd0638eec483dff2d"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.6888,
+          "observedAt": "2026-09-01T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:90d97ab491d1e1ef6d511bac8bab06fd62a6d8e38fbad82086f2df92306245d4"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3506,
+          "observedAt": "2026-09-02T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:552ecf6d986b43e517c13be2af8054b8f6812d6ebccb372a2d44badb61f26c46"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.4576,
+          "observedAt": "2026-09-02T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:9c86d837d907b4b0e2aa976508c20e957e23c583e69b3c48670f0819c29d7dd5"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3518,
+          "observedAt": "2026-09-03T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:b909b64090e2816d78e01534bab4a8a15f22673f9eb22588c5f942832630e7b6"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.3438,
+          "observedAt": "2026-09-03T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:b49e164f98f043e33f0b9b0f724b036168b92f9e57f67c91ddadad02732e640d"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3515,
+          "observedAt": "2026-09-04T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:28a54efd3790393e03013348f8163e3acba948591bad51f404802e3abf327511"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.3291,
+          "observedAt": "2026-09-04T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:8fb80aeb194cba37ce8fea6698ae41d55c8803f48f02a8db3ac9f0fa227e2fb0"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3545,
+          "observedAt": "2026-09-07T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:ec1b9e916f6197942f0ef6566084cf9bd0689d8dcb39d2c1c9d1884947885feb"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.4308,
+          "observedAt": "2026-09-07T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:cb9ae86d5ca83cfddaf65053783d4ca4c6e604190b80b974d065fac2f1c129bc"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3553,
+          "observedAt": "2026-09-08T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:70262ea2c658d83cbdce7a1bed6279a7d460d32736c890e0a864d5fd78631b49"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.4688,
+          "observedAt": "2026-09-08T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:ee95e38f12c08daf03b7e373ab5681660a13b19ecb4fdadd6cb6a830d869078f"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3563,
+          "observedAt": "2026-09-09T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:2ea5dd883af4902415c0609678c85f54c5d563f6f6292cb0afd964e295ebb5d4"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.4561,
+          "observedAt": "2026-09-09T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:fa6ed1dac8f8809f3c69a93740278f83d17ced73c5fc1d421bf6d2144b13842c"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3531,
+          "observedAt": "2026-09-10T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:b57aca6ce464b219195c4a391be6ba9e07408700eba576b59c3c1de66953039f"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.4105,
+          "observedAt": "2026-09-10T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:86b802623fd46afe2e9b47dd8d07782f34ac56f125ff461b0cb83b7957c32daa"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.353,
+          "observedAt": "2026-09-11T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:444807613d5cb90538796539a60234fe88c6497389bd629985e83e64759adc1a"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.4725,
+          "observedAt": "2026-09-11T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:25442e2076a18e92c72642a2e26cfba0c9efd9ad2bc68f3bf2b9d13c51438dde"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3476,
+          "observedAt": "2026-09-14T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:a2096293d78fcf23b6be790a4e924ded337ad86e98248d832e26e7915e279b27"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.4831,
+          "observedAt": "2026-09-14T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:2c4352f812731faf315f949aa68cb0e9aee034d02c2c21fc1252e10e30c7c2a8"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3488,
+          "observedAt": "2026-09-15T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:26a835cea80b39d97b056ab97d9dcde5656030cfb30a371d054f8caf1ac2b7ba"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.5725,
+          "observedAt": "2026-09-15T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:a282a2e7d71d4f062936498f56149a2446be92f3369a653757f0a3cd1c1dd189"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3454,
+          "observedAt": "2026-09-16T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:7144504124c6a864141fb1cc21166facf9d9152222ce22c078ffe78a57e2a5d8"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.3784,
+          "observedAt": "2026-09-16T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:463061e8b314d2ce237f961910261ef6c5d48195a02b6920bac86b90f6af5dde"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3353,
+          "observedAt": "2026-09-17T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:8a022d08154ea4f352bcf2da9b2118429152ddc4cf9cc59b01873a4e73ec467a"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 84.973,
+          "observedAt": "2026-09-17T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:5135015d29d3b8e94b1f0acac61713ebfb13f489792539a23ea4af9883d2afde"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3361,
+          "observedAt": "2026-09-18T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:89d7838811a2a42c93b0cba3538757bb31df6a6d7d8b63c7053da4c928b24be8"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.1567,
+          "observedAt": "2026-09-18T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:f926dd6ac510b1535c406d8655d5119cf4c0ff77d872ad276cfabc3989c85089"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3374,
+          "observedAt": "2026-09-21T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:aa14e1ebbc952b894ba72cc4a0540f2e32bb7f5558f60605e44862342d9da58d"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.1494,
+          "observedAt": "2026-09-21T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:c2c397fdca8e5ca4abf13e50789ad82e9aa1c66743b13a86da3176ad64312629"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3348,
+          "observedAt": "2026-09-22T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:6c760a5cfa80182e0672cac865efc59746cbb7261c9f7b70762845a4d78dfbcf"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.0826,
+          "observedAt": "2026-09-22T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:4d1d7b4e9dd57ba8440588647fc78f24b582adb3ed62f3b5a971aa2771ecb090"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3265,
+          "observedAt": "2026-09-23T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:1d0a2b88fe02b0a57daef801d4d561866ea3f840a087a289aee66a72057938d8"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 84.7912,
+          "observedAt": "2026-09-23T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:0b6188801b2d6e655f1515bc887b9a8d8297ba0ced98bbb02543fabc6e84c8b6"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.322,
+          "observedAt": "2026-09-24T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:68ee71c93afff059e0615faf88b9892066420c3ac925704bc06d9672c75f7742"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 84.654,
+          "observedAt": "2026-09-24T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:ca0ff4f6d7d5ad22ad93352dd707c4fcb2b83eddd8375f48d621f823c5e9e926"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3246,
+          "observedAt": "2026-09-25T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:4c4abe1a759979f9c9992545dbec76f751a2b7b8d403fe2c56ce181a905f7166"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 84.6848,
+          "observedAt": "2026-09-25T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:d5c8d0f3182b0ee6b50533ed06d8ac70b855540a6479ace02c0ad5c3dcd3223a"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3251,
+          "observedAt": "2026-09-28T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:e207c2e21e711a2dd320342e5ea4ee534481a994711f33461d964a281b30064f"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 84.8734,
+          "observedAt": "2026-09-28T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:3ad32494f8917cf6aed192ad5799caabc267f2f9dd4cf7e750dcfd7b29fc84ff"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3214,
+          "observedAt": "2026-09-29T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:1374674eb53e554596dfab3c0d83da1ea249ce57c956eaf5e709250c3554a6cb"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 84.745,
+          "observedAt": "2026-09-29T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:c25ebe312ad7ad94981501a2c502469b25544a88cedb933a8e3bba84a31eb543"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3285,
+          "observedAt": "2026-09-30T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:a005af0398287bfea351515ea26cff7058b4fbd6feb2cd055d4298307361039e"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.1191,
+          "observedAt": "2026-09-30T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:ff0e7621b55f5e84965ee22618fde8a118b150662b91b8efb8d7a49f351e29a9"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3212,
+          "observedAt": "2026-10-01T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:110c14ba0e51b20e4cf5d7aa6c5c4fd33cf8033d7054cee11c4f71bf7c04e153"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.0274,
+          "observedAt": "2026-10-01T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:9c2d1a973a039f8082dd6e3ad69516d53258063779ca35a308cf4e068bfe5170"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3249,
+          "observedAt": "2026-10-02T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:40d838ba7312ef13ed986f25fc115c68c922bc3e65ab2fe307f5b2fe44785ae3"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.1596,
+          "observedAt": "2026-10-02T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:a2aeb731b84ff6370d79535cfadbf4671764c8dd1a71a2650b41615e9ad29e7c"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3221,
+          "observedAt": "2026-10-05T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:5ee38295135efa2551c09000d0f60214ba59bc141015bc16aa31adf63d9749ca"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.249,
+          "observedAt": "2026-10-05T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:0cd119736458aea16d0b9a34f82939cf938e56f3afb7e7e81cd38f16f802d42b"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3279,
+          "observedAt": "2026-10-06T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:f1a8460ce44ffc1ec05881fd7acbbc6ee57f396d1cb2699db79139aed59f1dca"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.4243,
+          "observedAt": "2026-10-06T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:4f5d8330d555ada1ba56245e7dc510f3f839f0cbcd39c1da7245836d2c6eb7a9"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.322,
+          "observedAt": "2026-10-07T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:6893df83823978084cec648a660c47b6b7cf40a4bbdaa824bfb6b82390e014e8"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.295,
+          "observedAt": "2026-10-07T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:bb929bb3b86ac464172dfe9b82ec47ca4fc0cb7b8e267663f6d300980f49800c"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3226,
+          "observedAt": "2026-10-08T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:831a027e882d3e6a02f8cd082b618834e7c5305c59f92474c1a7eaada5069463"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.2857,
+          "observedAt": "2026-10-08T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:0a8ec02446e610485dd37cf87dcf97d7a375deeec01f8188cf3e0968cc2059f9"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3225,
+          "observedAt": "2026-10-09T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:d974247497e580e97d08d7f257f2b615bdc30aaca26fd58b8084e1ca3ceb576d"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.3223,
+          "observedAt": "2026-10-09T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:60b87ffd0bbb88b154c21ec2aa847e13df1b540154ed1f7420115f6979694954"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.322,
+          "observedAt": "2026-10-12T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:f63005ec342de9771e107e38ac1a3ed45d1ec28be48e39c4e418130d973e6b04"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.3482,
+          "observedAt": "2026-10-12T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:f7025e5cbc64a82c78cea21c4628d8bd613f731b1074d055391a1a7129e262a2"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3249,
+          "observedAt": "2026-10-13T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:9f2df4e34ba2e0a8acb815ea18781949e776fd728fdab1c702ee89370fe20b49"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.4145,
+          "observedAt": "2026-10-13T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:0350bdce1f29530fb54323577da0e693b2aae4c14b4451feab00f4427203a008"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.316,
+          "observedAt": "2026-10-14T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:ceebcb77e1a513ac8f5accf0aa4316efd9161bffe803098f45a8541d21e0aba8"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.158,
+          "observedAt": "2026-10-14T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:b3eed7629ab389412d97517f0406d3e172450bc2319f17b1504905b9b0979e7a"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3253,
+          "observedAt": "2026-10-15T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:2ebd2af1d6c3477ff80321a1c4d4ac04377fb605e263edd884ffd37c04706cdc"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.3922,
+          "observedAt": "2026-10-15T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:222a1a68376e8a643eec9e7ef523aa7d4de827e6ff4b4e9b09431876f89af63d"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3353,
+          "observedAt": "2026-10-16T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:de8d6964ad7b8c5df44f1b41c3c7d188b307ae29698083f6bb6a320d0dbe1c4b"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.7843,
+          "observedAt": "2026-10-16T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:eeb65d1ab873e3cc7450a56aee6458f3a02dbecfa8d08b3f70e22e59ea40c4a6"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3318,
+          "observedAt": "2026-10-19T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:36f3683320a67acef41c971e6ac2eb4a13173a5c8a1a5649fa6c5cffbe1fa892"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.6896,
+          "observedAt": "2026-10-19T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:ad60f8ebffae43b0b58aaef3a983fcfd46456db437b8827ef35f8f4a63bfd333"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3387,
+          "observedAt": "2026-10-20T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:fb39c79e630e7950475337c483edbef6cc0fde956f33c40159b506dfc710d7c8"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 86.0083,
+          "observedAt": "2026-10-20T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:667faa40d639efcf609fdbb2d8d4526242ce7a7354e7382fa5b5033cd270a764"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3384,
+          "observedAt": "2026-10-21T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:48c7fc5037452de2b18af94cdd43f10a771953906ae3a98372e1b4f33eb4ef20"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 86.035,
+          "observedAt": "2026-10-21T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:27d85abb50d095356303b3b3c3bf0847cd62ac5a2a9c97d863b7e7220d76b80f"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3363,
+          "observedAt": "2026-10-22T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:39793d35ea6705cc6481e6a5872b6fbbb6297a8e603c5c02a53ef264e95419bb"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.9793,
+          "observedAt": "2026-10-22T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:53fb9794503a84b2ce12074a0afba94f5520708318cfd4cdeaffcb8126e6961a"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3387,
+          "observedAt": "2026-10-23T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:6fdd1f4870feec3323ac068c4e48450d1096b1a96d6ed9e234c31a92cd164353"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 86.1213,
+          "observedAt": "2026-10-23T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:44feda6c9103fdf89df1621ca70120e3fa2e351d2e537b5030a794d08397fe68"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3347,
+          "observedAt": "2026-10-26T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:5a441f64cd4080377304628f7fe3fa97e0cc09348b09abf2f9f849882f4e854f"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 86.0051,
+          "observedAt": "2026-10-26T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:7f810a8aac1bb097ad31746cce05a1eee65142e24aaecf18a7488e18848c0d44"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3313,
+          "observedAt": "2026-10-27T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:d34a91e69df3c8a72b6e6756f4758b53bd538fae013d5e49a91cb3db2ebe76c7"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.8916,
+          "observedAt": "2026-10-27T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:c3d12936065ff252dccba25585adb128030a3540b84348ff376f8c725984e20a"
+        },
+        {
+          "indicatorId": "gbp_usd",
+          "value": 1.3301,
+          "observedAt": "2026-10-28T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:0273d1a505a960611762d7a1a98880ac9cbdb0d40599c400d4f70204e4d3034c"
+        },
+        {
+          "indicatorId": "gbp_twi",
+          "value": 85.8635,
+          "observedAt": "2026-10-28T16:00:00Z",
+          "sourceId": "boe_fx",
+          "payloadHash": "hist:2c572b263a2141fd51ebe53b74758916bcfe7a7731b52fb538db31c0a779391a"
+        }
+      ],
+      "conflictingSameDayRows": [],
+      "missingExactTimestampKeys": []
+    },
+    {
+      "adapter": "boe_breakevens",
+      "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSIZC&Datefrom=01%2FSep%2F2026&Dateto=29%2FOct%2F2026&UsingCodes=Y",
+      "sourceFetchedAt": "2026-10-29T11:18:49.409Z",
+      "sourcePath": "boe_breakevens-primary-2026-10-29.csv",
+      "sourceSha256": "87675841f885f689061b23ed58a37c3d77557f848b0f7ddfb8fe03ef30468f3d",
+      "historicalCount": 41,
+      "earliest": "2026-09-01T16:00:00Z",
+      "latest": "2026-10-27T16:00:00Z",
+      "latestLive": [
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6633,
+          "observedAt": "2026-10-27T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "87675841f885f689061b23ed58a37c3d77557f848b0f7ddfb8fe03ef30468f3d"
+        }
+      ],
+      "missingReferenceDays": [],
+      "existingValueDifferences": [],
+      "notes": [],
+      "observations": [
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.5955,
+          "observedAt": "2026-09-01T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:33ba8d133a886a0b1d9cb6d52b66383e7434996c36e2e495831aaf33885bb985"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.642,
+          "observedAt": "2026-09-02T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:019c425fe3d5901534e5f95ea75bbd59a6623c6e95f256b9ad685eb0aaaa5ab4"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6173,
+          "observedAt": "2026-09-03T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:3b3348f14a770eb451d1b30108f2ec1ea3b6a5381892acac53c77de8769eea5e"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.5936,
+          "observedAt": "2026-09-04T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:add36c9c90235424fbd1dbf907b26142db476e62d12c8561b7e36b3805433af6"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6315,
+          "observedAt": "2026-09-07T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:d265a9ead57d6efd2e1eff6a7f26c46f891604faf3445e719743ea0cc588aff5"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6228,
+          "observedAt": "2026-09-08T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:8646c1a5b712aac95772c0aca59c93d02c17364e0a8d9057f5f80d508917ebe2"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.655,
+          "observedAt": "2026-09-09T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:b007c26dd21e97296994cdc41c19fa0a2ed4434db9a6894eedbf5004784033ea"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7155,
+          "observedAt": "2026-09-10T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:c2074cca053fb7082eed0fc96bc50f9a9bb66678981e540aecb057b772ac00f7"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6911,
+          "observedAt": "2026-09-11T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:0245692ddabc1ddf17459b5d4cdbdd520eea39aba3d82d46c963d07aa69102e7"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7266,
+          "observedAt": "2026-09-14T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:1fcf1c988cd830365b7cc03d814c5b49ef50952ace2e526aaa320a52a7978757"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7044,
+          "observedAt": "2026-09-15T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:1b7581cb395628d804be2ff022986d6b47f0d96065fde8e0223600029c0252e6"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7102,
+          "observedAt": "2026-09-16T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:d5ae8adbc8161952b06ae0a3e0e38ad888b327b9a79c4899f8096d7b796687d6"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7051,
+          "observedAt": "2026-09-17T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:e5b6c9b3c4dba9bcc1042208239026b9bb57b1a2a578313101936719401364b1"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7596,
+          "observedAt": "2026-09-18T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:cc659feab40fe818e5c24e79a63389ea430ce8a398ae466a2ed33a4ee508d69f"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6862,
+          "observedAt": "2026-09-21T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:d5e3542faa733de31ceb08291c8f43cf4dba02bbbd9c845cb2ce6638c626ca22"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6614,
+          "observedAt": "2026-09-22T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:2b45904af2cdacc2f2d2b472fcf4c2269b806e7e03db57e971666a8b4349f2a2"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7079,
+          "observedAt": "2026-09-23T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:6ee62b8860a09064d1612188aa2544582a2cc964662066e357a9f316fca2641f"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7768,
+          "observedAt": "2026-09-24T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:1e7bac6283dc750d52eb7dcaca2cdcd9b6230f34e2d71164131de88c8ca623e8"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7311,
+          "observedAt": "2026-09-25T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:e0d8c5cb78f7a1e17e223b981588363263d2f8a0ab5d75760676d7aa65d1b909"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7527,
+          "observedAt": "2026-09-28T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:04d785ffba904f5f249621f98db16c9fc74a2f2f5ee1a7dc9cb65bbab921b4ce"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6773,
+          "observedAt": "2026-09-29T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:9a9259b72e243778d3a2db92df2a9e17a44ac328ed7152f54efd80a1d1b874d7"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7014,
+          "observedAt": "2026-09-30T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:a9c4f51e1746fcf8cffca0f77f18b79996ea84573ec6198319f420f7ccc92106"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7163,
+          "observedAt": "2026-10-01T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:0aef885da0e8318e49bff7923227a8f973cd03f8501a320fd4f27fde21b3187d"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6942,
+          "observedAt": "2026-10-02T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:95f341942e389f40301dba0f1a2257ac8e63cf813a43ebdc489e1d7e864ae9b4"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6722,
+          "observedAt": "2026-10-05T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:4d0b0203d81b3de01359760bc4b9320a80bdb829a3d6a4760cde32e0652c10bf"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6439,
+          "observedAt": "2026-10-06T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:c89466a2f20e06f68ed84851d438e8cae92d8765d0ac12c75f9c973955967273"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6727,
+          "observedAt": "2026-10-07T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:c211c8a735ef43d08e4d3e4be81981ab73dfa798cba19bf6d3a8aeee0a4af44e"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7162,
+          "observedAt": "2026-10-08T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:5351d2ce824da0c46bceb14cd9850cf8d696ef0814c0a872957090d58671d947"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6986,
+          "observedAt": "2026-10-09T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:3c27120884d8070323d09e731d838e79f4edac245769de193c771cdf6baed68f"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.7039,
+          "observedAt": "2026-10-12T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:aad782aabbe5e442b6abd193b608a7c99e46e3c3bd54da17af40ec5db99c2ed5"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.697,
+          "observedAt": "2026-10-13T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:e911ee249aef2f5990abffe8c5b736e9aab30ffaf17b8cd7526426cc57308d85"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6966,
+          "observedAt": "2026-10-14T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:6cbe78608d3e15ba49f9476741c284059e574c2db79516df6b0bf0493f9253f9"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6807,
+          "observedAt": "2026-10-15T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:68ec84648621df381d87e134bbffdfcc2f7e119b49ef493a736f17f83c21e9ce"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6526,
+          "observedAt": "2026-10-16T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:08fbf9a8bb3e10f3d794dcd0cc2e2880676fc610afd9d334d194b8463ff8f141"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6464,
+          "observedAt": "2026-10-19T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:a4c005f98b05f4039a16cfa08417805002bfcbb42f021bd0f4b8bc324c0c4255"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6292,
+          "observedAt": "2026-10-20T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:52244e923044abe2e8de72848e775c9f3f7258533aabf7d9feea68ba55af5422"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6841,
+          "observedAt": "2026-10-21T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:fb5ba5aad752cf2f6c315655778caf36273109d6504cd7df5c15176ba79794df"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6762,
+          "observedAt": "2026-10-22T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:50052ccc9b1dedfe031de1f17033d61e80b31d2359d820c9b634947910de38d8"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6843,
+          "observedAt": "2026-10-23T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:fb1e2bbeeaa2c7ca7346e0818894319b94eca4aaba375067ad8d0d8852d5e97c"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6941,
+          "observedAt": "2026-10-26T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:c2dd8f8062775707b01ac7f4a12559552c7d7f366428a94d85846ee1285dafba"
+        },
+        {
+          "indicatorId": "breakeven_5y",
+          "value": 3.6633,
+          "observedAt": "2026-10-27T16:00:00Z",
+          "sourceId": "boe_yields",
+          "payloadHash": "hist:25a3f84524304c728597db4c2be2e04b3afe04e49a2b99fd23b5b158f13c1f9d"
+        }
+      ],
+      "conflictingSameDayRows": [],
+      "missingExactTimestampKeys": []
+    },
+    {
+      "adapter": "eia_brent",
+      "sourceUrl": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm",
+      "sourceFetchedAt": "2026-10-29T11:18:50.001Z",
+      "sourcePath": "eia_brent-primary-2026-10-29.html",
+      "sourceSha256": "b3d06b7c0deaf752991cd8cb926b057fb30e778b046a7242221f777314587ff4",
+      "historicalCount": 41,
+      "earliest": "2026-09-01T00:00:00Z",
+      "latest": "2026-10-27T00:00:00Z",
+      "latestLive": [
+        {
+          "indicatorId": "brent_gbp",
+          "value": 92.47,
+          "observedAt": "2026-10-27T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "7664af6045805af0d91208afea6abf77c460390763a3a1e583d9794750db6050"
+        }
+      ],
+      "missingReferenceDays": [],
+      "existingValueDifferences": [],
+      "notes": [],
+      "observations": [
+        {
+          "indicatorId": "brent_gbp",
+          "value": 70.93,
+          "observedAt": "2026-09-01T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:401fe87564e21b4f514ff07c4615af00fcf1f34a2487376e53cc6f422394fc97"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 72.26,
+          "observedAt": "2026-09-02T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:45a50993a921b8994aad1af856f3f34e82ad6be667567496c88df5e68266c25a"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 74.36,
+          "observedAt": "2026-09-03T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:ce403db2d523cd38e3fe63aa14fc52b4c3421baa979663abc02692387248fe44"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 75.65,
+          "observedAt": "2026-09-04T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:4bf8407283b189a0f92632e8ed8464550572e2ff6971084491e2bd7942e12b89"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 77.13,
+          "observedAt": "2026-09-07T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:69db0fda3a15b9a5ec3184164913c4f2ac00a92bb63af4094beb6d99f037f8c7"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 78.3,
+          "observedAt": "2026-09-08T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:1518d88f11c7ceb62b0f636a196c8d5c9918e8866e41d4d8bd00f143efbabe78"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 80.74,
+          "observedAt": "2026-09-09T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:8fb54326cce622e4f3d0bf93ff18bd68c2e86b7c799af8ac84da2ba394113c49"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 89.41,
+          "observedAt": "2026-09-10T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:4dc6c7cbd01e56671c85f300b28cbd9cea6dc7213c474ee0dd7bd74cf9cdcc01"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 87.26,
+          "observedAt": "2026-09-11T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:365f555759a7992558f8f1a42fe55da2c7a588b650f56512a09ddf2ad1aefd13"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 89.97,
+          "observedAt": "2026-09-14T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:ee7066b8f2efb76e82faf0aa400f486cd73e24179fcfd0a70db438a16dc423af"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 96.98,
+          "observedAt": "2026-09-15T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:df908762f5d9e4714e39bfdd2a62aeee1d3f8436445745eb03c5296644389a55"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 95.02,
+          "observedAt": "2026-09-16T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:8cb486283c6405050172a304c63ecb4574765ae7630c49f03d8fb96fe0894a80"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 90.75,
+          "observedAt": "2026-09-17T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:63bb9e6e885c28c34c52b8349342ac77f6dc2b414b4d2c024fa614a4c12678d4"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 89.56,
+          "observedAt": "2026-09-18T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:c567acab1bd599ba2bf991775c9c874bf9fbaa600618b6ab261dfd95f32167b6"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 86.85,
+          "observedAt": "2026-09-21T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:1f21696d924c8f5916df4f3d6bbd4defd6904e6f79222041ea141766c8c25c5e"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 86.07,
+          "observedAt": "2026-09-22T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:b317e9cbe4cded83ba61116ad124446f050d265fbc0f09196dd0f983217dcbe4"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 88.54,
+          "observedAt": "2026-09-23T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:dabaeef47723e721184bccbb08ad2bcd29bdd51320f9ee0ede8f32b6a162103f"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 91.47,
+          "observedAt": "2026-09-24T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:a40de742f3abbf3231d5f730c5af5581ab263a6041d717e2d08166d9be9b7e58"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 87.58,
+          "observedAt": "2026-09-25T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:b7a3ea7f55a122457704c99772fc4716c21a523f4a6db884e55a4e9f94440ff7"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 90.54,
+          "observedAt": "2026-09-28T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:1a94449e12f3244f1babc84c0bd3710cb2d85e3977142f2e5e424cd51d09cc93"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 86.24,
+          "observedAt": "2026-09-29T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:adfdf49bf5e4a52bc361694f5ca48d8f5914b3120ae95064d418fb4ffa39a8c3"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 87.25,
+          "observedAt": "2026-09-30T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:ef5e96f9bd1853ad1fc7a8a067b4590e9cdc32bf681f8c9be4de658e78adebca"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 86.91,
+          "observedAt": "2026-10-01T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:5cfbec6173d3bb1efcc08c0a9468702926acea660d678c1887cae232e40fedf9"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 102.28,
+          "observedAt": "2026-10-02T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:96e524188d32dbc2d83002b4c828bec2b4a3385552e059f5a7b97e2015ae1bf0"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 94.93,
+          "observedAt": "2026-10-05T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:623aa13825d09d9caea16ab2457023a7056db5c58c15c62b0da5a9b452d90566"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 94.46,
+          "observedAt": "2026-10-06T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:a313cc98d96f0085e0b727456fe9b1abb8aa94f0deba392e462db869639e5df4"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 95.31,
+          "observedAt": "2026-10-07T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:f166c33df21323c06b9d055afced5ebd34f3dae36c7b8e3d86b2b54cf19486d5"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 98.43,
+          "observedAt": "2026-10-08T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:ea2b726e4b3bac47646900625916ffc3fae6546ef7661f049e3941c9d04ce398"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 98.32,
+          "observedAt": "2026-10-09T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:b17ac5f4864dc9607b6d56612af21cbd8f7390f87319f262f8aafb7d10221e7d"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 98.3,
+          "observedAt": "2026-10-12T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:f1466413511b97440d4d5bf8a9973bd4b34ea4c38f6285c2261110b7f4463e29"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 94.94,
+          "observedAt": "2026-10-13T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:6526e8886c8ac7eeaf67eb6d57a749abf3c4760336750c031e410d0073f12519"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 96.16,
+          "observedAt": "2026-10-14T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:0b6dfaa0d9615f681e5af4e4b69e6bde433175f87d0986e6674af620480d8384"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 95.34,
+          "observedAt": "2026-10-15T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:b4d9a668093b06b33f4dafed96f1c9fc8db82403a82ee1c564f80d59f6caae3a"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 89.37,
+          "observedAt": "2026-10-16T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:23cb4d2b219abf37eb6b2761b79ef0916d5798fed21a7f222e4ef680503c16d5"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 89.22,
+          "observedAt": "2026-10-19T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:f5cdc02b08b7cedd997b341206f9ad77ee9005134497fe7e1f84758e6af06784"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 86.07,
+          "observedAt": "2026-10-20T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:b0ee738ce1f7051f0ac849f806be645802dff2f83adf1cd9ab1ecb647c1a27cd"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 87.69,
+          "observedAt": "2026-10-21T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:493898cc3ffa61c8b05ef2fdae0010bf0ff0a1326594ed09cac2614290248dea"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 93.83,
+          "observedAt": "2026-10-22T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:0d286b92ab2d9a6e32648e8cbc069f643f683f3eeac173e7177a3c576b02bede"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 95.84,
+          "observedAt": "2026-10-23T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:83b933897d075676d4e9d5d516c92d7bc8aa697903136b536300ac54ca25c193"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 95.99,
+          "observedAt": "2026-10-26T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:c08fb3ca897a4f5b6d55c6f2ec3b9b25dfb220ec60a74fca26cff967113e2ff5"
+        },
+        {
+          "indicatorId": "brent_gbp",
+          "value": 92.47,
+          "observedAt": "2026-10-27T00:00:00Z",
+          "sourceId": "eia_brent",
+          "payloadHash": "hist:7664af6045805af0d91208afea6abf77c460390763a3a1e583d9794750db6050"
+        }
+      ],
+      "conflictingSameDayRows": [],
+      "missingExactTimestampKeys": []
+    }
+  ]
+}

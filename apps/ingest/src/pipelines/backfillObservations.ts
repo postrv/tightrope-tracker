@@ -107,6 +107,14 @@ export async function backfillObservations(
       rowsWritten: write.written,
       payloadHash,
       sourceUrl: result.sourceUrl,
+      // A repeat missing-only catchup is healthy when a populated, valid
+      // upstream result conflicts with already stored observations. Keep
+      // rows_written honest without misreporting an empty upstream parse.
+      unchanged: !opts.dryRun && result.observations.length > 0
+        && write.written === 0 && write.rejected.length === 0,
+      ...(write.rejected.length > 0 ? {
+        fallbackReason: `${write.rejected.length} historical observations rejected by write guards (${write.written} written)`,
+      } : {}),
     });
 
     return {

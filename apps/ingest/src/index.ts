@@ -1,4 +1,5 @@
 import type { ExecutionContext, MessageBatch, ScheduledEvent } from "@cloudflare/workers-types";
+import { dmoGiltPortfolioAdapter } from "@tightrope/data-sources";
 import type { Env } from "./env.js";
 import type { DlqPayload } from "./types.js";
 import { handleAdminRun } from "./admin.js";
@@ -12,6 +13,7 @@ import { ingestFiscal } from "./pipelines/fiscal.js";
 import { ingestLabour } from "./pipelines/labour.js";
 import { ingestMarket } from "./pipelines/market.js";
 import { recomputeScores } from "./pipelines/recompute.js";
+import { runAdapterSafe } from "./pipelines/runAdapter.js";
 import { updateTodayMovements } from "./pipelines/todayMovements.js";
 import { sanitizeForLog } from "./lib/sanitize.js";
 import { postAlert } from "./lib/alertWebhook.js";
@@ -114,6 +116,7 @@ export const CRON_BRANCHES = {
   "0 2 * * *": "fiscal+brent-history+recompute",
   "15 2 * * *": "labour+recompute",
   "30 2 * * *": "delivery+recompute",
+  "45 9,15 * * MON-FRI": "dmo+recompute",
 } as const;
 
 export type KnownCron = keyof typeof CRON_BRANCHES;
@@ -145,6 +148,13 @@ export async function dispatchCron(cron: string, env: Env, ctx?: ExecutionContex
       return;
     case "30 2 * * *":
       await runStage("ingestDelivery", () => ingestDelivery(env));
+      await runRecompute(env, ctx);
+      return;
+    case "45 9,15 * * MON-FRI":
+      // The DMO portfolio can publish after the overnight fiscal run. Poll
+      // only this public source at 09:45/15:45 UTC, avoiding extra equity
+      // requests and preserving the existing five-minute market schedule.
+      await runStage("ingestDmo", () => runAdapterSafe(env, dmoGiltPortfolioAdapter));
       await runRecompute(env, ctx);
       return;
     default:

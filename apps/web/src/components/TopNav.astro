@@ -5,14 +5,11 @@ interface Props {
   band?: ScoreBand;
   updatedAt?: string;
   /**
-   * ISO timestamp of the freshest indicator observation. When provided, the
-   * chip displays "Data · DD MMM HH:MM UTC" anchored to this — the value the
-   * viewer actually wants to know about. `updatedAt` (recompute heartbeat)
-   * is preserved as the title attribute for ops debugging.
+   * Latest source freshness date: release date where available, otherwise
+   * observation date. Displayed separately from the score computation.
    */
   freshestAt?: string | null;
-  /** When true, the latest reading is past its staleness window -- render a
-   *  "Stale" chip instead of the live "Updated HH:MM" chip. */
+  /** When true, flag stale inputs without obscuring either timestamp. */
   stale?: boolean;
   /**
    * If true, render a minimal version without section links — used on
@@ -28,11 +25,6 @@ const dotColour = stale
     ? `var(--band-${band === "slack" ? "slack" : band === "steady" ? "steady" : band === "strained" ? "strain" : band === "acute" ? "acute" : "critical"})`
     : "var(--band-acute)";
 
-// Display anchor: prefer the freshest indicator observation over the recompute
-// heartbeat. The recompute timestamp ticks every 5 minutes regardless of
-// whether the underlying data has moved, so showing it as "Updated HH:MM" is
-// misleading-fresh when an upstream fixture is days stale.
-const displayAt = freshestAt ?? updatedAt;
 const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function formatChip(iso: string | undefined | null): string {
   if (!iso) return "";
@@ -43,20 +35,7 @@ function formatChip(iso: string | undefined | null): string {
   const hh = d.toISOString().substring(11, 16);
   return `${day} ${mon} ${hh} UTC`;
 }
-const chipStamp = formatChip(displayAt);
-
-// Short "2h", "3d" style age string so the stale chip conveys how old the
-// last-known reading is without eating the whole nav bar.
-function ageShort(iso: string | undefined | null): string {
-  if (!iso) return "";
-  const ms = Date.now() - Date.parse(iso);
-  if (!Number.isFinite(ms) || ms < 0) return "";
-  const hours = Math.floor(ms / 3_600_000);
-  if (hours < 1) return `${Math.max(1, Math.floor(ms / 60_000))}m`;
-  if (hours < 48) return `${hours}h`;
-  return `${Math.floor(hours / 24)}d`;
-}
-const age = ageShort(displayAt);
+const sourceStamp = formatChip(freshestAt);
 const recomputeChip = formatChip(updatedAt);
 ---
 {(() => {
@@ -98,16 +77,14 @@ const recomputeChip = formatChip(updatedAt);
         <span
           class={`live-chip${stale ? " stale" : ""}`}
           aria-live="polite"
-          title={stale
-            ? `Last fresh reading ${chipStamp}. Recompute heartbeat ${recomputeChip}.`
-            : `Stamp = freshest indicator observation. Recompute heartbeat ${recomputeChip}. Auto-ingest cadences range from five-minutely (BoE rates) to monthly (ONS prints).`}
+          title="The score is recomputed regularly. Latest source date means release date where available, otherwise observation date; sources publish on separate schedules. A score computation does not mean new source data."
         >
-          <span class="dot" style={`background: ${dotColour}; --pulse: ${dotColour};`}></span>
-          {stale
-            ? `Stale · last fresh ${age || chipStamp}`
-            : chipStamp
-              ? `Data · ${chipStamp}`
-              : "Auto · Awaiting first ingestion"}
+          <span class="dot" aria-hidden="true" style={`background: ${dotColour}; --pulse: ${dotColour};`}></span>
+          <span class="freshness-stamps">
+            <span>Score computed · {recomputeChip ? <time datetime={updatedAt}>{recomputeChip}</time> : "Unavailable"}</span>
+            <span class="source-stamp">Latest source date · {sourceStamp ? <time datetime={freshestAt!}>{sourceStamp}</time> : "Unavailable"}</span>
+            {stale ? <span class="stale-label">Some inputs stale</span> : null}
+          </span>
         </span>
         <button class="hamburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav-panel" data-nav-toggle>
           <span></span><span></span><span></span>
@@ -212,9 +189,12 @@ nav.top ul a { transition: color 180ms; }
   color: var(--ink-1);
   padding: 4px 10px 4px 8px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 12px;
   white-space: nowrap;
 }
+.freshness-stamps { display: flex; flex-direction: column; gap: 3px; line-height: 1.25; }
+.source-stamp { font-size: 9px; color: var(--ink-2); letter-spacing: 0.025em; }
+.stale-label { font-size: 9px; }
 .live-chip.stale {
   color: var(--band-critical);
   border-color: var(--band-critical);

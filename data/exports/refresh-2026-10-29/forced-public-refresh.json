@@ -1,0 +1,757 @@
+{
+  "startedAt": "2026-10-29T11:15:44.145Z",
+  "before": [
+    {
+      "indicator_id": "bics_rollout",
+      "source_id": "desnz",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 81.4,
+      "ingested_at": "2026-10-29T02:31:02.001Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "borrowing_outturn",
+      "source_id": "ons_psf",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 24.52,
+      "ingested_at": "2026-10-29T02:00:37.693Z",
+      "released_at": "2026-10-20T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "breakeven_10y",
+      "source_id": "boe_yields",
+      "observed_at": "2026-04-21T00:00:00Z",
+      "value": 1.5542000000000002,
+      "ingested_at": "2026-04-23T15:30:34.776Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "breakeven_5y",
+      "source_id": "boe_yields",
+      "observed_at": "2026-10-27T16:00:00Z",
+      "value": 3.6633,
+      "ingested_at": "2026-10-29T09:33:36.682Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "brent_gbp",
+      "source_id": "eia_brent",
+      "observed_at": "2026-10-27T00:00:00Z",
+      "value": 92.47,
+      "ingested_at": "2026-10-29T11:15:28.463Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "cb_headroom",
+      "source_id": "obr_efo",
+      "observed_at": "2026-10-28T00:00:00Z",
+      "value": 14.5,
+      "ingested_at": "2026-10-29T02:00:36.419Z",
+      "released_at": "2026-10-28T13:29:19Z"
+    },
+    {
+      "indicator_id": "consumer_confidence",
+      "source_id": "gfk_confidence",
+      "observed_at": "2026-10-31T00:00:00Z",
+      "value": -24,
+      "ingested_at": "2026-10-29T11:15:29.474Z",
+      "released_at": "2026-10-23T00:00:00Z"
+    },
+    {
+      "indicator_id": "dd_failure_rate",
+      "source_id": "ons_rti",
+      "observed_at": "2026-09-30T00:00:00Z",
+      "value": 2.43,
+      "ingested_at": "2026-10-29T02:15:23.693Z",
+      "released_at": "2026-10-22T00:00:00Z"
+    },
+    {
+      "indicator_id": "debt_interest",
+      "source_id": "ons_psf",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 10.933,
+      "ingested_at": "2026-10-29T02:00:37.693Z",
+      "released_at": "2026-10-20T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "ftse_250",
+      "source_id": "lseg",
+      "observed_at": "2026-10-28T16:30:00Z",
+      "value": 24639.3,
+      "ingested_at": "2026-10-29T07:00:28.618Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gas_m1",
+      "source_id": "ice_gas",
+      "observed_at": "2026-04-17T00:00:00Z",
+      "value": 118,
+      "ingested_at": "2026-04-23T15:30:35.963Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gbp_twi",
+      "source_id": "boe_fx",
+      "observed_at": "2026-10-28T16:00:00Z",
+      "value": 85.8635,
+      "ingested_at": "2026-10-29T09:33:32.835Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gbp_usd",
+      "source_id": "boe_fx",
+      "observed_at": "2026-10-28T16:00:00Z",
+      "value": 1.3301,
+      "ingested_at": "2026-10-29T09:33:32.835Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gilt_10y",
+      "source_id": "boe_yields",
+      "observed_at": "2026-10-27T16:00:00Z",
+      "value": 5.3223,
+      "ingested_at": "2026-10-29T09:33:31.060Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gilt_30y",
+      "source_id": "boe_yields",
+      "observed_at": "2026-10-27T16:00:00Z",
+      "value": 5.7796,
+      "ingested_at": "2026-10-29T09:33:31.060Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gilt_il_10y_real",
+      "source_id": "boe_yields",
+      "observed_at": "2026-04-21T00:00:00Z",
+      "value": 3.3661,
+      "ingested_at": "2026-04-23T15:30:34.776Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "housebuilder_idx",
+      "source_id": "eodhd_housebuilders",
+      "observed_at": "2026-10-28T16:30:00Z",
+      "value": 52.6,
+      "ingested_at": "2026-10-29T02:00:42.206Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "housing_trajectory",
+      "source_id": "mhclg",
+      "observed_at": "2026-06-30T00:00:00Z",
+      "value": 47.7,
+      "ingested_at": "2026-10-29T02:31:01.559Z",
+      "released_at": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicator_id": "ilg_share",
+      "source_id": "dmo",
+      "observed_at": "2026-10-27T00:00:00Z",
+      "value": 24.47949830594804,
+      "ingested_at": "2026-10-29T02:00:40.208Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "inactivity_health",
+      "source_id": "ons_lms",
+      "observed_at": "2026-07-01T00:00:00Z",
+      "value": 2.738,
+      "ingested_at": "2026-10-29T02:15:21.715Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "inactivity_rate",
+      "source_id": "ons_lms",
+      "observed_at": "2026-07-01T00:00:00Z",
+      "value": 20.9,
+      "ingested_at": "2026-10-29T02:15:21.715Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "industrial_strategy",
+      "source_id": "dbt",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 74,
+      "ingested_at": "2026-10-29T02:31:02.001Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "issuance_long_share",
+      "source_id": "dmo",
+      "observed_at": "2026-10-27T00:00:00Z",
+      "value": 30.673965664751584,
+      "ingested_at": "2026-10-29T02:00:40.208Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "mortgage_2y_fix",
+      "source_id": "boe_mortgage_rates",
+      "observed_at": "2026-09-30T16:00:00Z",
+      "value": 5.13,
+      "ingested_at": "2026-10-29T09:33:38.202Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "new_towns_milestones",
+      "source_id": "gov_uk",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 68,
+      "ingested_at": "2026-10-29T02:31:02.001Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "payroll_mom",
+      "source_id": "ons_rti",
+      "observed_at": "2026-08-01T00:00:00Z",
+      "value": 238.3,
+      "ingested_at": "2026-10-29T02:15:23.693Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "planning_consents",
+      "source_id": "mhclg",
+      "observed_at": "2026-06-30T00:00:00Z",
+      "value": 60,
+      "ingested_at": "2026-10-29T02:31:01.559Z",
+      "released_at": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicator_id": "psnfl_trajectory",
+      "source_id": "obr_efo",
+      "observed_at": "2026-10-28T00:00:00Z",
+      "value": 0,
+      "ingested_at": "2026-10-29T02:00:36.419Z",
+      "released_at": "2026-10-28T13:29:19Z"
+    },
+    {
+      "indicator_id": "real_regular_pay",
+      "source_id": "ons_lms",
+      "observed_at": "2026-08-01T00:00:00Z",
+      "value": 0.7,
+      "ingested_at": "2026-10-29T02:15:21.715Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "rics_price_balance",
+      "source_id": "rics_rms",
+      "observed_at": "2026-09-30T00:00:00Z",
+      "value": -32,
+      "ingested_at": "2026-10-29T11:15:29.474Z",
+      "released_at": "2026-10-06T00:00:00Z"
+    },
+    {
+      "indicator_id": "services_pmi",
+      "source_id": "sp_global_pmi",
+      "observed_at": "2026-09-30T00:00:00Z",
+      "value": 52.1,
+      "ingested_at": "2026-10-29T11:15:29.474Z",
+      "released_at": "2026-10-05T00:00:00Z"
+    },
+    {
+      "indicator_id": "smr_programme",
+      "source_id": "gov_uk",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 62,
+      "ingested_at": "2026-10-29T02:31:02.001Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "sonia_12m",
+      "source_id": "boe_sonia",
+      "observed_at": "2026-04-21T00:00:00Z",
+      "value": 3.9701837301587313,
+      "ingested_at": "2026-04-23T15:30:33.853Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "unemployment",
+      "source_id": "ons_lms",
+      "observed_at": "2026-07-01T00:00:00Z",
+      "value": 4.7,
+      "ingested_at": "2026-10-29T02:15:21.715Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "vacancies_per_unemployed",
+      "source_id": "ons_lms",
+      "observed_at": "2026-07-01T00:00:00Z",
+      "value": 0.411214953271028,
+      "ingested_at": "2026-10-29T02:15:21.715Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    }
+  ],
+  "results": [
+    {
+      "id": "eia_brent",
+      "status": "unchanged",
+      "rowsWritten": 1,
+      "observations": [
+        {
+          "indicatorId": "brent_gbp",
+          "value": 92.47,
+          "observedAt": "2026-10-27T00:00:00Z"
+        }
+      ],
+      "fallbackReason": null
+    },
+    {
+      "id": "growth_sentiment",
+      "status": "unchanged",
+      "rowsWritten": 3,
+      "observations": [
+        {
+          "indicatorId": "services_pmi",
+          "value": 52.1,
+          "observedAt": "2026-09-30T00:00:00Z"
+        },
+        {
+          "indicatorId": "consumer_confidence",
+          "value": -24,
+          "observedAt": "2026-10-31T00:00:00Z"
+        },
+        {
+          "indicatorId": "rics_price_balance",
+          "value": -32,
+          "observedAt": "2026-09-30T00:00:00Z"
+        }
+      ],
+      "fallbackReason": null
+    },
+    {
+      "id": "obr_efo",
+      "status": "unchanged",
+      "rowsWritten": 2,
+      "observations": [
+        {
+          "indicatorId": "cb_headroom",
+          "value": 14.5,
+          "observedAt": "2026-10-28T00:00:00Z"
+        },
+        {
+          "indicatorId": "psnfl_trajectory",
+          "value": 0,
+          "observedAt": "2026-10-28T00:00:00Z"
+        }
+      ],
+      "fallbackReason": null
+    },
+    {
+      "id": "ons_psf",
+      "status": "unchanged",
+      "rowsWritten": 2,
+      "observations": [
+        {
+          "indicatorId": "borrowing_outturn",
+          "value": 24.52,
+          "observedAt": "2026-09-01T00:00:00Z"
+        },
+        {
+          "indicatorId": "debt_interest",
+          "value": 10.933,
+          "observedAt": "2026-09-01T00:00:00Z"
+        }
+      ],
+      "fallbackReason": null
+    },
+    {
+      "id": "dmo",
+      "status": "success",
+      "rowsWritten": 2,
+      "observations": [
+        {
+          "indicatorId": "ilg_share",
+          "value": 24.445222989423403,
+          "observedAt": "2026-10-28T00:00:00Z"
+        },
+        {
+          "indicatorId": "issuance_long_share",
+          "value": 30.611564690428878,
+          "observedAt": "2026-10-28T00:00:00Z"
+        }
+      ],
+      "fallbackReason": null
+    },
+    {
+      "id": "ons_lms",
+      "status": "unchanged",
+      "rowsWritten": 5,
+      "observations": [
+        {
+          "indicatorId": "unemployment",
+          "value": 4.7,
+          "observedAt": "2026-07-01T00:00:00Z"
+        },
+        {
+          "indicatorId": "inactivity_rate",
+          "value": 20.9,
+          "observedAt": "2026-07-01T00:00:00Z"
+        },
+        {
+          "indicatorId": "inactivity_health",
+          "value": 2.738,
+          "observedAt": "2026-07-01T00:00:00Z"
+        },
+        {
+          "indicatorId": "real_regular_pay",
+          "value": 0.7,
+          "observedAt": "2026-08-01T00:00:00Z"
+        },
+        {
+          "indicatorId": "vacancies_per_unemployed",
+          "value": 0.411214953271028,
+          "observedAt": "2026-07-01T00:00:00Z"
+        }
+      ],
+      "fallbackReason": null
+    },
+    {
+      "id": "ons_rti",
+      "status": "unchanged",
+      "rowsWritten": 2,
+      "observations": [
+        {
+          "indicatorId": "payroll_mom",
+          "value": 238.3,
+          "observedAt": "2026-08-01T00:00:00Z"
+        },
+        {
+          "indicatorId": "dd_failure_rate",
+          "value": 2.43,
+          "observedAt": "2026-09-30T00:00:00Z"
+        }
+      ],
+      "fallbackReason": null
+    },
+    {
+      "id": "mhclg",
+      "status": "unchanged",
+      "rowsWritten": 2,
+      "observations": [
+        {
+          "indicatorId": "housing_trajectory",
+          "value": 47.7,
+          "observedAt": "2026-06-30T00:00:00Z"
+        },
+        {
+          "indicatorId": "planning_consents",
+          "value": 60,
+          "observedAt": "2026-06-30T00:00:00Z"
+        }
+      ],
+      "fallbackReason": null
+    },
+    {
+      "id": "delivery_milestones",
+      "status": "success",
+      "rowsWritten": 4,
+      "observations": [
+        {
+          "indicatorId": "new_towns_milestones",
+          "value": 68,
+          "observedAt": "2026-09-01T00:00:00Z"
+        },
+        {
+          "indicatorId": "bics_rollout",
+          "value": 81.4,
+          "observedAt": "2026-09-01T00:00:00Z"
+        },
+        {
+          "indicatorId": "industrial_strategy",
+          "value": 74,
+          "observedAt": "2026-09-01T00:00:00Z"
+        },
+        {
+          "indicatorId": "smr_programme",
+          "value": 62,
+          "observedAt": "2026-09-01T00:00:00Z"
+        }
+      ],
+      "fallbackReason": null
+    }
+  ],
+  "after": [
+    {
+      "indicator_id": "bics_rollout",
+      "source_id": "desnz",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 81.4,
+      "ingested_at": "2026-10-29T11:15:58.070Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "borrowing_outturn",
+      "source_id": "ons_psf",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 24.52,
+      "ingested_at": "2026-10-29T11:15:49.570Z",
+      "released_at": "2026-10-20T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "breakeven_10y",
+      "source_id": "boe_yields",
+      "observed_at": "2026-04-21T00:00:00Z",
+      "value": 1.5542000000000002,
+      "ingested_at": "2026-04-23T15:30:34.776Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "breakeven_5y",
+      "source_id": "boe_yields",
+      "observed_at": "2026-10-27T16:00:00Z",
+      "value": 3.6633,
+      "ingested_at": "2026-10-29T09:33:36.682Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "brent_gbp",
+      "source_id": "eia_brent",
+      "observed_at": "2026-10-27T00:00:00Z",
+      "value": 92.47,
+      "ingested_at": "2026-10-29T11:15:45.633Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "cb_headroom",
+      "source_id": "obr_efo",
+      "observed_at": "2026-10-28T00:00:00Z",
+      "value": 14.5,
+      "ingested_at": "2026-10-29T11:15:48.001Z",
+      "released_at": "2026-10-28T13:29:19Z"
+    },
+    {
+      "indicator_id": "consumer_confidence",
+      "source_id": "gfk_confidence",
+      "observed_at": "2026-10-31T00:00:00Z",
+      "value": -24,
+      "ingested_at": "2026-10-29T11:15:46.952Z",
+      "released_at": "2026-10-23T00:00:00Z"
+    },
+    {
+      "indicator_id": "dd_failure_rate",
+      "source_id": "ons_rti",
+      "observed_at": "2026-09-30T00:00:00Z",
+      "value": 2.43,
+      "ingested_at": "2026-10-29T11:15:55.397Z",
+      "released_at": "2026-10-22T00:00:00Z"
+    },
+    {
+      "indicator_id": "debt_interest",
+      "source_id": "ons_psf",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 10.933,
+      "ingested_at": "2026-10-29T11:15:49.570Z",
+      "released_at": "2026-10-20T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "ftse_250",
+      "source_id": "lseg",
+      "observed_at": "2026-10-28T16:30:00Z",
+      "value": 24639.3,
+      "ingested_at": "2026-10-29T07:00:28.618Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gas_m1",
+      "source_id": "ice_gas",
+      "observed_at": "2026-04-17T00:00:00Z",
+      "value": 118,
+      "ingested_at": "2026-04-23T15:30:35.963Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gbp_twi",
+      "source_id": "boe_fx",
+      "observed_at": "2026-10-28T16:00:00Z",
+      "value": 85.8635,
+      "ingested_at": "2026-10-29T09:33:32.835Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gbp_usd",
+      "source_id": "boe_fx",
+      "observed_at": "2026-10-28T16:00:00Z",
+      "value": 1.3301,
+      "ingested_at": "2026-10-29T09:33:32.835Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gilt_10y",
+      "source_id": "boe_yields",
+      "observed_at": "2026-10-27T16:00:00Z",
+      "value": 5.3223,
+      "ingested_at": "2026-10-29T09:33:31.060Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gilt_30y",
+      "source_id": "boe_yields",
+      "observed_at": "2026-10-27T16:00:00Z",
+      "value": 5.7796,
+      "ingested_at": "2026-10-29T09:33:31.060Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "gilt_il_10y_real",
+      "source_id": "boe_yields",
+      "observed_at": "2026-04-21T00:00:00Z",
+      "value": 3.3661,
+      "ingested_at": "2026-04-23T15:30:34.776Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "housebuilder_idx",
+      "source_id": "eodhd_housebuilders",
+      "observed_at": "2026-10-28T16:30:00Z",
+      "value": 52.6,
+      "ingested_at": "2026-10-29T02:00:42.206Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "housing_trajectory",
+      "source_id": "mhclg",
+      "observed_at": "2026-06-30T00:00:00Z",
+      "value": 47.7,
+      "ingested_at": "2026-10-29T11:15:56.528Z",
+      "released_at": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicator_id": "ilg_share",
+      "source_id": "dmo",
+      "observed_at": "2026-10-28T00:00:00Z",
+      "value": 24.445222989423403,
+      "ingested_at": "2026-10-29T11:15:52.215Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "inactivity_health",
+      "source_id": "ons_lms",
+      "observed_at": "2026-07-01T00:00:00Z",
+      "value": 2.738,
+      "ingested_at": "2026-10-29T11:15:54.180Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "inactivity_rate",
+      "source_id": "ons_lms",
+      "observed_at": "2026-07-01T00:00:00Z",
+      "value": 20.9,
+      "ingested_at": "2026-10-29T11:15:54.180Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "industrial_strategy",
+      "source_id": "dbt",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 74,
+      "ingested_at": "2026-10-29T11:15:58.070Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "issuance_long_share",
+      "source_id": "dmo",
+      "observed_at": "2026-10-28T00:00:00Z",
+      "value": 30.611564690428878,
+      "ingested_at": "2026-10-29T11:15:52.215Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "mortgage_2y_fix",
+      "source_id": "boe_mortgage_rates",
+      "observed_at": "2026-09-30T16:00:00Z",
+      "value": 5.13,
+      "ingested_at": "2026-10-29T09:33:38.202Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "new_towns_milestones",
+      "source_id": "gov_uk",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 68,
+      "ingested_at": "2026-10-29T11:15:58.070Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "payroll_mom",
+      "source_id": "ons_rti",
+      "observed_at": "2026-08-01T00:00:00Z",
+      "value": 238.3,
+      "ingested_at": "2026-10-29T11:15:55.397Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "planning_consents",
+      "source_id": "mhclg",
+      "observed_at": "2026-06-30T00:00:00Z",
+      "value": 60,
+      "ingested_at": "2026-10-29T11:15:56.528Z",
+      "released_at": "2026-09-24T00:00:00Z"
+    },
+    {
+      "indicator_id": "psnfl_trajectory",
+      "source_id": "obr_efo",
+      "observed_at": "2026-10-28T00:00:00Z",
+      "value": 0,
+      "ingested_at": "2026-10-29T11:15:48.001Z",
+      "released_at": "2026-10-28T13:29:19Z"
+    },
+    {
+      "indicator_id": "real_regular_pay",
+      "source_id": "ons_lms",
+      "observed_at": "2026-08-01T00:00:00Z",
+      "value": 0.7,
+      "ingested_at": "2026-10-29T11:15:54.180Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "rics_price_balance",
+      "source_id": "rics_rms",
+      "observed_at": "2026-09-30T00:00:00Z",
+      "value": -32,
+      "ingested_at": "2026-10-29T11:15:46.952Z",
+      "released_at": "2026-10-06T00:00:00Z"
+    },
+    {
+      "indicator_id": "services_pmi",
+      "source_id": "sp_global_pmi",
+      "observed_at": "2026-09-30T00:00:00Z",
+      "value": 52.1,
+      "ingested_at": "2026-10-29T11:15:46.952Z",
+      "released_at": "2026-10-05T00:00:00Z"
+    },
+    {
+      "indicator_id": "smr_programme",
+      "source_id": "gov_uk",
+      "observed_at": "2026-09-01T00:00:00Z",
+      "value": 62,
+      "ingested_at": "2026-10-29T11:15:58.070Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "sonia_12m",
+      "source_id": "boe_sonia",
+      "observed_at": "2026-04-21T00:00:00Z",
+      "value": 3.9701837301587313,
+      "ingested_at": "2026-04-23T15:30:33.853Z",
+      "released_at": null
+    },
+    {
+      "indicator_id": "unemployment",
+      "source_id": "ons_lms",
+      "observed_at": "2026-07-01T00:00:00Z",
+      "value": 4.7,
+      "ingested_at": "2026-10-29T11:15:54.180Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "indicator_id": "vacancies_per_unemployed",
+      "source_id": "ons_lms",
+      "observed_at": "2026-07-01T00:00:00Z",
+      "value": 0.411214953271028,
+      "ingested_at": "2026-10-29T11:15:54.180Z",
+      "released_at": "2026-10-19T23:00:00.000Z"
+    }
+  ],
+  "completedAt": "2026-10-29T11:15:59.149Z"
+}

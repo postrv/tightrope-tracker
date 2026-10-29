@@ -5,8 +5,8 @@
  * five minutes by the cron loop, regardless of whether the underlying
  * indicators have moved. A ten-day-old fixture observation will still show a
  * "live" recompute time. To avoid that misleading-fresh chrome, the homepage
- * computes the freshest *observation* timestamp across all indicators and
- * uses that wherever the user is asked to read "how live is this?".
+ * computes the latest source freshness date (release date where available,
+ * otherwise observation date), displayed separately from score computation.
  *
  * Scope: read-only, no side effects, called once per SSR render.
  */
@@ -16,7 +16,7 @@ import { INDICATORS, freshnessAnchorMs } from "@tightrope/shared";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface FreshnessSummary {
-  /** ISO timestamp of the freshest indicator observation (max over pillars + movements). */
+  /** Latest non-future source release/observation date (max over pillars + movements). */
   freshestAt: string | null;
   /** Days between `now` and `freshestAt`, or null when no observation found. */
   freshestAgeDays: number | null;
@@ -101,7 +101,9 @@ export function summariseFreshness(
     if (!def) continue;
     const ms = freshnessAnchorMs(obs);
     if (!Number.isFinite(ms)) continue;
-    if (ms > freshestMs) freshestMs = ms;
+    // Some sources label reference periods at month-end before that day.
+    // Such a label must not make the visible source date appear future-fresh.
+    if (ms <= now && ms > freshestMs) freshestMs = ms;
     const ageMs = now - ms;
     const ageDays = ageMs / DAY_MS;
     const maxDays = def.maxStaleMs / DAY_MS;

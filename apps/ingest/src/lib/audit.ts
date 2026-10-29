@@ -35,7 +35,7 @@ export async function openAudit(db: D1Database, init: AuditRowInit): Promise<Aud
 export async function closeAuditSuccess(
   db: D1Database,
   handle: AuditHandle,
-  opts: { rowsWritten: number; payloadHash: string; emitsNoObservations?: boolean; quarantinedCount?: number; fallbackReason?: string; sourceUrl?: string },
+  opts: { rowsWritten: number; payloadHash: string; emitsNoObservations?: boolean; unchanged?: boolean; quarantinedCount?: number; fallbackReason?: string; sourceUrl?: string },
 ): Promise<{ status: string }> {
   // A "success" that wrote zero rows is usually a parse regression: the
   // adapter returned 200 OK and a body that parsed into an empty array.
@@ -46,7 +46,10 @@ export async function closeAuditSuccess(
   // Adapters that legitimately emit no observations (gov.uk RSS -> timeline
   // candidates, for instance) set `emitsNoObservations: true` on their
   // AdapterResult and are kept as success.
-  const isSilentFailure = opts.rowsWritten === 0 && !opts.emitsNoObservations;
+  // Historical INSERT OR IGNORE can validate a populated result yet write
+  // nothing because every requested date is already stored. Its caller sets
+  // unchanged only after checking the fetched rows and rejection list.
+  const isSilentFailure = opts.rowsWritten === 0 && !opts.emitsNoObservations && !opts.unchanged;
   const quarantined = opts.quarantinedCount ?? 0;
   let status: string;
   let error: string | null;
@@ -78,7 +81,7 @@ export async function closeAuditSuccess(
     // the table misleadingly shows "updated 5 minutes ago" for sources
     // whose last real update was weeks back.
     const priorHash = await lastSuccessPayloadHash(db, handle.sourceId);
-    status = priorHash !== null && priorHash === opts.payloadHash ? "unchanged" : "success";
+    status = opts.unchanged || (priorHash !== null && priorHash === opts.payloadHash) ? "unchanged" : "success";
     error = null;
   }
   await db

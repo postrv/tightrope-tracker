@@ -1,0 +1,1365 @@
+{
+  "checkedAt": "2026-10-29T11:18:34.051Z",
+  "mode": "READ_ONLY_NO_PRODUCTION_WRITES",
+  "publicUrls": {
+    "score": "https://api.tightropetracker.uk/api/v1/score",
+    "budget": "https://tightropetracker.uk/budget.json",
+    "health": "https://api.tightropetracker.uk/api/v1/health"
+  },
+  "publicHeadline": {
+    "value": 37.1,
+    "updatedAt": "2026-10-29T11:16:16.605Z",
+    "stale": false
+  },
+  "kvHeadline": {
+    "value": 37.1,
+    "updatedAt": "2026-10-29T11:16:16.605Z",
+    "stale": false
+  },
+  "d1Headline": {
+    "observed_at": "2026-10-29T11:16:16.605Z",
+    "value": 37.1
+  },
+  "recentHeadlines": [
+    {
+      "observed_at": "2026-10-29T11:16:16.605Z",
+      "value": 37.1
+    },
+    {
+      "observed_at": "2026-10-29T11:15:31.788Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T11:10:28.786Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T11:05:28.259Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T11:00:30.914Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:55:29.497Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:50:28.673Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:45:29.421Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:40:33.764Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:35:31.962Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:30:32.317Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:25:29.512Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:20:28.577Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:15:28.813Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:10:29.133Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:05:30.004Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T10:00:27.759Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T09:55:30.752Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T09:50:31.413Z",
+      "value": 37
+    },
+    {
+      "observed_at": "2026-10-29T09:45:34.046Z",
+      "value": 37
+    }
+  ],
+  "pillars": [
+    {
+      "pillar_id": "delivery",
+      "observed_at": "2026-10-29T11:16:16.605Z",
+      "value": 31.6
+    },
+    {
+      "pillar_id": "fiscal",
+      "observed_at": "2026-10-29T11:16:16.605Z",
+      "value": 37
+    },
+    {
+      "pillar_id": "labour",
+      "observed_at": "2026-10-29T11:16:16.605Z",
+      "value": 45.7
+    },
+    {
+      "pillar_id": "market",
+      "observed_at": "2026-10-29T11:16:16.605Z",
+      "value": 34.9
+    }
+  ],
+  "registeredIndicatorCount": 31,
+  "currentInputCount": 31,
+  "publicInputCount": 31,
+  "valueMismatches": [],
+  "sourceHealth": [],
+  "sourceCadence": [
+    {
+      "sourceId": "boe_fx",
+      "name": "Bank of England -- Exchange rates",
+      "cadence": "trading-daily",
+      "graceDays": 7,
+      "state": "green",
+      "latestObservedAt": "2026-10-28T16:00:00Z"
+    },
+    {
+      "sourceId": "boe_mortgage_rates",
+      "name": "Bank of England -- 2y fix mortgage rate (IUMBV34)",
+      "cadence": "monthly",
+      "graceDays": 50,
+      "state": "green",
+      "latestObservedAt": "2026-09-30T16:00:00Z"
+    },
+    {
+      "sourceId": "boe_yields",
+      "name": "Bank of England -- Statistical Database (gilt yields)",
+      "cadence": "trading-daily",
+      "graceDays": 7,
+      "state": "green",
+      "latestObservedAt": "2026-10-27T16:00:00Z"
+    },
+    {
+      "sourceId": "dbt",
+      "name": "Department for Business and Trade",
+      "cadence": "quarterly",
+      "graceDays": 120,
+      "state": "green",
+      "latestObservedAt": "2026-09-01T00:00:00Z"
+    },
+    {
+      "sourceId": "desnz",
+      "name": "Department for Energy Security and Net Zero",
+      "cadence": "quarterly",
+      "graceDays": 120,
+      "state": "green",
+      "latestObservedAt": "2026-09-01T00:00:00Z"
+    },
+    {
+      "sourceId": "dmo",
+      "name": "UK Debt Management Office -- gilts in issue",
+      "cadence": "trading-daily",
+      "graceDays": 7,
+      "state": "green",
+      "latestObservedAt": "2026-10-28T00:00:00Z"
+    },
+    {
+      "sourceId": "eia_brent",
+      "name": "US EIA -- Europe Brent Spot Price (FOB)",
+      "cadence": "trading-daily",
+      "graceDays": 10,
+      "state": "green",
+      "latestObservedAt": "2026-10-27T00:00:00Z"
+    },
+    {
+      "sourceId": "eodhd_housebuilders",
+      "name": "EODHD / LSE -- UK housebuilder composite (daily closes)",
+      "cadence": "trading-daily",
+      "graceDays": 8,
+      "state": "green",
+      "latestObservedAt": "2026-10-28T16:30:00Z"
+    },
+    {
+      "sourceId": "gfk_confidence",
+      "name": "GfK / NIM -- Consumer Confidence Barometer (NIQ)",
+      "cadence": "monthly",
+      "graceDays": 45,
+      "state": "green",
+      "latestObservedAt": "2026-10-31T00:00:00Z",
+      "latestReleasedAt": "2026-10-23T00:00:00Z"
+    },
+    {
+      "sourceId": "gov_uk",
+      "name": "gov.uk -- Announcements RSS",
+      "cadence": "quarterly",
+      "graceDays": 120,
+      "state": "green",
+      "latestObservedAt": "2026-09-01T00:00:00Z"
+    },
+    {
+      "sourceId": "lseg",
+      "name": "LSEG -- FTSE 250",
+      "cadence": "trading-daily",
+      "graceDays": 10,
+      "state": "green",
+      "latestObservedAt": "2026-10-28T16:30:00Z"
+    },
+    {
+      "sourceId": "mhclg",
+      "name": "MHCLG / DLUHC -- Housing Statistics",
+      "cadence": "quarterly",
+      "graceDays": 110,
+      "state": "green",
+      "latestObservedAt": "2026-06-30T00:00:00Z",
+      "latestReleasedAt": "2026-09-24T00:00:00Z"
+    },
+    {
+      "sourceId": "obr_efo",
+      "name": "Office for Budget Responsibility -- Economic & Fiscal Outlook",
+      "cadence": "event",
+      "graceDays": 255,
+      "state": "green",
+      "latestObservedAt": "2026-10-28T00:00:00Z",
+      "latestReleasedAt": "2026-10-28T13:29:19Z"
+    },
+    {
+      "sourceId": "ons_lms",
+      "name": "ONS -- Labour Market Statistics",
+      "cadence": "monthly",
+      "graceDays": 50,
+      "state": "green",
+      "latestObservedAt": "2026-07-01T00:00:00Z",
+      "latestReleasedAt": "2026-10-19T23:00:00.000Z"
+    },
+    {
+      "sourceId": "ons_psf",
+      "name": "ONS -- Public Sector Finances",
+      "cadence": "monthly",
+      "graceDays": 50,
+      "state": "green",
+      "latestObservedAt": "2026-09-01T00:00:00Z",
+      "latestReleasedAt": "2026-10-20T23:00:00.000Z"
+    },
+    {
+      "sourceId": "ons_rti",
+      "name": "ONS -- Real-Time Indicators",
+      "cadence": "monthly",
+      "graceDays": 50,
+      "state": "green",
+      "latestObservedAt": "2026-09-30T00:00:00Z",
+      "latestReleasedAt": "2026-10-22T00:00:00Z"
+    },
+    {
+      "sourceId": "rics_rms",
+      "name": "RICS -- UK Residential Market Survey",
+      "cadence": "monthly",
+      "graceDays": 45,
+      "state": "green",
+      "latestObservedAt": "2026-09-30T00:00:00Z",
+      "latestReleasedAt": "2026-10-06T00:00:00Z"
+    },
+    {
+      "sourceId": "sp_global_pmi",
+      "name": "S&P Global -- UK Services PMI",
+      "cadence": "monthly",
+      "graceDays": 45,
+      "state": "green",
+      "latestObservedAt": "2026-09-30T00:00:00Z",
+      "latestReleasedAt": "2026-10-05T00:00:00Z"
+    }
+  ],
+  "publicHealth": {
+    "ok": true,
+    "updatedAt": "2026-10-29T11:18:24.881Z",
+    "ingestionLastSuccess": {
+      "boe_breakevens": "2026-10-29T09:33:36.634Z",
+      "boe_breakevens:correction": "2026-10-28T18:17:34.286Z",
+      "boe_breakevens:historical": "2026-10-28T23:39:10.899Z",
+      "boe_fx": "2026-10-29T09:33:32.782Z",
+      "boe_fx:historical": "2026-10-28T23:38:22.654Z",
+      "boe_mortgage_rates": "2026-10-29T09:33:38.163Z",
+      "boe_mortgage_rates:historical": "2026-10-28T23:39:35.866Z",
+      "boe_yields": "2026-10-29T09:33:30.898Z",
+      "boe_yields:historical": "2026-10-28T23:37:37.536Z",
+      "delivery_commitments": "2026-10-29T06:01:00.157Z",
+      "delivery_milestones": "2026-10-29T11:15:57.067Z",
+      "dmo": "2026-10-29T11:15:50.213Z",
+      "dmo:historical": "2026-10-28T13:26:11.454Z",
+      "eia_brent": "2026-10-29T11:15:44.712Z",
+      "eia_brent:historical": "2026-10-28T23:39:56.655Z",
+      "eodhd_housebuilders": "2026-10-29T02:00:40.343Z",
+      "gfk_confidence": "2026-10-29T06:00:48.064Z",
+      "gov_uk": "2026-10-29T02:31:02.277Z",
+      "growth_sentiment": "2026-10-29T11:15:46.424Z",
+      "growth_sentiment:historical": "2026-10-13T16:04:50.311Z",
+      "lseg": "2026-10-29T07:00:28.202Z",
+      "lseg:historical": "2026-10-28T13:07:34.342Z",
+      "mhclg": "2026-10-29T11:15:56.035Z",
+      "mhclg:historical": "2026-10-28T23:39:54.492Z",
+      "mhclg_housing": "2026-10-29T06:00:48.239Z",
+      "obr_efo": "2026-10-29T11:15:47.677Z",
+      "obr_efo:historical": "2026-10-28T13:11:30.499Z",
+      "ons_dd_failure": "2026-10-29T06:29:25.859Z",
+      "ons_lms": "2026-10-29T11:15:52.905Z",
+      "ons_lms:historical": "2026-10-28T23:39:38.813Z",
+      "ons_psf": "2026-10-29T11:15:48.675Z",
+      "ons_psf:historical": "2026-10-28T23:39:46.067Z",
+      "ons_rti": "2026-10-29T11:15:54.812Z",
+      "ons_rti:historical": "2026-10-28T23:39:51.030Z",
+      "rics_rms": "2026-10-29T06:00:48.064Z",
+      "seed": "2026-04-17T14:02:00.000Z",
+      "sp_global_pmi": "2026-10-29T06:00:48.064Z",
+      "timeline_triage": "2026-10-29T06:01:04.239Z"
+    }
+  },
+  "storedCounts": {
+    "raw_rows": 17071,
+    "stored_indicator_ids": 35
+  },
+  "latestRegisteredAudits": [
+    {
+      "source_id": "boe_fx",
+      "started_at": "2026-10-29T09:33:32.782Z",
+      "completed_at": "2026-10-29T09:33:32.949Z",
+      "status": "success",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=XUDLUSS%2CXUDLBK67&Datefrom=29%2FOct%2F2024&Dateto=29%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "boe_mortgage_rates",
+      "started_at": "2026-10-29T09:33:38.163Z",
+      "completed_at": "2026-10-29T09:33:38.244Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUMBV34&Datefrom=29%2FOct%2F2024&Dateto=29%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "boe_yields",
+      "started_at": "2026-10-29T09:33:30.898Z",
+      "completed_at": "2026-10-29T09:33:31.205Z",
+      "status": "success",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDMNZC%2CIUDLNZC&Datefrom=29%2FOct%2F2024&Dateto=29%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "dmo",
+      "started_at": "2026-10-29T11:15:50.213Z",
+      "completed_at": "2026-10-29T11:15:52.617Z",
+      "status": "success",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.dmo.gov.uk/data/XmlDataReport?reportCode=D1A"
+    },
+    {
+      "source_id": "eia_brent",
+      "started_at": "2026-10-29T11:15:44.712Z",
+      "completed_at": "2026-10-29T11:15:46.193Z",
+      "status": "unchanged",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm"
+    },
+    {
+      "source_id": "eodhd_housebuilders",
+      "started_at": "2026-10-29T02:00:40.343Z",
+      "completed_at": "2026-10-29T02:00:42.285Z",
+      "status": "unchanged",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://eodhd.com/api/eod/?exchange=LSE"
+    },
+    {
+      "source_id": "gfk_confidence",
+      "started_at": "2026-10-29T06:00:48.064Z",
+      "completed_at": "2026-10-29T06:01:00.086Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://nielseniq.com/wp-json/wp/v2/news_center?lead_source=15171&per_page=100&orderby=date&order=desc&_fields=link"
+    },
+    {
+      "source_id": "gov_uk",
+      "started_at": "2026-10-29T02:31:02.277Z",
+      "completed_at": "2026-10-29T02:31:02.757Z",
+      "status": "success",
+      "rows_written": 0,
+      "error": null,
+      "source_url": "https://www.gov.uk/search/news-and-communications.atom"
+    },
+    {
+      "source_id": "lseg",
+      "started_at": "2026-10-29T07:00:28.202Z",
+      "completed_at": "2026-10-29T07:00:28.826Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EFTMC"
+    },
+    {
+      "source_id": "mhclg",
+      "started_at": "2026-10-29T11:15:56.035Z",
+      "completed_at": "2026-10-29T11:15:56.911Z",
+      "status": "unchanged",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2026"
+    },
+    {
+      "source_id": "obr_efo",
+      "started_at": "2026-10-29T11:15:47.677Z",
+      "completed_at": "2026-10-29T11:15:48.432Z",
+      "status": "unchanged",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.gov.uk/government/publications/october-2026-economic-and-fiscal-outlook"
+    },
+    {
+      "source_id": "ons_lms",
+      "started_at": "2026-10-29T11:15:52.905Z",
+      "completed_at": "2026-10-29T11:15:54.640Z",
+      "status": "unchanged",
+      "rows_written": 5,
+      "error": null,
+      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem/data"
+    },
+    {
+      "source_id": "ons_psf",
+      "started_at": "2026-10-29T11:15:48.675Z",
+      "completed_at": "2026-10-29T11:15:49.955Z",
+      "status": "unchanged",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf/data"
+    },
+    {
+      "source_id": "ons_rti",
+      "started_at": "2026-10-29T11:15:54.812Z",
+      "completed_at": "2026-10-29T11:15:55.754Z",
+      "status": "unchanged",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/k54l/emp/data"
+    },
+    {
+      "source_id": "rics_rms",
+      "started_at": "2026-10-29T06:00:48.064Z",
+      "completed_at": "2026-10-29T06:00:48.148Z",
+      "status": "unchanged",
+      "rows_written": 0,
+      "error": "skipped: disabled \u2014 rics.org Imperva bot challenge blocks all non-residential egress (verified 2026-07-07); hand-refresh fixture path owns rics_price_balance",
+      "source_url": "https://www.rics.org/news-insights/market-surveys/uk-residential-market-survey"
+    },
+    {
+      "source_id": "sp_global_pmi",
+      "started_at": "2026-10-29T06:00:48.064Z",
+      "completed_at": "2026-10-29T06:00:58.800Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://tradingeconomics.com/united-kingdom/services-pmi"
+    }
+  ],
+  "latestAllAudits": [
+    {
+      "source_id": "boe_breakevens",
+      "started_at": "2026-10-29T09:33:36.634Z",
+      "completed_at": "2026-10-29T09:33:36.762Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSIZC&Datefrom=29%2FOct%2F2024&Dateto=29%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "boe_breakevens:correction",
+      "started_at": "2026-10-28T18:17:34.286Z",
+      "completed_at": "2026-10-28T18:17:35.521Z",
+      "status": "success",
+      "rows_written": 1066,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSIZC%2CIUDSNZC%2CIUDSRZC&Datefrom=01%2FJan%2F2024&Dateto=28%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "boe_breakevens:historical",
+      "started_at": "2026-10-28T23:39:10.899Z",
+      "completed_at": "2026-10-28T23:39:34.014Z",
+      "status": "success",
+      "rows_written": 1366,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDSIZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "boe_fx",
+      "started_at": "2026-10-29T09:33:32.782Z",
+      "completed_at": "2026-10-29T09:33:32.949Z",
+      "status": "success",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=XUDLUSS%2CXUDLBK67&Datefrom=29%2FOct%2F2024&Dateto=29%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "boe_fx:historical",
+      "started_at": "2026-10-28T23:38:22.654Z",
+      "completed_at": "2026-10-28T23:39:09.015Z",
+      "status": "success",
+      "rows_written": 2732,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=XUDLUSS%2CXUDLBK67&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "boe_mortgage_rates",
+      "started_at": "2026-10-29T09:33:38.163Z",
+      "completed_at": "2026-10-29T09:33:38.244Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUMBV34&Datefrom=29%2FOct%2F2024&Dateto=29%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "boe_mortgage_rates:historical",
+      "started_at": "2026-10-28T23:39:35.866Z",
+      "completed_at": "2026-10-28T23:39:37.435Z",
+      "status": "success",
+      "rows_written": 65,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUMBV34&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "boe_sonia",
+      "started_at": "2026-04-23T15:30:33.060Z",
+      "completed_at": "2026-04-23T15:30:34.023Z",
+      "status": "unchanged",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "adapter:boe_sonia"
+    },
+    {
+      "source_id": "boe_sonia:historical",
+      "started_at": "2026-04-19T08:17:50.711Z",
+      "completed_at": "2026-04-19T08:17:51.579Z",
+      "status": "success",
+      "rows_written": 72,
+      "error": null,
+      "source_url": "adapter:boe_sonia"
+    },
+    {
+      "source_id": "boe_yields",
+      "started_at": "2026-10-29T09:33:30.898Z",
+      "completed_at": "2026-10-29T09:33:31.205Z",
+      "status": "success",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDMNZC%2CIUDLNZC&Datefrom=29%2FOct%2F2024&Dateto=29%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "boe_yields:historical",
+      "started_at": "2026-10-28T23:37:37.536Z",
+      "completed_at": "2026-10-28T23:38:20.615Z",
+      "status": "success",
+      "rows_written": 2648,
+      "error": null,
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDMNZC%2CIUDLNZC&Datefrom=01%2FJan%2F2019&Dateto=28%2FOct%2F2026&UsingCodes=Y"
+    },
+    {
+      "source_id": "delivery_commitments",
+      "started_at": "2026-10-29T06:01:00.157Z",
+      "completed_at": "2026-10-29T06:01:04.549Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://www.gov.uk/search/news-and-communications.atom"
+    },
+    {
+      "source_id": "delivery_milestones",
+      "started_at": "2026-10-29T11:15:57.067Z",
+      "completed_at": "2026-10-29T11:15:58.684Z",
+      "status": "success",
+      "rows_written": 4,
+      "error": null,
+      "source_url": "local:fixtures/delivery-milestones.json"
+    },
+    {
+      "source_id": "dmo",
+      "started_at": "2026-10-29T11:15:50.213Z",
+      "completed_at": "2026-10-29T11:15:52.617Z",
+      "status": "success",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.dmo.gov.uk/data/XmlDataReport?reportCode=D1A"
+    },
+    {
+      "source_id": "dmo:historical",
+      "started_at": "2026-10-28T13:26:11.454Z",
+      "completed_at": "2026-10-28T13:26:12.324Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "adapter:dmo"
+    },
+    {
+      "source_id": "eia_brent",
+      "started_at": "2026-10-29T11:15:44.712Z",
+      "completed_at": "2026-10-29T11:15:46.193Z",
+      "status": "unchanged",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://www.eia.gov/dnav/pet/hist/RBRTED.htm"
+    },
+    {
+      "source_id": "eia_brent:historical",
+      "started_at": "2026-10-29T02:00:42.339Z",
+      "completed_at": "2026-10-29T02:00:43.596Z",
+      "status": "partial",
+      "rows_written": 0,
+      "error": "adapter returned 200 with zero observations -- probable parse regression or upstream schema drift",
+      "source_url": "https://api.eia.gov/v2/petroleum/pri/spt/data/?series=RBRTE"
+    },
+    {
+      "source_id": "eodhd_housebuilders",
+      "started_at": "2026-10-29T02:00:40.343Z",
+      "completed_at": "2026-10-29T02:00:42.285Z",
+      "status": "unchanged",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://eodhd.com/api/eod/?exchange=LSE"
+    },
+    {
+      "source_id": "gfk_confidence",
+      "started_at": "2026-10-29T06:00:48.064Z",
+      "completed_at": "2026-10-29T06:01:00.086Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://nielseniq.com/wp-json/wp/v2/news_center?lead_source=15171&per_page=100&orderby=date&order=desc&_fields=link"
+    },
+    {
+      "source_id": "gov_uk",
+      "started_at": "2026-10-29T02:31:02.277Z",
+      "completed_at": "2026-10-29T02:31:02.757Z",
+      "status": "success",
+      "rows_written": 0,
+      "error": null,
+      "source_url": "https://www.gov.uk/search/news-and-communications.atom"
+    },
+    {
+      "source_id": "growth_sentiment",
+      "started_at": "2026-10-29T11:15:46.424Z",
+      "completed_at": "2026-10-29T11:15:47.473Z",
+      "status": "unchanged",
+      "rows_written": 3,
+      "error": null,
+      "source_url": "https://www.pmi.spglobal.com/Public/Home/PressRelease"
+    },
+    {
+      "source_id": "growth_sentiment:historical",
+      "started_at": "2026-10-13T16:04:50.311Z",
+      "completed_at": "2026-10-13T16:04:50.405Z",
+      "status": "success",
+      "rows_written": 7,
+      "error": null,
+      "source_url": "adapter:growth_sentiment"
+    },
+    {
+      "source_id": "ice_gas",
+      "started_at": "2026-04-23T15:30:35.867Z",
+      "completed_at": "2026-04-23T15:30:36.153Z",
+      "status": "unchanged",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "adapter:ice_gas"
+    },
+    {
+      "source_id": "lseg",
+      "started_at": "2026-10-29T07:00:28.202Z",
+      "completed_at": "2026-10-29T07:00:28.826Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EFTMC"
+    },
+    {
+      "source_id": "lseg:historical",
+      "started_at": "2026-10-28T13:07:34.342Z",
+      "completed_at": "2026-10-28T13:07:36.311Z",
+      "status": "success",
+      "rows_written": 17,
+      "error": null,
+      "source_url": "adapter:lseg"
+    },
+    {
+      "source_id": "lseg_housebuilders",
+      "started_at": "2026-04-22T07:46:00.403Z",
+      "completed_at": "2026-04-22T07:46:00.705Z",
+      "status": "unchanged",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "adapter:lseg_housebuilders"
+    },
+    {
+      "source_id": "mhclg",
+      "started_at": "2026-10-29T11:15:56.035Z",
+      "completed_at": "2026-10-29T11:15:56.911Z",
+      "status": "unchanged",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.gov.uk/government/statistics/housing-supply-indicators-of-new-supply-england-april-to-june-2026"
+    },
+    {
+      "source_id": "mhclg:historical",
+      "started_at": "2026-10-28T23:39:54.492Z",
+      "completed_at": "2026-10-28T23:39:55.487Z",
+      "status": "success",
+      "rows_written": 28,
+      "error": null,
+      "source_url": "local:fixtures/housing-history.json"
+    },
+    {
+      "source_id": "mhclg_housing",
+      "started_at": "2026-10-29T06:00:48.239Z",
+      "completed_at": "2026-10-29T06:01:23.767Z",
+      "status": "success",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.gov.uk/government/collections/house-building-statistics"
+    },
+    {
+      "source_id": "moneyfacts",
+      "started_at": "2026-04-27T18:06:50.313Z",
+      "completed_at": "2026-04-27T18:06:50.597Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "adapter:moneyfacts"
+    },
+    {
+      "source_id": "moneyfacts:historical",
+      "started_at": "2026-04-27T18:02:58.475Z",
+      "completed_at": "2026-04-27T18:02:58.775Z",
+      "status": "success",
+      "rows_written": 22,
+      "error": null,
+      "source_url": "adapter:moneyfacts"
+    },
+    {
+      "source_id": "obr_efo",
+      "started_at": "2026-10-29T11:15:47.677Z",
+      "completed_at": "2026-10-29T11:15:48.432Z",
+      "status": "unchanged",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.gov.uk/government/publications/october-2026-economic-and-fiscal-outlook"
+    },
+    {
+      "source_id": "obr_efo:historical",
+      "started_at": "2026-10-28T13:11:30.499Z",
+      "completed_at": "2026-10-28T13:11:32.046Z",
+      "status": "success",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "adapter:obr_efo"
+    },
+    {
+      "source_id": "ons_dd_failure",
+      "started_at": "2026-10-29T06:29:25.859Z",
+      "completed_at": "2026-10-29T06:29:25.919Z",
+      "status": "unchanged",
+      "rows_written": 0,
+      "error": null,
+      "source_url": "https://www.ons.gov.uk/file?uri=/economy/economicoutputandproductivity/output/datasets/monthlydirectdebitfailurerateandaveragetransactionamount/2026/directdebittransactionsandfailuresdataset221026.xlsx"
+    },
+    {
+      "source_id": "ons_lms",
+      "started_at": "2026-10-29T11:15:52.905Z",
+      "completed_at": "2026-10-29T11:15:54.640Z",
+      "status": "unchanged",
+      "rows_written": 5,
+      "error": null,
+      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem/data"
+    },
+    {
+      "source_id": "ons_lms:historical",
+      "started_at": "2026-10-28T23:39:38.813Z",
+      "completed_at": "2026-10-28T23:39:44.799Z",
+      "status": "success",
+      "rows_written": 335,
+      "error": null,
+      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/unem/data"
+    },
+    {
+      "source_id": "ons_psf",
+      "started_at": "2026-10-29T11:15:48.675Z",
+      "completed_at": "2026-10-29T11:15:49.955Z",
+      "status": "unchanged",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf/data"
+    },
+    {
+      "source_id": "ons_psf:historical",
+      "started_at": "2026-10-28T23:39:46.067Z",
+      "completed_at": "2026-10-28T23:39:49.086Z",
+      "status": "success",
+      "rows_written": 134,
+      "error": null,
+      "source_url": "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/nmfx/pusf/data"
+    },
+    {
+      "source_id": "ons_rti",
+      "started_at": "2026-10-29T11:15:54.812Z",
+      "completed_at": "2026-10-29T11:15:55.754Z",
+      "status": "unchanged",
+      "rows_written": 2,
+      "error": null,
+      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/k54l/emp/data"
+    },
+    {
+      "source_id": "ons_rti:historical",
+      "started_at": "2026-10-28T23:39:51.030Z",
+      "completed_at": "2026-10-28T23:39:52.503Z",
+      "status": "success",
+      "rows_written": 66,
+      "error": null,
+      "source_url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/k54l/emp/data"
+    },
+    {
+      "source_id": "rics_rms",
+      "started_at": "2026-10-29T06:00:48.064Z",
+      "completed_at": "2026-10-29T06:00:48.148Z",
+      "status": "unchanged",
+      "rows_written": 0,
+      "error": "skipped: disabled \u2014 rics.org Imperva bot challenge blocks all non-residential egress (verified 2026-07-07); hand-refresh fixture path owns rics_price_balance",
+      "source_url": "https://www.rics.org/news-insights/market-surveys/uk-residential-market-survey"
+    },
+    {
+      "source_id": "seed",
+      "started_at": "2026-04-17T14:02:00.000Z",
+      "completed_at": "2026-04-17T14:02:00.000Z",
+      "status": "success",
+      "rows_written": 27,
+      "error": null,
+      "source_url": "local://seed"
+    },
+    {
+      "source_id": "sp_global_pmi",
+      "started_at": "2026-10-29T06:00:48.064Z",
+      "completed_at": "2026-10-29T06:00:58.800Z",
+      "status": "success",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "https://tradingeconomics.com/united-kingdom/services-pmi"
+    },
+    {
+      "source_id": "timeline_triage",
+      "started_at": "2026-10-29T06:01:04.239Z",
+      "completed_at": "2026-10-29T06:02:41.716Z",
+      "status": "success",
+      "rows_written": 15,
+      "error": null,
+      "source_url": "curator:timeline_triage"
+    },
+    {
+      "source_id": "twelve_data_housebuilders",
+      "started_at": "2026-04-22T08:45:49.308Z",
+      "completed_at": "2026-04-22T08:45:49.539Z",
+      "status": "unchanged",
+      "rows_written": 1,
+      "error": null,
+      "source_url": "adapter:twelve_data_housebuilders"
+    },
+    {
+      "source_id": "unknown",
+      "started_at": "2026-07-06T02:31:24.303Z",
+      "completed_at": "2026-07-06T02:31:24.303Z",
+      "status": "dlq",
+      "rows_written": 0,
+      "error": "dlq",
+      "source_url": ""
+    }
+  ],
+  "overnightFailures": [
+    {
+      "source_id": "eia_brent:historical",
+      "started_at": "2026-10-29T02:00:42.339Z",
+      "completed_at": "2026-10-29T02:00:43.596Z",
+      "status": "partial",
+      "rows_written": 0,
+      "error": "adapter returned 200 with zero observations -- probable parse regression or upstream schema drift",
+      "source_url": "https://api.eia.gov/v2/petroleum/pri/spt/data/?series=RBRTE"
+    }
+  ],
+  "unfinishedAudits": [
+    {
+      "source_id": "eodhd_housebuilders",
+      "started_at": "2026-10-28T18:05:30.247Z",
+      "completed_at": null,
+      "status": "started"
+    }
+  ],
+  "activeQuarantines": [],
+  "rawReferenceDaysSince28Oct": [
+    {
+      "indicator_id": "cb_headroom",
+      "reference_day": "2026-10-28",
+      "rows": 1,
+      "first_at": "2026-10-28T00:00:00Z",
+      "last_at": "2026-10-28T00:00:00Z"
+    },
+    {
+      "indicator_id": "ftse_250",
+      "reference_day": "2026-10-28",
+      "rows": 1,
+      "first_at": "2026-10-28T16:30:00Z",
+      "last_at": "2026-10-28T16:30:00Z"
+    },
+    {
+      "indicator_id": "gbp_twi",
+      "reference_day": "2026-10-28",
+      "rows": 1,
+      "first_at": "2026-10-28T16:00:00Z",
+      "last_at": "2026-10-28T16:00:00Z"
+    },
+    {
+      "indicator_id": "gbp_usd",
+      "reference_day": "2026-10-28",
+      "rows": 1,
+      "first_at": "2026-10-28T16:00:00Z",
+      "last_at": "2026-10-28T16:00:00Z"
+    },
+    {
+      "indicator_id": "housebuilder_idx",
+      "reference_day": "2026-10-28",
+      "rows": 1,
+      "first_at": "2026-10-28T16:30:00Z",
+      "last_at": "2026-10-28T16:30:00Z"
+    },
+    {
+      "indicator_id": "ilg_share",
+      "reference_day": "2026-10-28",
+      "rows": 1,
+      "first_at": "2026-10-28T00:00:00Z",
+      "last_at": "2026-10-28T00:00:00Z"
+    },
+    {
+      "indicator_id": "issuance_long_share",
+      "reference_day": "2026-10-28",
+      "rows": 1,
+      "first_at": "2026-10-28T00:00:00Z",
+      "last_at": "2026-10-28T00:00:00Z"
+    },
+    {
+      "indicator_id": "psnfl_trajectory",
+      "reference_day": "2026-10-28",
+      "rows": 1,
+      "first_at": "2026-10-28T00:00:00Z",
+      "last_at": "2026-10-28T00:00:00Z"
+    }
+  ],
+  "missing28OctReferencesAmongDailyInputs": [
+    "gilt_10y",
+    "gilt_30y",
+    "breakeven_5y",
+    "brent_gbp"
+  ],
+  "inputs": [
+    {
+      "id": "gilt_10y",
+      "value": 5.3223,
+      "observedAt": "2026-10-27T16:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T09:33:31.060Z",
+      "sourceId": "boe_yields",
+      "publicValue": 5.3223,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "gilt_30y",
+      "value": 5.7796,
+      "observedAt": "2026-10-27T16:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T09:33:31.060Z",
+      "sourceId": "boe_yields",
+      "publicValue": 5.7796,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "gbp_usd",
+      "value": 1.3301,
+      "observedAt": "2026-10-28T16:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T09:33:32.835Z",
+      "sourceId": "boe_fx",
+      "publicValue": 1.3301,
+      "budgetStatus": "post_budget_observation"
+    },
+    {
+      "id": "gbp_twi",
+      "value": 85.8635,
+      "observedAt": "2026-10-28T16:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T09:33:32.835Z",
+      "sourceId": "boe_fx",
+      "publicValue": 85.8635,
+      "budgetStatus": "post_budget_observation"
+    },
+    {
+      "id": "ftse_250",
+      "value": 24639.3,
+      "observedAt": "2026-10-28T16:30:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T07:00:28.618Z",
+      "sourceId": "lseg",
+      "publicValue": 24639.3,
+      "budgetStatus": "post_budget_observation"
+    },
+    {
+      "id": "breakeven_5y",
+      "value": 3.6633,
+      "observedAt": "2026-10-27T16:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T09:33:36.682Z",
+      "sourceId": "boe_yields",
+      "publicValue": 3.6633,
+      "budgetStatus": "baseline_invalidated"
+    },
+    {
+      "id": "brent_gbp",
+      "value": 92.47,
+      "observedAt": "2026-10-27T00:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T11:15:45.633Z",
+      "sourceId": "eia_brent",
+      "publicValue": 92.47,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "housebuilder_idx",
+      "value": 52.6,
+      "observedAt": "2026-10-28T16:30:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T02:00:42.206Z",
+      "sourceId": "eodhd_housebuilders",
+      "publicValue": 52.6,
+      "budgetStatus": "post_budget_observation"
+    },
+    {
+      "id": "services_pmi",
+      "value": 52.1,
+      "observedAt": "2026-09-30T00:00:00Z",
+      "releasedAt": "2026-10-05T00:00:00Z",
+      "ingestedAt": "2026-10-29T11:15:46.952Z",
+      "sourceId": "sp_global_pmi",
+      "publicValue": 52.1,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "consumer_confidence",
+      "value": -24,
+      "observedAt": "2026-10-31T00:00:00Z",
+      "releasedAt": "2026-10-23T00:00:00Z",
+      "ingestedAt": "2026-10-29T11:15:46.952Z",
+      "sourceId": "gfk_confidence",
+      "publicValue": -24,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "rics_price_balance",
+      "value": -32,
+      "observedAt": "2026-09-30T00:00:00Z",
+      "releasedAt": "2026-10-06T00:00:00Z",
+      "ingestedAt": "2026-10-29T11:15:46.952Z",
+      "sourceId": "rics_rms",
+      "publicValue": -32,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "cb_headroom",
+      "value": 14.5,
+      "observedAt": "2026-10-28T00:00:00Z",
+      "releasedAt": "2026-10-28T13:29:19Z",
+      "ingestedAt": "2026-10-29T11:15:48.001Z",
+      "sourceId": "obr_efo",
+      "publicValue": 14.5,
+      "budgetStatus": "forecast_revision"
+    },
+    {
+      "id": "psnfl_trajectory",
+      "value": 0,
+      "observedAt": "2026-10-28T00:00:00Z",
+      "releasedAt": "2026-10-28T13:29:19Z",
+      "ingestedAt": "2026-10-29T11:15:48.001Z",
+      "sourceId": "obr_efo",
+      "publicValue": 0,
+      "budgetStatus": "forecast_revision"
+    },
+    {
+      "id": "borrowing_outturn",
+      "value": 24.52,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": "2026-10-20T23:00:00.000Z",
+      "ingestedAt": "2026-10-29T11:15:49.570Z",
+      "sourceId": "ons_psf",
+      "publicValue": 24.52,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "debt_interest",
+      "value": 10.933,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": "2026-10-20T23:00:00.000Z",
+      "ingestedAt": "2026-10-29T11:15:49.570Z",
+      "sourceId": "ons_psf",
+      "publicValue": 10.933,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "ilg_share",
+      "value": 24.445222989423403,
+      "observedAt": "2026-10-28T00:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T11:15:52.215Z",
+      "sourceId": "dmo",
+      "publicValue": 24.445222989423403,
+      "budgetStatus": "budget_day_observation"
+    },
+    {
+      "id": "issuance_long_share",
+      "value": 30.611564690428878,
+      "observedAt": "2026-10-28T00:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T11:15:52.215Z",
+      "sourceId": "dmo",
+      "publicValue": 30.611564690428878,
+      "budgetStatus": "budget_day_observation"
+    },
+    {
+      "id": "inactivity_rate",
+      "value": 20.9,
+      "observedAt": "2026-07-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "ingestedAt": "2026-10-29T11:15:54.180Z",
+      "sourceId": "ons_lms",
+      "publicValue": 20.9,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "inactivity_health",
+      "value": 2.738,
+      "observedAt": "2026-07-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "ingestedAt": "2026-10-29T11:15:54.180Z",
+      "sourceId": "ons_lms",
+      "publicValue": 2.738,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "unemployment",
+      "value": 4.7,
+      "observedAt": "2026-07-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "ingestedAt": "2026-10-29T11:15:54.180Z",
+      "sourceId": "ons_lms",
+      "publicValue": 4.7,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "vacancies_per_unemployed",
+      "value": 0.411214953271028,
+      "observedAt": "2026-07-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "ingestedAt": "2026-10-29T11:15:54.180Z",
+      "sourceId": "ons_lms",
+      "publicValue": 0.411214953271028,
+      "budgetStatus": "baseline_invalidated"
+    },
+    {
+      "id": "payroll_mom",
+      "value": 238.3,
+      "observedAt": "2026-08-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "ingestedAt": "2026-10-29T11:15:55.397Z",
+      "sourceId": "ons_rti",
+      "publicValue": 238.3,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "real_regular_pay",
+      "value": 0.7,
+      "observedAt": "2026-08-01T00:00:00Z",
+      "releasedAt": "2026-10-19T23:00:00.000Z",
+      "ingestedAt": "2026-10-29T11:15:54.180Z",
+      "sourceId": "ons_lms",
+      "publicValue": 0.7,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "mortgage_2y_fix",
+      "value": 5.13,
+      "observedAt": "2026-09-30T16:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T09:33:38.202Z",
+      "sourceId": "boe_mortgage_rates",
+      "publicValue": 5.13,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "dd_failure_rate",
+      "value": 2.43,
+      "observedAt": "2026-09-30T00:00:00Z",
+      "releasedAt": "2026-10-22T00:00:00Z",
+      "ingestedAt": "2026-10-29T11:15:55.397Z",
+      "sourceId": "ons_rti",
+      "publicValue": 2.43,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "housing_trajectory",
+      "value": 47.7,
+      "observedAt": "2026-06-30T00:00:00Z",
+      "releasedAt": "2026-09-24T00:00:00Z",
+      "ingestedAt": "2026-10-29T11:15:56.528Z",
+      "sourceId": "mhclg",
+      "publicValue": 47.7,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "planning_consents",
+      "value": 60,
+      "observedAt": "2026-06-30T00:00:00Z",
+      "releasedAt": "2026-09-24T00:00:00Z",
+      "ingestedAt": "2026-10-29T11:15:56.528Z",
+      "sourceId": "mhclg",
+      "publicValue": 60,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "new_towns_milestones",
+      "value": 68,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T11:15:58.070Z",
+      "sourceId": "gov_uk",
+      "publicValue": 68,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "bics_rollout",
+      "value": 81.4,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T11:15:58.070Z",
+      "sourceId": "desnz",
+      "publicValue": 81.4,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "industrial_strategy",
+      "value": 74,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T11:15:58.070Z",
+      "sourceId": "dbt",
+      "publicValue": 74,
+      "budgetStatus": "awaiting_post_budget_data"
+    },
+    {
+      "id": "smr_programme",
+      "value": 62,
+      "observedAt": "2026-09-01T00:00:00Z",
+      "releasedAt": null,
+      "ingestedAt": "2026-10-29T11:15:58.070Z",
+      "sourceId": "gov_uk",
+      "publicValue": 62,
+      "budgetStatus": "awaiting_post_budget_data"
+    }
+  ],
+  "budgetScore": {
+    "before": {
+      "timestamp": "2026-10-28T12:25:29.526Z",
+      "value": 38.2
+    },
+    "latest": {
+      "timestamp": "2026-10-29T11:16:16.605Z",
+      "value": 37.1
+    },
+    "comparable": false,
+    "delta": null,
+    "corrections": [
+      {
+        "date": "2026-10-28T23:37:36.764Z",
+        "title": "Baseline coverage expanded with verified official history"
+      },
+      {
+        "date": "2026-10-28T18:17:35.521Z",
+        "title": "Source correction: five-year inflation series"
+      },
+      {
+        "date": "2026-10-28T17:47:55.565Z",
+        "title": "Calculation correction: vacancies ratio uses a common period"
+      },
+      {
+        "date": "2026-10-28T17:36:44.864Z",
+        "title": "Historical source corrections: gilt series and Brent gaps"
+      },
+      {
+        "date": "2026-10-28T13:15:09.884Z",
+        "title": "Score calculation correction: baseline history restored"
+      }
+    ]
+  },
+  "verificationAgainstBeforeRefresh": {
+    "beforeCheckedAt": "2026-10-29T11:15:01.920Z",
+    "rawRowsBefore": 17069,
+    "rawRowsAfter": 17071,
+    "newRawRows": 2,
+    "changedInputs": [
+      {
+        "id": "ilg_share",
+        "value": {
+          "before": 24.47949830594804,
+          "after": 24.445222989423403
+        },
+        "observedAt": {
+          "before": "2026-10-27T00:00:00Z",
+          "after": "2026-10-28T00:00:00Z"
+        }
+      },
+      {
+        "id": "issuance_long_share",
+        "value": {
+          "before": 30.673965664751584,
+          "after": 30.611564690428878
+        },
+        "observedAt": {
+          "before": "2026-10-27T00:00:00Z",
+          "after": "2026-10-28T00:00:00Z"
+        }
+      }
+    ],
+    "other29InputValuesAndReferenceReleaseDatesUnchanged": true,
+    "remaining28OctReferencesNotYetStored": [
+      "gilt_10y",
+      "gilt_30y",
+      "breakeven_5y",
+      "brent_gbp"
+    ],
+    "newVerifiedMissingDates": [],
+    "limitation": "Remaining27OctoberBoEandBrentreadings require primary publication availability checks; absent28October rows are not by themselves proof of an ingest omission. No additional verified missing dates were established by this read-only audit."
+  }
+}

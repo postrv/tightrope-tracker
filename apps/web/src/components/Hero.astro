@@ -3,16 +3,14 @@ import type { HeadlineScore, TimelineEvent } from "@tightrope/shared";
 import { bandFor, BANDS, OBR_LATEST_VINTAGE_LABEL, OBR_TARGET_YEAR_LABEL, PILLARS } from "@tightrope/shared";
 import TightropeWalker from "./TightropeWalker.astro";
 import ScoreDeltaNote from "./ScoreDeltaNote.astro";
-import { eyebrowDate, shortDate, signedDelta, trendArrow, trendClass, trendDescriptor } from "~/lib/format.js";
+import { bstTimestamp, shortDate, signedDelta, trendArrow, trendClass, trendDescriptor } from "~/lib/format.js";
 import { safeHref } from "~/lib/safeHref.js";
 
 interface Props {
   headline: HeadlineScore;
   /**
-   * ISO timestamp of the freshest indicator observation across all pillars,
-   * not the recompute time stamped on `headline.updatedAt`. Used in the
-   * eyebrow so the page-level "as of" line reflects the underlying data,
-   * not the 5-minute recompute heartbeat.
+   * Latest source freshness date across all pillars: release date where
+   * available, otherwise observation date. Separate from score computation.
    */
   freshestAt?: string | null;
   /**
@@ -28,6 +26,8 @@ interface Props {
 }
 
 const { headline, freshestAt, headroomVintages = [], calculationCorrection } = Astro.props;
+const computedStamp = Number.isFinite(Date.parse(headline.updatedAt)) ? bstTimestamp(headline.updatedAt) : null;
+const sourceStamp = freshestAt && Number.isFinite(Date.parse(freshestAt)) ? bstTimestamp(freshestAt) : null;
 const correctionHref = safeHref(calculationCorrection?.sourceUrl) ?? "https://tightropetracker.uk/corrections";
 const band = BANDS.find((b) => b.id === headline.band) ?? bandFor(headline.value);
 const bandColour = band.colourToken;
@@ -103,10 +103,8 @@ function headroomDateLabel(iso: string): string {
   <div class="container">
     <div class="hero-grid">
       <div>
-        <span
-          class="eyebrow"
-          title={`Latest indicator observation: ${eyebrowDate(freshestAt ?? headline.updatedAt)}. Recompute heartbeat: ${eyebrowDate(headline.updatedAt)}.`}
-        >Civic data · {eyebrowDate(freshestAt ?? headline.updatedAt)}</span>
+        <span class="eyebrow">Score computed · {computedStamp ? <time datetime={headline.updatedAt}>{computedStamp}</time> : "Unavailable"}</span>
+        <p class="source-date">Latest source date · {sourceStamp ? <time datetime={freshestAt!}>{sourceStamp}</time> : "Unavailable"}. Release date where available, otherwise observation date. Sources update on their own schedules.</p>
         <h1>the UK is on a <span class="lfg-u">fiscal tightrope</span>. the steadier the rope, the more room to <span class="lfg-u lfg-u--blue">move forward</span>.</h1>
         <p class="lede">The Tightrope Score runs from 0 to 100: <strong>higher means more room to move</strong>, lower means the rope is closer to giving way. Markets, fiscal headroom, the labour force, and growth delivery each pull on the rope; the score is the geometric mean of those four pillars. Every number sourced and open.</p>
 
@@ -184,6 +182,9 @@ function headroomDateLabel(iso: string): string {
 </section>
 
 <style>
+.hero .eyebrow { flex-wrap: wrap; gap: 4px 10px; letter-spacing: 0.08em; }
+.source-date { margin: 8px 0 0; color: var(--ink-2); font-size: 11px; line-height: 1.6; max-width: 620px; }
+.source-date time { font-family: var(--font-mono); white-space: nowrap; }
 .hero { padding: 72px 0 56px; border-bottom: 1px solid var(--border-soft); }
 .hero-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 56px; align-items: center; }
 .hero h1 {

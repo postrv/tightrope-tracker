@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { eodhdHousebuildersAdapter } from "./eodhdHousebuilders.js";
@@ -48,6 +48,13 @@ function completeEodReplay(date: "2026-10-27" | "2026-10-28", missing?: string):
 afterEach(() => { vi.useRealTimers(); });
 
 describe("official LSE completed-close housebuilder fallback", () => {
+  beforeEach(() => {
+    // The archived provider quotes are the 28 October completed session.
+    // Calendar-boundary cases below override this deterministic fixture time.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-28T18:30:00Z"));
+  });
+
   it("archives exact primary responses and the independently resolved listing identities", () => {
     for (const source of sources) {
       expect(createHash("sha256").update(source.body).digest("hex")).toBe(source.sha256);

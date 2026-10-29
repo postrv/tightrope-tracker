@@ -6,7 +6,7 @@
  * via `Astro.locals.runtime.env`; we stub D1 + KV to return canned rows
  * and assert on the resulting markup.
  */
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { parseHTML } from "linkedom";
 import composite from "../composite.astro";
@@ -38,14 +38,17 @@ interface MockEnv {
 function buildEnv(opts: {
   headlineRows?: StubRow[];
   pillarRows?: StubRow[];
+  historyFailures?: number;
 } = {}): MockEnv {
   const headlineRows = opts.headlineRows ?? [];
   const pillarRows = opts.pillarRows ?? headlineRows.flatMap(row => ["market", "fiscal", "labour", "delivery"].map(pillar_id => ({ ...row, pillar_id })));
+  let historyReads = 0;
 
   function execute(sql: string): Promise<{ results: unknown[] }> {
     const lower = sql.toLowerCase();
     void rangeQuery(sql, 0);
     if (lower.includes("with selected as")) {
+      if (historyReads++ < (opts.historyFailures ?? 0)) return Promise.reject(new Error("D1_ERROR: Network connection lost"));
       return Promise.resolve({ results: headlineRows.map(row => ({ ...row,
         ...Object.fromEntries(["market", "fiscal", "labour", "delivery"].map(id => [id,
           pillarRows.filter(p => p.pillar_id === id && p.observed_at <= row.observed_at).sort((a, b) => b.observed_at.localeCompare(a.observed_at))[0]?.value ?? null,
@@ -121,6 +124,8 @@ async function renderComposite(rangeQ: string, env: MockEnv): Promise<Document> 
   return document;
 }
 
+afterEach(() => { vi.restoreAllMocks(); });
+
 describe("/composite page", () => {
   it("renders the page heading and the range toggle", async () => {
     const doc = await renderComposite("90", buildEnv());
@@ -135,6 +140,30 @@ describe("/composite page", () => {
     const doc = await renderComposite("90", buildEnv());
     expect(doc.querySelector(".empty")).not.toBeNull();
     expect(doc.querySelector(".chart-wrap")).toBeNull();
+    expect(doc.querySelector(".history-unavailable")).toBeNull();
+  });
+
+  it("shows an explicit unavailable state after two failures, preserving retry controls and drivers", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const doc = await renderComposite("all&resolution=daily&embed=1", buildEnv({ historyFailures: 2 }));
+    const status = doc.querySelector(".history-unavailable");
+    expect(status?.textContent).toContain("History temporarily unavailable");
+    expect(status?.textContent).not.toContain("D1_ERROR");
+    expect(status?.querySelector("a")?.getAttribute("href")).toBe("/composite?range=all&resolution=daily&embed=1");
+    expect(doc.querySelector(".empty")).toBeNull();
+    expect(doc.querySelector(".history-coverage")).toBeNull();
+    expect(doc.querySelectorAll("article.driver-card")).toHaveLength(4);
+  });
+
+  it("renders recovered history after a single transient failure instead of reporting no recordings", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const doc = await renderComposite("all&resolution=daily", buildEnv({ historyFailures: 1, headlineRows: [
+      { observed_at: "2024-12-17T23:59:00Z", value: 40 },
+      { observed_at: "2026-10-28T23:50:00Z", value: 36.9 },
+    ] }));
+    expect(doc.querySelector(".history-unavailable")).toBeNull();
+    expect(doc.querySelector(".history-coverage")?.textContent).toContain("2 recordings");
+    expect(doc.querySelector(".chart-wrap")).not.toBeNull();
   });
 
   it("renders the chart when D1 returns history rows", async () => {

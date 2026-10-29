@@ -45,6 +45,7 @@ const [history, snapshot, timeline] = await Promise.all([
 const isStale = Boolean(snapshot.headline.stale);
 const freshness = summariseFreshness(snapshot, []);
 const isEmpty = history.points.length === 0;
+const historyUnavailable = history.loadFailed === true;
 const labelByOption: Record<RangeOption, string> = {
   1: "Last 24 hours",
   7: "Last 7 days",
@@ -95,6 +96,7 @@ const resolutionAdjusted = resolutionRequest !== "auto" && resolutionRequest !==
       </form>
     </div>
 
+    {!historyUnavailable ? <>
     <div class="history-coverage" aria-label="History availability and sampling">
       <div><span class="coverage-label">Showing</span><strong>{history.points.length.toLocaleString("en-GB")} recording{history.points.length === 1 ? "" : "s"}</strong><span>{RESOLUTION_LABELS[resolution]}</span></div>
       <div><span class="coverage-label">Selected recordings</span><strong>{selectedFrom ? shortDate(selectedFrom) : "No recordings"}{selectedTo && selectedTo.slice(0, 10) !== selectedFrom?.slice(0, 10) ? ` – ${shortDate(selectedTo)}` : ""}</strong><span>{selectedTo ? `Latest ${bstTimestamp(selectedTo)}` : "Try another window or sampling level"}</span></div>
@@ -105,8 +107,14 @@ const resolutionAdjusted = resolutionRequest !== "auto" && resolutionRequest !==
       {history.truncated ? `The display is limited to ${(history.pointLimit ?? 2000).toLocaleString("en-GB")} points; choose a shorter window or coarser sampling. ` : ""}
       {(history.excludedPoints ?? 0) > 0 ? `${history.excludedPoints} incomplete or invalid recording${history.excludedPoints === 1 ? " was" : "s were"} excluded.` : ""}
     </p> : null}
+    </> : null}
 
-    {isEmpty ? (
+    {historyUnavailable ? (
+      <div class="history-unavailable" role="status">
+        <strong>History temporarily unavailable</strong>
+        <p>We couldn’t load score history. <a href={historyHref(rangeOption, resolutionRequest, embed)}>Retry this view ↗</a>.</p>
+      </div>
+    ) : isEmpty ? (
       <p class="empty">No complete recorded scores are available in this window. <a href={historyHref("all", "auto", embed)}>See all available history ↗</a></p>
     ) : (
       <div class="chart-wrap">
@@ -114,7 +122,7 @@ const resolutionAdjusted = resolutionRequest !== "auto" && resolutionRequest !==
       </div>
     )}
 
-    <p class="sampling-note">Hourly, daily and weekly views select the last recorded score in each UTC bucket. Finer sampling shows score recalculations; new economic releases follow their own publication calendars. Gaps select the nearest available recording.</p>
+    {!historyUnavailable ? <p class="sampling-note">Hourly, daily and weekly views select the last recorded score in each UTC bucket. Finer sampling shows score recalculations; new economic releases follow their own publication calendars. Gaps select the nearest available recording.</p> : null}
 
     <PillarDriversPanel snapshot={snapshot} />
 
@@ -160,6 +168,10 @@ const resolutionAdjusted = resolutionRequest !== "auto" && resolutionRequest !==
 .history-coverage span:not(.coverage-label) { font-size: 10px; color: var(--ink-2); }
 .coverage-notice { border-left: 2px solid var(--accent-dim); padding: 10px 14px; margin: 0 0 18px; color: var(--ink-1); font-size: 12px; background: color-mix(in srgb, var(--accent-dim) 7%, var(--bg-1)); }
 .sampling-note { color: var(--ink-2); font-size: 11px; line-height: 1.6; margin: -18px 0 28px; max-width: 900px; }
+.history-unavailable { border: 1px solid var(--border); border-radius: 12px; background: var(--bg-1); padding: 28px 24px; margin-bottom: 28px; color: var(--ink-1); }
+.history-unavailable strong { font-family: var(--font-serif); font-size: 22px; font-weight: 500; color: var(--ink-0); }
+.history-unavailable p { font-size: 14px; line-height: 1.6; margin: 10px 0 0; max-width: 70ch; }
+.history-unavailable a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
 .composite-title {
   font-family: var(--font-serif);
   font-weight: 700;

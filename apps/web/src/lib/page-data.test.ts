@@ -7,7 +7,7 @@
  *   - the KV freshness gate: stale cached history falls through to D1
  *   - emptyHistory returns a typed-but-empty placeholder
  */
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ScoreHistory } from "@tightrope/shared";
 import { loadHomepageData, loadHistory, emptyHistory } from "./page-data.js";
 
@@ -38,16 +38,22 @@ function buildEnv(opts: {
   pillarRows?: StubRow[];
   kvHistory?: ScoreHistory | null;
   d1Throws?: boolean;
+  historyFailures?: number;
+  onHistoryRead?: () => void;
 } = {}): StubEnv {
   const headlineRows = opts.headlineRows ?? [];
   const pillarRows = opts.pillarRows ?? [];
+  let historyReads = 0;
 
   function execute(sql: string): Promise<{ results: unknown[] }> {
     if (opts.d1Throws) return Promise.reject(new Error("D1 boom"));
     const lower = sql.toLowerCase();
     if (lower.includes("with selected as")) {
+      opts.onHistoryRead?.();
+      if (historyReads++ < (opts.historyFailures ?? 0)) return Promise.reject(new Error("D1_ERROR: Network connection lost"));
       return Promise.resolve({ results: headlineRows.map(r => ({ ...r, market: 50, fiscal: 50, labour: 50, delivery: 50 })) });
     }
+    if (lower.includes("min(observed_at) as first")) return Promise.resolve({ results: [{ first: headlineRows[0]?.observed_at ?? null, last: headlineRows.at(-1)?.observed_at ?? null }] });
     if (lower.includes("from headline_scores") && lower.includes("limit 1")) {
       const last = headlineRows[headlineRows.length - 1];
       return Promise.resolve({
@@ -175,10 +181,14 @@ describe("loadHomepageData history wiring", () => {
 });
 
 describe("loadHistory with explicit range", () => {
+  beforeEach(() => { vi.spyOn(console, "warn").mockImplementation(() => undefined); });
+  afterEach(() => { vi.restoreAllMocks(); });
+
   it("clamps invalid days down to a 1..7305 window when KV/D1 are missing", async () => {
     const result = await loadHistory({} as App.Locals, 9999);
     expect(result.points).toEqual([]);
     expect(result.rangeDays).toBe(7305);
+    expect(result.loadFailed).toBe(true);
   });
 
   it("returns empty history with the requested rangeDays when D1 throws", async () => {
@@ -186,5 +196,37 @@ describe("loadHistory with explicit range", () => {
     const result = await loadHistory(locals(env), 30);
     expect(result.points).toEqual([]);
     expect(result.rangeDays).toBe(30);
+    expect(result.loadFailed).toBe(true);
+  });
+
+  it("recovers an All/daily history read after one rejected D1 request", async () => {
+    let reads = 0;
+    const env = buildEnv({ historyFailures: 1, onHistoryRead: () => { reads++; }, headlineRows: [
+      { observed_at: "2024-12-17T23:59:00Z", value: 40 },
+      { observed_at: "2026-10-28T23:50:00Z", value: 36.9 },
+    ] });
+    const result = await loadHistory(locals(env), 7305, "daily");
+    expect(reads).toBe(2);
+    expect(result.loadFailed).toBeUndefined();
+    expect(result.points.map(p => p.headline)).toEqual([40, 36.9]);
+    expect(result.availableFrom).toBe("2024-12-17T23:59:00Z");
+    expect(result.resolution).toBe("daily");
+  });
+
+  it("marks two rejected reads unavailable and stops retrying", async () => {
+    let reads = 0;
+    const result = await loadHistory(locals(buildEnv({ historyFailures: 2, onHistoryRead: () => { reads++; } })), 7305, "daily");
+    expect(reads).toBe(2);
+    expect(result.loadFailed).toBe(true);
+    expect(result.rangeDays).toBe(7305);
+    expect(result.requestedResolution).toBe("daily");
+  });
+
+  it("keeps a genuinely empty successful archive distinct and does not retry it", async () => {
+    let reads = 0;
+    const result = await loadHistory(locals(buildEnv({ onHistoryRead: () => { reads++; } })), 7305, "daily");
+    expect(reads).toBe(1);
+    expect(result.points).toEqual([]);
+    expect(result.loadFailed).toBeUndefined();
   });
 });

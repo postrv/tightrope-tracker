@@ -195,20 +195,29 @@ export function emptyHistory(): ScoreHistory {
   return { points: [], rangeDays: 90, scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
 }
 
-/**
- * Load score history for an explicit window. Used by the long-composite
- * page (/composite) where the URL governs the range. Defensive: any
- * failure resolves to an empty history of the requested width so the
- * page still renders.
- */
-export async function loadHistory(astroLocals: App.Locals, days: number, resolution: ScoreHistoryResolutionRequest = "auto"): Promise<ScoreHistory> {
+/** Web-only load status; a failed read is not evidence of an empty archive. */
+export type LoadedHistory = ScoreHistory & { loadFailed?: boolean };
+
+/** Load an explicit window, retrying a failed read once.
+ * D1 already retries some read-only failures internally; this bounds the
+ * page-level recovery without changing queries or duplicating any writes. */
+export async function loadHistory(astroLocals: App.Locals, days: number, resolution: ScoreHistoryResolutionRequest = "auto"): Promise<LoadedHistory> {
   const env = astroLocals.runtime?.env;
-  if (!env || !env.DB) return { points: [], rangeDays: clampDays(days), scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
-  try {
-    return await getHistory(env, days, resolution);
-  } catch {
-    return { points: [], rangeDays: clampDays(days), scoreDirection: SCORE_DIRECTION, schemaVersion: SCORE_HISTORY_SCHEMA_VERSION };
+  const unavailable: LoadedHistory = { ...emptyHistory(), rangeDays: clampDays(days), requestedResolution: resolution, loadFailed: true };
+  if (!env || !env.DB) return unavailable;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      return await getHistory(env, days, resolution);
+    } catch (error) {
+      const message = (value: unknown) => (value instanceof Error ? value.message : String(value)).slice(0, 400);
+      console.warn("score_history_read_failed", {
+        rangeDays: unavailable.rangeDays, resolution, attempt: attempt + 1, retrying: attempt === 0,
+        error: message(error),
+        ...(error instanceof Error && error.cause ? { cause: message(error.cause) } : {}),
+      });
+    }
   }
+  return unavailable;
 }
 
 function clampDays(days: number): number {

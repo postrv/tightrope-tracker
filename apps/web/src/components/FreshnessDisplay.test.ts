@@ -18,6 +18,9 @@ describe("Visible score and source freshness", () => {
     const container = await AstroContainer.create();
     const nav = parseHTML(await container.renderToString(TopNav, { props: { updatedAt, freshestAt } })).document;
     const chip = nav.querySelector(".live-chip")!;
+    expect(chip.getAttribute("data-live-region")).toBe("nav-freshness");
+    expect(nav.querySelector("nav.top")?.hasAttribute("data-live-region")).toBe(false);
+    expect(nav.querySelector("[data-nav-toggle]")?.closest("[data-live-region]")).toBeNull();
     expect(chip.textContent).toContain("Score computed · 29 Oct 11:10 UTC");
     expect(chip.textContent).toContain("Latest source date · 28 Oct 16:30 UTC");
     expect(chip.querySelectorAll("time")[0]?.getAttribute("datetime")).toBe(updatedAt);
@@ -31,6 +34,11 @@ describe("Visible score and source freshness", () => {
     const footer = parseHTML(await container.renderToString(SiteFooter, { props: { updatedAt, freshestAt } })).document;
     expect(footer.querySelector(".footer-freshness")?.textContent).toContain("Score computed: 2026-10-29 11:10 UTC");
     expect(footer.querySelector(".footer-freshness")?.textContent).toContain("Latest source date: 2026-10-28 16:30 UTC");
+    expect(footer.querySelector(".footer-freshness")?.getAttribute("data-live-region")).toBe("footer-freshness");
+    const refreshStatus = footer.querySelector("[data-live-status]")!;
+    expect(refreshStatus.hasAttribute("hidden")).toBe(true);
+    expect(refreshStatus.getAttribute("role")).toBe("status");
+    expect(refreshStatus.closest("[data-live-region]")).toBeNull();
   });
 
   it("does not relabel a computation as source data when the source timestamp is unavailable", async () => {

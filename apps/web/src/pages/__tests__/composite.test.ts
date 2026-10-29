@@ -152,6 +152,7 @@ describe("/composite page", () => {
     expect(status?.querySelector("a")?.getAttribute("href")).toBe("/composite?range=all&resolution=daily&embed=1");
     expect(doc.querySelector(".empty")).toBeNull();
     expect(doc.querySelector(".history-coverage")).toBeNull();
+    expect(doc.querySelector('[data-live-region="composite-history"]')?.getAttribute("data-live-valid")).toBe("false");
     expect(doc.querySelectorAll("article.driver-card")).toHaveLength(4);
   });
 
@@ -176,6 +177,15 @@ describe("/composite page", () => {
     expect(doc.querySelector(".empty")).toBeNull();
     expect(doc.querySelector(".chart-wrap")).not.toBeNull();
     expect(doc.querySelector("svg.chart-svg")).not.toBeNull();
+    const liveHistory = doc.querySelector('[data-live-region="composite-history"]')!;
+    expect(liveHistory.getAttribute("data-live-valid")).toBe("true");
+    expect(liveHistory.querySelector(".history-coverage")).not.toBeNull();
+    expect(liveHistory.querySelector(".sampling-note")).not.toBeNull();
+    expect(liveHistory.querySelector("svg.chart-svg")).not.toBeNull();
+    expect(liveHistory.querySelector("[data-live-region]")).toBeNull();
+    expect(doc.querySelector(".resolution-form")?.closest("[data-live-region]")).toBeNull();
+    expect(doc.querySelector("nav.range-toggle")?.closest("[data-live-region]")).toBeNull();
+    expect(doc.querySelector('[data-live-region="pillar-drivers"]')?.closest('[data-live-region="composite-history"]')).toBeNull();
     // The 30d toggle should be the active link.
     const active = doc.querySelector("a.range-link.is-active");
     expect(active?.getAttribute("data-range")).toBe("30");

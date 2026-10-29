@@ -17,8 +17,8 @@ function shortDateLabel(iso: string): string {
 }
 const delta30Label = h.delta30dBaselineDate ? `since ${shortDateLabel(h.delta30dBaselineDate)}` : "30d";
 ---
-<BaseLayout title="Tightrope Tracker — headline" embed>
-  <div class="embed-root">
+<BaseLayout liveUpdatedAt={snapshot.headline.updatedAt} title="Tightrope Tracker — headline" embed>
+  <div class="embed-root" data-live-region="embed-headline" data-live-valid={String(Number.isFinite(h.value))}>
     <div class="score-side">
       <div class="chip" style={`color: var(${band.colourToken}); border-color: var(${band.colourToken});`}>{band.label}</div>
       <div class="num" aria-label={`Tightrope Score ${score} out of 100. Higher is better; 0 is critical, 100 is on track.`}>{score}<span class="unit">/100</span></div>

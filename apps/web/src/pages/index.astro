@@ -45,9 +45,10 @@ const failingSources = snapshot.sourceHealth ?? [];
 const failingSourceNames = failingSources.map((s) => s.name);
 const showSourceWarning = !isStale && !empty && failingSources.length > 0;
 ---
-<BaseLayout title="Tightrope Tracker — a live dashboard of UK economic constraint">
+<BaseLayout liveUpdatedAt={snapshot.headline.updatedAt} title="Tightrope Tracker — a live dashboard of UK economic constraint">
   <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} freshestAt={freshness.freshestAt} stale={isStale} />
   <main id="main">
+    <div data-live-region="source-status" data-live-valid={String(!empty)}>
     {empty ? (
       <div class="stale-banner container" role="status">
         Data loading — the first ingestion run hasn't completed. Some figures on this page are placeholders and will update automatically.
@@ -68,6 +69,7 @@ const showSourceWarning = !isStale && !empty && failingSources.length > 0;
         <strong>Upstream feed{failingSources.length === 1 ? "" : "s"} failing.</strong> {failingSourceNames.join(", ")} {failingSources.length === 1 ? "hasn't" : "haven't"} ingested successfully on {failingSources.length === 1 ? "its" : "their"} last run. The figures below are still within their freshness window — we're showing the last good readings and will clear this banner as soon as ingestion recovers.
       </div>
     ) : null}
+    </div>
 
     <Hero headline={snapshot.headline} freshestAt={freshness.freshestAt} headroomVintages={headroomVintages} calculationCorrection={recentCalculationCorrection} />
     <BudgetWatch />

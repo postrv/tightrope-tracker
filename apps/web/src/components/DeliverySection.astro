@@ -23,7 +23,7 @@ function statusClass(status: string): string {
   }
 }
 ---
-<section class="section" id="delivery" aria-labelledby="delivery-title">
+<section data-live-region="delivery-data" data-live-valid={String(pillar.contributions.length > 0 && commitments.length > 0)} class="section" id="delivery" aria-labelledby="delivery-title">
   <div class="container">
     <div class="section-head">
       <div>

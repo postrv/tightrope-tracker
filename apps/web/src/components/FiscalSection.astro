@@ -49,7 +49,7 @@ const rounds: Round[] = ordered.slice(-4).map((v, i, arr) => ({
 
 const chartHasData = rounds.length >= 2;
 ---
-<section class="section" id="fiscal" aria-labelledby="fiscal-title">
+<section data-live-region="fiscal-data" data-live-valid={String(pillar.contributions.length > 0 && headroomVintages.length > 0)} class="section" id="fiscal" aria-labelledby="fiscal-title">
   <div class="container">
     <div class="section-head">
       <div>

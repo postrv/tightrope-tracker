@@ -28,7 +28,7 @@ function pillarHref(id: PillarId): string {
   return `#${id}`;
 }
 ---
-<section class="pillars" aria-labelledby="pillars-title">
+<section data-live-region="pillars" data-live-valid={String(Object.values(pillars).every(p => Number.isFinite(p.value)))} class="pillars" aria-labelledby="pillars-title">
   <div class="container">
     <div class="pillars-head">
       <h2 id="pillars-title">Four pillars, one score</h2>

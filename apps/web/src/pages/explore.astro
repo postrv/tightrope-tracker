@@ -19,13 +19,13 @@ const baselines = baselinesPayload.baselines;
 const embed = Astro.url.searchParams.get("embed") === "1";
 ---
 {embed ? (
-  <BaseLayout title="Tightrope Tracker — explore" embed>
+  <BaseLayout liveUpdatedAt={snapshot.headline.updatedAt} title="Tightrope Tracker — explore" embed>
     <main id="main">
       <ExploreIsland snapshot={snapshot} baselines={baselines} />
     </main>
   </BaseLayout>
 ) : (
-  <BaseLayout title="Tightrope Tracker — explore the score">
+  <BaseLayout liveUpdatedAt={snapshot.headline.updatedAt} title="Tightrope Tracker — explore the score">
     <TopNav band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} stale={isStale} compact />
     <main id="main">
       <ExploreIsland snapshot={snapshot} baselines={baselines} />

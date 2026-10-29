@@ -4,10 +4,54 @@ import { nearestPointIndex, projectScorePoints, scoreLinePath, timeRatio, yForSc
 interface ChartSample extends ScoreHistoryPoint { x: number; y: number }
 interface ChartData { points: ChartSample[]; width: number; padL: number; plotW: number; label?: string; responsive?: ScorePlotLayout; maxGapMs?: number }
 
+/** Reader choices carried across a replacement with fresh server-rendered data. */
+export interface ScoreChartState {
+  selectedTimestamp: string;
+  followingLatest: boolean;
+  pinned: boolean;
+  pillarVisibility: Partial<Record<PillarId, boolean>>;
+  dateInputDraft: string | null;
+  eventDetailsOpen: boolean | null;
+}
+
+interface ChartController {
+  capture(): ScoreChartState;
+  restore(state: ScoreChartState): void;
+  dispose(): void;
+}
+
+const controllers = new WeakMap<HTMLElement, ChartController>();
+const CHART_SELECTOR = ".annotated-chart, .interactive-score-chart";
+
+function chartsWithin(root: ParentNode | HTMLElement): HTMLElement[] {
+  const charts = Array.from(root.querySelectorAll<HTMLElement>(CHART_SELECTOR));
+  if ("matches" in root && typeof root.matches === "function" && root.matches(CHART_SELECTOR)) {
+    charts.unshift(root as HTMLElement);
+  }
+  return charts;
+}
+
+/** Capture before disposing/removing a chart; no point indices cross refreshes. */
+export function captureScoreChartState(chart: HTMLElement): ScoreChartState | null {
+  return controllers.get(chart)?.capture() ?? null;
+}
+
+/** Release observers and listeners before replacing a chart or its region. */
+export function disposeScoreCharts(root: ParentNode | HTMLElement = document): void {
+  for (const chart of chartsWithin(root)) controllers.get(chart)?.dispose();
+}
+
+/** Initialise fresh markup if needed, then restore against its actual recordings. */
+export function restoreScoreChartState(chart: HTMLElement, state: ScoreChartState): void {
+  initialiseScoreCharts(chart);
+  controllers.get(chart)?.restore(state);
+}
+
 /** Progressive enhancement: the SVG and latest reading remain useful without JS. */
-export function initialiseScoreCharts(root: ParentNode = document): void {
-  for (const chart of root.querySelectorAll<HTMLElement>(".annotated-chart, .interactive-score-chart")) {
-    if (chart.dataset.scoreReady === "true") continue;
+export function initialiseScoreCharts(root: ParentNode | HTMLElement = document): void {
+  for (const chart of chartsWithin(root)) {
+    // The controller, rather than a copied data attribute, owns the lifecycle.
+    if (controllers.has(chart)) continue;
     const dataNode = chart.querySelector(".score-chart-data");
     const slider = chart.querySelector<HTMLInputElement>(".score-scrubber");
     const svg = chart.querySelector<SVGSVGElement>(".chart-svg");
@@ -28,9 +72,27 @@ export function initialiseScoreCharts(root: ParentNode = document): void {
     });
     let pinned = false;
     let selected = data.points.length - 1;
+    let followingLatest = true;
     let layoutWidth = -1;
+    let disposed = false;
+    const cleanups: Array<() => void> = [];
+    const jump = chart.querySelector<HTMLInputElement>("[data-score-jump]");
+    const eventDetails = chart.querySelector<HTMLDetailsElement>("details.event-list");
+
+    function listen<T extends Event>(target: EventTarget, type: string, callback: (event: T) => void, options?: AddEventListenerOptions) {
+      const listener = callback as EventListener;
+      target.addEventListener(type, listener, options);
+      cleanups.push(() => target.removeEventListener(type, listener, options));
+    }
+
+    function setPillarVisible(button: HTMLButtonElement, visible: boolean) {
+      button.setAttribute("aria-pressed", String(visible));
+      const line = chart.querySelector<SVGPathElement>(`.pillar-${button.dataset.togglePillar}`);
+      if (line) line.style.display = visible ? "" : "none";
+    }
 
     function resizePlot() {
+      if (disposed) return;
       const original = data.responsive;
       if (!original) return;
       const cssWidth = svg!.getBoundingClientRect().width;
@@ -88,18 +150,19 @@ export function initialiseScoreCharts(root: ParentNode = document): void {
         tooltip.style.left = `${((layout.padL + Number(tooltip.dataset.chartX) * data.plotW) / layout.width) * 100}%`;
       }
       guide?.setAttribute("y1", String(layout.padT)); guide?.setAttribute("y2", String(layout.height - layout.padB));
-      select(selected);
+      select(selected, followingLatest);
     }
 
-    function select(index: number) {
+    function select(index: number, followLatest?: boolean) {
       selected = Math.max(0, Math.min(data.points.length - 1, index));
+      followingLatest = followLatest ?? (!pinned && selected === data.points.length - 1);
       const point = data.points[selected]!;
       slider!.value = String(selected);
       const dateText = `${dateFormat.format(new Date(point.timestamp))} UTC`;
       const pillarSummary = ["market", "fiscal", "labour", "delivery"].flatMap(id => Number.isFinite(point.pillars[id as PillarId]) ? [`${id} ${point.pillars[id as PillarId].toFixed(1)}`] : []).join(", ");
       slider!.setAttribute("aria-valuetext", `${dateText}; ${data.label ?? "headline"} ${point.headline.toFixed(1)} out of 100${pillarSummary ? `; ${pillarSummary}` : ""}`);
       if (date) { date.dateTime = point.timestamp; date.textContent = dateText; }
-      if (label) label.textContent = `${pinned ? "Pinned" : selected === data.points.length - 1 ? "Latest" : "Recorded"} · ${selected + 1} / ${data.points.length}`;
+      if (label) label.textContent = `${pinned ? "Pinned" : followingLatest ? "Latest" : "Recorded"} · ${selected + 1} / ${data.points.length}`;
       fields.forEach(field => {
         const id = field.dataset.scoreValue;
         const value = id === "headline" ? point.headline : point.pillars[id as PillarId];
@@ -117,23 +180,24 @@ export function initialiseScoreCharts(root: ParentNode = document): void {
       if (x < data.padL || x > data.padL + data.plotW) return null;
       return nearestPointIndex(data.points, (x - data.padL) / data.plotW);
     }
-    svg.addEventListener("pointermove", event => {
+    listen<PointerEvent>(svg, "pointermove", event => {
       if (pinned || event.pointerType === "touch") return;
       const index = eventIndex(event);
       if (index !== null) select(index);
     });
-    svg.addEventListener("click", event => {
+    listen<MouseEvent>(svg, "click", event => {
       if ((event.target as Element).closest(".marker, .event-label")) return;
       const index = eventIndex(event as PointerEvent);
       if (index === null) return;
       pinned = !pinned || selected !== index;
       select(index);
     });
-    slider.addEventListener("input", () => { pinned = false; select(Number(slider.value)); });
-    chart.querySelector("[data-score-previous]")?.addEventListener("click", () => { pinned = false; select(selected - 1); });
-    chart.querySelector("[data-score-next]")?.addEventListener("click", () => { pinned = false; select(selected + 1); });
-    const jump = chart.querySelector<HTMLInputElement>("[data-score-jump]");
-    jump?.addEventListener("change", () => {
+    listen(slider, "input", () => { pinned = false; select(Number(slider.value)); });
+    const previous = chart.querySelector("[data-score-previous]");
+    const next = chart.querySelector("[data-score-next]");
+    if (previous) listen(previous, "click", () => { pinned = false; select(selected - 1); });
+    if (next) listen(next, "click", () => { pinned = false; select(selected + 1); });
+    if (jump) listen(jump, "change", () => {
       const target = Date.parse(`${jump.value}Z`);
       const first = Date.parse(data.points[0]!.timestamp);
       const last = Date.parse(data.points[data.points.length - 1]!.timestamp);
@@ -141,26 +205,66 @@ export function initialiseScoreCharts(root: ParentNode = document): void {
       pinned = true;
       select(nearestPointIndex(data.points, last > first ? (target - first) / (last - first) : .5));
     });
-    chart.addEventListener("keydown", event => {
+    listen<KeyboardEvent>(chart, "keydown", event => {
       if (event.key !== "Escape") return;
       pinned = false;
       select(data.points.length - 1);
     });
-    chart.querySelector("[data-score-reset]")?.addEventListener("click", () => {
+    const reset = chart.querySelector("[data-score-reset]");
+    if (reset) listen(reset, "click", () => {
       pinned = false;
       select(data.points.length - 1);
     });
     for (const button of chart.querySelectorAll<HTMLButtonElement>("[data-toggle-pillar]")) {
-      button.addEventListener("click", () => {
+      listen(button, "click", () => {
         const visible = button.getAttribute("aria-pressed") !== "true";
-        button.setAttribute("aria-pressed", String(visible));
-        const line = chart.querySelector<SVGPathElement>(`.pillar-${button.dataset.togglePillar}`);
-        if (line) line.style.display = visible ? "" : "none";
+        setPillarVisible(button, visible);
       });
     }
+
+    controllers.set(chart, {
+      capture() {
+        const pillarVisibility: ScoreChartState["pillarVisibility"] = {};
+        for (const button of chart.querySelectorAll<HTMLButtonElement>("[data-toggle-pillar]")) {
+          pillarVisibility[button.dataset.togglePillar as PillarId] = button.getAttribute("aria-pressed") === "true";
+        }
+        return {
+          selectedTimestamp: data.points[selected]!.timestamp,
+          followingLatest,
+          pinned,
+          pillarVisibility,
+          dateInputDraft: jump?.value ?? null,
+          eventDetailsOpen: eventDetails?.open ?? null,
+        };
+      },
+      restore(state) {
+        pinned = !state.followingLatest && state.pinned;
+        const first = data.points[0]!.timestamp;
+        const last = data.points[data.points.length - 1]!.timestamp;
+        const index = !state.followingLatest && Number.isFinite(Date.parse(state.selectedTimestamp))
+          ? nearestPointIndex(data.points, timeRatio(state.selectedTimestamp, first, last))
+          : data.points.length - 1;
+        select(index, state.followingLatest);
+        for (const button of chart.querySelectorAll<HTMLButtonElement>("[data-toggle-pillar]")) {
+          const visible = state.pillarVisibility[button.dataset.togglePillar as PillarId];
+          if (typeof visible === "boolean") setPillarVisible(button, visible);
+        }
+        if (jump && state.dateInputDraft !== null) jump.value = state.dateInputDraft;
+        if (eventDetails && state.eventDetailsOpen !== null) eventDetails.open = state.eventDetailsOpen;
+      },
+      dispose() {
+        disposed = true;
+        cleanups.forEach(cleanup => cleanup());
+        controllers.delete(chart);
+        delete chart.dataset.scoreReady;
+      },
+    });
     select(selected);
     resizePlot();
-    if (typeof ResizeObserver !== "undefined") new ResizeObserver(resizePlot).observe(chart);
-    else window.addEventListener("resize", resizePlot, { passive: true });
+    if (typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(resizePlot);
+      observer.observe(chart);
+      cleanups.push(() => observer.disconnect());
+    } else listen(window, "resize", resizePlot, { passive: true });
   }
 }

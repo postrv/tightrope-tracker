@@ -51,7 +51,7 @@ function ecdfPath(): string {
   }).join(" ");
 }
 ---
-<BaseLayout title="Methodology — Tightrope Tracker" canonicalPath="/methodology">
+<BaseLayout liveUpdatedAt={snapshot.headline.updatedAt} title="Methodology — Tightrope Tracker" canonicalPath="/methodology">
   <TopNav compact band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} stale={Boolean(snapshot.headline.stale)} />
   <main id="main" class="container methodology">
     <header class="page-head">
@@ -211,7 +211,7 @@ function ecdfPath(): string {
       <p>Under each trajectory chart we report "Scored N of 30 days" so readers can see how complete the rendered series is. If N &lt; 30, the missing days failed quorum (typically a batch of indicators not yet ingested for that day, or an adapter outage). The homepage's <strong>stale</strong> chip surfaces today's quorum state; the trajectory coverage count surfaces the last 30 days at a glance.</p>
     </section>
 
-    <section class="block">
+    <section class="block" data-live-region="ingestion-audit" data-live-valid={String(audit.length > 0)}>
       <h2>Last successful ingestion per source</h2>
       <p class="muted small"><strong>success</strong> = fetch returned a payload different from the previous run (new data). <strong>unchanged</strong> = fetch returned the same bytes as last time (upstream has not republished since the previous "success" row; common for monthly ONS / semi-annual OBR series between publications). Both are healthy states. The <strong>cadence</strong> chip is predictive: <span class="cadence-chip ok">on&nbsp;schedule</span> means the freshest reading is inside the source's publication cycle; <span class="cadence-chip warn">release&nbsp;due</span> means a new upstream release is overdue but still within grace; <span class="cadence-chip bad">overdue</span> means it is past grace and the freshness guard is tripping.</p>
       {audit.length === 0 ? (

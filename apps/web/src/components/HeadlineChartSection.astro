@@ -22,7 +22,7 @@ const { history, events } = Astro.props;
 const hasData = history.points.length > 0;
 const rangeDays = history.rangeDays;
 ---
-<section class="section headline-chart" aria-labelledby="headline-chart-title">
+<section data-live-region="headline-history" data-live-valid={String(hasData)} class="section headline-chart" aria-labelledby="headline-chart-title">
   <div class="container">
     <div class="section-head">
       <div>

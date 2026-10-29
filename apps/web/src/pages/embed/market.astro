@@ -1,16 +1,16 @@
 ---
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Sparkline from "~/components/charts/Sparkline.astro";
-import { loadMovements } from "~/lib/page-data.js";
+import { loadMovements, loadSnapshot } from "~/lib/page-data.js";
 
-const movements = await loadMovements(Astro.locals);
+const [movements, snapshot] = await Promise.all([loadMovements(Astro.locals), loadSnapshot(Astro.locals)]);
 const marketIds = ["gilt_10y", "gilt_30y", "breakeven_5y", "gbp_usd", "ftse_250", "brent_gbp"] as const;
 const cards = marketIds
   .map((id) => movements.find((m) => m.indicatorId === id))
   .filter((x): x is NonNullable<typeof x> => Boolean(x));
 ---
-<BaseLayout title="Tightrope Tracker — market strip" embed>
-  <div class="embed-root">
+<BaseLayout liveUpdatedAt={snapshot.headline.updatedAt} title="Tightrope Tracker — market strip" embed>
+  <div class="embed-root" data-live-region="embed-market" data-live-valid={String(cards.length > 0)}>
     <div class="head">
       <span class="brand">Tightrope Tracker · Market</span>
       <a class="credit" href="https://tightropetracker.uk" target="_blank" rel="noopener">tightropetracker.uk ↗</a>

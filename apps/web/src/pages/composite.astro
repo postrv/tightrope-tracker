@@ -61,7 +61,7 @@ const selectedFrom = history.selectedFrom ?? history.points[0]?.timestamp;
 const selectedTo = history.selectedTo ?? history.points.at(-1)?.timestamp;
 const resolutionAdjusted = resolutionRequest !== "auto" && resolutionRequest !== resolution;
 ---
-<BaseLayout
+<BaseLayout liveUpdatedAt={snapshot.headline.updatedAt}
   title={`Tightrope Tracker — long view (${rangeLabel.toLowerCase()})`}
   description="Long-composite view: how the UK's Tightrope Score has moved, with the events and pillar drivers behind it."
   canonicalPath={canonicalPath}
@@ -96,6 +96,7 @@ const resolutionAdjusted = resolutionRequest !== "auto" && resolutionRequest !==
       </form>
     </div>
 
+    <div data-live-region="composite-history" data-live-valid={String(!historyUnavailable)}>
     {!historyUnavailable ? <>
     <div class="history-coverage" aria-label="History availability and sampling">
       <div><span class="coverage-label">Showing</span><strong>{history.points.length.toLocaleString("en-GB")} recording{history.points.length === 1 ? "" : "s"}</strong><span>{RESOLUTION_LABELS[resolution]}</span></div>
@@ -123,6 +124,7 @@ const resolutionAdjusted = resolutionRequest !== "auto" && resolutionRequest !==
     )}
 
     {!historyUnavailable ? <p class="sampling-note">Hourly, daily and weekly views select the last recorded score in each UTC bucket. Finer sampling shows score recalculations; new economic releases follow their own publication calendars. Gaps select the nearest available recording.</p> : null}
+    </div>
 
     <PillarDriversPanel snapshot={snapshot} />
 

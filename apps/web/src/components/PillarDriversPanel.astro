@@ -96,7 +96,7 @@ function describeDriver(c: IndicatorContribution): Driver {
   };
 }
 ---
-<section class="drivers" aria-labelledby="drivers-title">
+<section data-live-region="pillar-drivers" data-live-valid={String(Object.values(snapshot.pillars).some(p => p.contributions.length > 0))} class="drivers" aria-labelledby="drivers-title">
   <div class="drivers-head">
     <span class="eyebrow">Drivers</span>
     <h2 id="drivers-title">key drivers, by pillar</h2>

@@ -8,6 +8,8 @@ interface Props {
   canonicalPath?: string;
   /** Kept for API compatibility; CSP now lives in _headers, per-route. */
   embed?: boolean;
+  /** Enables background refresh of explicitly marked live data regions. */
+  liveUpdatedAt?: string;
 }
 
 const {
@@ -16,6 +18,7 @@ const {
   ogImage = "/og/headline-score.png",
   canonicalPath,
   embed = false,
+  liveUpdatedAt,
 } = Astro.props;
 
 // Content Security Policy is served via HTTP response headers (see
@@ -39,6 +42,7 @@ const ogImageUrl = ogImage.startsWith("/og/")
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {liveUpdatedAt ? <meta name="live-score-updated-at" content={liveUpdatedAt} /> : null}
     <link rel="canonical" href={canonical} />
 
     <!-- Open Graph / Twitter -->
@@ -97,6 +101,11 @@ const ogImageUrl = ogImage.startsWith("/og/")
     <slot />
   </body>
 </html>
+
+<script>
+  import { startLiveRefresh } from "~/lib/liveRefresh.js";
+  startLiveRefresh();
+</script>
 
 <script is:inline nonce={Astro.locals.cspNonce}>
   // Default to LFG light/cream; allow user override to dark via localStorage.

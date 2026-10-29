@@ -1,9 +1,9 @@
 ---
 import BaseLayout from "~/layouts/BaseLayout.astro";
-import { loadDelivery } from "~/lib/page-data.js";
+import { loadDelivery, loadSnapshot } from "~/lib/page-data.js";
 import { DELIVERY_STATUS_LABEL } from "@tightrope/shared/delivery";
 
-const delivery = await loadDelivery(Astro.locals);
+const [delivery, snapshot] = await Promise.all([loadDelivery(Astro.locals), loadSnapshot(Astro.locals)]);
 
 function statusClass(status: string): string {
   switch (status) {
@@ -15,8 +15,8 @@ function statusClass(status: string): string {
   }
 }
 ---
-<BaseLayout title="Tightrope Tracker — delivery scorecard" embed>
-  <div class="embed-root">
+<BaseLayout liveUpdatedAt={snapshot.headline.updatedAt} title="Tightrope Tracker — delivery scorecard" embed>
+  <div class="embed-root" data-live-region="embed-delivery" data-live-valid={String(delivery.length > 0)}>
     <div class="head">
       <span class="brand">Tightrope Tracker · Growth delivery</span>
       <a class="credit" href="https://tightropetracker.uk" target="_blank" rel="noopener">tightropetracker.uk ↗</a>

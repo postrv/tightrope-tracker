@@ -8,7 +8,7 @@ import { shortDate } from "~/lib/format.js";
 const corrections = await loadCorrections(Astro.locals);
 const snapshot = await loadSnapshot(Astro.locals);
 ---
-<BaseLayout title="Corrections — Tightrope Tracker" canonicalPath="/corrections">
+<BaseLayout liveUpdatedAt={snapshot.headline.updatedAt} title="Corrections — Tightrope Tracker" canonicalPath="/corrections">
   <TopNav compact band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} stale={Boolean(snapshot.headline.stale)} />
   <main id="main" class="container corrections">
     <header class="page-head">
@@ -17,6 +17,7 @@ const snapshot = await loadSnapshot(Astro.locals);
       <p class="lede">Every correction to a published figure, dated, with the original value, the corrected value, and the reason. This is the separator between a data product and a commentary site.</p>
     </header>
 
+    <div data-live-region="corrections-list" data-live-valid={String(corrections.length > 0)}>
     {corrections.length === 0 ? (
       <div class="empty">
         <p>No corrections published yet — if you believe a figure is wrong, <a href="https://github.com/postrv/tightrope-tracker/issues/new" rel="noopener" target="_blank">open an issue on GitHub</a>.</p>
@@ -46,6 +47,7 @@ const snapshot = await loadSnapshot(Astro.locals);
         ))}
       </div>
     )}
+    </div>
   </main>
   <SiteFooter updatedAt={snapshot.headline.updatedAt} stale={Boolean(snapshot.headline.stale)} />
 </BaseLayout>

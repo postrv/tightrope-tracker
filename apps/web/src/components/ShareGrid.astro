@@ -111,7 +111,7 @@ const allCards: (Card | null)[] = [
 
 const cards = allCards.filter((c): c is Card => c !== null);
 ---
-<section class="section" id="share" aria-labelledby="share-title">
+<section data-live-region="share-cards" data-live-valid={String(cards.length > 0)} class="section" id="share" aria-labelledby="share-title">
   <div class="container">
     <div class="section-head">
       <div>

@@ -71,7 +71,7 @@ const meta = {
   breakeven_5y: chipMeta("breakeven_5y", chips.breakeven_5y),
 };
 ---
-<section class="section" id="market" aria-labelledby="market-title">
+<section data-live-region="market-data" data-live-valid={String(pillar.contributions.length > 0 && movements.length > 0 && (!history || history.points.length > 0))} class="section" id="market" aria-labelledby="market-title">
   <div class="container">
     <div class="section-head">
       <div>

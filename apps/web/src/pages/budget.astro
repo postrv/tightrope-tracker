@@ -35,7 +35,7 @@ function stamp(iso: string | null | undefined): string {
 }
 const scoreDelta = comparison.score.delta;
 ---
-<BaseLayout title="Budget 2026 tracker — forecasts, market readings and data gaps" description="Compare official Budget forecasts and recorded UK economic readings before and after 28 October 2026. Source links, release dates and missing data made explicit." canonicalPath="/budget">
+<BaseLayout liveUpdatedAt={snapshot.headline.updatedAt} title="Budget 2026 tracker — forecasts, market readings and data gaps" description="Compare official Budget forecasts and recorded UK economic readings before and after 28 October 2026. Source links, release dates and missing data made explicit." canonicalPath="/budget">
   <TopNav compact band={snapshot.headline.band} updatedAt={snapshot.headline.updatedAt} freshestAt={freshness.freshestAt} stale={Boolean(snapshot.headline.stale)} />
   <main id="main" class="container budget-page">
     <header class="budget-head">
@@ -56,12 +56,13 @@ const scoreDelta = comparison.score.delta;
     </section>
 
     <section class="readings-section" aria-labelledby="readings-heading">
-      <div class="section-head"><div><span class="eyebrow">Recorded inputs · before and after</span><h2 id="readings-heading">what has actually printed?</h2></div><span class="updated">Checked {stamp(comparison.generatedAt)}</span></div>
+      <div class="section-head"><div><span class="eyebrow">Recorded inputs · before and after</span><h2 id="readings-heading">what has actually printed?</h2></div><span class="updated" data-live-region="budget-checked-at" data-live-valid={String(!comparison.unavailable)}>Checked {stamp(comparison.generatedAt)}</span></div>
       <p class="section-intro">The earlier reference readings come from an archived snapshot timestamped <strong>12:55 UTC on 28 October</strong> (saved at 12:56 UTC), before the OBR’s 13:29 publication but after Parliament’s announced approximate 12:30 statement start. These inputs were already published before that boundary; some surveys use month-end reference labels. These are earlier published readings, not market quotes at 12:55. The exact statement start is not independently verified.</p>
-      <div class="reading-key" aria-label="Reading status legend"><span><i class="new"></i><strong>{newObservations}</strong> observations after the cutoff</span><span><i class="day"></i><strong>{budgetDayReadings}</strong> Budget-day readings · time unavailable</span><span><i class="forecast"></i><strong>{forecasts}</strong> forecast revisions</span><span><i class="waiting"></i><strong>{waiting}</strong> awaiting new data</span>{withdrawn ? <span><i class="waiting"></i><strong>{withdrawn}</strong> invalid references withdrawn</span> : null}</div>
+      <div class="reading-key" aria-label="Reading status legend" data-live-region="budget-reading-counts" data-live-valid={String(!comparison.unavailable)}><span><i class="new"></i><strong>{newObservations}</strong> observations after the cutoff</span><span><i class="day"></i><strong>{budgetDayReadings}</strong> Budget-day readings · time unavailable</span><span><i class="forecast"></i><strong>{forecasts}</strong> forecast revisions</span><span><i class="waiting"></i><strong>{waiting}</strong> awaiting new data</span>{withdrawn ? <span><i class="waiting"></i><strong>{withdrawn}</strong> invalid references withdrawn</span> : null}</div>
+      <div class="reading-controls"><div class="filter-buttons" aria-label="Filter readings"><button type="button" data-budget-filter="all" aria-pressed="true">All readings</button><button type="button" data-budget-filter="market" aria-pressed="false">Markets</button><button type="button" data-budget-filter="new" aria-pressed="false">New readings</button><button type="button" data-budget-filter="awaiting_post_budget_data" aria-pressed="false">Waiting</button></div><label class="search-label">Find an input<input type="search" data-budget-search placeholder="e.g. gilt, pay, housing" /></label></div>
+      <div data-live-region="budget-readings" data-live-valid={String(!comparison.unavailable && comparison.indicators.length > 0)}>
       {comparison.unavailable ? <div class="notice" role="status">Live comparison data is unavailable. The official forecast above remains source-linked; no market changes have been filled in.</div> : (
         <>
-          <div class="reading-controls"><div class="filter-buttons" aria-label="Filter readings"><button type="button" data-budget-filter="all" aria-pressed="true">All readings</button><button type="button" data-budget-filter="market" aria-pressed="false">Markets</button><button type="button" data-budget-filter="new" aria-pressed="false">New readings</button><button type="button" data-budget-filter="awaiting_post_budget_data" aria-pressed="false">Waiting</button></div><label class="search-label">Find an input<input type="search" data-budget-search placeholder="e.g. gilt, pay, housing" /></label></div>
           <p class="table-scroll-hint">Swipe across the table to compare earlier and latest readings.</p>
           <div class="table-scroll" tabindex="0" role="region" aria-label="Budget input comparison table"><table class="readings-table"><thead><tr><th scope="col">Input</th><th scope="col">Reference snapshot · 12:55 UTC</th><th scope="col">Latest retained reading</th><th scope="col">Change / status</th></tr></thead><tbody>
             {comparison.indicators.map(row => (
@@ -77,13 +78,17 @@ const scoreDelta = comparison.score.delta;
           <p class="table-note">Dates identify the observation’s reference period or market close. A later release of an older period is not a new post-Budget economic outcome. “Not retained” means the earlier value cannot be reconstructed reliably from this record.</p>
         </>
       )}
+      </div>
     </section>
 
     <section class="interpretation-grid" aria-label="How to interpret the comparison">
       <article class="score-context"><span class="eyebrow">Composite score</span><h2>keep the calculation in view.</h2>
+        <div data-live-region="budget-score" data-live-valid={String(!comparison.unavailable && Boolean(comparison.score.latest))}>
         <div class="score-values"><span>Before<strong>{comparison.score.before?.value.toFixed(1) ?? "—"}</strong><small>{stamp(comparison.score.before?.timestamp)}</small></span><span>Latest<strong>{comparison.score.latest?.value.toFixed(1) ?? "—"}</strong><small>{stamp(comparison.score.latest?.timestamp)}</small></span></div>
         {comparison.score.comparable && scoreDelta !== null ? <p>Recorded score change: <strong>{scoreDelta > 0 ? "+" : scoreDelta < 0 ? "−" : ""}{Math.abs(scoreDelta).toFixed(1)} points</strong>. Several inputs still describe earlier periods.</p> : <p class="score-caution">A score change is not shown because the retained snapshots do not provide a consistent comparison{comparison.score.corrections.length ? ": a calculation correction falls between them" : ""}. Use the raw readings above.</p>}
-        {comparison.score.corrections.length ? <ul class="correction-list">{comparison.score.corrections.map(item => <li><time datetime={item.date}>{stamp(item.date)}</time> · {item.title}</li>)}</ul> : null}<a href="/methodology" class="source-link">See how the score is calculated ↗</a>
+        {comparison.score.corrections.length ? <ul class="correction-list">{comparison.score.corrections.map(item => <li><time datetime={item.date}>{stamp(item.date)}</time> · {item.title}</li>)}</ul> : null}
+        </div>
+        <a href="/methodology" class="source-link">See how the score is calculated ↗</a>
       </article>
       <article class="lag-context"><span class="eyebrow">Reading the lags</span><h2>the economy takes longer.</h2><ul><li><strong>Daily market closes</strong> include the whole day and overnight news. They cannot isolate the statement.</li><li><strong>Monthly surveys and official statistics</strong> may cover periods before Budget day, even when released afterwards.</li><li><strong>Housing and delivery data</strong> take quarters to establish progress. Announcing funding is not the same as delivering homes.</li><li><strong>The OBR report</strong> is a conditional forecast. Its figures are not observed outcomes.</li></ul></article>
     </section>
@@ -97,10 +102,10 @@ const scoreDelta = comparison.score.delta;
 (() => {
   const buttons = [...document.querySelectorAll('[data-budget-filter]')];
   const input = document.querySelector('[data-budget-search]');
-  const rows = [...document.querySelectorAll('[data-budget-row]')];
-  const empty = document.querySelector('[data-budget-empty]');
   let selected = 'all';
   function filter() {
+    const rows = [...document.querySelectorAll('[data-budget-row]')];
+    const empty = document.querySelector('[data-budget-empty]');
     const query = (input?.value || '').trim().toLowerCase();
     let count = 0;
     for (const row of rows) {
@@ -116,6 +121,7 @@ const scoreDelta = comparison.score.delta;
     filter();
   }));
   input?.addEventListener('input', filter);
+  document.addEventListener('tightrope:live-updated', filter);
 })();
 </script>
 

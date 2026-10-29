@@ -42,7 +42,7 @@ const readings = [
   { id: "inactivity_health", title: "Inactive due to long-term sickness", contribution: inactivityHealthLive, note: "People aged 16–64 outside the labour force due to long-term sickness." },
 ];
 ---
-<section class="section" id="labour" aria-labelledby="labour-title">
+<section data-live-region="labour-data" data-live-valid={String(pillar.contributions.length > 0)} class="section" id="labour" aria-labelledby="labour-title">
   <div class="container">
     <div class="section-head">
       <div>

@@ -15,7 +15,7 @@ interface Props {
 const { movements, contributions = [] } = Astro.props;
 const now = Date.now();
 ---
-<section class="today" id="today" aria-labelledby="today-title">
+<section data-live-region="today-movements" data-live-valid={String(movements.length > 0)} class="today" id="today" aria-labelledby="today-title">
   <div class="container">
     <h2 class="sec-title" id="today-title">Latest published changes</h2>
     <p class="today-sub">Changes versus the previous stored reading, which may be a prior market session or monthly release. Each card shows its source date.</p>

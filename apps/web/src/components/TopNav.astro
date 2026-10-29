@@ -76,6 +76,7 @@ const recomputeChip = formatChip(updatedAt);
         </ul>
         <span
           class={`live-chip${stale ? " stale" : ""}`}
+          data-live-region="nav-freshness"
           aria-live="polite"
           title="The score is recomputed regularly. Latest source date means release date where available, otherwise observation date; sources publish on separate schedules. A score computation does not mean new source data."
         >

@@ -99,7 +99,7 @@ function headroomDateLabel(iso: string): string {
   return mon;
 }
 ---
-<section class="hero" id="headline">
+<section data-live-region="hero" data-live-valid={String(Number.isFinite(headline.value))} class="hero" id="headline">
   <div class="container">
     <div class="hero-grid">
       <div>
